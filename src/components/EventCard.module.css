@@ -1,0 +1,208 @@
+/* EventCard.module.css - Green Sticker Style */
+
+.card {
+    background: #ffffff;
+    /* White background like reference */
+    border: 1.5px solid var(--color-forest);
+    /* Solid Border */
+    border-radius: 1.5rem;
+    box-shadow: 8px 8px 0px var(--color-mint);
+    /* Green Solid Shadow */
+    padding: 1.25rem;
+    transition: all 0.2s ease-out;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+    text-align: left;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 12px 12px 0px var(--color-mint);
+    /* Shadow grows on hover */
+}
+
+/* Thumbnail */
+.thumbnailWrapper {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    /* Reduced from 200px */
+    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.thumbnail {
+    object-fit: cover;
+    transition: transform 0.7s ease;
+}
+
+.card:hover .thumbnail {
+    transform: scale(1.05);
+    /* Gentle zoom */
+}
+
+/* Header & Tags */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.categoryGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Date Badge - Minimalist */
+.dateBadge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--color-mint);
+    color: var(--color-forest);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    min-width: 60px;
+    text-align: center;
+}
+
+.dateSubtext {
+    font-size: 0.7rem;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+/* Typography */
+.title {
+    font-size: 1.5rem;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-forest);
+    text-align: left;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.hostRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.hostLogoWrapper {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f0f0f0;
+}
+
+.host {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Details Grid */
+.detailsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Stacked layout looks cleaner for editorial */
+    gap: 0.5rem;
+    margin-top: auto;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.statItem svg {
+    color: var(--color-lilac);
+    /* Accent color for icons */
+    width: 18px;
+    height: 18px;
+}
+
+.footer {
+    margin-top: auto;
+    text-align: center;
+}
+
+/* Badges - Pill Style */
+/* Badges - Pastel Pills */
+.badgeHackathon {
+    background: #E0C0F8;
+    /* Lilac */
+    color: #4C1D95;
+}
+
+.badgeFest {
+    background: #FBCFE8;
+    /* Pink/Rose */
+    color: #831843;
+}
+
+.badgeWorkshop {
+    background: #D1FAE5;
+    /* Mint */
+    color: #064E3B;
+}
+
+.badgeCultural {
+    background: #FFEDD5;
+    /* Orange/Peach */
+    color: #9A3412;
+}
+
+.badgeHackathon,
+.badgeFest,
+.badgeWorkshop,
+.badgeCultural {
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: none;
+    /* Clean look */
+    text-transform: uppercase;
+}
+
+.priceTag {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    background: var(--color-forest);
+    color: var(--color-mint);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    box-shadow: 4px 4px 0px var(--color-mint);
+    border: 1px solid var(--color-mint);
+    z-index: 2;
+}
+
+.freeTag {
+    background: var(--color-mint);
+    color: var(--color-forest);
+    box-shadow: 4px 4px 0px var(--color-forest);
+    border: 1px solid var(--color-forest);
+}

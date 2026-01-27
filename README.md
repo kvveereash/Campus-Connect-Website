@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Campus Connect 🎓
 
-## Getting Started
+**Campus Connect** is a comprehensive student engagement and collaboration platform. It unifies event discovery, club management, and peer-to-peer connection into a single, vibrant ecosystem.
 
-First, run the development server:
+![Campus Connect Banner](public/og-image.png)
 
+## 🚀 Features
+
+### Core Experience
+-   **Smart Feed**: Personalized event and club recommendations.
+-   **Global Search**: Instantly find Users, Events, and Clubs.
+-   **Interactive Map**: Explore campus venues and event locations.
+-   **Leaderboard**: Gamified student engagement tracking.
+
+### 💬 Advanced Chat System
+-   **Real-Time Messaging**: Powered by Pusher (WebSockets).
+-   **Group Chats**: Create and manage student communities.
+-   **Rich Media**: Send images and file attachments.
+-   **Engagement**: Typing indicators, Read receipts (double tick), and Message reactions.
+-   **Global Notifications**: Instant toasts for new messages.
+
+### 🛡️ Admin & Club Management
+-   **Admin Dashboard**: Overview of platform stats (Users, Events, Clubs).
+-   **Verification Queue**: Admin-approval workflow for new Clubs and Events.
+-   **Club Roles**: Role-based access (Admin/Member) for clubs.
+-   **Host Events**: Create and manage events with image uploads.
+
+### 💎 Premium UI/UX
+-   **Modern Design**: Glassmorphism, blurred backdrops, and sleek animations.
+-   **Responsive**: Fully optimized for Desktop and Mobile.
+-   **Themes**: Dark mode optimized.
+
+## 🛠️ Tech Stack
+
+-   **Frontend**: Next.js 15 (App Router), React, CSS Modules.
+-   **Backend**: Next.js Server Actions.
+-   **Database**: SQLite (via Prisma ORM).
+-   **Real-time**: Pusher Channels.
+-   **Storage**: Local FS (Uploads) / Cloudinary (ready).
+-   **Authentication**: Custom JWT-based Auth (encrypted sessions).
+
+## 🏃‍♂️ Getting Started
+
+### Prerequisites
+-   Node.js (v18+)
+-   npm
+
+### Installation
+
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/yourusername/campus-connect.git
+    cd campus-connect
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+
+3.  **Setup Environment**:
+    Create a `.env` file based on `.env.example` (ensure Pusher keys are set).
+
+4.  **Initialize Database**:
+    ```bash
+    npx prisma generate
+    npx prisma db push
+    ```
+
+5.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
+
+Visit [http://localhost:3000](http://localhost:3000) to see the app!
+
+## 🔐 Admin Access
+
+The platform includes a protected Admin Dashboard at `/admin`.
+To promote a user to Admin, run the script:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx tsx scripts/promote-admin.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔮 Future Roadmap
+-   [ ] Mobile App (React Native/Capacitor).
+-   [ ] AI-powered Event Recommendations.
+-   [ ] Payment Gateway for key events.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Built with ❤️ for Students.

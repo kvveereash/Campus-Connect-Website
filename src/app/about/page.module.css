@@ -1,0 +1,206 @@
+/* Manifesto About Page */
+.container {
+    background: var(--color-cream);
+    min-height: 100vh;
+    padding-bottom: 6rem;
+    overflow-x: hidden;
+}
+
+/* --- Hero Section --- */
+.hero {
+    padding: 8rem 2rem 4rem;
+    text-align: center;
+}
+
+.heroTitle {
+    font-size: 6rem;
+    font-family: var(--font-serif);
+    line-height: 0.9;
+    color: var(--color-forest);
+    margin-bottom: 2rem;
+    letter-spacing: -0.04em;
+}
+
+.heroSubtitle {
+    font-size: 1.5rem;
+    font-family: var(--font-sans);
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* --- Ticker Animation --- */
+.tickerWrapper {
+    background: var(--color-forest);
+    color: var(--color-mint);
+    padding: 1.5rem 0;
+    margin: 4rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    border-top: 1.5px solid var(--color-forest);
+    border-bottom: 1.5px solid var(--color-forest);
+    transform: rotate(-2deg) scale(1.05);
+    /* Wispr flow jaunty angle */
+}
+
+.tickerContent {
+    display: inline-block;
+    animation: ticker 20s linear infinite;
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.tickerItem {
+    margin-right: 4rem;
+}
+
+@keyframes ticker {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* --- Manifesto Text --- */
+.manifestoSection {
+    max-width: 800px;
+    margin: 6rem auto;
+    padding: 0 2rem;
+}
+
+.manifestoText {
+    font-size: 2.5rem;
+    font-family: var(--font-serif);
+    line-height: 1.4;
+    color: var(--color-forest);
+}
+
+.highlight {
+    color: var(--color-orange);
+}
+
+/* --- Values / How It Works --- */
+.valuesSection {
+    background: var(--color-forest);
+    padding: 6rem 2rem;
+    margin: 6rem 0;
+    color: white;
+}
+
+.valueGrid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 3rem;
+}
+
+.valueCard {
+    background: rgba(255, 255, 255, 0.05);
+    /* Wispr-like subtle transparent card */
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s;
+}
+
+.valueCard:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-5px);
+}
+
+.valueTitle {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--color-lilac);
+}
+
+.valueDesc {
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+}
+
+.teamHeader {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.teamSection {
+    margin-top: 6rem;
+    padding: 4rem 2rem;
+    background: white;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sectionTitle {
+    text-align: center;
+    font-size: 3rem;
+    font-family: var(--font-serif);
+    margin-bottom: 4rem;
+    color: var(--color-forest);
+}
+
+.teamGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 3rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.teamCard {
+    text-align: center;
+}
+
+.avatar {
+    width: 200px;
+    height: 200px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    /* Circle avatars */
+    margin: 0 auto 1.5rem;
+    overflow: hidden;
+    filter: grayscale(100%);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.teamCard:hover .avatar {
+    filter: grayscale(0%);
+    border-color: var(--color-lilac);
+    transform: scale(1.05);
+}
+
+.memberName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    font-family: var(--font-serif);
+}
+
+.memberRole {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+@media (max-width: 768px) {
+    .heroTitle {
+        font-size: 3.5rem;
+    }
+
+    .manifestoText {
+        font-size: 1.5rem;
+    }
+}

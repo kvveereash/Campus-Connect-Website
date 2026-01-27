@@ -1,0 +1,172 @@
+/* Clean Editorial Events Layout */
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+  display: none;
+}
+
+/* Shared Container Width to ensure perfect alignment */
+.filterContainer,
+.eventsGrid {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Filter Bar Container */
+.filterContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  margin-bottom: 1.5rem;
+  position: relative;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  /* Subtle divider line */
+}
+
+/* Filter Buttons Group */
+.filterGroup {
+  display: flex;
+  gap: 0.25rem;
+  /* Tighter gap */
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filterBtn {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 1rem;
+  /* border-radius: 999px; Removed to inherit global pill/rounded style */
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.95rem;
+  /* Slightly larger text */
+  font-family: var(--font-sans);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.filterBtn:hover {
+  color: var(--color-forest);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.activeFilter {
+  background: #185BFF !important;
+  color: white !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(24, 91, 255, 0.15);
+}
+
+/* Sort Dropdown */
+.sortContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-left: auto;
+  margin-right: 1.5rem;
+  /* Space from Host button */
+}
+
+.sortSelect {
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  color: var(--color-forest);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  outline: none;
+  padding-right: 1rem;
+}
+
+/* Host Event Button */
+/* Host Event Button */
+.hostBtn {
+  background: var(--color-lilac) !important;
+  color: var(--color-forest) !important;
+  /* border-radius: 999px; Removed to inherit global */
+  padding: 0.75rem 1.5rem !important;
+  /* Slightly larger like create club */
+  font-weight: 500;
+  font-size: 0.95rem;
+  /* Match global btn size */
+  border: 1.5px solid var(--color-forest) !important;
+  /* Black border */
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hostBtn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+  box-shadow: 4px 4px 0 var(--color-forest);
+  /* Retro pop shadow */
+}
+
+/* Events Grid */
+.eventsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  /* Tighter gap */
+  padding-bottom: 4rem;
+}
+
+.searchBarContainer {
+  display: none;
+}
+
+/* Load More */
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 4rem;
+}
+
+.loadMoreBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 1100px) {
+  .eventsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .eventsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .hostBtn {
+    width: 100%;
+    text-align: center;
+    margin-left: 0;
+  }
+}

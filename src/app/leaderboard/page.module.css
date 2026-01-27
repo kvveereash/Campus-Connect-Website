@@ -1,0 +1,345 @@
+/* Main Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 5rem;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.title {
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--color-forest);
+    font-family: var(--font-serif);
+    display: inline-block;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    max-width: 600px;
+    margin: 0 auto;
+    font-family: var(--font-sans);
+}
+
+/* Podium Section */
+.podiumContainer {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 2rem;
+    margin-bottom: 6rem;
+    min-height: 400px;
+    padding-bottom: 2rem;
+    /* Space for shadows */
+}
+
+.podiumItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 260px;
+    position: relative;
+    animation: slideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.podiumItem:hover {
+    transform: translateY(-10px);
+}
+
+.podiumItem.first {
+    order: 2;
+    z-index: 10;
+    margin-bottom: 40px;
+    /* Push up slightly visually */
+    animation-delay: 0.2s;
+}
+
+.podiumItem.second {
+    order: 1;
+    z-index: 5;
+    animation-delay: 0.1s;
+}
+
+.podiumItem.third {
+    order: 3;
+    z-index: 5;
+    animation-delay: 0.3s;
+}
+
+.crown {
+    font-size: 3.5rem;
+    position: absolute;
+    top: -5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: float 3s ease-in-out infinite;
+    z-index: 30;
+    filter: drop-shadow(4px 4px 0px rgba(0, 0, 0, 0.1));
+}
+
+.podiumAvatar {
+    width: 7rem;
+    height: 7rem;
+    border-radius: 50%;
+    border: 3px solid var(--color-forest);
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--color-forest);
+    margin-bottom: -3.5rem;
+    z-index: 20;
+    position: relative;
+    box-shadow: 4px 4px 0px rgba(15, 31, 28, 0.1);
+    font-family: var(--font-serif);
+}
+
+.first .podiumAvatar {
+    background: var(--color-orange);
+    color: white;
+}
+
+.second .podiumAvatar {
+    background: var(--color-mint);
+    color: var(--color-forest);
+}
+
+.third .podiumAvatar {
+    background: var(--color-lilac);
+    color: var(--color-forest);
+}
+
+.podiumBase {
+    width: 100%;
+    border-radius: 1.5rem;
+    padding: 4.5rem 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative;
+    background: #ffffff;
+    border: 2px solid var(--color-forest);
+    transition: all 0.3s ease;
+}
+
+/* Sticker Shadows for Ranks */
+.first .podiumBase {
+    height: 280px;
+    box-shadow: 12px 12px 0px var(--color-orange);
+}
+
+.second .podiumBase {
+    height: 220px;
+    box-shadow: 12px 12px 0px var(--color-mint);
+}
+
+.third .podiumBase {
+    height: 180px;
+    box-shadow: 12px 12px 0px var(--color-lilac);
+}
+
+.rankNumber {
+    font-size: 6rem;
+    font-weight: 900;
+    opacity: 0.1;
+    position: absolute;
+    bottom: -0.5rem;
+    right: 1rem;
+    line-height: 1;
+    z-index: 1;
+    font-family: var(--font-serif);
+    color: var(--color-forest);
+}
+
+.podiumName {
+    font-weight: 700;
+    font-size: 1.35rem;
+    color: var(--color-forest);
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+    z-index: 2;
+    font-family: var(--font-serif);
+}
+
+.podiumPoints {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+    background: var(--color-cream);
+    color: var(--color-forest);
+    display: inline-block;
+    margin-top: auto;
+    z-index: 2;
+    border: 1px solid var(--color-forest);
+}
+
+/* Rank Table */
+.tableContainer {
+    background: #ffffff;
+    border: 2px solid var(--color-forest);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 8px 8px 0px rgba(15, 31, 28, 0.1);
+    animation: fadeIn 1s ease-out;
+    margin-bottom: 4rem;
+}
+
+.tableHeader {
+    display: grid;
+    grid-template-columns: 80px 1fr 150px 100px;
+    padding: 1.5rem 2rem;
+    background: var(--color-cream);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 2px solid var(--color-forest);
+}
+
+.tableRow {
+    display: grid;
+    grid-template-columns: 80px 1fr 150px 100px;
+    padding: 1.5rem 2rem;
+    align-items: center;
+    border-bottom: 1px solid rgba(15, 31, 28, 0.1);
+    transition: all 0.2s ease;
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.tableRow:hover {
+    background-color: var(--color-mint);
+    /* Highlight on hover */
+}
+
+.rankCell {
+    font-weight: 800;
+    color: var(--color-forest);
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+}
+
+.userCell {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.miniAvatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-lilac);
+    border: 1.5px solid var(--color-forest);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-forest);
+    font-family: var(--font-serif);
+}
+
+.userInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.userName {
+    font-weight: 700;
+    color: var(--color-forest);
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+}
+
+.userDept {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.badgesCell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badgeIcon {
+    font-size: 1.5rem;
+    filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.1));
+    transition: transform 0.2s;
+}
+
+.badgeIcon:hover {
+    transform: scale(1.2) rotate(10deg);
+}
+
+.moreBadges {
+    font-size: 0.75rem;
+    color: var(--color-forest);
+    background: var(--color-cream);
+    padding: 4px 8px;
+    border-radius: 99px;
+    font-weight: 600;
+    border: 1px solid var(--color-forest);
+}
+
+.pointsCell {
+    text-align: right;
+    font-weight: 800;
+    color: var(--color-forest);
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(-50%, 0);
+    }
+
+    50% {
+        transform: translate(-50%, -10px);
+    }
+}

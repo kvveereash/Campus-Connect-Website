@@ -1,0 +1,36 @@
+/* EmptyState.module.css */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: #ffffff;
+    border: 1.5px solid var(--color-forest);
+    border-radius: 1.5rem;
+    box-shadow: 8px 8px 0px var(--color-orange);
+    /* Orange shadow for empty states looks alert but playful */
+    padding: 3rem;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    font-family: var(--font-serif);
+    color: var(--color-forest);
+    margin-bottom: 0.5rem;
+}
+
+.description {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 450px;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.illustration {
+    margin-bottom: 1.5rem;
+}

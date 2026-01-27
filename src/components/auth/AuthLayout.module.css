@@ -1,0 +1,129 @@
+.container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: var(--background);
+    overflow: hidden;
+}
+
+.imageSection {
+    display: none;
+    width: 50%;
+    position: relative;
+    background: linear-gradient(to bottom, #1a103c 0%, #2e1065 100%);
+    color: white;
+}
+
+/* Glassmorphism orb effects */
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.6;
+}
+
+.orb1 {
+    width: 300px;
+    height: 300px;
+    background: #6366f1;
+    /* Indigo */
+    top: 10%;
+    left: 10%;
+    animation: float 10s infinite ease-in-out;
+}
+
+.orb2 {
+    width: 400px;
+    height: 400px;
+    background: #8b5cf6;
+    /* Violet */
+    bottom: 5%;
+    right: 5%;
+    animation: float 12s infinite ease-in-out reverse;
+}
+
+@keyframes float {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(20px, -20px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+.imageContent {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.heading {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, #fff, #cbd5e1);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subheading {
+    font-size: 1.25rem;
+    color: #e2e8f0;
+    max-width: 80%;
+}
+
+.formSection {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+}
+
+.formWrapper {
+    width: 100%;
+    max-width: 800px;
+    /* Increased from 440px to fit Ticket */
+}
+
+.backLink {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+    font-size: 0.9rem;
+}
+
+.backLink:hover {
+    color: var(--primary-color);
+}
+
+@media (min-width: 768px) {
+    .imageSection {
+        display: flex;
+    }
+
+    .formSection {
+        width: 50%;
+    }
+}

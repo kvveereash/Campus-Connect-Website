@@ -1,0 +1,232 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1rem;
+}
+
+/* Header Section */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4rem;
+}
+
+.title {
+    font-size: 4.5rem;
+    /* Large impact */
+    font-weight: 800;
+    color: var(--color-forest);
+    /* Dark text for visibility */
+    /* Fun retro lilac shadow */
+    text-shadow: 4px 4px 0px rgba(224, 192, 248, 1);
+    font-family: var(--font-serif);
+    letter-spacing: -0.02em;
+}
+
+.createButton {
+    background: var(--color-lilac);
+    /* Lilac Pill */
+    color: var(--color-forest);
+    border: 1.5px solid var(--color-forest);
+    /* Black Border */
+    padding: 0.8rem 1.75rem;
+    /* border-radius: 100px; Removed to inherit global */
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0);
+}
+
+.createButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--color-forest);
+    /* Retro pop shadow */
+    filter: brightness(1.02);
+}
+
+/* Remove pseudo-element glow for simpler retro style */
+.createButton::after {
+    display: none;
+}
+
+/* Tabs & Search Section */
+.controlsContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    /* Align tabs to bottom with search */
+    margin-bottom: 3rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    /* Very subtle line */
+    padding-bottom: 0.5rem;
+}
+
+.tabs {
+    display: flex;
+    gap: 2rem;
+    position: relative;
+}
+
+.tab {
+    padding: 0.75rem 0;
+    /* Text only padding */
+    border: none;
+    background: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s;
+    font-family: var(--font-sans);
+}
+
+.tab:hover {
+    color: var(--color-forest);
+}
+
+.activeTab {
+    color: var(--color-forest);
+    font-weight: 600;
+}
+
+/* Animated Underline */
+.activeTab::after {
+    content: '';
+    position: absolute;
+    bottom: -0.6rem;
+    /* Push below container border */
+    left: 0;
+    width: 60%;
+    /* Partial width underscore style */
+    height: 3px;
+    background: linear-gradient(90deg, #0F1F1C, #8B5CF6);
+    /* Forest to Purple gradient */
+    border-radius: 2px;
+}
+
+/* Search Bar (Centered if separate, or integrated) */
+/* Assuming the search bar is separate based on image */
+.searchContainer {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: -1.5rem;
+    /* Adjust positioning based on flow */
+}
+
+/* Grid & Card Styles (Reusing standard or card specific) */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2.5rem;
+}
+
+.card {
+    background: #ffffff;
+    border: 1.5px solid var(--color-forest);
+    /* Solid Dark Border */
+    border-radius: 1.5rem;
+    /* Match Event/College Cards */
+    box-shadow: 8px 8px 0px var(--color-orange);
+    /* Solid Orange (Red) Offset */
+    overflow: hidden;
+    transition: all 0.2s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Card Inner Styles */
+.image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.card:hover .image {
+    transform: scale(1.05);
+}
+
+.content {
+    padding: 1.5rem;
+    /* Critical padding for alignment */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-orange);
+    /* Matching card accent */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.clubName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--color-forest);
+    line-height: 1.2;
+}
+
+.description {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.members {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .controlsContainer {
+        flex-direction: column;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .title {
+        font-size: 3rem;
+    }
+
+    .searchContainer {
+        position: static;
+        transform: none;
+        width: 100%;
+        max-width: 400px;
+    }
+}
