@@ -6,15 +6,21 @@ async function main() {
     console.log('🌱 Seeding database...');
 
     // Create default college
-    const college = await prisma.college.upsert({
+    // Create default college
+    let college = await prisma.college.findFirst({
         where: { name: 'Default College' },
-        update: {},
-        create: {
-            name: 'Default College',
-            location: 'Campus City',
-            logo: '/images/default-college-logo.png',
-        },
     });
+
+    if (!college) {
+        college = await prisma.college.create({
+            data: {
+                name: 'Default College',
+                location: 'Campus City',
+                logo: '/images/default-college-logo.png',
+                description: 'A default college for testing purposes.',
+            },
+        });
+    }
 
     console.log('✅ Created default college:', college.name);
 
@@ -38,11 +44,15 @@ async function main() {
     ];
 
     for (const badge of badges) {
-        await prisma.badge.upsert({
+        const existingBadge = await prisma.badge.findFirst({
             where: { name: badge.name },
-            update: {},
-            create: badge,
         });
+
+        if (!existingBadge) {
+            await prisma.badge.create({
+                data: badge,
+            });
+        }
     }
 
     console.log('✅ Created badges');
