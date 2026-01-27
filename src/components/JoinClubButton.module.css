@@ -1,0 +1,54 @@
+.joinButton {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.joinButton:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.joinButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.leaveButton {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.leaveButton:hover {
+    color: var(--error);
+    border-color: var(--error);
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.leaveButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.adminBadge {
+    background-color: var(--secondary);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: default;
+    opacity: 0.9;
+}

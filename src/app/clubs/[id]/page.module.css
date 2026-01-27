@@ -1,0 +1,284 @@
+.container {
+    min-height: 100vh;
+    padding-bottom: 5rem;
+    background-color: var(--background-color);
+}
+
+.header {
+    position: relative;
+    height: 350px;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: -100px;
+    /* Overlap for the glass card */
+}
+
+.banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(15, 31, 28, 0.4) 0%, rgba(15, 31, 28, 0.8) 100%);
+    z-index: 1;
+}
+
+.bannerImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7) saturate(1.2);
+}
+
+.clubInfoCard {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(15, 31, 28, 0.1);
+    border-radius: var(--radius-card);
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.logoWrapper {
+    width: 180px;
+    height: 180px;
+    border-radius: 24px;
+    background: white;
+    padding: 8px;
+    border: 1px solid rgba(15, 31, 28, 0.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.clubLogo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 18px;
+}
+
+.headerContent {
+    flex: 1;
+}
+
+.categoryTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    background: var(--color-mint);
+    color: var(--color-forest);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 100px;
+    margin-bottom: 1rem;
+    border: 1px solid var(--color-forest);
+}
+
+.title {
+    font-family: var(--font-heading);
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--color-forest);
+    line-height: 1.1;
+}
+
+.collegeName {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* --- Layout Grid --- */
+.grid {
+    max-width: 1200px;
+    margin: 4rem auto 0;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 3rem;
+    padding: 0 2rem;
+}
+
+.mainContent {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+/* --- Sections --- */
+.section {
+    position: relative;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-mint);
+}
+
+.sectionTitle {
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.description {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+.card {
+    background: white;
+    border-radius: var(--radius-card);
+    padding: 2.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+/* --- Members --- */
+.memberList {
+    display: grid;
+    gap: 1rem;
+}
+
+.memberItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--color-cream);
+    border-radius: 16px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.memberItem:hover {
+    border-color: var(--color-lilac);
+    transform: translateX(4px);
+    background: white;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.memberAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-lilac);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    color: var(--color-forest);
+    border: 1.5px solid var(--color-forest);
+}
+
+.memberName {
+    font-weight: 700;
+    color: var(--color-forest);
+    margin: 0;
+}
+
+.memberSub {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* --- Events --- */
+.eventsGrid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.eventCard {
+    padding: 1.5rem;
+    background: var(--color-cream);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.eventCard:hover {
+    border-color: var(--color-forest);
+    box-shadow: 6px 6px 0 var(--color-lilac);
+}
+
+.emptyState {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--color-cream);
+    border-radius: var(--radius-card);
+    border: 2px dashed var(--border-color);
+    color: var(--text-secondary);
+}
+
+.emptyState i {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 1rem;
+    color: var(--color-lilac);
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .clubInfoCard {
+        flex-direction: column;
+        text-align: center;
+        margin: 0 1.5rem;
+        gap: 1.5rem;
+        padding: 2rem;
+    }
+
+    .logoWrapper {
+        margin-top: -80px;
+    }
+
+    .title {
+        font-size: 2.5rem;
+    }
+
+    .controls {
+        justify-content: center;
+    }
+}

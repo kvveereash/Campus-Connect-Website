@@ -1,28 +1,73 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- Modern Editorial Theme --- */
+
+  /* Primary Palette */
+  --color-cream: #FBF9F0;
+  /* Main Background */
+  --color-forest: #0F1F1C;
+  /* Primary Text / Footer / Dark Backgrounds */
+  --color-lilac: #E0C0F8;
+  /* Accents / Primary Buttons */
+  --color-mint: #D1FAE5;
+  /* Secondary Highlight */
+  --color-orange: #FF7D5D;
+  /* Spot color for warmth */
+
+  /* Functional Mappings */
+  --background-color: var(--color-cream);
+  --surface-color: #ffffff;
+  --surface-dark: var(--color-forest);
+
+  --text-primary: var(--color-forest);
+  --text-secondary: rgba(15, 31, 28, 0.7);
+  /* Forest with opacity */
+  --text-on-dark: var(--color-cream);
+
+  --primary-color: var(--color-forest);
+  --secondary-color: var(--color-lilac);
+
+  --border-color: rgba(15, 31, 28, 0.1);
+
+  /* Typography */
+  --font-serif: var(--font-fraunces), serif;
+  --font-sans: var(--font-inter), sans-serif;
+
+  --font-heading: var(--font-serif);
+  --font-body: var(--font-sans);
+
+  /* UI Shapes */
+  --radius-pill: 0.75rem;
+  /* Soft Rounded (was 999px) */
+  --radius-card: 1.5rem;
+
+  --transition-speed: 0.3s;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* 
+   Dark mode support:
+   For this specific aesthetic, "Dark Mode" might just be an inversion 
+   where Forest becomes background and Cream becomes text. 
+*/
+/* 
+   Dark mode support:
+   For this specific aesthetic, "Dark Mode" might just be an inversion 
+   where Forest becomes background and Cream becomes text. 
+   
+   DISABLED: User requested to remove dark theme for every page.
+*/
+/* 
+[data-theme='dark'] {
+  --background-color: var(--color-forest);
+  --surface-color: rgba(255, 255, 255, 0.05);
+  --surface-dark: #000000;
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+  --text-primary: var(--color-cream);
+  --text-secondary: rgba(251, 249, 240, 0.7);
+  --text-on-dark: var(--color-cream);
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  --border-color: rgba(251, 249, 240, 0.1);
+} 
+*/
 
 * {
   box-sizing: border-box;
@@ -30,13 +75,355 @@ body {
   margin: 0;
 }
 
+body {
+  font-family: var(--font-body);
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
 a {
   color: inherit;
   text-decoration: none;
+  transition: opacity var(--transition-speed);
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  /* Fraunces looks better slightly lighter than bold */
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: clamp(1.75rem, 3vw + 0.5rem, 3rem);
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 2vw + 0.25rem, 2rem);
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-sans);
+  /* Buttons often clearer in Sans */
+  border: none;
+  outline: none;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Large screen container expansions */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+    padding: 0 2rem;
   }
+}
+
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1320px;
+    padding: 0 2.5rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  .container {
+    max-width: 1500px;
+    padding: 0 3rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  .container {
+    max-width: 1700px;
+    padding: 0 4rem;
+  }
+}
+
+/* --- Component Utilities --- */
+
+/* 1. Buttons */
+/* 1. Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2rem;
+  /* Adjusted vertical padding */
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  /* Regular weight as per image, or slightly bold */
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+/* Primary: Lilac Pill with Black Border */
+.btn-primary {
+  background-color: var(--color-lilac);
+  /* #E0C0F8 */
+  color: var(--color-forest);
+  /* #0F1F1C */
+  border: 1.5px solid var(--color-forest);
+  /* The defining black border */
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0);
+  /* Flatten initially or add small shadow */
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+  box-shadow: 4px 4px 0 var(--color-forest);
+  /* Retro pop shadow on hover */
+}
+
+/* Secondary/Outline: Transparent with Black Border */
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--color-forest);
+  color: var(--color-forest);
+}
+
+.btn-outline:hover {
+  background: var(--color-forest);
+  color: var(--color-lilac);
+  /* Invert on hover */
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 2. Cards */
+.card {
+  background: var(--surface-color);
+  border-radius: var(--radius-card);
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  /* Subtle shadow, cleaner look */
+  border: 1px solid var(--border-color);
+  transition: transform var(--transition-speed);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* 3. Text & Layout Utils */
+.text-forest {
+  color: var(--color-forest);
+}
+
+.text-cream {
+  color: var(--color-cream);
+}
+
+.bg-forest {
+  background-color: var(--color-forest);
+}
+
+.bg-cream {
+  background-color: var(--color-cream);
+}
+
+.bg-lilac {
+  background-color: var(--color-lilac);
+}
+
+
+/* 4. Brand Add-ons */
+/* Noise Texture Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream);
+  border-left: 1px solid var(--color-forest);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 31, 28, 0.4);
+  border-radius: 99px;
+  border: 2px solid var(--color-cream);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-forest);
+}
+
+/* Animation Utils (Preserved) */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: slideUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* --- Premium Animation Extensions --- */
+
+/* Liquid Background Blobs */
+.blob-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  filter: blur(80px);
+  opacity: 0.6;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  animation: float 20s infinite alternate-reverse ease-in-out;
+}
+
+.blob-1 {
+  width: 600px;
+  height: 600px;
+  background: var(--color-mint);
+  top: -10%;
+  left: -10%;
+  opacity: 0.4;
+}
+
+.blob-2 {
+  width: 500px;
+  height: 500px;
+  background: var(--color-lilac);
+  bottom: -5%;
+  right: -5%;
+  animation-delay: -5s;
+  animation-duration: 25s;
+  opacity: 0.3;
+}
+
+.blob-3 {
+  width: 400px;
+  height: 400px;
+  background: var(--color-orange);
+  top: 40%;
+  right: 15%;
+  animation-delay: -10s;
+  animation-duration: 30s;
+  opacity: 0.15;
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+
+  33% {
+    transform: translate(10%, 5%) scale(1.1) rotate(5deg);
+  }
+
+  66% {
+    transform: translate(-5%, 15%) scale(0.9) rotate(-5deg);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+}
+
+/* Staggered Content Animation */
+.stagger-container>* {
+  opacity: 0;
+}
+
+.reveal-item {
+  animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pre-calculation for up to 10 items if needed manually */
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+
+.stagger-5 {
+  animation-delay: 0.5s;
 }

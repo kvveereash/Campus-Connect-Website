@@ -1,0 +1,399 @@
+/* Navbar.module.css */
+
+.navbar {
+    position: sticky;
+    top: 1rem;
+    /* Top offset for floating effect */
+    z-index: 100;
+    width: 100%;
+    pointer-events: none;
+    /* Let clicks pass through the huge wrapper area */
+}
+
+/* This is the Pill itself */
+.navContainer {
+    pointer-events: auto;
+    /* Re-enable clicks on the actually navbar */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    /* Sizing & Positioning */
+    max-width: 960px;
+    /* Constrain width for "Pill" look */
+    margin: 0 auto;
+    /* Center horizontally */
+    padding: 0.75rem 2rem;
+
+    /* Sticker Style */
+    background: #ffffff;
+    border: 1.5px solid var(--color-forest);
+    border-radius: 999px;
+    box-shadow: 0 8px 0px rgba(15, 31, 28, 0.1);
+    /* Subtle deep shadow for floating element */
+
+    transition: all 0.3s ease;
+}
+
+.navContainer:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 0px rgba(15, 31, 28, 0.1);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-family: var(--font-serif);
+    /* Use the new Serif font */
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.navLinks {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.navLink {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.navLink:hover {
+    color: var(--text-primary);
+}
+
+.active {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Add a small dot for active state if desired, or simplified bold */
+.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--color-orange);
+    border-radius: 50%;
+}
+
+.navActions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.searchButton {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-secondary);
+    /* Darker text */
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.searchButton:hover {
+    color: var(--text-primary);
+    transform: scale(1.05);
+}
+
+/* User Menu & Avatar */
+.userMenu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--color-lilac);
+    /* Lilac background */
+    color: var(--color-forest);
+    /* Dark text */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.logoutBtn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+    font-size: 0.9rem;
+}
+
+.logoutBtn:hover {
+    color: var(--error-color);
+    /* Assuming error color exists, otherwise red */
+}
+
+/* Mobile Responsiveness */
+.mobileToggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0;
+}
+
+.mobileMenu {
+    position: absolute;
+    top: calc(100% + 1rem);
+    /* Push it down a bit */
+    left: 1rem;
+    right: 1rem;
+    padding: 1.5rem;
+    background: var(--color-cream);
+    border: 1px solid var(--border-color);
+    border-radius: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    animation: slideDown 0.3s ease-out;
+    pointer-events: auto;
+}
+
+.mobileMenuLink {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mobileMenuLink:hover {
+    color: var(--secondary-color);
+}
+
+.exploreSection {
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: 0.5rem;
+}
+
+.exploreTitle {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.exploreLinks {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 900px) {
+    .navContainer {
+        width: 90%;
+        /* adaptive width on smaller screens */
+        padding: 0.75rem 1.5rem;
+    }
+
+    .logo {
+        font-size: 1.25rem;
+    }
+
+    .navLinks {
+        display: none;
+        /* simple hiding for now */
+    }
+
+    .mobileToggle {
+        display: flex;
+    }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1200px) {
+    .navContainer {
+        max-width: 1000px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .navContainer {
+        max-width: 1100px;
+        padding: 0.85rem 2.5rem;
+    }
+
+    .navLinks {
+        gap: 2.5rem;
+    }
+}
+
+@media (min-width: 1600px) {
+    .navContainer {
+        max-width: 1200px;
+        padding: 1rem 3rem;
+    }
+
+    .logo {
+        font-size: 1.6rem;
+    }
+
+    .navLink {
+        font-size: 1rem;
+    }
+}
+
+/* --- Dropdown Styles (Tabbed Interaction) --- */
+
+.dropdownContainer {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.dropdownTrigger {
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    /* Default Pill State */
+    transition: all 0.2s ease;
+    font-family: var(--font-sans);
+    position: relative;
+    z-index: 102;
+    /* Above the menu */
+}
+
+.dropdownTrigger:hover {
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.03);
+}
+
+/* Open State - The "Tab" Look */
+.dropdownTriggerOpen {
+    background: #ffffff;
+    color: var(--color-forest);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #ffffff;
+    /* Hide bottom border to merge */
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.02);
+    transform: translateY(1px);
+    /* Push down slightly to overlap border */
+}
+
+.dropdownTriggerOpen:hover {
+    background: #ffffff;
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    /* Align right or adjust based on layout */
+    width: 260px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    /* Important: Top right radius 0 if trigger is right aligned, or custom radius hack */
+    border-top-right-radius: 0;
+    padding: 1rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 101;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.dropdownItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.dropdownItem:hover {
+    background: var(--color-cream);
+    color: var(--color-forest);
+}
+
+.dropdownIcon {
+    margin-top: 2px;
+    color: var(--text-secondary);
+}
+
+.dropdownItem:hover .dropdownIcon {
+    color: var(--color-lilac);
+}
+
+.dropdownText {
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdownTitle {
+    font-weight: 600;
+    font-family: var(--font-sans);
+    color: var(--color-forest);
+    font-size: 0.95rem;
+}
+
+.dropdownDesc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    line-height: 1.4;
+}

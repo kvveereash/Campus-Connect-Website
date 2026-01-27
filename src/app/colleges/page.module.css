@@ -1,0 +1,107 @@
+/* ... existing container ... */
+.container {
+    padding: 2rem 0;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.title {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-align: center;
+}
+
+.highlight {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2.5rem;
+    padding: 1rem;
+}
+
+.card {
+    background: #ffffff;
+    border: 1.5px solid var(--color-forest);
+    /* Solid Dark Border */
+    border-radius: 1.5rem;
+    /* Match Event Cards */
+    box-shadow: 8px 8px 0px var(--color-lilac);
+    /* Solid Purple/Lilac Offset */
+    overflow: hidden;
+    transition: all 0.2s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: translate(-2px, -2px);
+    /* Pop up */
+    border-color: var(--color-forest);
+    box-shadow: 12px 12px 0px var(--color-lilac);
+    /* Shadow grows */
+}
+
+.imageContainer {
+    position: relative;
+    width: 100%;
+    height: 200px;
+}
+
+.collegeImage {
+    object-fit: cover;
+}
+
+.content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.collegeName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--secondary-color);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.description {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    flex: 1;
+}
+
+.footer {
+    margin-top: auto;
+}
