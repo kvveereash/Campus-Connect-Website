@@ -8,39 +8,15 @@ import { revalidatePath } from 'next/cache';
 /**
  * Generate a secure random token for password reset
  */
-function generateToken(): string {
-    return crypto.randomBytes(32).toString('hex');
-}
+import { sendPasswordResetEmail } from '@/lib/email';
+
+// ... (imports remain)
 
 /**
- * Send password reset email
- * In development: logs to console
- * In production: integrate with Resend/SendGrid
+ * Generate a secure random token for password reset
  */
-async function sendResetEmail(email: string, resetUrl: string) {
-    if (process.env.NODE_ENV === 'development') {
-        console.log('=====================================');
-        console.log('📧 PASSWORD RESET EMAIL (DEV MODE)');
-        console.log('=====================================');
-        console.log(`To: ${email}`);
-        console.log(`Reset URL: ${resetUrl}`);
-        console.log('=====================================');
-        return true;
-    }
-
-    // Production: Add Resend/SendGrid integration here
-    // Example with Resend:
-    // const { Resend } = await import('resend');
-    // const resend = new Resend(process.env.RESEND_API_KEY);
-    // await resend.emails.send({
-    //     from: 'noreply@campusconnect.com',
-    //     to: email,
-    //     subject: 'Reset Your Password',
-    //     html: `<p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`
-    // });
-
-    console.log(`Password reset email sent to ${email}`);
-    return true;
+function generateToken(): string {
+    return crypto.randomBytes(32).toString('hex');
 }
 
 /**
@@ -81,7 +57,7 @@ export async function requestPasswordReset(email: string) {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const resetUrl = `${baseUrl}/reset-password/${token}`;
 
-        await sendResetEmail(email, resetUrl);
+        await sendPasswordResetEmail(email, resetUrl);
 
         return { success: true, message: 'If an account exists, a reset link will be sent.' };
     } catch (error) {

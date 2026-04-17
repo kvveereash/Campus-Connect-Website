@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useEvents } from '@/context/EventContext';
 import { useClubs } from '@/context/ClubContext';
-import { COLLEGES } from '@/lib/data';
+import { getAllColleges } from '@/lib/actions/colleges';
+import { getUserCreatedEvents, getUserRegisteredEvents } from '@/lib/actions/events';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +13,7 @@ import HolographicCard from '@/components/profile/HolographicCard';
 import ProfessionalTab from '@/components/profile/ProfessionalTab';
 import NetworkTab from '@/components/profile/NetworkTab';
 import EditProfileModal from '@/components/profile/EditProfileModal';
-import { User } from '@/types';
+import { User, College } from '@/types';
 
 import EventCard from '@/components/EventCard';
 import EventCardSkeleton from '@/components/EventCardSkeleton';
@@ -51,7 +51,6 @@ import { BadgeType } from '@/components/profile/ProfileHeader';
 
 export default function ProfileClient() {
     const { user, login, updateProfile, logout } = useAuth();
-    const { events, isLoading: isEventsLoading } = useEvents();
     const { clubs } = useClubs();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('Events');
@@ -59,52 +58,61 @@ export default function ProfileClient() {
 
     // Badge state
     const [badges, setBadges] = useState<BadgeType[]>([]);
+    // Followed colleges from DB
+    const [dbFollowedColleges, setDbFollowedColleges] = useState<College[]>([]);
+    // Events directly from DB
+    const [registeredEvents, setRegisteredEvents] = useState<any[]>([]);
+    const [hostedEvents, setHostedEvents] = useState<any[]>([]);
+    const [isEventsLoading, setIsEventsLoading] = useState(true);
 
     useEffect(() => {
         if (user) {
             getUserBadges(user.id).then((fetchedBadges: any) => {
                 setBadges(fetchedBadges);
             });
+
+            // Fetch followed colleges from database
+            const followedIds = user.followedColleges || [];
+            if (followedIds.length > 0) {
+                getAllColleges().then((colleges: any[]) => {
+                    const matched = colleges.filter((c: any) => followedIds.includes(c.id));
+                    setDbFollowedColleges(matched);
+                });
+            }
+
+            // Fetch events directly from DB
+            setIsEventsLoading(true);
+            Promise.all([
+                getUserRegisteredEvents(user.id),
+                getUserCreatedEvents(user.id),
+            ]).then(([registered, created]) => {
+                setRegisteredEvents(registered.map((e: any) => ({
+                    ...e,
+                    date: new Date(e.date),
+                    hostCollege: e.hostCollege || { id: 'unknown', name: 'Unknown', logo: '/hero.png' },
+                    registrationCount: e._count?.registrations ?? 0,
+                })));
+                setHostedEvents(created.map((e: any) => ({
+                    ...e,
+                    date: new Date(e.date),
+                    hostCollege: e.hostCollege || { id: 'unknown', name: 'Unknown', logo: '/hero.png' },
+                    registrationCount: e._count?.registrations ?? 0,
+                })));
+            }).finally(() => setIsEventsLoading(false));
         }
     }, [user]);
 
     // If no user, show loading or redirect
     useEffect(() => {
         if (!user) {
-            // BUT, since I have to output tool calls now, I will use what I know.
-            // Wait, I can just fix the ProfileHeader props first.
+            // Wait for auth context to load
         }
     }, [user, login]);
 
     if (!user) return <div role="status" aria-busy="true">Loading...</div>;
 
-    // Derived Data with enrichment
-    const registeredIds = user.registrations?.map(r => r.eventId) || [];
-    const registeredEvents = events
-        .filter((e) => registeredIds.includes(e.id))
-        .map(e => {
-            const college = COLLEGES.find(c => c.id === e.hostCollegeId);
-            return {
-                ...e,
-                date: new Date(e.date),
-                hostCollege: college || { id: 'unknown', name: 'Unknown', logo: '/hero.png' }
-            };
-        }) as any[]; // Cast to any to satisfy EventCard props for now
-
-    const hostedEvents = events
-        .filter((e) => e.hostCollegeId === user.collegeId)
-        .map(e => {
-            const college = COLLEGES.find(c => c.id === e.hostCollegeId);
-            return {
-                ...e,
-                date: new Date(e.date),
-                hostCollege: college || { id: 'unknown', name: 'Unknown', logo: '/hero.png' }
-            };
-        }) as any[];
-
-    // Logic for Followed Colleges
-    const followedCollegeIds = user.followedColleges || [];
-    const followedColleges = COLLEGES.filter(c => followedCollegeIds.includes(c.id));
+    // Followed colleges come from DB now
+    const followedColleges = dbFollowedColleges;
 
     return (
         <div className={styles.container}>

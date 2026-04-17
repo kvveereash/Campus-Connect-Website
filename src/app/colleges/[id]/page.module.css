@@ -1,197 +1,144 @@
+/* ═══════════════════════════════════════════════════════════════
+   COLLEGE DETAILS PAGE — Premium Editorial Layout
+   ═══════════════════════════════════════════════════════════════ */
+
 .container {
-    padding-bottom: 5rem;
+    padding-bottom: 6rem;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 4rem auto 0;
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
 .backLink {
     display: inline-flex;
     align-items: center;
-    margin-bottom: 3.5rem;
+    margin-bottom: 2rem;
     color: var(--text-secondary);
     font-family: var(--font-sans);
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: 0.6rem 1.25rem;
-    background: white;
-    border: 1.5px solid var(--color-forest);
-    box-shadow: 4px 4px 0 var(--color-forest);
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    padding: 0.5rem 0;
+    text-decoration: none;
 }
 
 .backLink:hover {
     color: var(--color-forest);
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 var(--color-forest);
+    transform: translateX(-4px);
 }
 
-/* Mechanical Header: Staff ID / Passport Concept */
+/* ─── Premium Header Card ─────────────────────────────────── */
 .headerCard {
     background: #ffffff;
-    border: 2px solid var(--color-forest);
-    padding: 0;
+    padding: 3rem;
     margin-bottom: 5rem;
-    box-shadow: 16px 16px 0 rgba(15, 31, 28, 0.1);
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(15, 31, 28, 0.08);
+    box-shadow: 
+        0 24px 48px rgba(15, 31, 28, 0.04),
+        0 4px 12px rgba(15, 31, 28, 0.02);
     position: relative;
-    overflow: visible;
-    display: flex;
-    flex-direction: column;
+    overflow: hidden;
 }
 
-/* Metallic Clip at the top */
+/* Subtle gradient mesh background for the card */
 .headerCard::before {
     content: "";
     position: absolute;
-    top: -20px;
-    left: 100px;
-    width: 60px;
-    height: 40px;
-    background: linear-gradient(to right, #d1d5db, #9ca3af, #d1d5db);
-    border: 2px solid var(--color-forest);
-    border-radius: 4px;
-    z-index: 10;
-}
-
-/* ID Punch Hole */
-.punchHole {
-    position: absolute;
-    top: -10px;
-    left: 125px;
-    width: 10px;
-    height: 10px;
-    background: var(--color-cream);
-    border: 2px solid var(--color-forest);
-    border-radius: 50%;
-    z-index: 11;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(209, 250, 229, 0.4), transparent 60%),
+                radial-gradient(circle at bottom right, rgba(224, 192, 248, 0.2), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 .headerContent {
-    display: grid;
-    grid-template-columns: 320px 1fr;
+    display: flex;
+    gap: 4rem;
     position: relative;
     z-index: 1;
-}
-
-/* Left sidebar of the card (Mechanical ID look) */
-.idSidebar {
-    background: var(--color-forest);
-    padding: 3rem 2rem;
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    color: white;
-    position: relative;
-    border-right: 2px solid var(--color-forest);
 }
 
-.idSidebar::after {
-    content: "OFFICIAL DOCUMENT";
-    position: absolute;
-    bottom: 2rem;
-    transform: rotate(-90deg);
-    left: -2rem;
-    font-size: 0.65rem;
-    font-weight: 900;
-    letter-spacing: 0.2em;
-    opacity: 0.3;
+/* ─── Logo Wrapper ────────────────────────────────────────── */
+.logoColumn {
+    flex-shrink: 0;
 }
 
 .logoWrapper {
-    width: 180px;
-    height: 180px;
+    width: 220px;
+    height: 220px;
     position: relative;
-    background: #fff;
-    border: 3px solid white;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    margin-bottom: 2rem;
-    border-radius: 4px;
-    /* Physical photo look */
+    background: #ffffff;
+    border-radius: 32px;
+    box-shadow: 
+        0 16px 32px rgba(15, 31, 28, 0.08),
+        0 0 0 1px rgba(15, 31, 28, 0.04) inset;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .logo {
     object-fit: cover;
-    padding: 0.5rem;
+    border-radius: 20px;
+    width: 100%;
+    height: 100%;
 }
 
-/* Right content area */
+/* ─── Content Area ────────────────────────────────────────── */
 .info {
-    padding: 4rem;
-    background: white;
-    background-image:
-        radial-gradient(var(--color-forest) 0.5px, transparent 0.5px),
-        linear-gradient(to bottom, rgba(15, 31, 28, 0.02) 1px, transparent 1px);
-    background-size: 20px 20px, 100% 40px;
+    flex: 1;
 }
 
 .name {
-    font-family: var(--font-serif);
-    font-size: 4.5rem;
+    font-family: var(--font-heading);
+    font-size: clamp(3rem, 5vw, 4.5rem);
     font-weight: 800;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
     color: var(--color-forest);
-    line-height: 1;
-    letter-spacing: -0.04em;
-    position: relative;
-}
-
-/* Red Stamp effect */
-.name::after {
-    content: "VERIFIED";
-    position: absolute;
-    top: -20px;
-    right: 0;
-    border: 3px solid #ef4444;
-    color: #ef4444;
-    padding: 0.25rem 1rem;
-    font-size: 0.8rem;
-    font-weight: 900;
-    transform: rotate(15deg);
-    opacity: 0.6;
-    border-radius: 4px;
-    font-family: var(--font-sans);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
 }
 
 .location {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: var(--text-secondary);
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     font-family: var(--font-sans);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-weight: 500;
 }
 
 .locationPin {
-    font-size: 1rem;
-    opacity: 0.5;
+    font-size: 1.2rem;
+    color: var(--color-orange);
 }
 
 .description {
-    font-size: 1.25rem;
-    color: var(--text-primary);
-    line-height: 1.6;
-    max-width: 100%;
-    margin-bottom: 3rem;
-    font-family: var(--font-serif);
-    font-style: italic;
-    border-left: 3px solid var(--color-mint);
-    padding-left: 2rem;
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 800px;
+    margin-bottom: 2.5rem;
+    font-family: var(--font-sans);
 }
 
 .actionRow {
     display: flex;
     gap: 1.5rem;
     align-items: center;
-    border-top: 1.5px dashed rgba(15, 31, 28, 0.1);
-    padding-top: 2rem;
 }
 
-/* Section Styling */
+/* ─── Sections ────────────────────────────────────────────── */
 .section {
     margin-bottom: 6rem;
 }
@@ -199,22 +146,27 @@
 .sectionHeader {
     display: flex;
     align-items: center;
-    gap: 2rem;
-    margin-bottom: 3.5rem;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(15, 31, 28, 0.1);
     position: relative;
 }
 
 .sectionHeader::after {
-    content: "";
-    flex-grow: 1;
-    height: 2px;
-    background: repeating-linear-gradient(to right, var(--color-forest), var(--color-forest) 4px, transparent 4px, transparent 8px);
-    opacity: 0.1;
+    content: '';
+    position: absolute;
+    bottom: -1.5px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: var(--color-mint);
+    border-radius: 2px;
 }
 
 .sectionTitle {
-    font-family: var(--font-serif);
-    font-size: 2.75rem;
+    font-family: var(--font-heading);
+    font-size: 2.25rem;
     font-weight: 800;
     color: var(--color-forest);
     margin: 0;
@@ -223,140 +175,155 @@
 
 .itemCount {
     font-family: var(--font-sans);
-    font-size: 0.75rem;
-    font-weight: 900;
-    color: white;
-    background: var(--color-forest);
-    padding: 0.3rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-forest);
+    background: var(--color-mint);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.1em;
 }
 
-/* Grid & Cards */
+/* ─── Grid & Cards ────────────────────────────────────────── */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 3rem;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2.5rem;
 }
 
+/* Club Cards - Glass style */
 .clubCard {
-    background: #fff;
-    border: 2px solid var(--color-forest);
+    background: #ffffff;
+    border-radius: 1.25rem;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     flex-direction: column;
     height: 100%;
     text-decoration: none;
     color: inherit;
-    position: relative;
+    border: 1px solid rgba(15, 31, 28, 0.06);
+    box-shadow: 
+        0 4px 12px rgba(15, 31, 28, 0.03),
+        0 1px 3px rgba(15, 31, 28, 0.04);
 }
 
 .clubCard:hover {
-    transform: translate(-8px, -8px);
-    box-shadow: 12px 12px 0 var(--color-orange);
+    transform: translateY(-6px);
+    box-shadow: 
+        0 16px 32px rgba(15, 31, 28, 0.08),
+        0 4px 12px rgba(15, 31, 28, 0.04);
+    border-color: rgba(15, 31, 28, 0.12);
 }
 
 .clubImageWrapper {
     position: relative;
-    height: 220px;
-    background: var(--color-forest);
+    height: 200px;
+    width: 100%;
     overflow: hidden;
-    border-bottom: 2px solid var(--color-forest);
 }
 
-.clubCard::before {
-    content: "";
+/* Gradient overlay */
+.clubImageWrapper::after {
+    content: '';
     position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 20px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.3);
-    z-index: 2;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(to top, rgba(15, 31, 28, 0.5), transparent);
+    z-index: 1;
 }
 
 .clubImage {
     object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.clubCard:hover .clubImage {
+    transform: scale(1.08);
 }
 
 .categoryBadge {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    background: var(--color-forest);
-    color: white;
-    padding: 0.5rem 1.25rem;
-    font-size: 0.7rem;
-    font-weight: 900;
+    bottom: 1rem;
+    left: 1.5rem;
+    background: var(--color-lilac);
+    color: var(--color-forest);
+    padding: 0.4rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    border-radius: 999px;
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .clubInfo {
-    padding: 2rem;
+    padding: 1.5rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
 
 .clubName {
-    font-family: var(--font-serif);
-    font-size: 1.75rem;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: 1.4rem;
+    font-weight: 700;
     color: var(--color-forest);
-    margin-bottom: 1.5rem;
-    line-height: 1.1;
+    margin-bottom: 1rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
 }
 
 .viewLink {
     margin-top: auto;
-    font-size: 0.8rem;
-    font-weight: 800;
-    color: var(--color-forest);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    transition: color 0.2s ease;
 }
 
-.viewLink::after {
-    content: "";
-    flex-grow: 1;
-    height: 1px;
-    background: var(--color-forest);
-    opacity: 0.2;
+.clubCard:hover .viewLink {
+    color: var(--color-forest);
 }
 
+/* ─── Empty States ────────────────────────────────────────── */
 .emptyState {
     text-align: center;
-    padding: 6rem 2rem;
+    padding: 5rem 2rem;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: var(--radius-card);
+    border: 2px dashed rgba(15, 31, 28, 0.1);
     color: var(--text-secondary);
-    background: white;
-    border: 2px solid var(--color-forest);
-    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.05);
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 1.4rem;
+    font-family: var(--font-sans);
+    font-size: 1.1rem;
 }
 
+/* ─── Responsive ──────────────────────────────────────────── */
 @media (max-width: 1000px) {
     .headerContent {
-        grid-template-columns: 1fr;
-    }
-
-    .idSidebar {
-        border-right: none;
-        border-bottom: 2px solid var(--color-forest);
-        padding: 4rem 2rem 3rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
     }
 
     .info {
-        padding: 3rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
-    .name {
-        font-size: 3.5rem;
+    .description {
+        text-align: center;
+    }
+
+    .actionRow {
+        justify-content: center;
     }
 }

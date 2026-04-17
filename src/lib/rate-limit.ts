@@ -1,52 +1,17 @@
 import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import { redis, checkRedisHealth, isRedisHealthy, isRedisConfiguredFn } from '@/lib/redis';
 
 /**
  * Rate Limiter Configuration
  * 
- * Uses in-memory storage for development (no Redis required)
- * Can be upgraded to Redis for production by setting UPSTASH_REDIS_REST_URL
+ * Uses the shared Redis client from redis.ts.
+ * Falls back to in-memory when Redis is not configured.
+ * 
+ * Re-exports health check functions for backward compatibility.
  */
 
-// In-memory storage for development
-class InMemoryStore {
-    private store: Map<string, { count: number; reset: number }> = new Map();
-
-    async get(key: string) {
-        const data = this.store.get(key);
-        if (!data) return null;
-
-        // Check if expired
-        if (Date.now() > data.reset) {
-            this.store.delete(key);
-            return null;
-        }
-
-        return data.count;
-    }
-
-    async set(key: string, count: number, ttl: number) {
-        this.store.set(key, {
-            count,
-            reset: Date.now() + ttl * 1000
-        });
-    }
-
-    async incr(key: string) {
-        const current = await this.get(key);
-        const newCount = (current || 0) + 1;
-        await this.set(key, newCount, 60); // Default 60s TTL
-        return newCount;
-    }
-}
-
-// Create Redis client or use in-memory
-const redis = process.env.UPSTASH_REDIS_REST_URL
-    ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-    })
-    : (new InMemoryStore() as any);
+// Re-export health checks (consumers may import from here)
+export { checkRedisHealth, isRedisHealthy };
 
 /**
  * Rate Limiters for different actions
@@ -100,9 +65,26 @@ export const eventLimiter = new Ratelimit({
     prefix: 'ratelimit:event',
 });
 
+// Global API: 100 requests per minute (DDoS protection)
+export const globalApiLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(100, '1 m'),
+    analytics: false,
+    prefix: 'ratelimit:api:global',
+});
+
+// Sensitive Actions: 10 per hour (profile updates, password changes)
+export const sensitiveActionLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, '1 h'),
+    analytics: false,
+    prefix: 'ratelimit:sensitive',
+});
+
 /**
  * Helper function to check rate limit
  * Returns { success: boolean, remaining: number, reset: Date }
+ * Includes graceful fallback if rate limiting fails
  */
 export async function checkRateLimit(
     limiter: Ratelimit,
@@ -113,14 +95,37 @@ export async function checkRateLimit(
     remaining: number;
     reset: Date;
 }> {
-    const result = await limiter.limit(identifier);
+    // If no Redis configured, skip rate limiting in development
+    if (!isRedisConfiguredFn() && process.env.NODE_ENV === 'development') {
+        return {
+            success: true,
+            limit: 100,
+            remaining: 99,
+            reset: new Date(Date.now() + 60000),
+        };
+    }
 
-    return {
-        success: result.success,
-        limit: result.limit,
-        remaining: result.remaining,
-        reset: new Date(result.reset),
-    };
+    try {
+        const result = await limiter.limit(identifier);
+
+        return {
+            success: result.success,
+            limit: result.limit,
+            remaining: result.remaining,
+            reset: new Date(result.reset),
+        };
+    } catch (error) {
+        // Log error but don't block the request
+        console.error('[RateLimit] Error checking rate limit:', error);
+
+        // Fail open - allow request if rate limiting fails
+        return {
+            success: true,
+            limit: 100,
+            remaining: 99,
+            reset: new Date(Date.now() + 60000),
+        };
+    }
 }
 
 /**

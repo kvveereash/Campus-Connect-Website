@@ -4,6 +4,7 @@ import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
 import { revalidatePath } from 'next/cache';
+import { AuditAction, AuditEntityType } from '@/lib/audit';
 
 // Middleware-like check
 async function isAdmin() {
@@ -11,184 +12,96 @@ async function isAdmin() {
     return session?.user?.role === 'ADMIN';
 }
 
-export async function getAdminStats() {
-    if (!(await isAdmin())) return null;
 
-    const [userCount, eventCount, clubCount, pendingClubs, pendingEvents] = await Promise.all([
-        prisma.user.count(),
-        prisma.event.count(),
-        prisma.club.count(),
-        prisma.club.count({ where: { verified: false } }),
-        prisma.event.count({ where: { verified: false } })
-    ]);
 
-    return {
-        userCount,
-        eventCount,
-        clubCount,
-        pendingClubs,
-        pendingEvents
-    };
-}
+import { createProtectedAction } from '@/lib/protected-action';
+import { z } from 'zod';
+import { isOk } from '@/lib/api-response';
 
-export async function getChartData() {
-    if (!(await isAdmin())) return null;
+// ─────────────────────────────────────────────────
+// Protected Actions
+// ─────────────────────────────────────────────────
 
-    const [eventsByCategory, clubsByCategory] = await Promise.all([
-        prisma.event.groupBy({
-            by: ['category'],
-            _count: { id: true }
-        }),
-        prisma.club.groupBy({
-            by: ['category'],
-            _count: { id: true }
-        })
-    ]);
+const verifyEntitySchema = z.object({
+    type: z.enum(['CLUB', 'EVENT']),
+    id: z.string(),
+    approve: z.boolean(),
+    reason: z.string().optional()
+});
 
-    return {
-        eventsByCategory: eventsByCategory.map(e => ({ name: e.category, value: e._count.id })),
-        clubsByCategory: clubsByCategory.map(c => ({ name: c.category, value: c._count.id }))
-    };
-}
+export const verifyEntityAction = createProtectedAction(verifyEntitySchema, async (data, session) => {
+    const timestamp = new Date();
+    const actorId = session.userId;
 
-export async function getPendingContent() {
-    if (!(await isAdmin())) return null;
-
-    const [rawClubs, events] = await Promise.all([
-        prisma.club.findMany({
-            where: {
-                verified: false,
-                rejectionReason: null
-            },
-            include: {
-                members: {
-                    where: { role: 'ADMIN' },
-                    include: { user: { select: { name: true, email: true } } },
-                    take: 1
-                }
-            }
-        }),
-        prisma.event.findMany({
-            where: {
-                verified: false,
-                rejectionReason: null
-            },
-            include: { creator: { select: { name: true } }, club: { select: { name: true } } }
-        })
-    ]);
-
-    const clubs = rawClubs.map(club => ({
-        ...club,
-        admin: club.members[0]?.user || { name: 'Unknown', email: 'N/A' }
-    }));
-
-    return { clubs, events };
-}
-
-export async function getAuditLogs() {
-    if (!(await isAdmin())) return [];
-
-    try {
-        const logs = await prisma.auditLog.findMany({
-            orderBy: { createdAt: 'desc' },
-            take: 50,
-            include: {
-                actor: {
-                    select: { name: true, email: true }
-                }
-            }
-        });
-        return logs;
-    } catch (error) {
-        console.error('Failed to fetch audit logs:', error);
-        return [];
-    }
-}
-
-export async function verifyEntity(type: 'CLUB' | 'EVENT', id: string, approve: boolean, reason?: string): Promise<ActionState> {
-    if (!(await isAdmin())) return { success: false, error: 'Unauthorized' };
-
-    const session = await getSession();
-    const actorId = session!.userId!;
-
-    try {
-        const timestamp = new Date();
-
-        if (approve) {
-            if (type === 'CLUB') {
-                await prisma.club.update({
-                    where: { id },
-                    data: {
-                        verified: true,
-                        verifiedBy: actorId,
-                        verifiedAt: timestamp,
-                        rejectionReason: null
-                    }
-                });
-            } else {
-                await prisma.event.update({
-                    where: { id },
-                    data: {
-                        verified: true,
-                        verifiedBy: actorId,
-                        verifiedAt: timestamp,
-                        rejectionReason: null
-                    }
-                });
-            }
-
-            // Create Audit Log
-            await prisma.auditLog.create({
+    if (data.approve) {
+        if (data.type === 'CLUB') {
+            await prisma.club.update({
+                where: { id: data.id },
                 data: {
-                    action: 'APPROVE',
-                    entityType: type,
-                    entityId: id,
-                    actorId: actorId,
-                    details: 'Verified successfully'
+                    verified: true,
+                    verifiedBy: actorId,
+                    verifiedAt: timestamp,
+                    rejectionReason: null
                 }
             });
-
         } else {
-            // Rejection Logic
-            if (type === 'CLUB') {
-                await prisma.club.update({
-                    where: { id },
-                    data: {
-                        verified: false,
-                        rejectionReason: reason || 'No reason provided',
-                        verifiedBy: actorId,
-                        verifiedAt: timestamp
-                    }
-                });
-            } else {
-                await prisma.event.update({
-                    where: { id },
-                    data: {
-                        verified: false,
-                        rejectionReason: reason || 'No reason provided',
-                        verifiedBy: actorId,
-                        verifiedAt: timestamp
-                    }
-                });
-            }
-
-            // Create Audit Log
-            await prisma.auditLog.create({
+            await prisma.event.update({
+                where: { id: data.id },
                 data: {
-                    action: 'REJECT',
-                    entityType: type,
-                    entityId: id,
-                    actorId: actorId,
-                    details: reason || 'No reason provided'
+                    verified: true,
+                    verifiedBy: actorId,
+                    verifiedAt: timestamp,
+                    rejectionReason: null
                 }
             });
         }
-
-        revalidatePath('/admin');
-        revalidatePath('/admin/verification');
-        return { success: true };
-    } catch (error) {
-        console.error('Verification error:', error);
-        return { success: false, error: 'Failed to verify entity' };
+    } else {
+        // Rejection Logic
+        const rejectionReason = data.reason || 'No reason provided';
+        if (data.type === 'CLUB') {
+            await prisma.club.update({
+                where: { id: data.id },
+                data: {
+                    verified: false,
+                    rejectionReason,
+                    verifiedBy: actorId,
+                    verifiedAt: timestamp
+                }
+            });
+        } else {
+            await prisma.event.update({
+                where: { id: data.id },
+                data: {
+                    verified: false,
+                    rejectionReason,
+                    verifiedBy: actorId,
+                    verifiedAt: timestamp
+                }
+            });
+        }
     }
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/verification');
+    return { success: true };
+}, {
+    requiredRoles: ['ADMIN'],
+    audit: {
+        action: (data: z.infer<typeof verifyEntitySchema>): AuditAction => data.approve ? 'APPROVE' : 'REJECT',
+        entityType: (data: z.infer<typeof verifyEntitySchema>): AuditEntityType => data.type === 'CLUB' ? 'Club' : 'Event',
+        getEntityId: (data: z.infer<typeof verifyEntitySchema>) => data.id
+    }
+});
+
+// ─────────────────────────────────────────────────
+// Legacy Wrapper
+// ─────────────────────────────────────────────────
+
+/** @deprecated Use verifyEntityAction */
+export async function verifyEntity(type: 'CLUB' | 'EVENT', id: string, approve: boolean, reason?: string): Promise<ActionState> {
+    const result = await verifyEntityAction({ type, id, approve, reason });
+    if (isOk(result)) {
+        return { success: true };
+    }
+    return { success: false, error: result.error };
 }

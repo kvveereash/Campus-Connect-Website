@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSession } from '@/lib/auth';
+import { getSessionFromRequest } from '@/lib/auth-edge';
 import { logger, generateRequestId } from '@/lib/logger';
 
 /**
@@ -10,67 +10,80 @@ import { logger, generateRequestId } from '@/lib/logger';
 export async function middleware(request: NextRequest) {
     const startTime = Date.now();
     const { pathname } = request.nextUrl;
-    const requestId = generateRequestId();
+
+    // 1. Trace Check: Use existing or generate new request ID
+    const requestHeaders = new Headers(request.headers);
+    let requestId = requestHeaders.get('x-request-id');
+
+    if (!requestId) {
+        requestId = generateRequestId();
+        requestHeaders.set('x-request-id', requestId);
+    }
 
     // Log incoming request
     logger.request(request.method, pathname, { requestId });
 
-    // AUTHENTICATION TEMPORARILY DISABLED FOR DEBUGGING LOGIN ISSUE
-    /*
     // Public routes that don't require authentication
     const publicPaths = [
         '/login',
         '/signup',
         '/', // Landing page
+        '/api/webhooks', // Webhook endpoints (verified separately)
+        '/api/health',   // Health check endpoint for monitoring
+        '/forgot-password',
+        '/reset-password',
     ];
 
-    // Check if current path is public
-    const isPublicPath = publicPaths.some((path) => pathname === path);
+    // Check if current path is public (exact match or starts with for API routes)
+    const isPublicPath = publicPaths.some((path) =>
+        pathname === path || pathname.startsWith(path + '/')
+    );
 
-    // If not a public path, require authentication
-    if (!isPublicPath) {
-        const session = await getSession();
+    const isApiRoute = pathname.startsWith('/api/');
 
-        if (!session) {
-            // Redirect to login if not authenticated
-            const loginUrl = new URL('/login', request.url);
-            loginUrl.searchParams.set('redirect', pathname);
-
-            logger.warn('Unauthorized access attempt - redirecting to login', {
-                requestId,
-                path: pathname,
-                redirectTo: '/login',
-            });
-
-            return NextResponse.redirect(loginUrl);
-        }
+    // Optional auth extraction for logging or admin checks
+    if (!isPublicPath && !isApiRoute) {
+        const session = await getSessionFromRequest(request);
 
         // Admin-only routes
-        if (pathname.startsWith('/admin') && session.user.role !== 'ADMIN') {
-            logger.warn('Forbidden: Non-admin attempted admin access', {
-                requestId,
-                userId: session.user.id,
-                email: session.user.email,
-                path: pathname,
-            });
-
-            return NextResponse.redirect(new URL('/events', request.url));
+        if (pathname.startsWith('/admin')) {
+            if (!session) {
+                const loginUrl = new URL('/login', request.url);
+                loginUrl.searchParams.set('redirect', pathname);
+                return NextResponse.redirect(loginUrl);
+            }
+            if (session.user?.role !== 'ADMIN') {
+                logger.warn('Forbidden: Non-admin attempted admin access', {
+                    requestId,
+                    userId: session.userId,
+                    path: pathname,
+                });
+                return NextResponse.redirect(new URL('/events', request.url));
+            }
         }
 
-        logger.info('Authenticated request', {
-            requestId,
-            userId: session.user.id,
-            email: session.user.email,
-            path: pathname,
-        });
+        if (session) {
+            logger.info('Authenticated request', {
+                requestId,
+                userId: session.userId,
+                path: pathname,
+            });
+        }
     }
-    */
 
-    const response = NextResponse.next();
+    // Pass the headers to downstream
+    const response = NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
+
+    // Set Trace ID in response header for client debugging
+    response.headers.set('x-request-id', requestId);
 
     // Log response with duration
     const duration = Date.now() - startTime;
-    logger.response(request.method, pathname, 200, duration, { requestId });
+    logger.response(request.method, pathname, response.status, duration, { requestId });
 
     return response;
 }

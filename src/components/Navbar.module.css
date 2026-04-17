@@ -1,18 +1,14 @@
 /* Navbar.module.css */
 
 .navbar {
-    position: sticky;
-    top: 1rem;
-    /* Top offset for floating effect */
+    position: relative;
     z-index: 100;
     width: 100%;
-    pointer-events: none;
-    /* Let clicks pass through the huge wrapper area */
+    padding: 1rem 0;
 }
 
 /* This is the Pill itself */
 .navContainer {
-    pointer-events: auto;
     /* Re-enable clicks on the actually navbar */
     display: flex;
     justify-content: space-between;
@@ -38,6 +34,21 @@
 .navContainer:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 0px rgba(15, 31, 28, 0.1);
+}
+
+/* Scrolled state — compact + glassmorphism */
+.navContainerScrolled {
+    padding: 0.5rem 1.75rem;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 4px 20px rgba(15, 31, 28, 0.08);
+    transform: scale(0.98);
+}
+
+.navContainerScrolled:hover {
+    transform: scale(0.98) translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15, 31, 28, 0.1);
 }
 
 .logo {
@@ -396,4 +407,36 @@
     color: var(--text-secondary);
     margin-top: 2px;
     line-height: 1.4;
+}
+
+/* Premium Login Button */
+.loginBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.4rem;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+    background: var(--color-forest, #0f1f1c);
+    border: none;
+    border-radius: 999px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 2px 8px rgba(15, 31, 28, 0.18);
+}
+
+.loginBtn:hover {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow: 0 4px 16px rgba(15, 31, 28, 0.25);
+    background: var(--color-forest, #1a2f2a);
+    filter: brightness(1.15);
+}
+
+.loginBtn:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 1px 4px rgba(15, 31, 28, 0.2);
 }

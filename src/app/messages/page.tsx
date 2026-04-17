@@ -6,6 +6,12 @@ export const metadata: Metadata = {
     description: 'Direct Messages',
 };
 
+import { Suspense } from 'react';
+
 export default function MessagesPage() {
-    return <ChatLayout />;
+    return (
+        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-secondary)' }}>Loading messages...</div>}>
+            <ChatLayout />
+        </Suspense>
+    );
 }

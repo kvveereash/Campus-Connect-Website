@@ -6,6 +6,13 @@ import { revalidatePath } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { unstable_cache } from 'next/cache';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
+import { z } from 'zod';
+import { isOk } from '@/lib/api-response';
+import { createProtectedAction } from '@/lib/protected-action';
+import { eventSchema, updateEventSchema, joinEventSchema } from '@/lib/schemas';
+import { createNotification } from '@/lib/notification-helper';
+import { audit } from '@/lib/audit';
+import { eventLimiter } from '@/lib/rate-limit';
 
 export type EventWithRelations = PrismaEvent & {
     hostCollege: {
@@ -20,94 +27,59 @@ export type EventWithRelations = PrismaEvent & {
     } | null;
 };
 
-// Internal helper
+// ─────────────────────────────────────────────────
+// Badge Helper (internal, no auth needed)
+// ─────────────────────────────────────────────────
+
 export async function checkAndAwardBadges(userId: string, eventCategory: string) {
     const badgesEarned: Badge[] = [];
 
     try {
-        // 1. Social Butterfly: Register for 5 events
-        const registrationCount = await prisma.eventRegistration.count({
-            where: { userId }
-        });
-
-        if (registrationCount >= 5) {
-            const socialBadge = await prisma.badge.findUnique({ where: { name: 'Social Butterfly' } });
-            if (socialBadge) {
-                const hasBadge = await prisma.userBadge.findUnique({
-                    where: {
-                        userId_badgeId: {
-                            userId,
-                            badgeId: socialBadge.id
-                        }
-                    }
-                });
-
-                if (!hasBadge) {
-                    await prisma.userBadge.create({
-                        data: {
-                            userId,
-                            badgeId: socialBadge.id
-                        }
-                    });
-                    badgesEarned.push(socialBadge);
+        const [
+            registrationCount,
+            hostedEventCount,
+            existingUserBadges,
+            allBadges
+        ] = await Promise.all([
+            prisma.eventRegistration.count({ where: { userId } }),
+            eventCategory === 'HOST_EVENT'
+                ? prisma.event.count({ where: { creatorId: userId } })
+                : Promise.resolve(0),
+            prisma.userBadge.findMany({
+                where: { userId },
+                select: { badge: { select: { name: true, id: true } } }
+            }),
+            prisma.badge.findMany({
+                where: {
+                    name: { in: ['Social Butterfly', 'Code Ninja', 'Event Planner'] }
                 }
-            }
+            })
+        ]);
+
+        const earnedBadgeNames = new Set(existingUserBadges.map(ub => ub.badge.name));
+        const badgeMap = new Map(allBadges.map(b => [b.name, b]));
+        const badgesToAward: { userId: string; badgeId: string }[] = [];
+
+        if (registrationCount >= 5 && !earnedBadgeNames.has('Social Butterfly')) {
+            const badge = badgeMap.get('Social Butterfly');
+            if (badge) { badgesToAward.push({ userId, badgeId: badge.id }); badgesEarned.push(badge); }
         }
 
-        // 2. Code Ninja: Register for a Hackathon
-        if (eventCategory === 'Hackathon') {
-            const codeNinjaBadge = await prisma.badge.findUnique({ where: { name: 'Code Ninja' } });
-            if (codeNinjaBadge) {
-                const hasBadge = await prisma.userBadge.findUnique({
-                    where: {
-                        userId_badgeId: {
-                            userId,
-                            badgeId: codeNinjaBadge.id
-                        }
-                    }
-                });
-
-                if (!hasBadge) {
-                    await prisma.userBadge.create({
-                        data: {
-                            userId,
-                            badgeId: codeNinjaBadge.id
-                        }
-                    });
-                    badgesEarned.push(codeNinjaBadge);
-                }
-            }
+        if (eventCategory === 'Hackathon' && !earnedBadgeNames.has('Code Ninja')) {
+            const badge = badgeMap.get('Code Ninja');
+            if (badge) { badgesToAward.push({ userId, badgeId: badge.id }); badgesEarned.push(badge); }
         }
 
-        // 3. Event Planner: Host an event
-        if (eventCategory === 'HOST_EVENT') {
-            const hostedCount = await prisma.event.count({
-                where: { creatorId: userId }
+        if (eventCategory === 'HOST_EVENT' && hostedEventCount >= 1 && !earnedBadgeNames.has('Event Planner')) {
+            const badge = badgeMap.get('Event Planner');
+            if (badge) { badgesToAward.push({ userId, badgeId: badge.id }); badgesEarned.push(badge); }
+        }
+
+        if (badgesToAward.length > 0) {
+            await prisma.userBadge.createMany({
+                data: badgesToAward,
+                skipDuplicates: true
             });
-
-            if (hostedCount >= 1) {
-                const plannerBadge = await prisma.badge.findUnique({ where: { name: 'Event Planner' } });
-                if (plannerBadge) {
-                    const hasBadge = await prisma.userBadge.findUnique({
-                        where: {
-                            userId_badgeId: {
-                                userId,
-                                badgeId: plannerBadge.id
-                            }
-                        }
-                    });
-
-                    if (!hasBadge) {
-                        await prisma.userBadge.create({
-                            data: {
-                                userId,
-                                badgeId: plannerBadge.id
-                            }
-                        });
-                        badgesEarned.push(plannerBadge);
-                    }
-                }
-            }
         }
 
         return badgesEarned;
@@ -118,160 +90,20 @@ export async function checkAndAwardBadges(userId: string, eventCategory: string)
     }
 }
 
-// Internal uncached query
-async function _getUpcomingEventsUncached(limit: number = 3): Promise<EventWithRelations[]> {
-    const events = await prisma.event.findMany({
-        where: {
-            date: {
-                gte: new Date(),
-            },
-        },
-        orderBy: {
-            date: 'asc',
-        },
-        take: limit,
-        include: {
-            hostCollege: {
-                select: {
-                    id: true,
-                    name: true,
-                    logo: true,
-                },
-            },
-            club: {
-                select: {
-                    id: true,
-                    name: true,
-                    logo: true,
-                },
-            },
-        },
-    });
-    return events;
-}
+// ─────────────────────────────────────────────────
+// Protected Actions (unified pattern)
+// ─────────────────────────────────────────────────
 
-// Cached version - 60 second TTL
-export async function getUpcomingEvents(limit: number = 3): Promise<EventWithRelations[]> {
-    try {
-        const cached = unstable_cache(
-            () => _getUpcomingEventsUncached(limit),
-            [`upcoming-events-${limit}`],
-            {
-                tags: [CACHE_TAGS.EVENTS],
-                revalidate: CACHE_TTL.EVENTS_LIST,
-            }
-        );
-        return await cached();
-    } catch (error) {
-        console.error('Failed to fetch upcoming events:', error);
-        return [];
-    }
-}
-
-export async function getAllEvents(filters?: { search?: string; category?: string }) {
-    try {
-        const { search, category } = filters || {};
-        const where: any = {
-            date: {
-                gte: new Date(),
-            },
-        };
-
-        if (search) {
-            where.OR = [
-                { title: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-                { venue: { contains: search, mode: 'insensitive' } },
-                { hostCollege: { name: { contains: search, mode: 'insensitive' } } }
-            ];
-        }
-
-        if (category && category !== 'All') {
-            where.category = category;
-        }
-
-        const events = await prisma.event.findMany({
-            where,
-            select: {
-                id: true,
-                title: true,
-                description: true,
-                date: true,
-                venue: true,
-                category: true,
-                thumbnail: true,
-                price: true,
-                registrationCount: true,
-                hostCollege: {
-                    select: {
-                        id: true,
-                        name: true,
-                        logo: true
-                    }
-                },
-                club: {
-                    select: {
-                        id: true,
-                        name: true,
-                        logo: true
-                    }
-                },
-                _count: {
-                    select: { registrations: true }
-                }
-            },
-            orderBy: { date: 'asc' },
-            take: 50 // Limit to 50 events for performance
-        });
-
-        return events;
-    } catch (error) {
-        console.error('Failed to fetch events:', error);
-        return [];
-    }
-}
-
-export async function getEventById(id: string) {
-    try {
-        const event = await prisma.event.findUnique({
-            where: { id },
-            include: {
-                hostCollege: true,
-                creator: true,
-                club: true,
-            },
-        });
-        return event;
-    } catch (error) {
-        console.error(`Failed to fetch event ${id}:`, error);
-        return null;
-    }
-}
-
-import { z } from 'zod';
-import { createSafeAction } from '@/lib/safe-action';
-import { eventSchema, updateEventSchema } from '@/lib/schemas';
-import { createNotification } from '@/lib/actions/notifications';
-
-export const createEventSafe = createSafeAction(eventSchema, async (data) => {
-    const session = await getSession();
-    if (!session || !session.userId) {
-        throw new Error('Unauthorized');
-    }
-
-    // Validate club if provided
+export const createEventAction = createProtectedAction(eventSchema, async (data, session) => {
     let collegeId = data.hostCollegeId;
+
     if (data.clubId) {
         const club = await prisma.club.findUnique({ where: { id: data.clubId } });
         if (!club) throw new Error('Invalid club');
 
-        // Check if user is admin of the club (security check)
         const membership = await prisma.clubMember.findUnique({
             where: {
-                userId_clubId: {
-                    userId: session.userId as string,
-                    clubId: data.clubId
-                }
+                userId_clubId: { userId: session.userId, clubId: data.clubId }
             }
         });
 
@@ -279,7 +111,7 @@ export const createEventSafe = createSafeAction(eventSchema, async (data) => {
             throw new Error('You must be a club admin to host events for this club.');
         }
 
-        collegeId = club.collegeId; // Infer college from club
+        collegeId = club.collegeId;
     }
 
     if (!collegeId) {
@@ -296,255 +128,55 @@ export const createEventSafe = createSafeAction(eventSchema, async (data) => {
             registrationCount: 0,
             price: data.price || 0,
             thumbnail: data.thumbnail || '/event-placeholder.png',
-            hostCollege: {
-                connect: { id: collegeId }
-            },
-            creator: {
-                connect: { id: session.userId as string }
-            },
-            club: data.clubId ? {
-                connect: { id: data.clubId }
-            } : undefined
+            hostCollege: { connect: { id: collegeId } },
+            creator: { connect: { id: session.userId } },
+            club: data.clubId ? { connect: { id: data.clubId } } : undefined
         }
     });
 
-    // Check for "Event Planner" badge
-    await checkAndAwardBadges(session.userId as string, 'HOST_EVENT');
+    await checkAndAwardBadges(session.userId, 'HOST_EVENT');
 
     revalidatePath('/events');
-    revalidatePath('/'); // For landing page
+    revalidatePath('/');
 
     return { event };
+}, {
+    rateLimiter: eventLimiter,
+    audit: { action: 'CREATE', entityType: 'Event', getEntityId: () => 'new' },
 });
 
-export async function createEvent(data: {
-    title: string;
-    description: string;
-    date: string; // ISO string
-    venue: string;
-    hostCollegeId?: string;
-    category: string;
-    thumbnail: string;
-    price?: number;
-    creatorId?: string;
-    clubId?: string;
-}) {
-    // Legacy wrapper around safe action logic or kept for backward compatibility
-    // For now, keeping original implementation or could wrap safe action
-    // to strictly follow "Refactor" without breaking changes, we keep this as is
-    // but typically we would migrate call sites.
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) {
-            return { success: false, error: 'Unauthorized' };
-        }
+export const joinEventAction = createProtectedAction(joinEventSchema, async ({ eventId }, session) => {
+    const userId = session.userId;
 
-        // ... Logic duplicated for now to ensure safety while safe action is introduced
-        // Ideally we refactor this to call the handler logic separated from the wrapper
-        // But for this task, exposing createEventSafe is sufficient.
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new Error('Event not found');
 
-        // Re-using the manual logic from before for safety of existing calls:
-        // Zod Validation
-        const { eventSchema } = await import('@/lib/schemas');
-        const validation = eventSchema.safeParse(data);
-        if (!validation.success) {
-            return { success: false, error: validation.error.issues[0].message };
-        }
-
-        // Copy-paste of logic or calling shared function. 
-        // Start of original implementation...
-        let collegeId = data.hostCollegeId;
-        if (data.clubId) {
-            const club = await prisma.club.findUnique({ where: { id: data.clubId } });
-            if (!club) return { success: false, error: 'Invalid club' };
-
-            const membership = await prisma.clubMember.findUnique({
-                where: {
-                    userId_clubId: {
-                        userId: session.userId as string,
-                        clubId: data.clubId
-                    }
-                }
-            });
-
-            if (!membership || membership.role !== 'ADMIN') {
-                return { success: false, error: 'You must be a club admin to host events for this club.' };
-            }
-
-            collegeId = club.collegeId;
-        }
-
-        if (!collegeId) {
-            return { success: false, error: 'Host college could not be determined.' };
-        }
-
-        const event = await prisma.event.create({
-            data: {
-                title: data.title,
-                description: data.description,
-                date: new Date(data.date),
-                venue: data.venue,
-                category: data.category,
-                registrationCount: 0,
-                price: data.price || 0,
-                thumbnail: data.thumbnail || '/event-placeholder.png',
-                hostCollege: {
-                    connect: { id: collegeId }
-                },
-                creator: {
-                    connect: { id: session.userId as string }
-                },
-                club: data.clubId ? {
-                    connect: { id: data.clubId }
-                } : undefined
-            }
-        });
-
-        await checkAndAwardBadges(session.userId as string, 'HOST_EVENT');
-
-        revalidatePath('/events');
-        revalidatePath('/');
-        return { success: true, event };
-
-    } catch (error) {
-        console.error('Failed to create event:', error);
-        return { success: false, error: 'Failed to create event' };
-    }
-}
-
-export async function getCollegeById(id: string) {
-    try {
-        const college = await prisma.college.findUnique({
-            where: { id },
-            include: {
-                events: {
-                    include: {
-                        hostCollege: true
-                    },
-                    orderBy: {
-                        date: 'asc'
-                    }
-                },
-                clubs: true // Include clubs
-            }
-        });
-        return college;
-    } catch (error) {
-        console.error(`Failed to fetch college ${id}:`, error);
-        return null;
-    }
-}
-
-export async function getEventsByHost(hostCollegeId: string): Promise<EventWithRelations[]> {
-    try {
-        const events = await prisma.event.findMany({
-            where: {
-                hostCollegeId,
-                date: {
-                    gte: new Date(),
-                },
-            },
-            orderBy: {
-                date: 'asc',
-            },
-            include: {
-                hostCollege: {
-                    select: {
-                        id: true,
-                        name: true,
-                        logo: true,
-                    },
-                },
-            },
-        });
-        return events;
-    } catch (error) {
-        console.error('Failed to fetch host events:', error);
-        return [];
-    }
-}
-
-export async function getUserBadges(userId: string) {
-    try {
-        const userBadges = await prisma.userBadge.findMany({
-            where: { userId },
-            include: {
-                badge: true
-            },
-            orderBy: {
-                dateEarned: 'desc'
-            }
-        });
-
-        return userBadges.map(ub => ({
-            ...ub.badge,
-            earnedDate: ub.dateEarned
-        }));
-    } catch (error) {
-        console.error(`Failed to fetch badges for user ${userId}:`, error);
-        return [];
-    }
-}
-
-import { joinEventSchema } from '@/lib/schemas';
-
-export const joinEventSafe = createSafeAction(joinEventSchema, async ({ eventId }) => {
-    const session = await getSession();
-    if (!session || !session.userId) {
-        throw new Error('Unauthorized');
-    }
-    const userId = session.userId as string;
-
-    // 1. Check if event exists
-    const event = await prisma.event.findUnique({
-        where: { id: eventId }
-    });
-
-    if (!event) {
-        throw new Error('Event not found');
-    }
-
-    // 2. Check if already registered
     const existingRegistration = await prisma.eventRegistration.findUnique({
-        where: {
-            userId_eventId: {
-                userId,
-                eventId
-            }
-        }
+        where: { userId_eventId: { userId, eventId } }
     });
 
-    if (existingRegistration) {
-        throw new Error('Already registered');
-    }
+    if (existingRegistration) throw new Error('Already registered');
 
-    // 3. Register user transactionally
     const registration = await prisma.$transaction(async (tx) => {
         const reg = await tx.eventRegistration.create({
             data: {
                 userId,
                 eventId,
                 status: event.price > 0 ? 'PENDING_PAYMENT' : 'COMPLETED',
-                amountPaid: event.price > 0 ? 0 : 0 // Will be updated on actual payment
+                amountPaid: 0
             }
         });
 
         await tx.event.update({
             where: { id: eventId },
-            data: {
-                registrationCount: {
-                    increment: 1
-                }
-            }
+            data: { registrationCount: { increment: 1 } }
         });
 
         return reg;
     });
 
-    // 4. Check and award badges
     const earnedBadges = await checkAndAwardBadges(userId, event.category);
 
-    // 5. Notify Host
     if (event.creatorId && event.creatorId !== userId) {
         await createNotification(
             event.creatorId,
@@ -560,21 +192,11 @@ export const joinEventSafe = createSafeAction(joinEventSchema, async ({ eventId 
     revalidatePath('/profile');
 
     return { earnedBadges, registrationId: registration.id };
+}, {
+    audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.eventId },
 });
 
-export async function joinEvent(userId: string, eventId: string) {
-    const session = await getSession();
-    if (!session || session.userId !== userId) return { success: false, error: 'Unauthorized' };
-
-    const result = await joinEventSafe({ eventId });
-    if (result.error || !result.data) return { success: false, error: result.error || 'Unknown error' };
-    return { success: true, earnedBadges: result.data.earnedBadges, registrationId: result.data.registrationId };
-}
-
-export const updateEventSafe = createSafeAction(updateEventSchema, async ({ id, data }) => {
-    const session = await getSession();
-    if (!session || !session.userId) throw new Error('Unauthorized');
-
+export const updateEventAction = createProtectedAction(updateEventSchema, async ({ id, data }, session) => {
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) throw new Error('Event not found');
 
@@ -583,8 +205,6 @@ export const updateEventSafe = createSafeAction(updateEventSchema, async ({ id, 
     }
 
     const { date, ...otherData } = data;
-
-    // Convert date string to Date object if present
     const updateData: any = { ...otherData };
     if (date) {
         updateData.date = new Date(date);
@@ -598,33 +218,13 @@ export const updateEventSafe = createSafeAction(updateEventSchema, async ({ id, 
     revalidatePath(`/events/${id}`);
     revalidatePath('/events');
     return { event: updatedEvent };
+}, {
+    audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.id },
 });
 
-export async function updateEvent(eventId: string, data: Partial<PrismaEvent>) {
-    // Adapter
-    // Note: Legacy data might have Date object or string for date?
-    // PrismaEvent usually has Date objects, but over wire form gives strings.
-    // The safe schema expects string for date.
-    // If 'data' has Date object, we might need to convert to string for schema validation.
-
-    // Quick fix: bypass schema validation for legacy wrapper if types mismatch too much,
-    // OR just use valid data.
-    // Assuming 'data' comes from form which usually has strings.
-
-    const safeData: any = { ...data };
-    if (safeData.date instanceof Date) safeData.date = safeData.date.toISOString();
-
-    const result = await updateEventSafe({ id: eventId, data: safeData });
-    if (result.error || !result.data) return { success: false, error: result.error || 'Unknown error' };
-    return { success: true, event: result.data.event };
-}
-
-export const completePaymentSafe = createSafeAction(
+export const completePaymentAction = createProtectedAction(
     z.object({ registrationId: z.string() }),
-    async ({ registrationId }) => {
-        const session = await getSession();
-        if (!session || !session.userId) throw new Error('Unauthorized');
-
+    async ({ registrationId }, session) => {
         const registration = await prisma.eventRegistration.findUnique({
             where: { id: registrationId }
         });
@@ -633,12 +233,11 @@ export const completePaymentSafe = createSafeAction(
             throw new Error('Registration not found');
         }
 
-        // Simulate successful payment logic
         await prisma.eventRegistration.update({
             where: { id: registrationId },
             data: {
                 status: 'PAID',
-                amountPaid: 0, // In real life, get from Stripe
+                amountPaid: 0,
                 paymentId: `sim_${Math.random().toString(36).substr(2, 9)}`
             }
         });
@@ -651,10 +250,227 @@ export const completePaymentSafe = createSafeAction(
     }
 );
 
+// ─────────────────────────────────────────────────
+// Legacy Wrappers (backward compatible)
+// ─────────────────────────────────────────────────
+
+/** @deprecated Use createEventAction directly */
+export async function createEvent(data: {
+    title: string;
+    description: string;
+    date: string;
+    venue: string;
+    hostCollegeId?: string;
+    category: string;
+    thumbnail: string;
+    price?: number;
+    creatorId?: string;
+    clubId?: string;
+}) {
+    const result = await createEventAction({
+        ...data,
+        price: data.price ?? 0,
+    });
+
+    if (!isOk(result)) {
+        return { success: false, error: result.error || 'Failed to create event' };
+    }
+
+    return { success: true, event: result.data.event };
+}
+
+/** @deprecated Use joinEventAction directly */
+export async function joinEvent(userId: string, eventId: string) {
+    const session = await getSession();
+    if (!session || session.userId !== userId) return { success: false, error: 'Unauthorized' };
+
+    const result = await joinEventAction({ eventId });
+    if (!isOk(result)) return { success: false, error: result.error || 'Unknown error' };
+    return { success: true, earnedBadges: result.data.earnedBadges, registrationId: result.data.registrationId };
+}
+
+/** @deprecated Use updateEventAction directly */
+export async function updateEvent(eventId: string, data: Partial<PrismaEvent>) {
+    const safeData: any = { ...data };
+    if (safeData.date instanceof Date) safeData.date = safeData.date.toISOString();
+
+    const result = await updateEventAction({ id: eventId, data: safeData });
+    if (!isOk(result)) return { success: false, error: result.error || 'Unknown error' };
+    return { success: true, event: result.data.event };
+}
+
+/** @deprecated Use completePaymentAction directly */
 export async function completePayment(registrationId: string) {
-    const result = await completePaymentSafe({ registrationId });
-    if (result.error) return { success: false, error: result.error };
+    const result = await completePaymentAction({ registrationId });
+    if (!isOk(result)) return { success: false, error: result.error };
     return { success: true };
+}
+
+// ─────────────────────────────────────────────────
+// Data Queries (no auth, cached)
+// ─────────────────────────────────────────────────
+
+async function _getUpcomingEventsUncached(limit: number = 3): Promise<EventWithRelations[]> {
+    const events = await prisma.event.findMany({
+        where: { date: { gte: new Date() } },
+        orderBy: { date: 'asc' },
+        take: limit,
+        include: {
+            hostCollege: { select: { id: true, name: true, logo: true } },
+            club: { select: { id: true, name: true, logo: true } },
+        },
+    });
+    return events;
+}
+
+export async function getUpcomingEvents(limit: number = 3): Promise<EventWithRelations[]> {
+    try {
+        return await _getUpcomingEventsUncached(limit);
+    } catch (error) {
+        console.error('Failed to fetch upcoming events:', error);
+        return [];
+    }
+}
+
+export async function getAllEvents(filters?: { search?: string; category?: string }) {
+    try {
+        const { search, category } = filters || {};
+        const where: any = { date: { gte: new Date() } };
+
+        if (search) {
+            where.OR = [
+                { title: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+                { venue: { contains: search, mode: 'insensitive' } },
+                { hostCollege: { name: { contains: search, mode: 'insensitive' } } }
+            ];
+        }
+
+        if (category && category !== 'All') {
+            where.category = category;
+        }
+
+        const events = await prisma.event.findMany({
+            where,
+            include: {
+                hostCollege: { select: { id: true, name: true, logo: true } },
+                club: { select: { id: true, name: true, logo: true } },
+                _count: { select: { registrations: true } }
+            },
+            orderBy: { date: 'asc' },
+            take: 50
+        });
+
+        return events;
+    } catch (error) {
+        console.error('Failed to fetch events:', error);
+        return [];
+    }
+}
+
+async function _getEventByIdUncached(id: string) {
+    const event = await prisma.event.findUnique({
+        where: { id },
+        include: { hostCollege: true, creator: true, club: true },
+    });
+    return event;
+}
+
+export async function getUserCreatedEvents(userId: string) {
+    try {
+        const events = await prisma.event.findMany({
+            where: { creatorId: userId },
+            include: {
+                hostCollege: { select: { id: true, name: true, logo: true } },
+                club: { select: { id: true, name: true, logo: true } },
+                _count: { select: { registrations: true } }
+            },
+            orderBy: { date: 'desc' },
+        });
+        return events;
+    } catch (error) {
+        console.error('Failed to fetch user created events:', error);
+        return [];
+    }
+}
+
+export async function getUserRegisteredEvents(userId: string) {
+    try {
+        const registrations = await prisma.eventRegistration.findMany({
+            where: { userId },
+            include: {
+                event: {
+                    include: {
+                        hostCollege: { select: { id: true, name: true, logo: true } },
+                        club: { select: { id: true, name: true, logo: true } },
+                        _count: { select: { registrations: true } }
+                    }
+                }
+            },
+            orderBy: { event: { date: 'desc' } },
+        });
+        return registrations.map((r: any) => r.event);
+    } catch (error) {
+        console.error('Failed to fetch user registered events:', error);
+        return [];
+    }
+}
+
+export async function getEventById(id: string) {
+    try {
+        const cached = unstable_cache(
+            () => _getEventByIdUncached(id),
+            [`event-detail-${id}`],
+            { tags: [CACHE_TAGS.EVENTS, `event-${id}`], revalidate: CACHE_TTL.EVENTS_DETAIL }
+        );
+        return await cached();
+    } catch (error) {
+        console.error(`Failed to fetch event ${id}:`, error);
+        return null;
+    }
+}
+
+export async function getEventsByHost(hostCollegeId: string): Promise<EventWithRelations[]> {
+    try {
+        const events = await prisma.event.findMany({
+            where: { hostCollegeId, date: { gte: new Date() } },
+            orderBy: { date: 'asc' },
+            include: {
+                hostCollege: { select: { id: true, name: true, logo: true } },
+            },
+        });
+        return events;
+    } catch (error) {
+        console.error('Failed to fetch host events:', error);
+        return [];
+    }
+}
+
+async function _getUserBadgesUncached(userId: string) {
+    const userBadges = await prisma.userBadge.findMany({
+        where: { userId },
+        include: { badge: true },
+        orderBy: { dateEarned: 'desc' }
+    });
+
+    return userBadges.map(ub => ({
+        ...ub.badge,
+        earnedDate: ub.dateEarned
+    }));
+}
+
+export async function getUserBadges(userId: string) {
+    try {
+        const cached = unstable_cache(
+            () => _getUserBadgesUncached(userId),
+            [`user-badges-${userId}`],
+            { tags: [CACHE_TAGS.USER, `user-badges-${userId}`], revalidate: 60 }
+        );
+        return await cached();
+    } catch (error) {
+        console.error(`Failed to fetch badges for user ${userId}:`, error);
+        return [];
+    }
 }
 
 /**
@@ -667,7 +483,6 @@ export async function deleteEvent(eventId: string) {
     }
 
     try {
-        // Get the event to check ownership
         const event = await prisma.event.findUnique({
             where: { id: eventId },
             include: {
@@ -678,6 +493,9 @@ export async function deleteEvent(eventId: string) {
                             select: { role: true }
                         }
                     }
+                },
+                _count: {
+                    select: { registrations: true, teamRequests: true, reviews: true }
                 }
             }
         });
@@ -686,28 +504,39 @@ export async function deleteEvent(eventId: string) {
             return { success: false, error: 'Event not found' };
         }
 
-        // Check authorization: must be creator or club admin
         const isCreator = event.creatorId === session.userId;
         const isClubAdmin = event.club?.members?.[0]?.role === 'ADMIN';
 
         if (!isCreator && !isClubAdmin) {
+            await audit(
+                session.userId as string,
+                'PERMISSION_DENIED',
+                'Event',
+                eventId,
+                { attemptedAction: 'DELETE', eventTitle: event.title }
+            );
             return { success: false, error: 'Not authorized to delete this event' };
         }
 
-        // Delete related registrations first
-        await prisma.eventRegistration.deleteMany({
-            where: { eventId }
+        await prisma.$transaction(async (tx) => {
+            await tx.eventReview.deleteMany({ where: { eventId } });
+            await tx.eventRegistration.deleteMany({ where: { eventId } });
+            await tx.teamRequest.deleteMany({ where: { eventId } });
+            await tx.event.delete({ where: { id: eventId } });
         });
 
-        // Delete team requests
-        await prisma.teamRequest.deleteMany({
-            where: { eventId }
-        });
-
-        // Delete the event
-        await prisma.event.delete({
-            where: { id: eventId }
-        });
+        await audit(
+            session.userId as string,
+            'DELETE',
+            'Event',
+            eventId,
+            {
+                eventTitle: event.title,
+                deletedRegistrations: event._count.registrations,
+                deletedTeamRequests: event._count.teamRequests,
+                deletedReviews: event._count.reviews,
+            }
+        );
 
         revalidatePath('/events');
         revalidatePath('/profile');
@@ -718,4 +547,3 @@ export async function deleteEvent(eventId: string) {
         return { success: false, error: 'Failed to delete event' };
     }
 }
-

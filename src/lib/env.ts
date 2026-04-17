@@ -17,6 +17,10 @@ const envSchema = z.object({
     PUSHER_SECRET: z.string().min(1, 'PUSHER_SECRET is required'),
     PUSHER_CLUSTER: z.string().min(1, 'PUSHER_CLUSTER is required'),
 
+    // Stripe (Payments)
+    STRIPE_SECRET_KEY: z.string().startsWith('sk_', 'STRIPE_SECRET_KEY must start with sk_'),
+    STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional(),
+
     // Node Environment
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
@@ -27,6 +31,7 @@ const envSchema = z.object({
 const clientEnvSchema = z.object({
     NEXT_PUBLIC_PUSHER_KEY: z.string().min(1, 'NEXT_PUBLIC_PUSHER_KEY is required'),
     NEXT_PUBLIC_PUSHER_CLUSTER: z.string().min(1, 'NEXT_PUBLIC_PUSHER_CLUSTER is required'),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_', 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must start with pk_'),
 });
 
 /**

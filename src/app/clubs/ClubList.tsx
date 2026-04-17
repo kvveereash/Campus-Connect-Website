@@ -12,14 +12,12 @@ interface Club {
     name: string;
     description: string;
     category: string;
-    logo?: string | null;
-    image?: string | null; // Handling both for compatibility
+    logo: string | null;
     collegeId: string;
-    admins: string[];
     createdAt: string;
     updatedAt: string;
-    members?: { role: string }[];
-    _count?: { members: number };
+    college: { id: string; name: string };
+    _count: { members: number };
 }
 
 interface User {
@@ -88,23 +86,23 @@ export default function ClubList({ initialClubs, user, joinedClubIds }: ClubList
                 </div>
 
                 {/* Search Bar - Positioned relative or in flex container */}
-                <div style={{ position: 'relative', width: '300px' }}>
-                    <Search placeholder="Search clubs..." />
+                <div className="w-full md:w-auto md:min-w-[300px]">
+                    <Search placeholder="Search communities..." />
                 </div>
             </div>
 
             {filteredClubs.length > 0 ? (
                 <div className={styles.grid}>
                     {filteredClubs.map(club => {
-                        const clubImage = club.logo || club.image;
+                        const clubImage = club.logo;
                         const fallbackImage = FALLBACK_IMAGES[(club.name.charCodeAt(0) + club.id.charCodeAt(0)) % FALLBACK_IMAGES.length];
 
                         // Handle member count safely
-                        const memberCount = club._count?.members ?? 0;
+                        const memberCount = club._count.members;
 
                         return (
-                            <Link href={`/clubs/${club.id}`} key={club.id} className={styles.card} style={{ textDecoration: 'none' }}>
-                                <div style={{ position: 'relative', width: '100%', height: '160px' }}>
+                            <Link href={`/clubs/${club.id}`} key={club.id} className={styles.card}>
+                                <div>
                                     <Image
                                         src={(clubImage?.startsWith('http') || clubImage?.startsWith('/')) ? clubImage : fallbackImage}
                                         alt={club.name}

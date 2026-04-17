@@ -4,19 +4,18 @@ import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { TeamRequest } from '@/types';
+import { isOk } from '@/lib/api-response';
 
-import { createSafeAction } from '@/lib/safe-action';
+import { createProtectedAction } from '@/lib/protected-action';
 import { teamRequestSchema } from '@/lib/schemas';
 
-// Safe Action Implementation
-export const createTeamRequestSafe = createSafeAction(teamRequestSchema, async (data) => {
-    const session = await getSession();
-    if (!session || !session.userId) {
-        throw new Error('Unauthorized');
-    }
+// ─────────────────────────────────────────────────
+// Protected Actions (unified pattern)
+// ─────────────────────────────────────────────────
 
+export const createTeamRequestAction = createProtectedAction(teamRequestSchema, async (data, session) => {
     const user = await prisma.user.findUnique({
-        where: { id: session.userId as string }
+        where: { id: session.userId }
     });
 
     if (!user) throw new Error('User not found');
@@ -24,7 +23,7 @@ export const createTeamRequestSafe = createSafeAction(teamRequestSchema, async (
     const request = await prisma.teamRequest.create({
         data: {
             eventId: data.eventId,
-            creatorId: session.userId as string,
+            creatorId: session.userId,
             creatorName: user.name,
             type: data.type,
             skills: JSON.stringify(data.skills),
@@ -34,37 +33,35 @@ export const createTeamRequestSafe = createSafeAction(teamRequestSchema, async (
 
     revalidatePath(`/events/${data.eventId}`);
     return request;
+}, {
+    audit: { action: 'CREATE', entityType: 'TeamRequest', getEntityId: (d) => d.eventId },
 });
 
-// Legacy wrapper for backward compatibility (optional, but good practice during migration)
+// ─────────────────────────────────────────────────
+// Legacy Wrapper
+// ─────────────────────────────────────────────────
+
+/** @deprecated Use createTeamRequestAction directly */
 export async function createTeamRequest(data: {
     eventId: string;
     type: string;
     skills: string[];
     description: string;
 }) {
-    // Manually validating using safe action logic? Or just bridging.
-    // For now, let's keep the original implementation or redirect to safe action if formats align.
-    // Since we changed the schema to array, the original implementation's "skills.join" vs schema check might slightly differ.
-    // Let's Replace the BODY of this function to call the safe action?
-    // Actually, safe action returns { data, error }. The original returned { success, request, error }.
-    // Let's keep original for now and users can switch to safe one.
-    // BUT I will proactively update the original to USE the new schema validation at least to ensure consistency.
-
-    const session = await getSession();
-    if (!session || !session.userId) return { success: false, error: 'Unauthorized' };
-
-    // Validate with new schema (which expects array)
     const validation = teamRequestSchema.safeParse(data);
     if (!validation.success) return { success: false, error: validation.error.issues[0].message };
 
-    const result = await createTeamRequestSafe({
+    const result = await createTeamRequestAction({
         ...data,
         type: data.type as 'LOOKING_FOR_TEAM' | 'LOOKING_FOR_MEMBER'
     });
-    if (result.error) return { success: false, error: result.error };
+    if (!isOk(result)) return { success: false, error: result.error };
     return { success: true, request: result.data };
 }
+
+// ─────────────────────────────────────────────────
+// Data Queries & Mutations (raw pattern — kept for simplicity)
+// ─────────────────────────────────────────────────
 
 export async function getTeamRequestsByEvent(eventId: string) {
     try {
@@ -73,16 +70,11 @@ export async function getTeamRequestsByEvent(eventId: string) {
             orderBy: { createdAt: 'desc' },
             include: {
                 creator: {
-                    select: {
-                        id: true,
-                        name: true,
-                        avatar: true
-                    }
+                    select: { id: true, name: true, avatar: true }
                 }
             }
         });
 
-        // Map to match the frontend type if needed, or update frontend type
         return requests.map(req => ({
             id: req.id,
             eventId: req.eventId,
@@ -110,10 +102,7 @@ export async function updateTeamRequest(id: string, data: Partial<{
             return { success: false, error: 'Unauthorized' };
         }
 
-        const request = await prisma.teamRequest.findUnique({
-            where: { id }
-        });
-
+        const request = await prisma.teamRequest.findUnique({ where: { id } });
         if (!request) return { success: false, error: 'Request not found' };
         if (request.creatorId !== session.userId) {
             return { success: false, error: 'Unauthorized' };
@@ -124,10 +113,7 @@ export async function updateTeamRequest(id: string, data: Partial<{
         if (data.skills) updateData.skills = JSON.stringify(data.skills);
         if (data.description) updateData.description = data.description;
 
-        await prisma.teamRequest.update({
-            where: { id },
-            data: updateData
-        });
+        await prisma.teamRequest.update({ where: { id }, data: updateData });
 
         revalidatePath(`/events/${request.eventId}`);
         return { success: true };
@@ -144,18 +130,13 @@ export async function deleteTeamRequest(id: string) {
             return { success: false, error: 'Unauthorized' };
         }
 
-        const request = await prisma.teamRequest.findUnique({
-            where: { id }
-        });
-
+        const request = await prisma.teamRequest.findUnique({ where: { id } });
         if (!request) return { success: false, error: 'Request not found' };
         if (request.creatorId !== session.userId) {
             return { success: false, error: 'Unauthorized' };
         }
 
-        await prisma.teamRequest.delete({
-            where: { id }
-        });
+        await prisma.teamRequest.delete({ where: { id } });
 
         revalidatePath(`/events/${request.eventId}`);
         return { success: true };
@@ -174,18 +155,16 @@ export async function connectToTeamRequest(requestId: string) {
 
         const request = await prisma.teamRequest.findUnique({
             where: { id: requestId },
-            include: { event: true } // Include event for context
+            include: { event: true }
         });
 
         if (!request) return { success: false, error: 'Request not found' };
 
-        // Prevent self-connection
         if (request.creatorId === session.userId) {
             return { success: false, error: 'Cannot connect to your own request' };
         }
 
-        // Trigger Notification
-        const { createNotification } = await import('@/lib/actions/notifications');
+        const { createNotification } = await import('@/lib/notification-helper');
 
         await createNotification(
             request.creatorId,

@@ -2,22 +2,30 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Sparkles, Calendar, MapPin, Users, Megaphone, DollarSign } from 'lucide-react';
 import { createEvent } from '@/lib/actions';
 import { useAuth } from '@/context/AuthContext';
-import styles from './page.module.css';
 import ImageUpload from '@/components/ImageUpload';
 import { COLLEGES } from '@/lib/data';
+import styles from './page.module.css';
 
-const CATEGORIES = ['Hackathon', 'Fest', 'Workshop', 'Cultural', 'Tech Talk', 'Seminar'];
+const CATEGORIES = [
+    { value: 'Hackathon', icon: '💻', label: 'Hackathon' },
+    { value: 'Fest', icon: '🎪', label: 'Fest' },
+    { value: 'Workshop', icon: '🔧', label: 'Workshop' },
+    { value: 'Cultural', icon: '🎭', label: 'Cultural' },
+    { value: 'Tech Talk', icon: '🎤', label: 'Tech Talk' },
+    { value: 'Seminar', icon: '📚', label: 'Seminar' },
+];
 
 export default function CreateEventPage() {
     const router = useRouter();
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
 
-    // Filter clubs where user is admin
     const adminClubs = user?.clubMemberships?.filter(m => m.role === 'ADMIN').map(m => m.club) || [];
 
     const [formData, setFormData] = useState({
@@ -26,7 +34,7 @@ export default function CreateEventPage() {
         date: '',
         venue: '',
         hostCollegeId: user?.collegeId || COLLEGES[0].id,
-        category: CATEGORIES[0],
+        category: CATEGORIES[0].value,
         thumbnail: '/event-placeholder.png',
         clubId: adminClubs.length > 0 ? adminClubs[0]?.id || '' : '',
         price: 0,
@@ -49,27 +57,24 @@ export default function CreateEventPage() {
 
     if (!user) return null;
 
-    // Access Denied Check
+    // Access Denied
     if (adminClubs.length === 0) {
         return (
-            <div className={styles.container}>
-                <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                    <h1 className={styles.title}>Host an Event</h1>
-                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '2rem', borderRadius: '16px', border: '1px dashed var(--secondary-color)', maxWidth: '600px', margin: '2rem auto' }}>
-                        <p style={{ fontSize: '1.2rem', marginBottom: '1.5rem', color: '#e2e8f0' }}>
-                            🚫 You need to be a <strong>Club Admin</strong> to host events.
-                        </p>
-                        <p style={{ marginBottom: '2rem', color: '#94a3b8' }}>
-                            Events on Campus Connect must be hosted by an official club or organization to ensure credibility.
-                        </p>
-                        <button
-                            onClick={() => router.push('/clubs')}
-                            className="btn btn-primary"
-                            style={{ background: 'var(--primary-color)', padding: '0.75rem 2rem', borderRadius: '8px', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}
-                        >
-                            Create or Join a Club
-                        </button>
-                    </div>
+            <div className={styles.pageWrapper}>
+                <Link href="/events" className={styles.backBtn}>
+                    <ArrowLeft size={16} className={styles.backArrow} />
+                    Back to Events
+                </Link>
+                <div className={styles.accessDenied}>
+                    <div className={styles.accessDeniedIcon}>🔒</div>
+                    <h2 className={styles.accessDeniedTitle}>Club Admin Required</h2>
+                    <p className={styles.accessDeniedText}>
+                        Events must be hosted by an official club. Create or join a club first to start hosting events.
+                    </p>
+                    <Link href="/clubs" className={styles.accessDeniedBtn}>
+                        Browse Clubs
+                        <ArrowRight size={16} />
+                    </Link>
                 </div>
             </div>
         );
@@ -83,14 +88,14 @@ export default function CreateEventPage() {
             const submissionData = {
                 ...formData,
                 date: new Date(formData.date).toISOString(),
-                clubId: formData.clubId, // Always use the clubId from form
+                clubId: formData.clubId,
                 price: Number(formData.price) || 0,
             };
 
             const result = await createEvent(submissionData);
             if (result.success) {
                 toast.success('Event created successfully!');
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for revalidate
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 router.push('/events');
             } else {
                 toast.error(result.error || 'Failed to create event');
@@ -103,146 +108,277 @@ export default function CreateEventPage() {
     };
 
     const isDefaultImage = formData.thumbnail === '/event-placeholder.png';
+    const selectedClubName = adminClubs.find(c => c?.id === formData.clubId)?.name;
 
     return (
-        <div className={styles.container}>
-            <motion.h1
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={styles.title}
+        <div className={styles.pageWrapper}>
+            {/* Back Navigation */}
+            <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
             >
-                Host an Event
-            </motion.h1>
+                <Link href="/events" className={styles.backBtn}>
+                    <ArrowLeft size={16} className={styles.backArrow} />
+                    Back to Events
+                </Link>
+            </motion.div>
 
-            <motion.form
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                onSubmit={handleSubmit}
-                className={styles.form}
-            >
-                <div className={styles.formGroup}>
-                    <label className={styles.label}>Event Banner</label>
-                    <ImageUpload
-                        value={isDefaultImage ? '' : formData.thumbnail}
-                        onChange={handleImageChange}
-                        label="Upload Event Banner"
-                    />
-                </div>
+            {/* Split Layout */}
+            <div className={styles.splitLayout}>
+                {/* Left: Decorative Panel */}
+                <motion.div
+                    className={styles.sidePanel}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                >
+                    <div className={styles.sidePanelBg} />
 
-                <div className={styles.formGroup}>
-                    <label className={styles.label} htmlFor="clubId">Hosting Club</label>
-                    <select
-                        id="clubId"
-                        name="clubId"
-                        className={styles.select}
-                        value={formData.clubId}
-                        onChange={handleChange}
-                        required
-                    >
-                        {adminClubs.map(club => (
-                            <option key={club?.id} value={club?.id}>
-                                {club?.name}
-                            </option>
+                    <div className={styles.sideContent}>
+                        <span className={styles.sideEmoji}>🎉</span>
+                        <h2 className={styles.sideTitle}>
+                            Create an <span className={styles.sideHighlight}>Unforgettable</span> Event
+                        </h2>
+                        <p className={styles.sideDesc}>
+                            From hackathons to cultural fests — bring your vision to life
+                            and reach students across campuses.
+                        </p>
+                    </div>
+
+                    <ul className={styles.featureList}>
+                        <motion.li
+                            className={styles.featureItem}
+                            initial={{ opacity: 0, x: -15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            <span className={styles.featureIcon}>
+                                <Megaphone size={16} />
+                            </span>
+                            Reach thousands of students
+                        </motion.li>
+                        <motion.li
+                            className={styles.featureItem}
+                            initial={{ opacity: 0, x: -15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.4 }}
+                        >
+                            <span className={styles.featureIcon}>
+                                <Users size={16} />
+                            </span>
+                            Manage registrations easily
+                        </motion.li>
+                        <motion.li
+                            className={styles.featureItem}
+                            initial={{ opacity: 0, x: -15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.5 }}
+                        >
+                            <span className={styles.featureIcon}>
+                                <Calendar size={16} />
+                            </span>
+                            Auto-sync with campus calendar
+                        </motion.li>
+                    </ul>
+
+                    <div className={styles.dotsGrid}>
+                        {Array.from({ length: 15 }).map((_, i) => (
+                            <div key={i} className={styles.dot} />
                         ))}
-                    </select>
-                    <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
-                        * You are posting this event on behalf of <strong>{adminClubs.find(c => c?.id === formData.clubId)?.name}</strong>
-                    </p>
-                </div>
+                    </div>
+                </motion.div>
 
-                <div className={styles.formGroup}>
-                    <label className={styles.label} htmlFor="title">Event Title</label>
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        required
-                        className={styles.input}
-                        value={formData.title}
-                        onChange={handleChange}
-                        placeholder="e.g. Intro to AI Workshop"
-                    />
-                </div>
+                {/* Right: Form */}
+                <motion.div
+                    className={styles.formPanel}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                    <div className={styles.formHeader}>
+                        <h1 className={styles.formTitle}>Host an Event</h1>
+                        <p className={styles.formSubtitle}>Fill in the details to publish your event</p>
 
-                <div className={styles.formGroup}>
-                    <label className={styles.label} htmlFor="category">Category</label>
-                    <select
-                        id="category"
-                        name="category"
-                        className={styles.select}
-                        value={formData.category}
-                        onChange={handleChange}
-                    >
-                        {CATEGORIES.map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
-                        ))}
-                    </select>
-                </div>
+                        {/* Hosting Club Badge */}
+                        {adminClubs.length > 0 && (
+                            <div className={styles.clubBadge}>
+                                <Users size={14} className={styles.clubBadgeIcon} />
+                                Hosting as <strong>{selectedClubName}</strong>
+                            </div>
+                        )}
+                    </div>
 
-                <div className={styles.formGroup}>
-                    <label className={styles.label} htmlFor="price">Registration Fee (USD)</label>
-                    <input
-                        type="number"
-                        id="price"
-                        name="price"
-                        min="0"
-                        step="0.01"
-                        required
-                        className={styles.input}
-                        value={formData.price}
-                        onChange={handleChange}
-                        placeholder="0.00 for free events"
-                    />
-                    <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
-                        * Set to 0 if the event is free.
-                    </p>
-                </div>
+                    <form onSubmit={handleSubmit} className={styles.form}>
+                        {/* Event Banner */}
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Event Banner</label>
+                            <ImageUpload
+                                value={isDefaultImage ? '' : formData.thumbnail}
+                                onChange={handleImageChange}
+                                label="Upload Event Banner"
+                            />
+                        </div>
 
-                <div className={styles.formGroup}>
-                    <label className={styles.label} htmlFor="date">Date & Time</label>
-                    <input
-                        type="datetime-local"
-                        id="date"
-                        name="date"
-                        required
-                        className={styles.input}
-                        value={formData.date}
-                        onChange={handleChange}
-                    />
-                </div>
+                        {/* Hosting Club (if multiple) */}
+                        {adminClubs.length > 1 && (
+                            <div className={styles.formGroup}>
+                                <label className={styles.label} htmlFor="clubId">
+                                    Hosting Club <span className={styles.required}>*</span>
+                                </label>
+                                <select
+                                    id="clubId"
+                                    name="clubId"
+                                    className={styles.select}
+                                    value={formData.clubId}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    {adminClubs.map(club => (
+                                        <option key={club?.id} value={club?.id}>
+                                            {club?.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
-                <div className={styles.formGroup}>
-                    <label className={styles.label} htmlFor="venue">Venue</label>
-                    <input
-                        type="text"
-                        id="venue"
-                        name="venue"
-                        required
-                        className={styles.input}
-                        value={formData.venue}
-                        onChange={handleChange}
-                        placeholder="e.g. Auditorium, Lab 3"
-                    />
-                </div>
+                        {/* Event Title */}
+                        <div className={styles.formGroup}>
+                            <label className={styles.label} htmlFor="title">
+                                Event Title <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                required
+                                className={styles.input}
+                                value={formData.title}
+                                onChange={handleChange}
+                                placeholder="e.g. Intro to AI Workshop"
+                            />
+                        </div>
 
-                <div className={styles.formGroup}>
-                    <label className={styles.label} htmlFor="description">Description</label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        required
-                        className={styles.textarea}
-                        value={formData.description}
-                        onChange={handleChange}
-                        placeholder="Describe the event details..."
-                    />
-                </div>
+                        <div className={styles.divider} />
 
-                <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={isLoading}>
-                    {isLoading ? 'Creating Event...' : 'Create Event'}
-                </button>
-            </motion.form>
+                        {/* Category Pills */}
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>
+                                Category <span className={styles.required}>*</span>
+                            </label>
+                            <div className={styles.categoryGrid}>
+                                {CATEGORIES.map(cat => (
+                                    <motion.button
+                                        key={cat.value}
+                                        type="button"
+                                        className={`${styles.categoryPill} ${formData.category === cat.value ? styles.categoryPillActive : ''}`}
+                                        onClick={() => setFormData(prev => ({ ...prev, category: cat.value }))}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        <span className={styles.pillIcon}>{cat.icon}</span>
+                                        {cat.label}
+                                    </motion.button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Date & Venue Row */}
+                        <div className={styles.formRow}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label} htmlFor="date">
+                                    Date & Time <span className={styles.required}>*</span>
+                                </label>
+                                <input
+                                    type="datetime-local"
+                                    id="date"
+                                    name="date"
+                                    required
+                                    className={styles.input}
+                                    value={formData.date}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label} htmlFor="venue">
+                                    Venue <span className={styles.required}>*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="venue"
+                                    name="venue"
+                                    required
+                                    className={styles.input}
+                                    value={formData.venue}
+                                    onChange={handleChange}
+                                    placeholder="e.g. Auditorium, Lab 3"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Fee */}
+                        <div className={styles.formGroup}>
+                            <label className={styles.label} htmlFor="price">
+                                Registration Fee (₹)
+                            </label>
+                            <input
+                                type="number"
+                                id="price"
+                                name="price"
+                                min="0"
+                                step="0.01"
+                                required
+                                className={styles.input}
+                                value={formData.price}
+                                onChange={handleChange}
+                                placeholder="0 for free events"
+                            />
+                            <span className={styles.hint}>Leave as 0 for free events</span>
+                        </div>
+
+                        <div className={styles.divider} />
+
+                        {/* Description */}
+                        <div className={styles.formGroup}>
+                            <label className={styles.label} htmlFor="description">
+                                Description <span className={styles.required}>*</span>
+                            </label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                required
+                                className={styles.textarea}
+                                value={formData.description}
+                                onChange={handleChange}
+                                placeholder="Describe the event — what will attendees learn, who should attend, what to bring..."
+                            />
+                            <span className={styles.hint}>
+                                {formData.description.length}/300 characters
+                            </span>
+                        </div>
+
+                        {/* Submit */}
+                        <motion.button
+                            type="submit"
+                            className={styles.submitBtn}
+                            disabled={isLoading}
+                            whileHover={!isLoading ? { scale: 1.01 } : {}}
+                            whileTap={!isLoading ? { scale: 0.98 } : {}}
+                        >
+                            {isLoading ? (
+                                'Creating Event...'
+                            ) : (
+                                <>
+                                    <Sparkles size={18} />
+                                    Publish Event
+                                    <ArrowRight size={18} className={styles.submitIcon} />
+                                </>
+                            )}
+                        </motion.button>
+                    </form>
+                </motion.div>
+            </div>
         </div>
     );
 }

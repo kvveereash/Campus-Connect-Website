@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getNotifications, markAsRead, markAllAsRead } from '@/lib/actions/notifications';
+import { getNotifications, markNotificationAsRead as markAsRead, markAllNotificationsAsRead as markAllAsRead } from '@/lib/actions/notifications';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from './Notifications.module.css';

@@ -47,10 +47,8 @@ export default function CollegeClient({ college, events, clubs = [] }: CollegeCl
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             >
-                <div className={styles.punchHole} />
-
                 <div className={styles.headerContent}>
-                    <div className={styles.idSidebar}>
+                    <div className={styles.logoColumn}>
                         <motion.div
                             className={styles.logoWrapper}
                             initial={{ filter: 'grayscale(1)', opacity: 0 }}
@@ -64,10 +62,6 @@ export default function CollegeClient({ college, events, clubs = [] }: CollegeCl
                                 className={styles.logo}
                             />
                         </motion.div>
-                        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                            <div style={{ fontSize: '0.6rem', fontWeight: 900, opacity: 0.5, letterSpacing: '0.1em' }}>FACULTY / INSTITUTION</div>
-                            <div style={{ fontSize: '1.2rem', fontWeight: 800, fontFamily: 'var(--font-serif)' }}>CAMPUS CONNECT</div>
-                        </div>
                     </div>
 
                     <div className={styles.info}>

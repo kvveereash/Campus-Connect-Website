@@ -1,3 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 49 46% 96%;
+    --foreground: 168 35% 9%;
+    --card: 49 46% 96%;
+    --card-foreground: 168 35% 9%;
+    --popover: 49 46% 96%;
+    --popover-foreground: 168 35% 9%;
+    --primary: 168 35% 9%;
+    --primary-foreground: 49 46% 96%;
+    --secondary: 274 74% 86%;
+    --secondary-foreground: 168 35% 9%;
+    --muted: 49 30% 88%;
+    --muted-foreground: 168 15% 40%;
+    --accent: 149 80% 90%;
+    --accent-foreground: 168 35% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 168 15% 85%;
+    --input: 168 15% 85%;
+    --ring: 168 35% 9%;
+    --radius: 0.75rem;
+  }
+}
+
 :root {
   /* --- Modern Editorial Theme --- */
 
@@ -81,6 +110,12 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   transition: background-color var(--transition-speed), color var(--transition-speed);
+  padding-top: 0;
+  overflow-x: hidden;
+  /* Prevent side scroll from full-width elements */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 a {
@@ -129,6 +164,7 @@ button {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
+  flex: 1;
 }
 
 /* Large screen container expansions */
@@ -266,24 +302,24 @@ body::before {
   mix-blend-mode: overlay;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - COMPLETELY HIDDEN */
+html {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
+}
+
 ::-webkit-scrollbar {
-  width: 10px;
+  display: none;
+  /* Chrome/Safari/Webkit */
+  width: 0;
+  height: 0;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-cream);
-  border-left: 1px solid var(--color-forest);
-}
-
+::-webkit-scrollbar-track,
 ::-webkit-scrollbar-thumb {
-  background: rgba(15, 31, 28, 0.4);
-  border-radius: 99px;
-  border: 2px solid var(--color-cream);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-forest);
+  display: none;
 }
 
 /* Animation Utils (Preserved) */
@@ -426,4 +462,37 @@ body::before {
 
 .stagger-5 {
   animation-delay: 0.5s;
+}
+
+/* ─── Shimmer Skeleton ──────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0ebe0 25%, #e8e3d8 50%, #f0ebe0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-card, 1rem);
+}
+
+.skeleton-text {
+  height: 0.9rem;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0ebe0 25%, #e8e3d8 50%, #f0ebe0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0ebe0 25%, #e8e3d8 50%, #f0ebe0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

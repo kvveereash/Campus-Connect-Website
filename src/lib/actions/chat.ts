@@ -7,60 +7,177 @@ import { ActionState } from '@/types';
 import { pusherServer } from '@/lib/pusher';
 
 // Start or Get existing conversation with a user
-export async function startConversation(targetUserId: string): Promise<ActionState<string>> {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return { success: false, error: 'Unauthorized' };
+import { createProtectedAction } from '@/lib/protected-action';
+import { z } from 'zod';
+import { isOk } from '@/lib/api-response';
+import { messageLimiter } from '@/lib/rate-limit'; // Need to export this from rate-limit if not already
+import { sanitizePlainText } from '@/lib/sanitize';
 
-        if (targetUserId === session.userId) return { success: false, error: 'Cannot chat with self' };
+// ─────────────────────────────────────────────────
+// Protected Actions
+// ─────────────────────────────────────────────────
 
-        // Verify users exist
-        const currentUser = await prisma.user.findUnique({ where: { id: session.userId as string } });
-        const targetUser = await prisma.user.findUnique({ where: { id: targetUserId } });
+// 1. Start Conversation
+const startConversationSchema = z.object({
+    targetUserId: z.string()
+});
 
-        if (!currentUser) return { success: false, error: 'Current user not found in database. Please relogin.' };
-        if (!targetUser) return { success: false, error: 'Target user not found in database.' };
-
-        // Check if conversation exists
-        // Find conversations where current user is a participant
-        const conversations = await prisma.conversation.findMany({
-            where: {
-                participants: {
-                    some: { userId: session.userId }
-                }
-            },
-            include: {
-                participants: true
-            }
-        });
-
-        // Loop to find one where targetUser matches
-        const existing = conversations.find(c => c.participants.some(p => p.userId === targetUserId));
-
-        if (existing) {
-            return { success: true, data: existing.id };
-        }
-
-        // Create new
-        const newConv = await prisma.conversation.create({
-            data: {
-                participants: {
-                    create: [
-                        { userId: session.userId as string },
-                        { userId: targetUserId }
-                    ]
-                }
-            }
-        });
-
-        revalidatePath('/messages');
-        return { success: true, data: newConv.id };
-
-    } catch (error) {
-        console.error('Failed to start conversation:', error);
-        return { success: false, error: `Error: ${error instanceof Error ? error.message : String(error)}` };
+export const startConversationAction = createProtectedAction(startConversationSchema, async (data, session) => {
+    if (data.targetUserId === session.userId) {
+        throw new Error('Cannot chat with self');
     }
+
+    // Verify users exist
+    const [currentUser, targetUser] = await Promise.all([
+        prisma.user.findUnique({ where: { id: session.userId } }),
+        prisma.user.findUnique({ where: { id: data.targetUserId } })
+    ]);
+
+    if (!currentUser) throw new Error('Current user not found');
+    if (!targetUser) throw new Error('Target user not found');
+
+    // Check if conversation exists
+    const conversations = await prisma.conversation.findMany({
+        where: {
+            participants: {
+                some: { userId: session.userId }
+            }
+        },
+        include: {
+            participants: true
+        }
+    });
+
+    const existing = conversations.find(c => c.participants.some(p => p.userId === data.targetUserId));
+
+    if (existing) {
+        return existing.id;
+    }
+
+    // Create new
+    const newConv = await prisma.conversation.create({
+        data: {
+            participants: {
+                create: [
+                    { userId: session.userId },
+                    { userId: data.targetUserId }
+                ]
+            }
+        }
+    });
+
+    revalidatePath('/messages');
+    return newConv.id;
+});
+
+// 2. Send Message
+const sendMessageSchema = z.object({
+    conversationId: z.string(),
+    content: z.string(),
+    attachmentUrl: z.string().optional(),
+    attachmentType: z.string().optional()
+});
+
+export const sendMessageAction = createProtectedAction(sendMessageSchema, async (data, session) => {
+    if (!data.content.trim() && !data.attachmentUrl) {
+        throw new Error('Empty message');
+    }
+
+    // Sanitize message content
+    const sanitizedContent = data.content ? sanitizePlainText(data.content) : (data.attachmentType === 'image' ? 'Sent an image' : 'Sent a file');
+
+    try {
+        await prisma.$transaction(async (tx) => {
+            await tx.message.create({
+                data: {
+                    content: sanitizedContent,
+                    conversationId: data.conversationId,
+                    senderId: session.userId,
+                    attachmentUrl: data.attachmentUrl,
+                    attachmentType: data.attachmentType
+                }
+            });
+
+            await tx.conversation.update({
+                where: { id: data.conversationId },
+                data: { updatedAt: new Date() }
+            });
+        });
+
+        // Trigger pusher event (optional, usually done here or in separate event handler)
+        // Original code didn't trigger 'new-message' via Pusher? 
+        // Wait, `sendMessage` in original code (lines 162-208) did NOT trigger Pusher.
+        // But `markAsRead` and others do. 
+        // Maybe the client subscribes to DB changes or uses polling? Or I missed it.
+        // Ah, `sendMessage` logic in original code (lines 162-208) does NOT show Pusher trigger.
+        // That's standard for some apps (optimistic UI), but usually backend triggers it.
+        // I will preserve original behavior (no pusher trigger in sendMessage).
+
+        revalidatePath(`/messages`);
+        return { message: 'Sent' };
+    } catch (error) {
+        // Transaction failed
+        throw new Error('Failed to send message');
+    }
+}, {
+    rateLimiter: messageLimiter // Use shared limiter
+    // Note: duplicate imports of rate-limit might need checking if I import `messageLimiter` at top.
+});
+
+// 3. Mark as Read
+const markAsReadSchema = z.object({
+    conversationId: z.string()
+});
+
+export const markAsReadAction = createProtectedAction(markAsReadSchema, async (data, session) => {
+    await prisma.conversationParticipant.update({
+        where: { userId_conversationId: { userId: session.userId, conversationId: data.conversationId } },
+        data: { lastReadAt: new Date() }
+    });
+
+    // Trigger read-update
+    await pusherServer.trigger(`chat-${data.conversationId}`, 'read-update', {
+        userId: session.userId,
+        lastReadAt: new Date()
+    });
+
+    return { success: true };
+});
+
+// ─────────────────────────────────────────────────
+// Legacy Wrappers
+// ─────────────────────────────────────────────────
+
+/** @deprecated Use startConversationAction */
+export async function startConversation(targetUserId: string): Promise<ActionState<string>> {
+    const result = await startConversationAction({ targetUserId });
+    if (isOk(result)) {
+        return { success: true, data: result.data };
+    }
+    return { success: false, error: result.error };
 }
+
+/** @deprecated Use sendMessageAction */
+export async function sendMessage(conversationId: string, content: string, attachmentUrl?: string, attachmentType?: string): Promise<ActionState> {
+    const result = await sendMessageAction({ conversationId, content, attachmentUrl, attachmentType });
+    if (isOk(result)) {
+        return { success: true, message: 'Sent' };
+    }
+    return { success: false, error: result.error };
+}
+
+/** @deprecated Use markAsReadAction */
+export async function markAsRead(conversationId: string) {
+    const result = await markAsReadAction({ conversationId });
+    if (isOk(result)) {
+        return { success: true };
+    }
+    return { success: false };
+}
+
+// ─────────────────────────────────────────────────
+// Queries
+// ─────────────────────────────────────────────────
 
 export async function getConversations() {
     try {
@@ -94,7 +211,6 @@ export async function getConversations() {
             const other = c.participants.find(p => p.userId !== session.userId)?.user;
             const lastMsg = c.messages[0];
 
-            // For group: use group name or comma-separated names
             let name = 'Unknown';
             let avatar = null;
 
@@ -109,8 +225,8 @@ export async function getConversations() {
             return {
                 id: c.id,
                 isGroup,
-                name, // Generic name property for UI
-                otherUser: isGroup ? null : other, // Keep compatible if needed
+                name,
+                otherUser: isGroup ? null : other,
                 avatar,
                 lastMessage: lastMsg?.content || 'No messages yet',
                 lastMessageAt: lastMsg?.createdAt || c.updatedAt,
@@ -159,140 +275,206 @@ export async function getMessages(conversationId: string) {
     }
 }
 
-export async function sendMessage(conversationId: string, content: string, attachmentUrl?: string, attachmentType?: string): Promise<ActionState> {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return { success: false, error: 'Unauthorized' };
+// 4. Create Group Conversation
+const createGroupConversationSchema = z.object({
+    name: z.string(),
+    participantIds: z.array(z.string())
+});
 
-        if (!content.trim() && !attachmentUrl) return { success: false, error: 'Empty message' };
+export const createGroupConversationAction = createProtectedAction(createGroupConversationSchema, async (data, session) => {
+    if (!data.name.trim()) throw new Error('Group name required');
+    if (data.participantIds.length === 0) throw new Error('Select at least one member');
 
-        // Rate limiting: 10 messages per minute per user
-        const { messageLimiter, getRateLimitIdentifier, checkRateLimit } = await import('@/lib/rate-limit');
-        const identifier = getRateLimitIdentifier(session.userId as string);
-        const rateLimit = await checkRateLimit(messageLimiter, identifier);
+    // Add creator to participants
+    const allParticipants = [...new Set([...data.participantIds, session.userId])];
 
-        if (!rateLimit.success) {
-            return {
-                success: false,
-                error: `Slow down! Please wait a moment before sending another message.`
-            };
+    const group = await prisma.conversation.create({
+        data: {
+            isGroup: true,
+            name: data.name,
+            participants: {
+                create: allParticipants.map(id => ({
+                    userId: id,
+                    role: id === session.userId ? 'ADMIN' : 'MEMBER'
+                }))
+            }
         }
+    });
 
-        // Sanitize message content to prevent XSS
-        const { sanitizePlainText } = await import('@/lib/sanitize');
-        const sanitizedContent = content ? sanitizePlainText(content) : (attachmentType === 'image' ? 'Sent an image' : 'Sent a file');
+    revalidatePath('/messages');
+    return group.id;
+});
 
-        await prisma.$transaction(async (tx) => {
-            await tx.message.create({
-                data: {
-                    content: sanitizedContent,
-                    conversationId,
-                    senderId: session.userId as string,
-                    attachmentUrl,
-                    attachmentType
-                }
-            });
+// 5. Leave Group
+const leaveGroupSchema = z.object({
+    conversationId: z.string()
+});
 
-            await tx.conversation.update({
-                where: { id: conversationId },
-                data: { updatedAt: new Date() }
-            });
+export const leaveGroupAction = createProtectedAction(leaveGroupSchema, async (data, session) => {
+    await prisma.conversationParticipant.deleteMany({
+        where: {
+            conversationId: data.conversationId,
+            userId: session.userId
+        }
+    });
+
+    revalidatePath('/messages');
+    return { message: 'Left group' };
+});
+
+// 6. Add Member to Group
+const addMemberToGroupSchema = z.object({
+    conversationId: z.string(),
+    userId: z.string()
+});
+
+export const addMemberToGroupAction = createProtectedAction(addMemberToGroupSchema, async (data, session) => {
+    // Verify requester is admin
+    const requester = await prisma.conversationParticipant.findUnique({
+        where: {
+            userId_conversationId: {
+                userId: session.userId,
+                conversationId: data.conversationId
+            }
+        }
+    });
+
+    if (!requester) throw new Error('Not a member');
+    if (requester.role !== 'ADMIN') throw new Error('Only admins can add members');
+
+    // Check if user already exists
+    const exists = await prisma.conversationParticipant.findUnique({
+        where: {
+            userId_conversationId: {
+                userId: data.userId,
+                conversationId: data.conversationId
+            }
+        }
+    });
+
+    if (exists) throw new Error('User already in group');
+
+    await prisma.conversationParticipant.create({
+        data: {
+            conversationId: data.conversationId,
+            userId: data.userId,
+            role: 'MEMBER'
+        }
+    });
+
+    revalidatePath('/messages');
+    return { message: 'Added' };
+});
+
+// 7. Update Presence
+const updatePresenceSchema = z.object({});
+
+export const updatePresenceAction = createProtectedAction(updatePresenceSchema, async (_, session) => {
+    await prisma.user.update({
+        where: { id: session.userId },
+        data: { lastSeenAt: new Date() }
+    });
+    return { success: true };
+}, {
+    // Low priority, maybe no audit
+});
+
+// 8. Trigger Typing
+const triggerTypingSchema = z.object({
+    conversationId: z.string()
+});
+
+export const triggerTypingAction = createProtectedAction(triggerTypingSchema, async (data, session) => {
+    await pusherServer.trigger(`chat-${data.conversationId}`, 'typing', {
+        userId: session.userId
+    });
+    return { success: true };
+});
+
+// 9. Toggle Reaction
+const toggleReactionSchema = z.object({
+    messageId: z.string(),
+    emoji: z.string()
+});
+
+export const toggleReactionAction = createProtectedAction(toggleReactionSchema, async (data, session) => {
+    const existing = await prisma.reaction.findUnique({
+        where: { messageId_userId_emoji: { messageId: data.messageId, userId: session.userId, emoji: data.emoji } }
+    });
+
+    if (existing) {
+        await prisma.reaction.delete({ where: { id: existing.id } });
+    } else {
+        await prisma.reaction.create({
+            data: { messageId: data.messageId, userId: session.userId, emoji: data.emoji }
         });
-
-        revalidatePath(`/messages`);
-        return { success: true, message: 'Sent' };
-    } catch (error) {
-        console.error('Failed to send message:', error);
-        return { success: false, error: 'Failed' };
     }
-}
 
+    // Fetch updated reactions
+    const reactions = await prisma.reaction.findMany({
+        where: { messageId: data.messageId },
+        include: { user: { select: { id: true, name: true } } }
+    });
+
+    // Get conversationId to broadcast
+    const message = await prisma.message.findUnique({ where: { id: data.messageId }, select: { conversationId: true } });
+    if (message) {
+        await pusherServer.trigger(`chat-${message.conversationId}`, 'reaction-update', {
+            messageId: data.messageId,
+            reactions
+        });
+    }
+
+    return { success: true };
+});
+
+// ─────────────────────────────────────────────────
+// Legacy Wrappers
+// ─────────────────────────────────────────────────
+
+/** @deprecated Use createGroupConversationAction */
 export async function createGroupConversation(name: string, participantIds: string[]): Promise<ActionState<string>> {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return { success: false, error: 'Unauthorized' };
-
-        if (!name.trim()) return { success: false, error: 'Group name required' };
-        if (participantIds.length === 0) return { success: false, error: 'Select at least one member' };
-
-        // Add creator to participants
-        const allParticipants = [...new Set([...participantIds, session.userId])];
-
-        const group = await prisma.conversation.create({
-            data: {
-                isGroup: true,
-                name,
-                participants: {
-                    create: allParticipants.map(id => ({
-                        userId: id,
-                        role: id === session.userId ? 'ADMIN' : 'MEMBER'
-                    }))
-                }
-            }
-        });
-
-        revalidatePath('/messages');
-        return { success: true, data: group.id };
-
-    } catch (error) {
-        console.error('Failed to create group:', error);
-        return { success: false, error: 'Failed to create group' };
-    }
+    const result = await createGroupConversationAction({ name, participantIds });
+    if (isOk(result)) return { success: true, data: result.data };
+    return { success: false, error: result.error };
 }
 
+/** @deprecated Use leaveGroupAction */
 export async function leaveGroup(conversationId: string): Promise<ActionState> {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return { success: false, error: 'Unauthorized' };
-
-        await prisma.conversationParticipant.deleteMany({
-            where: {
-                conversationId,
-                userId: session.userId
-            }
-        });
-
-        revalidatePath('/messages');
-        return { success: true, message: 'Left group' };
-    } catch (error) {
-        console.error('Failed to leave group:', error);
-        return { success: false, error: 'Failed' };
-    }
+    const result = await leaveGroupAction({ conversationId });
+    if (isOk(result)) return { success: true, message: 'Left group' };
+    return { success: false, error: result.error };
 }
 
-export async function searchUsers(query: string) {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return [];
-
-        if (!query || query.length < 2) return [];
-
-        const users = await prisma.user.findMany({
-            where: {
-                OR: [
-                    { name: { contains: query } }, // sqlite is case-sensitive by default usually, but prisma might handle it.
-                    { email: { contains: query } }
-                ],
-                NOT: {
-                    id: session.userId
-                }
-            },
-            take: 5,
-            select: {
-                id: true,
-                name: true,
-                avatar: true,
-                email: true
-            }
-        });
-
-        return users;
-    } catch (error) {
-        console.error('Failed to search users:', error);
-        return [];
-    }
+/** @deprecated Use addMemberToGroupAction */
+export async function addMemberToGroup(conversationId: string, userId: string): Promise<ActionState> {
+    const result = await addMemberToGroupAction({ conversationId, userId });
+    if (isOk(result)) return { success: true, message: 'Added' };
+    return { success: false, error: result.error };
 }
 
+/** @deprecated Use updatePresenceAction */
+export async function updatePresence() {
+    const result = await updatePresenceAction({});
+    if (isOk(result)) return { success: true };
+    return { success: false };
+}
+
+/** @deprecated Use triggerTypingAction */
+export async function triggerTyping(conversationId: string) {
+    const result = await triggerTypingAction({ conversationId });
+    if (isOk(result)) return { success: true };
+    return { success: false };
+}
+
+/** @deprecated Use toggleReactionAction */
+export async function toggleReaction(messageId: string, emoji: string) {
+    const result = await toggleReactionAction({ messageId, emoji });
+    if (isOk(result)) return { success: true };
+    return { success: false };
+}
+
+// 10. Get Conversation Details
 export async function getConversationDetails(conversationId: string) {
     try {
         const session = await getSession();
@@ -304,7 +486,7 @@ export async function getConversationDetails(conversationId: string) {
                 participants: {
                     include: {
                         user: {
-                            select: { id: true, name: true, avatar: true, email: true, lastSeenAt: true }
+                            select: { id: true, name: true, avatar: true, lastSeenAt: true }
                         }
                     }
                 }
@@ -313,155 +495,44 @@ export async function getConversationDetails(conversationId: string) {
 
         if (!conversation) return null;
 
-        // Verify membership
-        const isMember = conversation.participants.some(p => p.userId === session.userId);
-        if (!isMember) return null;
+        // Security check
+        const isParticipant = conversation.participants.some(p => p.userId === session.userId);
+        if (!isParticipant) return null;
 
         return conversation;
     } catch (error) {
-        console.error('Failed to get details:', error);
+        console.error('Failed to get conversation details:', error);
         return null;
     }
 }
 
-export async function addMemberToGroup(conversationId: string, userId: string): Promise<ActionState> {
+// 11. Search Users
+export async function searchUsers(query: string) {
     try {
         const session = await getSession();
-        if (!session || !session.userId) return { success: false, error: 'Unauthorized' };
+        if (!session?.userId) return [];
 
-        // Verify requester is admin
-        const requester = await prisma.conversationParticipant.findUnique({
+        if (!query || query.length < 2) return [];
+
+        const users = await prisma.user.findMany({
             where: {
-                userId_conversationId: {
-                    userId: session.userId,
-                    conversationId
-                }
-            }
+                AND: [
+                    {
+                        OR: [
+                            { name: { contains: query, mode: 'insensitive' } },
+                            { email: { contains: query, mode: 'insensitive' } }
+                        ]
+                    },
+                    { id: { not: session.userId } }
+                ]
+            },
+            select: { id: true, name: true, avatar: true },
+            take: 10
         });
 
-        if (!requester) return { success: false, error: 'Not a member' };
-        if (requester.role !== 'ADMIN') return { success: false, error: 'Only admins can add members' };
-
-        // Check if user already exists
-        const exists = await prisma.conversationParticipant.findUnique({
-            where: {
-                userId_conversationId: {
-                    userId,
-                    conversationId
-                }
-            }
-        });
-
-        if (exists) return { success: false, error: 'User already in group' };
-
-        await prisma.conversationParticipant.create({
-            data: {
-                conversationId,
-                userId,
-                role: 'MEMBER'
-            }
-        });
-
-        revalidatePath('/messages');
-        return { success: true, message: 'Added' };
-
+        return users;
     } catch (error) {
-        console.error('Failed to add member:', error);
-        return { success: false, error: 'Failed' };
-    }
-}
-
-export async function updatePresence() {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return;
-
-        await prisma.user.update({
-            where: { id: session.userId },
-            data: { lastSeenAt: new Date() }
-        });
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to update presence:', error);
-        return { success: false };
-    }
-}
-
-export async function triggerTyping(conversationId: string) {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return;
-
-        // Trigger 'typing' event on channel 'chat-{conversationId}'
-        // Event data contains userId
-        await pusherServer.trigger(`chat-${conversationId}`, 'typing', {
-            userId: session.userId
-        });
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to trigger typing:', error);
-        return { success: false };
-    }
-}
-
-export async function markAsRead(conversationId: string) {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return;
-
-        await prisma.conversationParticipant.update({
-            where: { userId_conversationId: { userId: session.userId, conversationId } },
-            data: { lastReadAt: new Date() }
-        });
-
-        // Trigger read-update
-        await pusherServer.trigger(`chat-${conversationId}`, 'read-update', {
-            userId: session.userId,
-            lastReadAt: new Date()
-        });
-
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to mark as read:', error);
-        return { success: false };
-    }
-}
-
-export async function toggleReaction(messageId: string, emoji: string) {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return { success: false, error: 'Unauthorized' };
-
-        const existing = await prisma.reaction.findUnique({
-            where: { messageId_userId_emoji: { messageId, userId: session.userId, emoji } }
-        });
-
-        if (existing) {
-            await prisma.reaction.delete({ where: { id: existing.id } });
-        } else {
-            await prisma.reaction.create({
-                data: { messageId, userId: session.userId, emoji }
-            });
-        }
-
-        // Fetch updated reactions
-        const reactions = await prisma.reaction.findMany({
-            where: { messageId },
-            include: { user: { select: { id: true, name: true } } }
-        });
-
-        // Get conversationId to broadcast
-        const message = await prisma.message.findUnique({ where: { id: messageId }, select: { conversationId: true } });
-        if (message) {
-            await pusherServer.trigger(`chat-${message.conversationId}`, 'reaction-update', {
-                messageId,
-                reactions
-            });
-        }
-
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to toggle reaction:', error);
-        return { success: false };
+        console.error('Search failed:', error);
+        return [];
     }
 }
