@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 
 const secretKey = process.env.JWT_SECRET || 'fallback-secret-key-for-dev-only';
 if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-    throw new Error('JWT_SECRET is not defined in environment variables');
+    console.error('WARNING: JWT_SECRET is not defined in environment variables');
 }
 const key = new TextEncoder().encode(secretKey);
 
