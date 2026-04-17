@@ -15,7 +15,7 @@ if (!stripeSecretKey && process.env.NODE_ENV === 'production') {
 
 export const stripe = stripeSecretKey
     ? new Stripe(stripeSecretKey, {
-        apiVersion: '2024-12-18.acacia',
+        apiVersion: '2024-12-18.acacia' as any,
         typescript: true,
     })
     : null;

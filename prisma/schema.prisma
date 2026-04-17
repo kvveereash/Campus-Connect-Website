@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,69 +7,111 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ── Enums ──
+
+enum UserRole {
+  USER
+  ADMIN
+  COLLEGE_ADMIN
+}
+
+enum RegistrationStatus {
+  PENDING
+  PENDING_PAYMENT
+  CONFIRMED
+  PAID
+  COMPLETED
+  CANCELLED
+  WAITLISTED
+}
+
+enum ClubMemberRole {
+  MEMBER
+  ADMIN
+}
+
+enum NotificationType {
+  EVENT_REMINDER
+  EVENT_UPDATE
+  EVENT_JOIN
+  CLUB_INVITE
+  CLUB_UPDATE
+  CLUB_JOIN
+  TEAM_REQUEST
+  TEAM_CONNECT
+  COMMENT
+  BADGE_EARNED
+  SYSTEM
+  GENERAL
+}
+
+enum TeamRequestType {
+  LOOKING_FOR_TEAM
+  LOOKING_FOR_MEMBER
+}
+
+enum ConversationRole {
+  MEMBER
+  ADMIN
+}
+
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  department String?
-  year      String?
-  avatar    String? // Profile picture URL
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  lastSeenAt DateTime @default(now())
-  role      String   @default("USER") // "ADMIN" | "USER" | "COLLEGE_ADMIN"
-
-  // Relationships
-  collegeId String?
-  college   College? @relation(fields: [collegeId], references: [id])
-  
-  followedColleges College[] @relation("FollowedColleges")
-  registrations    EventRegistration[] // Replace: registeredEvents Event[] @relation("RegisteredEvents")
-  createdEvents    Event[]   @relation("CreatedEvents")
-  badges           UserBadge[]
-  messages         ChatMessage[]
-
-  // Smart Matchmaking
-  bio       String?
-  skills    Skill[]
-  interests Interest[]
-  
-  // Profile
-  resumeUrl String?
-  achievements String? // Storing as JSON String for SQLite compatibility
-  projects     String?
-  portfolioLinks String?
-  
-  
-  clubMemberships ClubMember[]
-  posts           Post[]
-  comments        Comment[]
-  
-  notifications          Notification[] @relation("UserNotifications")
-  triggeredNotifications Notification[] @relation("NotificationActor")
-
+  id                         String                    @id @default(cuid())
+  name                       String
+  email                      String                    @unique
+  password                   String
+  department                 String?
+  year                       String?
+  avatar                     String?
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
+  lastSeenAt                 DateTime                  @default(now())
+  role                       UserRole                  @default(USER)
+  collegeId                  String?
+  bio                        String?
+  resumeUrl                  String?
+  achievements               String?
+  projects                   String?
+  portfolioLinks             String?
+  lockedUntil                DateTime?
+  auditLogs                  AuditLog[]                @relation("AuditActor")
+  messages                   ChatMessage[]
+  clubMemberships            ClubMember[]
+  comments                   Comment[]
   conversationParticipations ConversationParticipant[]
-  messagesSent               Message[]
-  reactions                  Reaction[]
-  teamRequests               TeamRequest[]
-  auditLogs                  AuditLog[]    @relation("AuditActor")
-  passwordResetTokens        PasswordResetToken[]
+  createdEvents              Event[]                   @relation("CreatedEvents")
+  registrations              EventRegistration[]
   eventReviews               EventReview[]
+  messagesSent               Message[]
+  triggeredNotifications     Notification[]            @relation("NotificationActor")
+  notifications              Notification[]            @relation("UserNotifications")
+  passwordResetTokens        PasswordResetToken[]
+  posts                      Post[]
+  reactions                  Reaction[]
+  RefreshToken               RefreshToken[]
+  teamRequests               TeamRequest[]
+  college                    College?                  @relation(fields: [collegeId], references: [id])
+  badges                     UserBadge[]
+  followedColleges           College[]                 @relation("FollowedColleges")
+  interests                  Interest[]                @relation("InterestToUser")
+  skills                     Skill[]                   @relation("SkillToUser")
+
+  deletedAt                  DateTime?
 
   @@index([email])
   @@index([collegeId])
   @@index([createdAt])
+  @@index([deletedAt])
 }
 
 model PasswordResetToken {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([userId])
@@ -81,13 +120,13 @@ model PasswordResetToken {
 model Skill {
   id    String @id @default(cuid())
   name  String @unique
-  users User[]
+  users User[] @relation("SkillToUser")
 }
 
 model Interest {
   id    String @id @default(cuid())
   name  String @unique
-  users User[]
+  users User[] @relation("InterestToUser")
 }
 
 model College {
@@ -96,76 +135,74 @@ model College {
   location    String
   logo        String
   description String
-  
-  // Relationships
-  students    User[]
-  followers   User[]   @relation("FollowedColleges")
-  events      Event[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   clubs       Club[]
+  events      Event[]
+  students    User[]
+  followers   User[]  @relation("FollowedColleges")
 }
 
 model Event {
-  id                String   @id @default(cuid())
+  id                String              @id @default(cuid())
   title             String
   description       String
   date              DateTime
   venue             String
   category          String
-  price             Float    @default(0) // New: Event registration fee
-  registrationCount Int      @default(0)
+  registrationCount Int                 @default(0)
   thumbnail         String?
-  
-  // Relationships
-  registrations EventRegistration[] // Replace: User[] @relation("RegisteredEvents")
-  
-  hostCollegeId String
-  hostCollege   College @relation(fields: [hostCollegeId], references: [id])
-  
-  creatorId     String?
-  creator       User?   @relation("CreatedEvents", fields: [creatorId], references: [id])
-  
-  clubId        String?
-  club          Club?   @relation(fields: [clubId], references: [id])
-  verified      Boolean @default(false)
-  rejectionReason String?
-  verifiedBy    String?
-  verifiedAt    DateTime?
-  teamRequests  TeamRequest[]
-  reviews       EventReview[]
+  hostCollegeId     String
+  creatorId         String?
+  clubId            String?
+  verified          Boolean             @default(false)
+  rejectionReason   String?
+  verifiedBy        String?
+  verifiedAt        DateTime?
+  price             Float               @default(0)
+  club              Club?               @relation(fields: [clubId], references: [id])
+  creator           User?               @relation("CreatedEvents", fields: [creatorId], references: [id])
+  hostCollege       College             @relation(fields: [hostCollegeId], references: [id])
+  registrations     EventRegistration[]
+  reviews           EventReview[]
+  teamRequests      TeamRequest[]
+
+  deletedAt         DateTime?
 
   @@index([hostCollegeId])
   @@index([date])
   @@index([category])
   @@index([creatorId])
+  @@index([deletedAt])
 }
 
 model EventReview {
   id        String   @id @default(cuid())
-  rating    Int      // 1-5 stars
-  comment   String?  // Optional review text
+  rating    Int
+  comment   String?
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   eventId   String
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, eventId]) // One review per user per event
+  @@unique([userId, eventId])
   @@index([eventId])
   @@index([userId])
 }
 
 model EventRegistration {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  eventId     String
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  status      String   @default("PENDING") // PENDING, PAID, CANCELLED
-  paymentId   String?  // Stripe session ID or transaction ID
-  amountPaid  Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String
+  eventId    String
+  status     RegistrationStatus @default(PENDING)
+  paymentId  String?
+  amountPaid Float?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, eventId])
   @@index([userId])
@@ -173,153 +210,154 @@ model EventRegistration {
 }
 
 model Badge {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String      @id @default(cuid())
+  name        String      @unique
   description String
   icon        String
-  
-  // Relationships
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   users       UserBadge[]
 }
 
 model UserBadge {
-  id        String   @id @default(cuid())
+  id         String   @id @default(cuid())
   dateEarned DateTime @default(now())
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  
-  badgeId   String
-  badge     Badge    @relation(fields: [badgeId], references: [id])
+  userId     String
+  badgeId    String
+  badge      Badge    @relation(fields: [badgeId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, badgeId])
 }
 
 model Club {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  logo        String?
-  category    String   // e.g., Technical, Cultural, Sports
-  
-  collegeId   String
-  college     College  @relation(fields: [collegeId], references: [id])
-  
-  members     ClubMember[]
-  events      Event[]
-  posts       Post[]
-  
-  verified    Boolean  @default(false)
+  id              String       @id @default(cuid())
+  name            String
+  description     String
+  logo            String?
+  category        String
+  collegeId       String
+  verified        Boolean      @default(false)
   rejectionReason String?
-  verifiedBy    String?
-  verifiedAt    DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  college         College      @relation(fields: [collegeId], references: [id])
+  members         ClubMember[]
+  events          Event[]
+  posts           Post[]
+  deletedAt       DateTime?
+
+  @@index([collegeId])
+  @@index([deletedAt])
 }
 
 model ClubMember {
-  id        String   @id @default(cuid())
-  role      String   // ADMIN, MEMBER
-  joinedAt  DateTime @default(now())
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  
-  clubId    String
-  club      Club     @relation(fields: [clubId], references: [id])
-  
+  id       String   @id @default(cuid())
+  role     ClubMemberRole
+  joinedAt DateTime @default(now())
+  userId   String
+  clubId   String
+  club     Club     @relation(fields: [clubId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
   @@unique([userId, clubId])
+  @@index([clubId])  // For getClubMembers()
+  @@index([userId])  // For getUserMemberships()
 }
 
 model ChatRoom {
-  id          String   @id @default(cuid())
-  name        String
-  type        String   // 'topic' or 'college'
-  description String?
-  participants Int     @default(0) // Determining count usually requires query, but simple counter for now
-  
-  messages    ChatMessage[]
+  id           String        @id @default(cuid())
+  name         String
+  type         String
+  description  String?
+  participants Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  messages     ChatMessage[]
 }
 
 model ChatMessage {
   id        String   @id @default(cuid())
   content   String
   timestamp DateTime @default(now())
-  
   senderId  String
-  sender    User     @relation(fields: [senderId], references: [id])
-  
   roomId    String
   room      ChatRoom @relation(fields: [roomId], references: [id])
+  sender    User     @relation(fields: [senderId], references: [id])
+
+  @@index([roomId, timestamp])  // For getMessageHistory()
+  @@index([senderId])           // For getUserMessages()
 }
 
 model Post {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   content   String
   image     String?
-  likes     Int      @default(0)
-  comments  Int      @default(0) // Simple counter for now
-  timestamp DateTime @default(now())
-
+  likes     Int       @default(0)
+  comments  Int       @default(0)
+  timestamp DateTime  @default(now())
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-
   clubId    String
-  club      Club     @relation(fields: [clubId], references: [id])
-  
   replies   Comment[]
+  author    User      @relation(fields: [authorId], references: [id])
+  club      Club      @relation(fields: [clubId], references: [id])
+
+  @@index([clubId, timestamp])  // For getClubPosts() sorted by date
+  @@index([authorId])           // For getUserPosts()
 }
 
 model Comment {
   id        String   @id @default(cuid())
   content   String
   timestamp DateTime @default(now())
-
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-
   postId    String
+  author    User     @relation(fields: [authorId], references: [id])
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])     // For getPostComments()
+  @@index([authorId])   // For getUserComments()
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  message   String
-  link      String?
-  type      String   // COMMENT, LIKE, SYSTEM, INVITE
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-
+  id          String   @id @default(cuid())
+  message     String
+  link        String?
+  type        NotificationType
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   recipientId String
-  recipient   User     @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
-
   actorId     String?
   actor       User?    @relation("NotificationActor", fields: [actorId], references: [id])
+  recipient   User     @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, createdAt])  // For getUserNotifications() sorted by date
+  @@index([recipientId, read])       // For unread notification counts
 }
 
 model Conversation {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  participants ConversationParticipant[]
-  messages     Message[]
-
-  isGroup      Boolean  @default(false)
+  id           String                    @id @default(cuid())
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @default(now())
+  isGroup      Boolean                   @default(false)
   name         String?
   groupImage   String?
+  participants ConversationParticipant[]
+  messages     Message[]
 }
 
 model ConversationParticipant {
   id             String       @id @default(cuid())
   userId         String
-  user           User         @relation(fields: [userId], references: [id])
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  
   lastReadAt     DateTime     @default(now())
-  role           String       @default("MEMBER") // ADMIN, MEMBER
-  
+  role           ConversationRole @default(MEMBER)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id])
+
   @@unique([userId, conversationId])
   @@index([userId])
   @@index([conversationId])
@@ -329,15 +367,12 @@ model Message {
   id             String       @id @default(cuid())
   content        String
   attachmentUrl  String?
-  attachmentType String?      // 'image', 'video', 'file'
+  attachmentType String?
   createdAt      DateTime     @default(now())
-  
   senderId       String
-  sender         User         @relation(fields: [senderId], references: [id])
-  
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  
+  sender         User         @relation(fields: [senderId], references: [id])
   reactions      Reaction[]
 
   @@index([conversationId])
@@ -348,43 +383,71 @@ model Message {
 model Reaction {
   id        String   @id @default(cuid())
   emoji     String
-  
   messageId String
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   createdAt DateTime @default(now())
-  
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([messageId, userId, emoji])
 }
 
 model TeamRequest {
-  id          String   @id @default(cuid())
-  
+  id          String          @id @default(cuid())
   eventId     String
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
   creatorId   String
-  creator     User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  
-  creatorName String // Denormalized for simpler display
-  type        String // LOOKING_FOR_TEAM | LOOKING_FOR_MEMBER
-  skills      String // Stored as JSON string or comma-separated
+  creatorName String
+  type        TeamRequestType
+  skills      String
   description String
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  creator     User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  event       Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])    // For event team requests
+  @@index([creatorId])  // For user's team requests
 }
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  action    String   // APPROVE, REJECT, DELETE
-  entityType String  // CLUB, EVENT, USER
-  entityId  String
-  actorId   String
-  actor     User     @relation("AuditActor", fields: [actorId], references: [id])
-  details   String?
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  actorId    String
+  details    Json?
+  createdAt  DateTime @default(now())
+  actor      User     @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([createdAt])   // For admin dashboard queries
+  @@index([actorId])     // For user audit trail
+  @@index([entityType, entityId])  // For entity history
+}
+
+model LoginAttempt {
+  id        String   @id
+  email     String
+  success   Boolean
+  ip        String?
+  userAgent String?
   createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+}
+
+model RefreshToken {
+  id        String   @id
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  family    String
+  revoked   Boolean  @default(false)
+  userAgent String?
+  ip        String?
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([family])
+  @@index([token])
+  @@index([userId])
 }

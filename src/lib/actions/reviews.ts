@@ -167,6 +167,15 @@ export async function getUserEventReview(eventId: string) {
                     userId: session.userId as string,
                     eventId
                 }
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatar: true
+                    }
+                }
             }
         });
 

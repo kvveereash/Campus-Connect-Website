@@ -41,7 +41,7 @@ export default function UserNav() {
     }
 
     return (
-        <Link href="/login" className={`${styles.navLink} btn btn-primary`}>
+        <Link href="/login" className={styles.loginBtn}>
             Login
         </Link>
     );

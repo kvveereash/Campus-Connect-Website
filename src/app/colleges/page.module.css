@@ -1,16 +1,18 @@
-/* ... existing container ... */
+/* Colleges Page - Premium Editorial Design */
 .container {
-    padding: 2rem 0;
+    padding: 3rem 0 4rem;
 }
 
+/* Hero Header */
 .header {
     text-align: center;
     margin-bottom: 4rem;
+    padding: 3rem 1rem 0;
 }
 
 .title {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: 0.75rem;
     color: var(--text-primary);
     font-weight: 800;
     letter-spacing: -0.03em;
@@ -18,59 +20,153 @@
 }
 
 .highlight {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    background: linear-gradient(135deg, var(--color-forest) 0%, #7C5DAF 50%, var(--color-lilac) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .subtitle {
-    font-size: 1.125rem;
+    font-size: 1.15rem;
     color: var(--text-secondary);
-    max-width: 600px;
+    max-width: 520px;
     margin: 0 auto;
-    line-height: 1.6;
+    line-height: 1.7;
     text-align: center;
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 2.5rem;
-    padding: 1rem;
+/* Search Bar */
+.searchWrapper {
+    margin-top: 2.5rem;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
 }
 
+.searchIcon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 1rem 1.25rem 1rem 3.25rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--border-color);
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    outline: none;
+    background: var(--surface-color);
+    color: var(--text-primary);
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.searchInput:focus {
+    border-color: var(--color-lilac);
+    box-shadow: 0 0 0 4px rgba(224, 192, 248, 0.2), 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.searchInput::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+/* Stats Bar */
+.statsBar {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2.5rem;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.stat {
+    text-align: center;
+}
+
+.statValue {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.statLabel {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.15rem;
+    font-weight: 500;
+}
+
+/* Grid */
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2.5rem;
+    padding: 2rem 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* College Card */
 .card {
-    background: #ffffff;
-    border: 1.5px solid var(--color-forest);
-    /* Solid Dark Border */
-    border-radius: 1.5rem;
-    /* Match Event Cards */
-    box-shadow: 8px 8px 0px var(--color-lilac);
-    /* Solid Purple/Lilac Offset */
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 1.25rem;
     overflow: hidden;
-    transition: all 0.2s ease-out;
+    transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     flex-direction: column;
+    cursor: pointer;
+    width: 100%;
+    max-width: 400px;
+    flex: 1 1 340px;
+    position: relative;
+    box-shadow: 0 4px 24px rgba(15, 31, 28, 0.06), 0 1px 4px rgba(15, 31, 28, 0.04);
 }
 
 .card:hover {
-    transform: translate(-2px, -2px);
-    /* Pop up */
-    border-color: var(--color-forest);
-    box-shadow: 12px 12px 0px var(--color-lilac);
-    /* Shadow grows */
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(15, 31, 28, 0.14), 0 6px 16px rgba(15, 31, 28, 0.06);
 }
 
+/* Image Area */
 .imageContainer {
     position: relative;
     width: 100%;
     height: 200px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--color-mint) 0%, var(--color-lilac) 100%);
 }
 
 .collegeImage {
     object-fit: cover;
+    transition: transform 0.4s ease;
 }
 
+.card:hover .collegeImage {
+    transform: scale(1.05);
+}
+
+/* Card Content */
 .content {
     padding: 1.5rem;
     display: flex;
@@ -79,29 +175,111 @@
 }
 
 .collegeName {
-    font-size: 1.5rem;
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 .location {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--secondary-color);
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
+    gap: 0.35rem;
+    color: var(--color-orange);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.85rem;
 }
 
 .description {
     color: var(--text-secondary);
     margin-bottom: 1.5rem;
-    line-height: 1.6;
-    font-size: 0.95rem;
+    line-height: 1.65;
+    font-size: 0.9rem;
     flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .footer {
     margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.viewBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-forest);
+    background: transparent;
+    color: var(--color-forest);
+    font-weight: 500;
+    font-size: 0.9rem;
+    font-family: var(--font-sans);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.viewBtn:hover {
+    background: var(--color-forest);
+    color: var(--color-cream);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 31, 28, 0.15);
+}
+
+.viewBtnArrow {
+    transition: transform 0.2s ease;
+    font-size: 0.85rem;
+}
+
+.viewBtn:hover .viewBtnArrow {
+    transform: translateX(3px);
+}
+
+/* Empty State */
+.emptyState {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+
+.emptyIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.emptyText {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .statsBar {
+        gap: 2rem;
+    }
+
+    .header {
+        padding: 1.5rem 1rem 0;
+    }
+}
+
+.title {
+    font-size: 2.5rem;
 }

@@ -31,7 +31,7 @@ interface LogEntry {
 }
 
 class Logger {
-    private isDevelopment = process.env.NODE_ENV === 'development';
+    private isDevelopment = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development';
 
     /**
      * Format log entry as JSON for production, pretty print for development
@@ -172,8 +172,10 @@ class Logger {
     /**
      * Log authentication event
      */
-    auth(event: 'login' | 'logout' | 'signup' | 'failed', userId?: string, context?: LogContext) {
-        const level = event === 'failed' ? LogLevel.WARN : LogLevel.INFO;
+    auth(event: 'login' | 'logout' | 'signup' | 'failed' | 'login_blocked' | 'account_locked', userId?: string, context?: LogContext) {
+        const level = (event === 'failed' || event === 'login_blocked' || event === 'account_locked')
+            ? LogLevel.WARN
+            : LogLevel.INFO;
         this.log(level, `Auth: ${event}`, {
             ...context,
             type: 'auth',

@@ -1,90 +1,109 @@
+/* ═══════════════════════════════════════════════════════════════
+   CLUBS PAGE — Premium Editorial Redesign
+   ═══════════════════════════════════════════════════════════════ */
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 3rem 1rem;
+    padding: 4rem 1.5rem 6rem;
 }
 
-/* Header Section */
+/* ─── Header Section ────────────────────────────────────────── */
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4rem;
+    align-items: flex-end;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
 }
 
 .title {
-    font-size: 4.5rem;
-    /* Large impact */
-    font-weight: 800;
+    font-size: clamp(2.8rem, 5vw, 4.2rem);
+    font-weight: 700;
     color: var(--color-forest);
-    /* Dark text for visibility */
-    /* Fun retro lilac shadow */
-    text-shadow: 4px 4px 0px rgba(224, 192, 248, 1);
     font-family: var(--font-serif);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    position: relative;
+}
+
+/* Decorative accent bar under title */
+.title::after {
+    content: '';
+    position: absolute;
+    bottom: -0.75rem;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--color-lilac), var(--color-orange));
 }
 
 .createButton {
-    background: var(--color-lilac);
-    /* Lilac Pill */
-    color: var(--color-forest);
-    border: 1.5px solid var(--color-forest);
-    /* Black Border */
-    padding: 0.8rem 1.75rem;
-    /* border-radius: 100px; Removed to inherit global */
-    font-weight: 500;
-    font-size: 1rem;
+    background: var(--color-forest);
+    color: var(--color-cream);
+    border: none;
+    padding: 0.75rem 1.75rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     text-decoration: none;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0);
+    gap: 0.4rem;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 14px rgba(15, 31, 28, 0.15);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .createButton:hover {
-    transform: translateY(-2px);
-    box-shadow: 4px 4px 0 var(--color-forest);
-    /* Retro pop shadow */
-    filter: brightness(1.02);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 24px rgba(15, 31, 28, 0.22);
+    filter: brightness(1.1);
 }
 
-/* Remove pseudo-element glow for simpler retro style */
+.createButton:active {
+    transform: translateY(0) scale(0.98);
+}
+
 .createButton::after {
     display: none;
 }
 
-/* Tabs & Search Section */
+/* ─── Controls: Tabs + Search ─────────────────────────────── */
 .controlsContainer {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    /* Align tabs to bottom with search */
-    margin-bottom: 3rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    /* Very subtle line */
-    padding-bottom: 0.5rem;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    gap: 1.5rem;
 }
 
 .tabs {
     display: flex;
-    gap: 2rem;
-    position: relative;
+    gap: 0.25rem;
+    background: rgba(15, 31, 28, 0.04);
+    border-radius: 999px;
+    padding: 4px;
 }
 
 .tab {
-    padding: 0.75rem 0;
-    /* Text only padding */
+    padding: 0.55rem 1.4rem;
     border: none;
     background: none;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-secondary);
     cursor: pointer;
     position: relative;
-    transition: color 0.3s;
+    transition: all 0.25s ease;
     font-family: var(--font-sans);
+    border-radius: 999px;
 }
 
 .tab:hover {
@@ -94,69 +113,82 @@
 .activeTab {
     color: var(--color-forest);
     font-weight: 600;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(15, 31, 28, 0.08);
 }
 
-/* Animated Underline */
+/* Remove old underline */
 .activeTab::after {
-    content: '';
-    position: absolute;
-    bottom: -0.6rem;
-    /* Push below container border */
-    left: 0;
-    width: 60%;
-    /* Partial width underscore style */
-    height: 3px;
-    background: linear-gradient(90deg, #0F1F1C, #8B5CF6);
-    /* Forest to Purple gradient */
-    border-radius: 2px;
+    display: none;
 }
 
-/* Search Bar (Centered if separate, or integrated) */
-/* Assuming the search bar is separate based on image */
-.searchContainer {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: -1.5rem;
-    /* Adjust positioning based on flow */
-}
-
-/* Grid & Card Styles (Reusing standard or card specific) */
+/* ─── Card Grid ───────────────────────────────────────────── */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 2.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
 }
 
+/* ─── Club Card — Premium Glass Style ─────────────────────── */
 .card {
     background: #ffffff;
-    border: 1.5px solid var(--color-forest);
-    /* Solid Dark Border */
-    border-radius: 1.5rem;
-    /* Match Event/College Cards */
-    box-shadow: 8px 8px 0px var(--color-orange);
-    /* Solid Orange (Red) Offset */
+    border: 1px solid rgba(15, 31, 28, 0.08);
+    border-radius: 1.25rem;
     overflow: hidden;
-    transition: all 0.2s ease-out;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     flex-direction: column;
+    position: relative;
+    box-shadow:
+        0 1px 3px rgba(15, 31, 28, 0.04),
+        0 4px 12px rgba(15, 31, 28, 0.03);
 }
 
-/* Card Inner Styles */
-.image {
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow:
+        0 12px 32px rgba(15, 31, 28, 0.1),
+        0 4px 12px rgba(15, 31, 28, 0.04);
+    border-color: rgba(15, 31, 28, 0.12);
+}
+
+/* Card image wrapper — gradient overlay for depth */
+.card > div:first-child {
+    position: relative;
     width: 100%;
     height: 180px;
-    object-fit: cover;
-    transition: transform 0.5s ease;
+    overflow: hidden;
 }
 
-.card:hover .image {
-    transform: scale(1.05);
+.card > div:first-child::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(to top, rgba(15, 31, 28, 0.35), transparent);
+    z-index: 1;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
 }
 
+.card:hover > div:first-child::after {
+    opacity: 0.7;
+}
+
+/* Image zoom on hover */
+.card > div:first-child img {
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card:hover > div:first-child img {
+    transform: scale(1.08);
+}
+
+/* ─── Card Content ────────────────────────────────────────── */
 .content {
-    padding: 1.5rem;
-    /* Critical padding for alignment */
+    padding: 1.25rem 1.5rem 1.5rem;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -164,28 +196,34 @@
 }
 
 .category {
-    font-size: 0.75rem;
+    display: inline-block;
+    width: fit-content;
+    font-size: 0.65rem;
     font-weight: 700;
-    color: var(--color-orange);
-    /* Matching card accent */
+    color: var(--color-forest);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.6rem;
+    padding: 0.3rem 0.75rem;
+    background: var(--color-mint);
+    border-radius: 999px;
 }
 
 .clubName {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     color: var(--color-forest);
-    line-height: 1.2;
+    line-height: 1.25;
+    font-family: var(--font-sans);
+    letter-spacing: -0.02em;
 }
 
 .description {
     color: var(--text-secondary);
-    font-size: 0.95rem;
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
+    font-size: 0.88rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.55;
     flex: 1;
 }
 
@@ -194,39 +232,59 @@
     justify-content: space-between;
     align-items: center;
     margin-top: auto;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    padding-top: 1rem;
+    border-top: 1px solid rgba(15, 31, 28, 0.06);
 }
 
 .members {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    font-size: 0.8rem;
     font-weight: 500;
+    color: var(--text-secondary);
 }
 
+/* ─── Responsive ──────────────────────────────────────────── */
 @media (max-width: 768px) {
+    .container {
+        padding: 2.5rem 1rem 4rem;
+    }
+
     .header {
         flex-direction: column;
-        text-align: center;
-        gap: 1.5rem;
-        margin-bottom: 3rem;
+        align-items: flex-start;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .title {
+        font-size: 2.4rem;
     }
 
     .controlsContainer {
         flex-direction: column;
-        gap: 2rem;
-        align-items: center;
+        gap: 1rem;
+        align-items: stretch;
     }
 
-    .title {
-        font-size: 3rem;
+    .controlsContainer > div {
+        width: 100% !important;
     }
 
-    .searchContainer {
-        position: static;
-        transform: none;
-        width: 100%;
-        max-width: 400px;
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5rem;
     }
 }

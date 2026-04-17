@@ -35,149 +35,122 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
     const hostCollege = event.hostCollege;
 
     // Helper for category badge styles
-    const getCategoryStyle = (cat: string) => {
+    const getChipClass = (cat: string) => {
         switch (cat) {
-            case 'Hackathon': return styles.badgeHackathon;
-            case 'Fest': return styles.badgeFest;
-            case 'Workshop': return styles.badgeWorkshop;
-            case 'Cultural': return styles.badgeCultural;
-            default: return styles.badgeHackathon;
+            case 'Hackathon': return styles.chipHackathon;
+            case 'Fest': return styles.chipFest;
+            case 'Workshop': return styles.chipWorkshop;
+            case 'Cultural': return styles.chipCultural;
+            default: return styles.chipDefault;
         }
     };
-
-    // Helper for category icon placeholder
-    const getCategoryIcon = (cat: string) => {
-        switch (cat) {
-            case 'Hackathon': return '💻';
-            case 'Fest': return '🎉';
-            case 'Workshop': return '💡';
-            default: return '📅';
-        }
-    };
-
-    const isPrimaryCard = index % 2 === 0;
 
     return (
         <motion.div
             className={styles.card}
-            whileHover={{ y: -8, transition: { duration: 0.2 } }}
+            variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+            }}
+            whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
         >
-            {/* Thumbnail */}
-            <div className={styles.thumbnailWrapper}>
-                <Image
-                    src={event.thumbnail || '/hero.png'}
-                    alt={event.title}
-                    fill
-                    className={styles.thumbnail}
-                />
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        openModal('SHARE', {
-                            eventUrl: `${window.location.origin}/events/${event.id}`,
-                            eventName: event.title
-                        });
-                    }}
-                    style={{
-                        position: 'absolute',
-                        top: '0.5rem',
-                        right: '0.5rem',
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        border: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                        zIndex: 2,
-                    }}
-                    title="Share Event"
-                    aria-label={`Share ${event.title}`}
+            <a href={`/events/${event.id}`} style={{ display: 'flex', flexDirection: 'column', flex: 1, textDecoration: 'none', color: 'inherit', height: '100%' }}>
+                {/* Image & Top Badges */}
+                <div 
+                    className={styles.imageContainer} 
+                    style={{ flexShrink: 0, position: 'relative', width: '100%', height: '200px', overflow: 'hidden' }}
                 >
-                    <span aria-hidden="true">📤</span>
-                </button>
-                {mounted && (
-                    <div className={`${styles.priceTag} ${(event.price === 0 || event.price === undefined) ? styles.freeTag : ''}`}>
-                        {(event.price === 0 || event.price === undefined) ? 'FREE' : `$${event.price}`}
-                    </div>
-                )}
-            </div>
+                    <Image
+                        src={event.thumbnail || '/hero.png'}
+                        alt={event.title || 'Event image'}
+                        fill
+                        className={styles.image}
+                        style={{ objectFit: 'cover' }}
+                    />
 
-            <div className={styles.header}>
-                <div className={styles.categoryGroup}>
-                    <span className={`${getCategoryStyle(event.category)} px-2 py-0.5 rounded text-xs flex items-center gap-1`}>
-                        <span className={styles.categoryIcon}>{getCategoryIcon(event.category)}</span>
-                        {event.category}
+                    {/* Price Tag (Top Left) */}
+                    {mounted && (
+                        <div className={`${styles.priceTag} ${(event.price === 0 || event.price === undefined) ? styles.freeTag : ''}`}>
+                            {(event.price === 0 || event.price === undefined) ? 'FREE' : `$${event.price}`}
+                        </div>
+                    )}
+
+                    {/* Share Button (Top Right) */}
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            openModal('SHARE', {
+                                eventUrl: `${window.location.origin}/events/${event.id}`,
+                                eventName: event.title
+                            });
+                        }}
+                        className={styles.shareButton}
+                        title="Share Event"
+                        aria-label={`Share ${event.title}`}
+                    >
+                        <span aria-hidden="true" style={{ fontSize: '14px' }}>📤</span>
+                    </button>
+
+                    {/* Category Chip (Bottom Left) */}
+                    <span className={`${styles.categoryChip} ${getChipClass(event.category)}`}>
+                        {event.category || 'General'}
                     </span>
                 </div>
-                <div className={styles.dateBadge}>
-                    {mounted ? (
-                        <>
-                            <span>
-                                {dateInfo.month} {dateInfo.day}
-                            </span>
-                            <span className={styles.dateSubtext}>
-                                {dateInfo.weekday}
-                            </span>
-                        </>
-                    ) : (
-                        <div style={{ width: '40px', height: '40px', background: '#eee', borderRadius: '4px' }} />
+
+                {/* Content */}
+                <div className={styles.content}>
+                    <h2 className={styles.title}>{event.title || 'Untitled Event'}</h2>
+                    <p className={styles.description}>
+                        {mounted ? `From ${dateInfo.month} ${dateInfo.day}, ${dateInfo.weekday} • ${event.venue || 'TBA'}` : 'Loading details...'}
+                    </p>
+
+                    {/* Next Event / Date Info Box */}
+                    {mounted && (
+                        <div className={styles.infoBox}>
+                            <span className={styles.infoIcon}>📅</span>
+                            <span className={styles.infoLabel}>Date:</span>
+                            {dateInfo.month} {dateInfo.day} — {dateInfo.weekday}
+                        </div>
                     )}
-                </div>
-            </div>
 
-            <h3 className={styles.title}>{event.title}</h3>
+                    {/* Host Info */}
+                    <div className={styles.hostRow}>
+                        <div className={styles.hostLogoWrapper}>
+                            {event.club?.logo ? (
+                                <Image
+                                    src={event.club.logo}
+                                    alt={event.club.name}
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                    className={styles.hostLogo}
+                                />
+                            ) : hostCollege?.logo ? (
+                                <Image
+                                    src={hostCollege.logo}
+                                    alt={hostCollege.name}
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                    className={styles.hostLogo}
+                                />
+                            ) : null}
+                        </div>
+                        <span className={styles.hostText}>
+                            Hosted by <strong>{event.club ? event.club.name : (hostCollege?.name || 'Unknown')}</strong>
+                        </span>
+                    </div>
 
-            <div className={styles.detailsGrid}>
-                <div className={styles.statItem}>
-                    <span>👥</span>
-                    <span>{event.registrationCount} Reg.</span>
+                    {/* Footer */}
+                    <div className={styles.footer} onClick={(e) => e.stopPropagation()}>
+                        <span className={styles.stats}>
+                            <span style={{ fontSize: '14px' }}>👥</span>
+                            {event.registrationCount || 0} Reg.
+                        </span>
+                        <span className={styles.joinBtn}>
+                            View Details
+                        </span>
+                    </div>
                 </div>
-                <div className={styles.statItem}>
-                    <span>📍</span>
-                    <span className="truncate">{event.venue}</span>
-                </div>
-            </div>
-
-            <div className={styles.hostRow}>
-                <div className={styles.hostLogoWrapper}>
-                    {/* Prioritize Club Logo, then College Logo */}
-                    {event.club?.logo ? (
-                        <Image
-                            src={event.club.logo}
-                            alt={event.club.name}
-                            width={24}
-                            height={24}
-                            className={styles.hostLogo}
-                        />
-                    ) : hostCollege?.logo ? (
-                        <Image
-                            src={hostCollege.logo}
-                            alt={hostCollege.name}
-                            width={24}
-                            height={24}
-                            className={styles.hostLogo}
-                        />
-                    ) : null}
-                </div>
-                <p className={styles.host}>
-                    Hosted by <strong>{event.club ? event.club.name : (hostCollege?.name || 'Unknown College')}</strong>
-                </p>
-            </div>
-
-            <div className={styles.footer}>
-                <Button
-                    href={`/events/${event.id}`}
-                    variant={isPrimaryCard ? 'primary' : 'outline'}
-                    fullWidth
-                    aria-label={`View details for ${event.title}`}
-                >
-                    View Details
-                </Button>
-            </div>
-        </motion.div >
+            </a>
+        </motion.div>
     );
 }

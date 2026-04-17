@@ -1,4 +1,4 @@
-import { getAdminStats, getChartData } from '@/lib/actions/admin';
+import { getAdminStats, getChartData } from '@/lib/data/admin';
 import { Users, Calendar, Building2, AlertCircle } from 'lucide-react';
 import styles from './admin.module.css';
 import AdminCharts from '@/components/admin/AdminCharts';

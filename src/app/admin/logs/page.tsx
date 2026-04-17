@@ -1,4 +1,4 @@
-import { getAuditLogs } from '@/lib/actions/admin';
+import { getAuditLogs } from '@/lib/data/admin';
 import { ScrollText, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';

@@ -1,12 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Event } from '@/types';
-import { EVENTS } from '@/lib/data';
+import { getAllEvents } from '@/lib/actions/events';
 
 interface EventContextType {
     events: Event[];
     isLoading: boolean;
+    refreshEvents: () => Promise<void>;
     addEvent: (eventData: Omit<Event, 'id' | 'registrationCount'>) => void;
     updateEvent: (id: string, eventData: Partial<Omit<Event, 'id'>>) => void;
     deleteEvent: (id: string) => void;
@@ -18,50 +19,64 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
     const [events, setEvents] = useState<Event[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        // Load events from local storage or fallback to mock data
-        const savedEvents = localStorage.getItem('events');
-
-        // Simulate a clearer loading state for demo purposes
-        setTimeout(() => {
-            if (savedEvents) {
-                setEvents(JSON.parse(savedEvents));
-            } else {
-                setEvents(EVENTS);
-            }
+    const fetchEvents = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const dbEvents = await getAllEvents();
+            // Map database events to the Event type format
+            const mapped = dbEvents.map((e: any) => ({
+                id: e.id,
+                title: e.title,
+                description: e.description,
+                date: e.date instanceof Date ? e.date.toISOString() : e.date,
+                venue: e.venue,
+                hostCollegeId: e.hostCollegeId,
+                category: e.category,
+                registrationCount: e._count?.registrations ?? e.registrationCount ?? 0,
+                price: e.price ?? 0,
+                thumbnail: e.thumbnail || '/event-placeholder.png',
+                creatorId: e.creatorId,
+                clubId: e.clubId,
+                hostCollege: e.hostCollege,
+                club: e.club,
+            }));
+            setEvents(mapped);
+        } catch (error) {
+            console.error('Failed to fetch events:', error);
+            setEvents([]);
+        } finally {
             setIsLoading(false);
-        }, 800);
-
+        }
     }, []);
 
-    const addEvent = (eventData: Omit<Event, 'id' | 'registrationCount'>) => {
-        const newEvent: Event = {
-            ...eventData,
-            id: `e${Date.now()}`, // Simple ID generation
-            registrationCount: 0,
-        };
+    useEffect(() => {
+        fetchEvents();
+    }, [fetchEvents]);
 
-        const updatedEvents = [...events, newEvent];
-        setEvents(updatedEvents);
-        localStorage.setItem('events', JSON.stringify(updatedEvents));
+    const refreshEvents = useCallback(async () => {
+        await fetchEvents();
+    }, [fetchEvents]);
+
+    // Optimistic updates — update local state immediately, then refresh from DB
+    const addEvent = (eventData: Omit<Event, 'id' | 'registrationCount'>) => {
+        // After server action creates event, just refresh
+        fetchEvents();
     };
 
     const updateEvent = (id: string, eventData: Partial<Omit<Event, 'id'>>) => {
-        const updatedEvents = events.map(event =>
+        setEvents(prev => prev.map(event =>
             event.id === id ? { ...event, ...eventData } : event
-        );
-        setEvents(updatedEvents);
-        localStorage.setItem('events', JSON.stringify(updatedEvents));
+        ));
+        fetchEvents();
     };
 
     const deleteEvent = (id: string) => {
-        const updatedEvents = events.filter(event => event.id !== id);
-        setEvents(updatedEvents);
-        localStorage.setItem('events', JSON.stringify(updatedEvents));
+        setEvents(prev => prev.filter(event => event.id !== id));
+        fetchEvents();
     };
 
     return (
-        <EventContext.Provider value={{ events, isLoading, addEvent, updateEvent, deleteEvent }}>
+        <EventContext.Provider value={{ events, isLoading, refreshEvents, addEvent, updateEvent, deleteEvent }}>
             {children}
         </EventContext.Provider>
     );

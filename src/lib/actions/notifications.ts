@@ -4,91 +4,64 @@ import prisma from '@/lib/db';
 import { pusherServer } from '@/lib/pusher';
 import { getSession } from '@/lib/auth';
 
-export async function createNotification(
-    recipientId: string,
-    actorId: string,
-    type: string,
-    message: string,
-    link: string
-) {
-    try {
-        // 1. Create in DB
-        const notification = await prisma.notification.create({
-            data: {
-                recipientId,
-                actorId,
-                type,
-                message,
-                link,
-                read: false,
-            },
-            include: {
-                actor: {
-                    select: {
-                        name: true,
-                        avatar: true
-                    }
-                }
-            }
-        });
 
-        // 2. Trigger Pusher
-        // Channel: user-{recipientId}
-        // Event: notification:new
-        await pusherServer.trigger(`user-${recipientId}`, 'notification:new', notification);
 
-        return { success: true, notification };
+import { createProtectedAction } from '@/lib/protected-action';
+import { z } from 'zod';
+import { isOk } from '@/lib/api-response';
 
-    } catch (error) {
-        console.error('Failed to create notification:', error);
-        // Don't fail the whole action if notification fails, just log it
-        return { success: false, error: 'Failed to create notification' };
-    }
-}
+// ... (imports)
+
+// ─────────────────────────────────────────────────
+// Protected Actions
+// ─────────────────────────────────────────────────
+
+export const markNotificationAsReadAction = createProtectedAction(z.object({ notificationId: z.string() }), async (data, session) => {
+    await prisma.notification.update({
+        where: { id: data.notificationId },
+        data: { read: true }
+    });
+    return { success: true };
+}, {
+    // No specific role required, just auth
+});
+
+export const markAllNotificationsAsReadAction = createProtectedAction(z.object({}), async (_, session) => {
+    await prisma.notification.updateMany({
+        where: {
+            recipientId: session.userId,
+            read: false
+        },
+        data: { read: true }
+    });
+    return { success: true };
+});
+
+// ─────────────────────────────────────────────────
+// Legacy Wrappers
+// ─────────────────────────────────────────────────
 
 export async function markNotificationAsRead(notificationId: string) {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return { success: false };
-
-        await prisma.notification.update({
-            where: { id: notificationId },
-            data: { read: true }
-        });
-
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to mark notification read:', error);
-        return { success: false };
-    }
+    const result = await markNotificationAsReadAction({ notificationId });
+    if (isOk(result)) return { success: true };
+    return { success: false, error: result.error };
 }
 
-export async function markAllNotificationsAsRead(userId: string) {
-    try {
-        const session = await getSession();
-        if (!session || !session.userId) return { success: false };
-
-        // Security check: ensure performing action for self
-        if (session.userId !== userId) {
-            return { success: false, error: 'Unauthorized' };
-        }
-
-        await prisma.notification.updateMany({
-            where: {
-                recipientId: userId,
-                read: false
-            },
-            data: { read: true }
-        });
-
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to mark all notifications read:', error);
-        return { success: false };
-    }
+export async function markAllNotificationsAsRead(userId?: string) {
+    // Legacy allowed passing userId but checked strictly against session. 
+    // New action uses session directly.
+    const result = await markAllNotificationsAsReadAction({});
+    if (isOk(result)) return { success: true };
+    return { success: false, error: result.error };
 }
 
-export async function getNotifications(userId: string) {
+export async function getNotifications(userId?: string) {
+    if (!userId) {
+        const session = await getSession();
+        userId = session?.userId as string;
+    }
+    if (!userId) return [];
+
     try {
         const notifications = await prisma.notification.findMany({
             where: { recipientId: userId },

@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation';
 import { NotificationBell } from './notifications/NotificationBell';
 import UserNav from './UserNav';
 import ThemeToggle from './ThemeToggle';
-import ExploreDropdown from './ExploreDropdown'; // Added import
-import { Search, Menu, X } from 'lucide-react'; // Added import for Search icon
-import { useState } from 'react'; // Added useState
+import ExploreDropdown from './ExploreDropdown';
+import { Search, Menu, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Navbar.module.css';
 import { useCommand } from '@/context/CommandContext';
 
@@ -15,9 +16,17 @@ export default function Navbar() {
     const pathname = usePathname();
     const { setIsOpen } = useCommand();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 50);
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <nav className={styles.navbar}>
-            <div className={`container ${styles.navContainer}`}>
+            <div className={`container ${styles.navContainer} ${scrolled ? styles.navContainerScrolled : ''}`}>
                 <Link href="/" className={styles.logo}>
                     Campus Connect
                 </Link>
@@ -43,7 +52,7 @@ export default function Navbar() {
                     <ExploreDropdown />
                 </div>
 
-                {/* Right Actions (Always Visible or Adaptive) */}
+                {/* Right Actions */}
                 <div className={styles.navActions}>
                     <button
                         onClick={() => setIsOpen(true)}
@@ -64,37 +73,43 @@ export default function Navbar() {
                 </div>
             </div>
 
-            {/* Mobile Dropdown Menu */}
-            {isMobileMenuOpen && (
-                <div className={styles.mobileMenu}>
-                    <Link href="/events" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                        Events
-                    </Link>
-                    <Link href="/buzz" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                        Buzz ⚡
-                    </Link>
+            {/* Mobile Dropdown Menu — Animated */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        className={styles.mobileMenu}
+                        initial={{ opacity: 0, y: -10, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.97 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                        <Link href="/events" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
+                            Events
+                        </Link>
+                        <Link href="/buzz" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
+                            Buzz ⚡
+                        </Link>
+                        <Link href="/clubs" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
+                            Clubs
+                        </Link>
 
-                    <Link href="/clubs" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                        Clubs
-                    </Link>
-
-                    {/* Explore Section */}
-                    <div className={styles.exploreSection}>
-                        <p className={styles.exploreTitle}>Explore</p>
-                        <div className={styles.exploreLinks}>
-                            <Link href="/colleges" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                                Colleges
-                            </Link>
-                            <Link href="/leaderboards" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                                Leaderboard 🏆
-                            </Link>
-                            <Link href="/map" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                                Campus Map
-                            </Link>
+                        <div className={styles.exploreSection}>
+                            <p className={styles.exploreTitle}>Explore</p>
+                            <div className={styles.exploreLinks}>
+                                <Link href="/colleges" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
+                                    Colleges
+                                </Link>
+                                <Link href="/leaderboards" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
+                                    Leaderboard 🏆
+                                </Link>
+                                <Link href="/map" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
+                                    Campus Map
+                                </Link>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            )}
-        </nav >
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </nav>
     );
 }

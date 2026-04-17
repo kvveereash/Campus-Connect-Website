@@ -3,381 +3,647 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import EventCard from '@/components/EventCard';
-import EventCardSkeleton from '@/components/EventCardSkeleton';
-import FloatingParticles from '@/components/FloatingParticles';
+import AnimatedCounter from '@/components/ui/AnimatedCounter';
+import CustomCursor from '@/components/ui/CustomCursor';
 import styles from './page.module.css';
-import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useScroll, useTransform } from 'framer-motion';
 import { EventWithRelations } from '@/lib/actions';
 
+// ─── Data ─────────────────────────────────────────────────────────────────
+const TESTIMONIALS_ROW_1 = [
+    { text: "I've been using Campus Connect almost every day. It's probably my favorite way to find hackathon teammates!", author: "Sarah Jenkins", role: "CS Student", stars: 5 },
+    { text: "Literally a game changer. Found 3 critical team members for our startup project in 24 hours.", author: "Jessica Lee", role: "Founder", stars: 5 },
+    { text: "The UI is just stunning. It feels like I'm using a premium tool, not just a college board.", author: "Alex R.", role: "UX Designer", stars: 5 },
+    { text: "This is the best product I've seen for student collaboration. It actually helps me organize club events.", author: "Davide N.", role: "Event Organizer", stars: 4 },
+];
+
+const TESTIMONIALS_ROW_2 = [
+    { text: "I can make quick connections while browsing because the platform really understands the context.", author: "Mike Chen", role: "Design Club Lead", stars: 5 },
+    { text: "Finally, a place where I can actually see what's happening on campus without checking 50 groups.", author: "Priya S.", role: "Student", stars: 5 },
+    { text: "Organizing the cultural fest was a breeze thanks to the event management tools here.", author: "Rahul M.", role: "Cultural Sec", stars: 4 },
+    { text: "Found my co-founder here. No joke. The smart matching actually works.", author: "Ananya K.", role: "Startup Founder", stars: 5 },
+];
+
+const ACTIVITY_FEED = [
+    { emoji: "⚡", text: "Sarah joined React Developers Club", time: "2m ago", color: "#c4b5fd" },
+    { emoji: "🔥", text: "New hackathon posted: BuildCon 2026", time: "12m ago", color: "#FF7D5D" },
+    { emoji: "🎯", text: "Team formed for AI Challenge", time: "28m ago", color: "#86efac" },
+    { emoji: "🎨", text: "Design Sprint event registration open", time: "1h ago", color: "#fde047" },
+    { emoji: "🚀", text: "3 new clubs created this week", time: "3h ago", color: "#fda4af" },
+];
+
+const CARD_IMAGES = [
+    '/featured-hackathon.jpg',
+    '/event-thumb-fest.png',
+    '/event-thumb-workshop.png',
+];
+
+const ROTATING_WORDS = ['connected.', 'amplified.', 'elevated.', 'unleashed.'];
+
+// ─── Type ──────────────────────────────────────────────────────────────────
 interface LandingClientProps {
     initialEvents: EventWithRelations[];
 }
 
+// ─── Sparkline Component ───────────────────────────────────────────────────
+function Sparkline() {
+    const points = [4, 12, 8, 22, 16, 28, 20, 35, 30, 42, 38, 48];
+    const maxY = 50;
+    const stepX = 100 / (points.length - 1);
+    const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${i * stepX} ${maxY - p}`).join(' ');
+
+    return (
+        <svg viewBox={`0 0 100 ${maxY}`} className={styles.sparklineContainer} preserveAspectRatio="none">
+            <motion.path
+                d={d}
+                className={styles.sparklinePath}
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
+            />
+        </svg>
+    );
+}
+
+// ─── Star Rating Component ────────────────────────────────────────────────
+function StarRating({ count }: { count: number }) {
+    return (
+        <div className={styles.starRating}>
+            {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i} className={styles.star} style={{ opacity: i < count ? 1 : 0.2 }}>★</span>
+            ))}
+        </div>
+    );
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────
 export default function LandingClient({ initialEvents }: LandingClientProps) {
-    const events = initialEvents;
-    const isLoading = false; // Data is pre-fetched on server
     const [mounted, setMounted] = useState(false);
+    const [activeCard, setActiveCard] = useState(0);
+    const [wordIndex, setWordIndex] = useState(0);
 
     useEffect(() => {
         setMounted(true);
+    }, [initialEvents]);
+
+    // Auto-rotate card stack
+    useEffect(() => {
+        const cards = initialEvents.length > 0 ? initialEvents : [null, null, null];
+        const timer = setInterval(() => {
+            setActiveCard((prev) => (prev + 1) % cards.length);
+        }, 3000);
+        return () => clearInterval(timer);
+    }, [initialEvents]);
+
+    // Rotating words
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setWordIndex((prev) => (prev + 1) % ROTATING_WORDS.length);
+        }, 2500);
+        return () => clearInterval(timer);
     }, []);
 
-    // Animation variants
+    // --- Parallax Hooks for Featured Card ---
+    const featuredX = useMotionValue(0);
+    const featuredY = useMotionValue(0);
+    const springConfig = { damping: 25, stiffness: 150 };
+    const springFeaturedX = useSpring(featuredX, springConfig);
+    const springFeaturedY = useSpring(featuredY, springConfig);
+
+    const handleFeaturedMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        featuredX.set(x * -0.08);
+        featuredY.set(y * -0.08);
+    };
+
+    const handleFeaturedMouseLeave = () => {
+        featuredX.set(0);
+        featuredY.set(0);
+    };
+
+    // Scroll-based hero parallax
+    const { scrollY } = useScroll();
+    const heroImageY = useTransform(scrollY, [0, 600], [0, -80]);
+    const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+    const scrollIndicatorOpacity = useTransform(scrollY, [0, 200], [1, 0]);
+
     const fadeInUp = {
-        hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+        hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },
+        visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.9, ease: 'easeOut' as const } }
     };
 
-    const staggerContainer = {
+    const stagger = {
         hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.2
-            }
-        }
+        visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.1 } }
     };
 
-    // Parallax logic
-
-    const mouseX = useMotionValue(0);
-    const mouseY = useMotionValue(0);
-
-    const springConfig = { damping: 25, stiffness: 700 };
-    const mouseXSpring = useSpring(mouseX, springConfig);
-    const mouseYSpring = useSpring(mouseY, springConfig);
-
-    const xBack = useTransform(mouseXSpring, [-1, 1], [30, -30]);
-    const yBack = useTransform(mouseYSpring, [-1, 1], [30, -30]);
-
-    const xMain = useTransform(mouseXSpring, [-1, 1], [-10, 10]);
-    const yMain = useTransform(mouseYSpring, [-1, 1], [-10, 10]);
-
-    const xFront = useTransform(mouseXSpring, [-1, 1], [-60, 60]);
-    const yFront = useTransform(mouseYSpring, [-1, 1], [-60, 60]);
+    // Build display cards from real events or fallback
+    const displayCards = initialEvents.length > 0
+        ? initialEvents.slice(0, 3).map((ev) => ({
+            title: ev.title,
+            badge: ev.category || 'EVENT',
+            meta: ev.date ? new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '',
+            image: ev.title.includes('Hackathon') ? '/featured-hackathon.jpg' : (ev.thumbnail || CARD_IMAGES[0]),
+        }))
+        : [
+            { title: 'Annual Hackathon 2026', badge: 'TECHNOLOGY', meta: 'Mar 15', image: CARD_IMAGES[0] },
+            { title: 'Spring Cultural Fest', badge: 'CULTURAL', meta: 'Apr 2', image: CARD_IMAGES[1] },
+            { title: 'AI Workshop Series', badge: 'WORKSHOP', meta: 'Apr 10', image: CARD_IMAGES[2] },
+        ];
 
     return (
-        <div className={styles.container} data-theme={mounted ? "light" : undefined}>
-            {/* Hero Section */}
-            <section
-                className={styles.hero}
-                onMouseMove={(e) => {
-                    const { clientX, clientY } = e;
-                    const centerX = window.innerWidth / 2;
-                    const centerY = window.innerHeight / 2;
-                    // Move values between -1 and 1
-                    mouseX.set((clientX - centerX) / centerX);
-                    mouseY.set((clientY - centerY) / centerY);
-                }}
-            >
-                {/* Floating Animated Particles */}
-                <FloatingParticles count={30} />
+        <div className={styles.container} data-theme={mounted ? 'light' : undefined}>
+            <CustomCursor />
+
+            {/* ═══ § 1 : HERO ═══════════════════════════════════════════════ */}
+            <div className={styles.heroWrapper}>
+                <section className={styles.hero}>
+                    <motion.div
+                        className={styles.heroContent}
+                        initial="hidden"
+                        animate="visible"
+                        variants={stagger}
+                    >
+                        <motion.div className={styles.heroLabel} variants={fadeInUp}>
+                            <motion.span
+                                animate={{ rotate: [0, 10, -10, 0] }}
+                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }}
+                                style={{ display: 'inline-block' }}
+                            >
+                                ✨
+                            </motion.span>
+                            Built for students, by students
+                        </motion.div>
+
+                        <motion.h1 className={styles.heroTitle} variants={stagger}>
+                            {["Your", "campus,"].map((word, i) => (
+                                <motion.span
+                                    key={i}
+                                    variants={fadeInUp}
+                                    style={{ display: 'inline-block', marginRight: '0.25em' }}
+                                >
+                                    {word}
+                                </motion.span>
+                            ))}{' '}
+                            <span className={styles.heroTitleItalic}>
+                                <span className={styles.wordRotator}>
+                                    <AnimatePresence mode="wait">
+                                        <motion.span
+                                            key={wordIndex}
+                                            className={styles.rotatingWord}
+                                            initial={{ y: 40, opacity: 0, filter: 'blur(8px)' }}
+                                            animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+                                            exit={{ y: -40, opacity: 0, filter: 'blur(8px)' }}
+                                            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                                        >
+                                            {ROTATING_WORDS[wordIndex]}
+                                        </motion.span>
+                                    </AnimatePresence>
+                                </span>
+                                <motion.svg
+                                    className={styles.scribbleUnderline}
+                                    viewBox="0 0 200 20"
+                                    initial={{ pathLength: 0, opacity: 0 }}
+                                    animate={{ pathLength: 1, opacity: 1 }}
+                                    transition={{ duration: 1.5, delay: 1, ease: 'easeOut' }}
+                                    preserveAspectRatio="none"
+                                >
+                                    <path d="M5 15 Q 50 2, 100 12 T 195 8" fill="none" stroke="var(--color-mint)" strokeWidth="6" strokeLinecap="round" />
+                                </motion.svg>
+                            </span>
+                        </motion.h1>
+
+                        <motion.p className={styles.heroSubtitle} variants={fadeInUp}>
+                            Discover hackathons, join clubs, find teammates, and never miss
+                            what&apos;s happening on campus again.
+                        </motion.p>
+
+                        <motion.div variants={fadeInUp}>
+                            <Link href="/events" className={styles.heroCta}>
+                                Get Started Free
+                                <motion.svg
+                                    width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                                    initial={{ x: 0 }}
+                                    whileHover={{ x: 4 }}
+                                >
+                                    <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                                </motion.svg>
+                            </Link>
+                        </motion.div>
+                    </motion.div>
+
+                    {/* Artistic Hero Composition */}
+                    <div className={styles.heroComposition}>
+                        {/* Main Centerpiece Image */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, rotateY: 15 }}
+                            animate={{ opacity: 1, scale: 1, y: [0, -15, 0], rotateY: 0 }}
+                            transition={{
+                                opacity: { duration: 1.2, ease: 'easeOut' },
+                                scale: { duration: 1.2, ease: 'easeOut' },
+                                rotateY: { duration: 1.2, ease: 'easeOut' },
+                                y: { duration: 8, repeat: Infinity, ease: 'easeInOut' }
+                            }}
+                            style={{
+                                position: 'relative', width: '100%', maxWidth: '440px',
+                                aspectRatio: '4/5', zIndex: 2, margin: '0 auto',
+                                y: heroImageY
+                            }}
+                        >
+                            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                                <Image
+                                    src="/image.png"
+                                    alt="Student life"
+                                    fill
+                                    style={{ objectFit: 'contain', filter: 'drop-shadow(0 20px 40px rgba(15, 31, 28, 0.15))' }}
+                                    priority
+                                />
+                            </div>
+                        </motion.div>
+
+                        {/* Floating Glass Widget 1 - Left */}
+                        <motion.div
+                            className={`${styles.premiumGlassCard} ${styles.floatingWidget1}`}
+                            initial={{ opacity: 0, x: -60, y: 40, filter: 'blur(10px)' }}
+                            animate={{ opacity: 1, x: 0, y: [0, 15, 0], filter: 'blur(0px)' }}
+                            transition={{
+                                opacity: { duration: 1, delay: 0.6, ease: 'easeOut' },
+                                filter: { duration: 1, delay: 0.6, ease: 'easeOut' },
+                                x: { duration: 1, delay: 0.6, ease: 'easeOut' },
+                                y: { duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1 }
+                            }}
+                            whileHover={{ scale: 1.05, rotateY: 5, rotateX: -3 }}
+                        >
+                            <div className={styles.widgetIcon} style={{ background: 'var(--color-mint)', color: 'var(--color-forest)' }}>💡</div>
+                            <div>
+                                <h4 className={styles.widgetTitle}>Smart Matching</h4>
+                                <p className={styles.widgetSub}>AI-driven team finder</p>
+                            </div>
+                        </motion.div>
+
+                        {/* Floating Glass Widget 2 - Right */}
+                        <motion.div
+                            className={`${styles.premiumGlassCard} ${styles.floatingWidget2}`}
+                            initial={{ opacity: 0, x: 60, y: -40, filter: 'blur(10px)' }}
+                            animate={{ opacity: 1, x: 0, y: [0, -20, 0], filter: 'blur(0px)' }}
+                            transition={{
+                                opacity: { duration: 1, delay: 0.8, ease: 'easeOut' },
+                                filter: { duration: 1, delay: 0.8, ease: 'easeOut' },
+                                x: { duration: 1, delay: 0.8, ease: 'easeOut' },
+                                y: { duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }
+                            }}
+                            whileHover={{ scale: 1.05, rotateY: -5, rotateX: 3 }}
+                        >
+                            <div className={styles.widgetAvatarGroup}>
+                                <div className={styles.widgetAvatar} style={{ background: '#FF7D5D', zIndex: 3 }} />
+                                <div className={styles.widgetAvatar} style={{ background: '#B8E8D0', marginLeft: '-12px', zIndex: 2 }} />
+                                <div className={styles.widgetAvatar} style={{ background: '#E0C0F8', marginLeft: '-12px', zIndex: 1 }} />
+                            </div>
+                            <div>
+                                <h4 className={styles.widgetTitle}>12k+ Students</h4>
+                                <p className={styles.widgetSub}>Active right now</p>
+                            </div>
+                        </motion.div>
+
+                        {/* Decorative Graphic Elements */}
+                        <motion.div
+                            className={styles.heroGraphicCircle}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1, rotate: 360 }}
+                            transition={{
+                                opacity: { duration: 1.5, delay: 0.4 },
+                                scale: { duration: 1.5, delay: 0.4, ease: 'easeOut' },
+                                rotate: { duration: 40, repeat: Infinity, ease: 'linear' }
+                            }}
+                        >
+                            <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ overflow: 'visible' }}>
+                                <defs>
+                                    <path id="circlePath" d="M 50, 50 m -45, 0 a 45,45 0 1,1 90,0 a 45,45 0 1,1 -90,0" fill="none" />
+                                </defs>
+                                <text fontSize="8.5" fill="var(--color-forest)" opacity="0.4" letterSpacing="0.25em" fontWeight="600" fontFamily="var(--font-sans)">
+                                    <textPath href="#circlePath" startOffset="0%">
+                                        DISCOVER · CONNECT · BUILD · PREMIER CAMPUS PLATFORM ·
+                                    </textPath>
+                                </text>
+                            </svg>
+                        </motion.div>
+                    </div>
+                </section>
+
+                {/* Scroll Indicator */}
                 <motion.div
-                    className={styles.heroContent}
-                    initial="hidden"
-                    animate="visible"
-                    variants={staggerContainer}
+                    className={styles.scrollIndicator}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 2, duration: 0.8 }}
+                    style={{ opacity: scrollIndicatorOpacity }}
                 >
-                    <motion.h1 className={styles.heroTitle} variants={fadeInUp}>
-                        Connect, Collaborate, and <span className={styles.highlight}>Create</span>
-                    </motion.h1>
-                    <motion.p className={styles.heroSubtitle} variants={fadeInUp}>
-                        The ultimate platform for students to discover hackathons, fests, and
-                        workshops across campuses. Join the community today.
+                    <span className={styles.scrollText}>Scroll to explore</span>
+                    <motion.svg
+                        className={styles.scrollChevron}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <polyline points="6 9 12 15 18 9" />
+                    </motion.svg>
+                </motion.div>
+            </div>
+
+            {/* ═══ § 2 : SOCIAL PROOF STRIP ══════════════════════════════════ */}
+            <section className={styles.socialProof}>
+                <motion.div
+                    className={styles.socialProofInner}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '-80px' }}
+                    variants={stagger}
+                >
+                    {[
+                        { value: 12000, suffix: '+', label: 'Students' },
+                        { value: 340, suffix: '+', label: 'Clubs' },
+                        { value: 50, suffix: '+', label: 'Colleges' },
+                        { value: 1200, suffix: '+', label: 'Events' },
+                    ].map((stat) => (
+                        <motion.div key={stat.label} className={styles.statBlock} variants={fadeInUp}>
+                            <span className={styles.statNumber}>
+                                <AnimatedCounter to={stat.value} suffix={stat.suffix} duration={1.5} />
+                            </span>
+                            <span className={styles.statLabel}>{stat.label}</span>
+                        </motion.div>
+                    ))}
+                </motion.div>
+            </section>
+
+            {/* ═══ § 3 : BENTO GRID ═════════════════════════════════════════ */}
+            <section className={styles.bentoSection}>
+                <motion.div
+                    className={styles.bentoHeader}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={stagger}
+                >
+                    <motion.h2 className={styles.bentoTitle} variants={fadeInUp}>
+                        Everything happening, at a glance
+                    </motion.h2>
+                    <motion.p className={styles.bentoSubtitle} variants={fadeInUp}>
+                        Events, clubs, teams — all in one place.
                     </motion.p>
-                    <motion.div className={styles.ctaGroup} variants={fadeInUp}>
-                        <Link href="/events" className="btn btn-primary">
-                            Explore Events
-                        </Link>
-                        <Link href="/colleges" className="btn btn-outline">
-                            Find Colleges
-                        </Link>
+                </motion.div>
+
+                <motion.div
+                    className={styles.bentoGrid}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '-60px' }}
+                    variants={stagger}
+                >
+                    {/* Featured event — large tile */}
+                    <motion.div
+                        className={styles.bentoFeatured}
+                        variants={fadeInUp}
+                        onMouseMove={handleFeaturedMouseMove}
+                        onMouseLeave={handleFeaturedMouseLeave}
+                        style={{ perspective: 1000 }}
+                    >
+                        <motion.div
+                            className={styles.bentoFeaturedImage}
+                            style={{
+                                x: springFeaturedX,
+                                y: springFeaturedY,
+                                scale: 1.05
+                            }}
+                        >
+                            <Image
+                                src={displayCards[0]?.image || CARD_IMAGES[0]}
+                                alt="Featured Event"
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                unoptimized
+                            />
+                        </motion.div>
+                        <div className={styles.bentoFeaturedOverlay} />
+                        <div className={styles.bentoFeaturedContent}>
+                            <span className={styles.bentoFeaturedBadge}>Featured Event</span>
+                            <h3 className={styles.bentoFeaturedTitle}>{displayCards[0]?.title || 'Annual Hackathon 2026'}</h3>
+                            <p className={styles.bentoFeaturedMeta}>{displayCards[0]?.meta || 'Mar 15'} · Open Registration</p>
+                            <Link href="/events" className={styles.heroCta} style={{ marginTop: '1.25rem', padding: '0.75rem 1.75rem', fontSize: '0.95rem' }}>
+                                View Details
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                                </svg>
+                            </Link>
+                        </div>
+                    </motion.div>
+
+                    {/* Activity feed tile */}
+                    <motion.div className={styles.bentoActivity} variants={fadeInUp}>
+                        <span className={styles.bentoTileLabel}>
+                            <span className={styles.livePulse} />
+                            Live Activity
+                        </span>
+                        <div className={styles.activityList}>
+                            {ACTIVITY_FEED.slice(0, 5).map((item, i) => (
+                                <motion.div
+                                    key={i}
+                                    className={styles.activityItem}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: i * 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                                >
+                                    <span className={styles.activityDot} style={{ backgroundColor: item.color }} />
+                                    <span>{item.emoji} {item.text}</span>
+                                    <span className={styles.activityTime}>{item.time}</span>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+
+                    {/* Stat tile with sparkline */}
+                    <motion.div className={styles.bentoStat} variants={fadeInUp}>
+                        <div>
+                            <span className={styles.bentoStatNumber}>
+                                <AnimatedCounter to={147} duration={1.2} />
+                            </span>
+                            <p className={styles.bentoStatLabel}>events this month</p>
+                        </div>
+                        <div className={styles.bentoStatBadge}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                                <polyline points="17 6 23 6 23 12" />
+                            </svg>
+                            +23% this week
+                        </div>
+                        <Sparkline />
+                    </motion.div>
+                </motion.div>
+            </section>
+
+            {/* ═══ § 4 : SMART MATCHING ═══════════════════════════════════════ */}
+            <section className={styles.matchSection}>
+                {/* Visual — phone mockup */}
+                <motion.div
+                    className={styles.matchVisual}
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: '-60px' }}
+                    transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                >
+                    <div className={styles.matchPhone}>
+                        <div className={styles.matchPhoneNotch} />
+                        <div className={styles.matchBubble}>
+                            &ldquo;Hey, I see you&apos;re interested in <strong>React</strong> and
+                            looking for a <strong>Hackathon</strong> team?&rdquo;
+                            <span className={styles.typingCursor} />
+                        </div>
+                        <div className={styles.matchReply}>
+                            Let&apos;s connect! 🚀
+                        </div>
+                    </div>
+
+                    {/* Floating tags */}
+                    <motion.div
+                        className={styles.matchTag}
+                        style={{ top: '15%', right: '5%', background: 'var(--color-lilac)', color: 'var(--color-forest)' }}
+                        animate={{ y: [0, -15, 0], rotate: [0, 2, -1, 0] }}
+                        transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                        Frontend Dev
+                    </motion.div>
+                    <motion.div
+                        className={styles.matchTag}
+                        style={{ bottom: '20%', left: '2%', background: 'var(--color-mint)', color: 'var(--color-forest)' }}
+                        animate={{ y: [0, 12, 0], rotate: [0, -2, 1, 0] }}
+                        transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                    >
+                        UI/UX Designer
+                    </motion.div>
+                    <motion.div
+                        className={styles.matchTag}
+                        style={{ top: '60%', right: '0%', background: 'var(--color-orange)', color: '#fff' }}
+                        animate={{ y: [0, -10, 0], x: [0, 5, 0], rotate: [0, 1, -1, 0] }}
+                        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                    >
+                        React Native
                     </motion.div>
                 </motion.div>
 
-                {/* Parallax Image Wrapper */}
-                <div className={styles.heroImageWrapper}>
-                    {/* Back Layer - Abstract Graphic (Moves Opposite) */}
-                    <motion.div
-                        style={{ x: xBack, y: yBack, position: 'absolute', zIndex: 0, opacity: 0.6 }}
-                        className={styles.parallaxBack}
-                    >
-                        <svg width="400" height="400" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                            <path fill="#2E865F" d="M44.7,-76.4C58.9,-69.2,71.8,-59.1,81.6,-46.6C91.4,-34.1,98.1,-19.2,95.8,-4.9C93.5,9.3,82.2,22.9,71.3,34.8C60.4,46.7,49.9,56.9,37.8,65.3C25.7,73.8,12,80.5,-0.8,81.9C-13.6,83.3,-26.2,79.4,-37.8,72.4C-49.4,65.4,-60,55.3,-68.8,43.4C-77.6,31.5,-84.6,17.8,-83.9,4.4C-83.2,-9,-74.8,-22.1,-64.8,-32.8C-54.8,-43.5,-43.2,-51.8,-31.2,-60.3C-19.2,-68.8,-6.8,-77.5,7.2,-89.9L44.7,-76.4Z" transform="translate(100 100)" />
-                        </svg>
+                {/* Text content */}
+                <motion.div
+                    className={styles.matchContent}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={stagger}
+                >
+                    <motion.div className={styles.matchStat} variants={fadeInUp}>
+                        ✦ 87% find a team in 24 hours
                     </motion.div>
-
-                    {/* Main Layer - Campus Image (Moves Slightly) */}
-                    <motion.div
-                        style={{ x: xMain, y: yMain, zIndex: 1, position: 'relative' }}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                        <Image
-                            src="/hero.png"
-                            alt="Campus Life"
-                            width={600}
-                            height={400}
-                            className={styles.heroImage}
-                            priority
-                        />
+                    <motion.h2 className={styles.matchTitle} variants={fadeInUp}>
+                        Smart Matching
+                    </motion.h2>
+                    <motion.p className={styles.matchDesc} variants={fadeInUp}>
+                        Stop guessing. Our intelligent algorithm connects you with the right
+                        people based on your skills, interests, and college verification.
+                        It&apos;s networking, <em style={{ fontFamily: 'var(--font-serif)' }}>refined</em>.
+                    </motion.p>
+                    <motion.div className={styles.matchActions} variants={fadeInUp}>
+                        <Link href="/clubs" className="btn btn-primary">Find a Club</Link>
+                        <Link href="/events" className="btn btn-outline">Browse Events</Link>
                     </motion.div>
-
-                    {/* Front Layer - Floating Elements (Moves With Mouse, Fast) */}
-                    <motion.div
-                        style={{ x: xFront, y: yFront, position: 'absolute', top: '-10%', right: '-5%', zIndex: 2 }}
-                        className={styles.floatElement1}
-                    >
-                        <div style={{ background: 'white', padding: '1rem', borderRadius: '1rem', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-                            <span style={{ fontSize: '2rem' }}>🚀</span>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        style={{ x: xFront, y: yFront, position: 'absolute', bottom: '10%', left: '-10%', zIndex: 2 }}
-                        className={styles.floatElement2}
-                    >
-                        <div style={{ background: 'white', padding: '1rem', borderRadius: '1rem', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-                            <span style={{ fontSize: '2rem' }}>🎨</span>
-                        </div>
-                    </motion.div>
-                </div>
+                </motion.div>
             </section>
 
-
-
-            {/* Ticker Tape */}
-            <div className={styles.tickerWrapper}>
-                <div className={styles.tickerContent}>
-                    <span className={styles.tickerItem}>TRUSTED BY <span style={{ opacity: 0.5 }}>MIT</span></span>
-                    <span className={styles.tickerItem}>•</span>
-                    <span className={styles.tickerItem}>INTEGRATED WITH <span style={{ opacity: 0.5 }}>GITHUB</span></span>
-                    <span className={styles.tickerItem}>•</span>
-                    <span className={styles.tickerItem}>LIVE ON <span style={{ opacity: 0.5 }}>CAMPUS</span></span>
-                    <span className={styles.tickerItem}>•</span>
-                    <span className={styles.tickerItem}>POWERED BY <span style={{ opacity: 0.5 }}>AI</span></span>
-                    <span className={styles.tickerItem}>•</span>
-                    <span className={styles.tickerItem}>TRUSTED BY <span style={{ opacity: 0.5 }}>MIT</span></span>
-                    <span className={styles.tickerItem}>•</span>
-                    <span className={styles.tickerItem}>INTEGRATED WITH <span style={{ opacity: 0.5 }}>GITHUB</span></span>
-                    <span className={styles.tickerItem}>•</span>
-                    <span className={styles.tickerItem}>LIVE ON <span style={{ opacity: 0.5 }}>CAMPUS</span></span>
-                    <span className={styles.tickerItem}>•</span>
-                    <span className={styles.tickerItem}>POWERED BY <span style={{ opacity: 0.5 }}>AI</span></span>
-                    <span className={styles.tickerItem}>•</span>
-                </div>
-            </div>
-
-            {/* Upcoming Events Section (Dynamic) */}
-            {
-                (events.length > 0) && (
-                    <section className={styles.features}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                            <h2 className={styles.sectionTitle} style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', background: 'var(--surface-color)', borderRadius: '10px', color: 'var(--primary-color)' }}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                </span>
-                                Upcoming Events
-                            </h2>
-                            <Link href="/events" style={{ color: 'var(--primary-color)', fontWeight: 500 }}>
-                                View all →
-                            </Link>
-                        </div>
-                        <motion.div
-                            className={styles.featureGrid}
-                            initial="hidden"
-                            whileInView="visible"
-                            viewport={{ once: true, margin: "-100px" }}
-                            variants={staggerContainer}
-                        >
-                            {isLoading ? (
-                                Array(3).fill(0).map((_, i) => (
-                                    <EventCardSkeleton key={i} />
-                                ))
-                            ) : (
-                                events.map((event, index) => (
-                                    <motion.div key={event.id} variants={fadeInUp}>
-                                        <EventCard event={event} index={index} />
-                                    </motion.div>
-                                ))
-                            )}
-                        </motion.div>
-                    </section>
-                )
-            }
-
-            {/* --- Comparison Section (Manual vs Platform) --- */}
-            <section className={styles.comparisonSection}>
-                <div className={styles.comparisonGrid}>
-                    {/* Left: Old Way */}
-                    <motion.div
-                        className={styles.comparisonCardStatic}
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                    >
-                        <span className={styles.comparisonLabel}>Manual Search</span>
-                        <h3 className={styles.comparisonValue}>0 connections</h3>
-                        <p className={styles.comparisonSub}>Endless scrolling through WhatsApp groups.</p>
-                    </motion.div>
-
-                    {/* Right: New Way (Video/Dynamic) */}
-                    <motion.div
-                        className={styles.comparisonCardDynamic}
-                        initial={{ opacity: 0, x: 20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                    >
-                        <div className={styles.imageBackgroundWrapper}>
-                            <Image
-                                src="/feature-community.png"
-                                alt="Campus Community"
-                                fill
-                                style={{ objectFit: 'cover' }}
-                                quality={100}
-                            />
-                            <div className={styles.imageOverlayGradient} />
-                        </div>
-
-                        {/* Content Overlay */}
-                        <div className={styles.cardContentRelative}>
-                            <span className={styles.comparisonLabel}>Campus Connect</span>
-                            <h3 className={styles.comparisonValue}>500+ peers</h3>
-                            <p className={styles.comparisonSub}>Instantly find teammates and events.</p>
-
-                            <div className={styles.floatingBadge}>
-                                <span className={styles.soundWave}>||||||</span> Live Updates
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
-
-            {/* --- Feature Showcase (AI / Smart Match) --- */}
-            <section className={styles.showcaseSection}>
-                <div className={styles.showcaseGrid}>
-                    {/* Left: Visual UI Mockup */}
-                    <motion.div
-                        className={styles.showcaseVisual}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                    >
-                        {/* Simulation of the 'AI Auto Edits' card from reference */}
-                        <div className={styles.mockupCard}>
-                            <div className={styles.mockupHeader}>
-                                <span className={styles.mockupTag} style={{ background: '#FF7D5D', color: 'white', transform: 'rotate(-2deg)' }}>
-                                    Match Found!
-                                </span>
-                            </div>
-                            <div className={styles.mockupBody}>
-                                <p className={styles.mockupText}>
-                                    "Hey, I see you're interested in <strong>React</strong> and looking for a <strong>Hackathon</strong> team?"
-                                </p>
-                                <div className={styles.mockupReply}>
-                                    <div className={styles.avatar} />
-                                    <span>Let's connect! 🚀</span>
-                                </div>
-                            </div>
-                            {/* Floating elements */}
-                            <div className={styles.floatTag} style={{ top: '20%', right: '-10px' }}>Frontend Dev</div>
-                            <div className={styles.floatTag} style={{ bottom: '20%', left: '-10px' }}>UI/UX Designer</div>
-                        </div>
-                    </motion.div>
-
-                    {/* Right: Text Content */}
-                    <div className={styles.showcaseContent}>
-                        <div className={styles.scribbleIcon}>
-                            <svg width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="var(--color-orange)" strokeWidth="3">
-                                <path d="M50 20 Q 60 10, 70 20 T 90 20 M 50 80 Q 40 90, 30 80 T 10 80" opacity="0.5" />
-                                <circle cx="50" cy="50" r="30" strokeDasharray="5,5" />
-                                <path d="M50 20 L50 10 M50 80 L50 90 M20 50 L10 50 M80 50 L90 50" />
-                            </svg>
-                        </div>
-                        <h2 className={styles.showcaseTitle}>Smart Matching</h2>
-                        <p className={styles.showcaseDesc}>
-                            Stop guessing. Our intelligent algorithm connects you with the right people
-                            based on your skills, interests, and college verification.
-                            It's networking, <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}>refined</span>.
-                        </p>
-                        <div className={styles.showcaseActions}>
-                            <Link href="/clubs" className="btn btn-primary">Find a Club</Link>
-                            <Link href="/map" className="btn btn-outline">View Campus Map</Link>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* --- Love Letters (Testimonials) Section --- */}
+            {/* ═══ § 5 : TESTIMONIALS (Dual Marquee) ═════════════════════════ */}
             <section className={styles.testimonialsSection}>
-                <div className={styles.testimonialHeader}>
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                        {/* Scribble decoration above title */}
-                        <svg className={styles.scribbleIcon} width="100" height="40" viewBox="0 0 100 40" style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)', opacity: 0.8 }}>
-                            <path d="M10 20 Q 25 5, 50 20 T 90 20" fill="none" stroke="var(--color-lilac)" strokeWidth="2" />
-                        </svg>
-                        <h2 className={styles.testimonialTitle}>Love letters <br /> to Campus Connect</h2>
-                    </div>
-                </div>
+                <motion.div
+                    className={styles.testimonialHeader}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                >
+                    <h2 className={styles.testimonialTitle}>
+                        Loved by students<br />everywhere
+                    </h2>
+                    <p className={styles.testimonialSubtitle}>
+                        Don&apos;t take our word for it — hear from the community.
+                    </p>
+                </motion.div>
 
-                <div className={styles.testimonialScrollContainer}>
-                    {[
-                        { text: "I've been using Campus Connect almost every day. It's probably my favorite way to find hackathon teammates!", author: "Sarah Jenkins", role: "CS Student" },
-                        { text: "I can make quick edits while speaking to it because flow really understands the context.", author: "Mike Chen", role: "Design Club Lead" },
-                        { text: "This is the best AI product I've seen since ChatGPT. It actually helps me organize club events.", author: "Davide N.", role: "Event Organizer" },
-                        { text: "Literally a game changer. Found 3 critical team members for our startup project in 24 hours.", author: "Jessica Lee", role: "Founder" },
-                        { text: "The UI is just stunning. It feels like I'm using a premium tool, not just a college board.", author: "Alex R.", role: "UX Designer" },
-                        { text: "Finally, a place where I can actually see what's happening on campus without checking 50 groups.", author: "Priya S.", role: "Student" },
-                        { text: "Organizing the cultural fest was a breeze thanks to the event management tools here.", author: "Rahul M.", role: "Cultural Sec" },
-                    ].map((item, i) => (
-                        <div key={i} className={styles.testimonialCard}>
-                            <p className={styles.quoteText}>"{item.text}"</p>
-                            <div className={styles.userProfile}>
-                                <div className={styles.userAvatar} style={{ background: `hsl(${i * 60}, 70%, 80%)` }} /> {/* Dynamic colors */}
-                                <div className={styles.userInfo}>
-                                    <h4>{item.author}</h4>
-                                    <span>{item.role}</span>
+                {/* Row 1 — scrolls left */}
+                <div className={styles.marqueeRow}>
+                    <div className={styles.marqueeTrack}>
+                        {[...TESTIMONIALS_ROW_1, ...TESTIMONIALS_ROW_1].map((t, i) => (
+                            <div key={`r1-${i}`} className={styles.testimonialCard}>
+                                <StarRating count={t.stars} />
+                                <p className={styles.quoteText}>&ldquo;{t.text}&rdquo;</p>
+                                <div className={styles.userProfile}>
+                                    <div className={styles.userAvatar} style={{ background: `hsl(${i * 45}, 70%, 78%)` }} />
+                                    <div className={styles.userInfo}>
+                                        <h4>{t.author}</h4>
+                                        <span>{t.role}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* --- Final CTA Section --- */}
-            <section className={styles.finalCtaSection}>
-                <div className={styles.imageBackgroundWrapper}>
-                    <Image
-                        src="/hero.png" // Reusing hero for aesthetic texture
-                        alt="Background"
-                        fill
-                        style={{ objectFit: 'cover', opacity: 0.4 }}
-                    />
-                    <div className={styles.imageOverlayGradient} style={{ background: 'linear-gradient(to top, var(--color-forest), transparent)' }} />
-                </div>
-
-                <div className={styles.ctaContent}>
-                    <h2 className={styles.ctaTitle}>Start connecting...</h2>
-                    <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.2rem', marginBottom: '3rem', maxWidth: '500px', margin: '0 auto 3rem' }}>
-                        Join thousands of students building the future. <br /> All capabilities included.
-                    </p>
-                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                        <Link href="/events" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.1rem' }}>
-                            Try Now
-                        </Link>
-                        <Link href="/about" className="btn btn-outline" style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}>
-                            Watch the Video
-                        </Link>
+                        ))}
                     </div>
                 </div>
 
-                {/* Decorative dashed line */}
-                <svg className={styles.dashedLineCurve} viewBox="0 0 600 300">
-                    <path d="M0 150 Q 150 50, 300 150 T 600 150" fill="none" stroke="var(--color-lilac)" strokeWidth="2" strokeDasharray="10 10" />
-                </svg>
+                {/* Row 2 — scrolls right */}
+                <div className={styles.marqueeRow}>
+                    <div className={styles.marqueeTrackReverse}>
+                        {[...TESTIMONIALS_ROW_2, ...TESTIMONIALS_ROW_2].map((t, i) => (
+                            <div key={`r2-${i}`} className={styles.testimonialCard}>
+                                <StarRating count={t.stars} />
+                                <p className={styles.quoteText}>&ldquo;{t.text}&rdquo;</p>
+                                <div className={styles.userProfile}>
+                                    <div className={styles.userAvatar} style={{ background: `hsl(${i * 55 + 20}, 65%, 75%)` }} />
+                                    <div className={styles.userInfo}>
+                                        <h4>{t.author}</h4>
+                                        <span>{t.role}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </section>
-        </div >
+
+            {/* ═══ § 6 : FINAL CTA ═══════════════════════════════════════════ */}
+            <section className={styles.ctaSection}>
+                <div className={styles.ctaGlow} />
+                <motion.div
+                    className={styles.ctaContent}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.7 }}
+                >
+                    <h2 className={styles.ctaTitle}>
+                        Ready to <span className={styles.ctaTitleGradient}>connect</span>?
+                    </h2>
+                    <p className={styles.ctaSubtitle}>
+                        Join thousands of students building the future.
+                        <br />
+                        All capabilities included. No credit card needed.
+                    </p>
+                    <Link href="/events" className={styles.ctaButton}>
+                        Join 12,000+ Students
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                        </svg>
+                    </Link>
+                </motion.div>
+            </section>
+        </div>
     );
 }

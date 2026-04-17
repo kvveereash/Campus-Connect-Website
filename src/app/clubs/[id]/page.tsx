@@ -142,7 +142,7 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                             <Users size={24} color="#0F1F1C" />
                             <h2 className={styles.sectionTitle}>
                                 Members
-                                <span style={{ marginLeft: 'auto', fontSize: '1rem', background: 'var(--color-lilac)', padding: '2px 8px', borderRadius: '8px', border: '1px solid var(--color-forest)' }}>
+                                <span style={{ marginLeft: 'auto', fontSize: '0.85rem', background: 'var(--color-forest)', color: 'white', padding: '0.2rem 0.8rem', borderRadius: '999px', fontWeight: '600' }}>
                                     {club._count?.members || 0}
                                 </span>
                             </h2>
@@ -156,7 +156,7 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                                     <div style={{ flex: 1 }}>
                                         <p className={styles.memberName}>{member.user.name}</p>
                                         <p className={styles.memberSub}>
-                                            {member.role === 'ADMIN' ? '⚡ Admin' : '✨ Member'} • {member.user.college?.name || 'Campus'}
+                                            {member.role === 'ADMIN' ? '⚡ ' : ''}{member.user.college?.name || 'Campus'}
                                         </p>
                                     </div>
                                 </div>
@@ -170,18 +170,18 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
 
                         if (isCollaborative) {
                             return (
-                                <section className={styles.card} style={{ background: 'var(--color-mint)', border: '2px solid var(--color-forest)' }}>
-                                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem', marginBottom: '1rem' }}>
-                                        🤝 Multi-College
+                                <section className={styles.card} style={{ border: '1px solid rgba(15, 31, 28, 0.08)', background: 'linear-gradient(135deg, rgba(209, 250, 229, 0.3), rgba(224, 192, 248, 0.15))' }}>
+                                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', color: 'var(--color-forest)' }}>
+                                        🤝 Multi-College Network
                                     </h3>
-                                    <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                                    <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
                                         Bringing together students from <strong>{colleges.size}</strong> institutions.
                                     </p>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                         {Array.from(colleges).map((college: any) => (
                                             <span key={college} style={{
-                                                fontSize: '0.75rem', padding: '4px 10px', borderRadius: '100px',
-                                                background: 'white', border: '1px solid var(--color-forest)', color: 'var(--color-forest)', fontWeight: 600
+                                                fontSize: '0.75rem', padding: '4px 12px', borderRadius: '999px',
+                                                background: 'white', border: '1px solid rgba(15, 31, 28, 0.1)', color: 'var(--color-forest)', fontWeight: 600
                                             }}>
                                                 {college}
                                             </span>

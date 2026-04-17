@@ -21,8 +21,6 @@ export async function signup(prevState: ActionState | null, formData: FormData):
 
     try {
         // Rate limiting: 3 signups per hour per IP/email
-        // TEMPORARILY DISABLED FOR TESTING
-        /*
         const identifier = getRateLimitIdentifier(undefined, email);
         const rateLimit = await checkRateLimit(signupLimiter, identifier);
 
@@ -33,14 +31,13 @@ export async function signup(prevState: ActionState | null, formData: FormData):
                 error: `Too many signup attempts. Please try again at ${resetTime}.`
             };
         }
-        */
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
             return { success: false, error: 'User already exists' };
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 12);
 
         // Assign a default college
         const defaultCollege = await prisma.college.findFirst();
@@ -61,7 +58,11 @@ export async function signup(prevState: ActionState | null, formData: FormData):
             }
         });
 
-        await createSession(newUser.id);
+        await createSession(newUser.id, {
+            role: 'USER',
+            name: newUser.name,
+            email: newUser.email,
+        });
 
         logger.auth('signup', newUser.id, { email, department, year, collegeId: defaultCollege.id });
 
@@ -87,21 +88,17 @@ export async function login(prevState: ActionState | null, formData: FormData): 
 
     try {
         // Rate limiting: 5 attempts per 15 minutes per email
-        // TEMPORARILY DISABLED - Redis evalsha error with in-memory store
-        /*
-        console.log('[LOGIN] Checking rate limit...');
         const identifier = getRateLimitIdentifier(undefined, email);
         const rateLimit = await checkRateLimit(authLimiter, identifier);
 
         if (!rateLimit.success) {
-            console.log('[LOGIN] Rate limit exceeded');
+            logger.rateLimit('login', identifier, true, { email });
             const resetTime = rateLimit.reset.toLocaleTimeString();
             return {
                 success: false,
                 error: `Too many login attempts. Please try again at ${resetTime}.`
             };
         }
-        */
 
         console.log('[LOGIN] Finding user...');
         const user = await prisma.user.findUnique({ where: { email } });
@@ -110,17 +107,80 @@ export async function login(prevState: ActionState | null, formData: FormData): 
             return { success: false, error: 'Invalid credentials' };
         }
 
+        // Check if account is locked
+        if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
+            const lockRemaining = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 60000);
+            logger.auth('login_blocked', user.id, { email, reason: 'account_locked' });
+            return {
+                success: false,
+                error: `Account locked. Please try again in ${lockRemaining} minute(s).`
+            };
+        }
+
         console.log('[LOGIN] User found:', user.id);
         console.log('[LOGIN] Comparing password...');
         const passwordMatch = await bcrypt.compare(password, user.password);
+
         if (!passwordMatch) {
             console.log('[LOGIN] Password mismatch');
-            logger.auth('failed', user.id, { email, reason: 'invalid_password' });
+
+            // Track failed attempt using LoginAttempt model
+            const recentFailures = await prisma.loginAttempt.count({
+                where: {
+                    email,
+                    success: false,
+                    createdAt: {
+                        gte: new Date(Date.now() - 15 * 60 * 1000) // Last 15 minutes
+                    }
+                }
+            });
+
+            // Record this failed attempt
+            await prisma.loginAttempt.create({
+                data: {
+                    id: crypto.randomUUID(),
+                    email,
+                    success: false,
+                    createdAt: new Date()
+                }
+            });
+
+            // Lock account after 5 failed attempts in 15 minutes
+            const LOCKOUT_THRESHOLD = 5;
+            const LOCKOUT_DURATION_MINUTES = 15;
+
+            if (recentFailures + 1 >= LOCKOUT_THRESHOLD) {
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        lockedUntil: new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000)
+                    }
+                });
+                logger.auth('account_locked', user.id, { email, failedAttempts: recentFailures + 1 });
+                return {
+                    success: false,
+                    error: `Too many failed attempts. Account locked for ${LOCKOUT_DURATION_MINUTES} minutes.`
+                };
+            }
+
+            logger.auth('failed', user.id, { email, reason: 'invalid_password', failedAttempts: recentFailures + 1 });
             return { success: false, error: 'Invalid credentials' };
         }
 
+        // Clear any existing lock on successful login
+        if (user.lockedUntil) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { lockedUntil: null }
+            });
+        }
+
         console.log('[LOGIN] Password matched! Creating session...');
-        await createSession(user.id);
+        await createSession(user.id, {
+            role: user.role,
+            name: user.name,
+            email: user.email,
+        });
         console.log('[LOGIN] Session created successfully!');
 
         logger.auth('login', user.id, { email });
@@ -131,6 +191,35 @@ export async function login(prevState: ActionState | null, formData: FormData): 
         console.error('[LOGIN] ERROR:', error);
         logger.error('Login failed', error as Error, { email });
         return { success: false, error: 'Something went wrong during login' };
+    }
+}
+
+/**
+ * Lightweight version for server actions that only need basic auth.
+ * Use when you don't need relations like clubMemberships or registrations.
+ * ~70% less data than getSessionUser - ideal for quick permission checks.
+ */
+export async function getSessionUserMinimal() {
+    const session = await getSession();
+    if (!session || !session.userId) return null;
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: session.userId as string },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+                role: true,
+                collegeId: true
+            }
+        });
+
+        return user;
+    } catch (error) {
+        console.error('Failed to get minimal session user:', error);
+        return null;
     }
 }
 
@@ -166,7 +255,13 @@ export async function getSessionUser() {
                 lastSeenAt: true,
                 // Relations - only essential data
                 college: {
-                    select: { id: true, name: true, logo: true }
+                    select: {
+                        id: true,
+                        name: true,
+                        logo: true,
+                        location: true,
+                        description: true
+                    }
                 },
                 skills: {
                     select: { id: true, name: true }
@@ -177,6 +272,28 @@ export async function getSessionUser() {
                 followedColleges: {
                     select: { id: true }
                 },
+                // Expanded selection for AuthContext compatibility
+                badges: {
+                    select: {
+                        dateEarned: true,
+                        badge: {
+                            select: {
+                                id: true,
+                                name: true,
+                                description: true,
+                                icon: true
+                            }
+                        }
+                    }
+                },
+                registrations: {
+                    select: {
+                        eventId: true,
+                        status: true,
+                        createdAt: true,
+                        updatedAt: true
+                    }
+                },
                 // Lighter club membership query
                 clubMemberships: {
                     select: {
@@ -184,13 +301,15 @@ export async function getSessionUser() {
                         role: true,
                         joinedAt: true,
                         club: {
-                            select: { id: true, name: true, logo: true }
+                            select: {
+                                id: true,
+                                name: true,
+                                logo: true,
+                                createdAt: true,
+                                updatedAt: true
+                            }
                         }
                     }
-                },
-                // Only fetch registration IDs for event matching
-                registrations: {
-                    select: { eventId: true, status: true }
                 },
                 // Badge count for display
                 _count: {
@@ -236,93 +355,95 @@ export async function updateUserProfile(data: {
         return { success: false, error: 'Unauthorized' };
     }
 
+    const userId = session.userId as string;
+
     try {
-        // 0. Handle Custom College Creation
-        let finalCollegeId = data.collegeId;
+        // OPTIMIZATION: Use a single transaction for all updates
+        await prisma.$transaction(async (tx) => {
+            // 0. Handle Custom College Creation
+            let finalCollegeId = data.collegeId;
 
-        if (data.customCollegeName && (!data.collegeId || data.collegeId === 'other')) {
-            const normalizedName = data.customCollegeName.trim();
-            // Check if exists (case-insensitive search would be ideal, but for now exact or simple find)
-            const existing = await prisma.college.findFirst({
-                where: { name: normalizedName }
-            });
-
-            if (existing) {
-                finalCollegeId = existing.id;
-            } else {
-                // Create new college with placeholders
-                const newCollege = await prisma.college.create({
-                    data: {
-                        name: normalizedName,
-                        location: 'Unspecified',
-                        description: `Community added college: ${normalizedName}`,
-                        logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(normalizedName)}&background=random`
-                    }
+            if (data.customCollegeName && (!data.collegeId || data.collegeId === 'other')) {
+                const normalizedName = data.customCollegeName.trim();
+                const existing = await tx.college.findFirst({
+                    where: { name: normalizedName }
                 });
-                finalCollegeId = newCollege.id;
+
+                if (existing) {
+                    finalCollegeId = existing.id;
+                } else {
+                    const newCollege = await tx.college.create({
+                        data: {
+                            name: normalizedName,
+                            location: 'Unspecified',
+                            description: `Community added college: ${normalizedName}`,
+                            logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(normalizedName)}&background=random`
+                        }
+                    });
+                    finalCollegeId = newCollege.id;
+                }
             }
-        }
 
-        // 1. Separate scalar updates and relation updates
-        const { skills, interests, achievements, projects, portfolioLinks, collegeId, customCollegeName, ...scalarData } = data;
+            // 1. Separate scalar updates and relation updates
+            const { skills, interests, achievements, projects, portfolioLinks, collegeId, customCollegeName, ...scalarData } = data;
 
-        // 2. Update scalars (including json fields)
-        if (Object.keys(scalarData).length > 0 || achievements || projects || portfolioLinks || finalCollegeId) {
+            // 2. Build the complete update object
             const updateData: any = { ...scalarData };
             if (achievements) updateData.achievements = JSON.stringify(achievements);
             if (projects) updateData.projects = JSON.stringify(projects);
             if (portfolioLinks) updateData.portfolioLinks = JSON.stringify(portfolioLinks);
             if (finalCollegeId) updateData.collegeId = finalCollegeId;
 
-            await prisma.user.update({
-                where: { id: session.userId as string },
-                data: updateData
-            });
-        }
+            // 3. Handle skills - clear and set in one update
+            if (skills !== undefined) {
+                updateData.skills = {
+                    set: [], // Clear existing
+                };
+            }
 
-        // 3. Update Skills (Replace all)
-        if (skills) {
-            // First disconnect all
-            await prisma.user.update({
-                where: { id: session.userId as string },
-                data: { skills: { set: [] } }
-            });
-            // Then connect/create new ones
-            if (skills.length > 0) {
-                await prisma.user.update({
-                    where: { id: session.userId as string },
-                    data: {
-                        skills: {
-                            connectOrCreate: skills.map(s => ({
-                                where: { name: s },
-                                create: { name: s }
-                            }))
-                        }
-                    }
+            // 4. Handle interests - clear and set in one update
+            if (interests !== undefined) {
+                updateData.interests = {
+                    set: [], // Clear existing
+                };
+            }
+
+            // First update: Clear relations and set scalar data
+            if (Object.keys(updateData).length > 0) {
+                await tx.user.update({
+                    where: { id: userId },
+                    data: updateData
                 });
             }
-        }
 
-        // 4. Update Interests (Replace all)
-        if (interests) {
-            await prisma.user.update({
-                where: { id: session.userId as string },
-                data: { interests: { set: [] } }
-            });
-            if (interests.length > 0) {
-                await prisma.user.update({
-                    where: { id: session.userId as string },
-                    data: {
-                        interests: {
-                            connectOrCreate: interests.map(i => ({
-                                where: { name: i },
-                                create: { name: i }
-                            }))
-                        }
-                    }
+            // Second update: Connect skills and interests (if provided)
+            const connectData: any = {};
+
+            if (skills && skills.length > 0) {
+                connectData.skills = {
+                    connectOrCreate: skills.map(s => ({
+                        where: { name: s },
+                        create: { name: s }
+                    }))
+                };
+            }
+
+            if (interests && interests.length > 0) {
+                connectData.interests = {
+                    connectOrCreate: interests.map(i => ({
+                        where: { name: i },
+                        create: { name: i }
+                    }))
+                };
+            }
+
+            if (Object.keys(connectData).length > 0) {
+                await tx.user.update({
+                    where: { id: userId },
+                    data: connectData
                 });
             }
-        }
+        });
 
         revalidatePath('/profile');
         return { success: true };

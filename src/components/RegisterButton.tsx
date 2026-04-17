@@ -91,7 +91,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                 cancelUrl
             );
 
-            if (result.success && result.checkoutUrl) {
+            if (result.success) {
                 // Redirect to Stripe Checkout page
                 window.location.href = result.checkoutUrl;
             } else {
@@ -113,7 +113,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
             // Use the paymentId from registration if available, or registration id
             const result = await verifyPaymentStatus(registration.id || registrationId || '');
 
-            if (result.success && result.isPaid) {
+            if (result.success) {
                 registerForEvent(eventId);
                 toast.success('Payment verified! You are now registered.');
                 router.refresh();

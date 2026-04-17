@@ -11,6 +11,7 @@ import styles from './page.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EventWithRelations } from '@/lib/actions';
 import Search from '@/components/Search';
+import { Calendar, List, Sparkles, ChevronDown } from 'lucide-react';
 
 const FILTERS = ['All', 'Hackathon', 'Fest', 'Workshop', 'Cultural', 'This Week'];
 
@@ -78,67 +79,76 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
 
             {/* <div className={styles.searchBarContainer}><Search /></div> Hidden based on ref */}
 
-            <div className={styles.filterContainer} role="tablist">
+            {/* Premium Filter Bar */}
+            <div className={styles.filterContainer}>
+
+                {/* 1. Filter Tabs (Gliding Pill) */}
                 <div className={styles.filterGroup}>
-                    {FILTERS.map((filter) => (
+                    {FILTERS.map((filter) => {
+                        const isActive = activeFilter === filter;
+                        return (
+                            <button
+                                key={filter}
+                                onClick={() => updateFilter(filter)}
+                                className={`${styles.filterTab} ${isActive ? styles.activeTab : ''}`}
+                            >
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeFilterBubble"
+                                        className={styles.activeBubble}
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                    />
+                                )}
+                                <span className={styles.tabLabel}>{filter}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className={styles.controlsGroup}>
+                    {/* 2. Sort Dropdown (Styled) */}
+                    <div className={styles.sortWrapper}>
+                        <span className={styles.sortLabel}>Sort by</span>
+                        <div className={styles.selectContainer}>
+                            <select
+                                className={styles.sortSelect}
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                            >
+                                <option value="Date">Date</option>
+                                <option value="Popularity">Popularity</option>
+                            </select>
+                            <ChevronDown className={styles.selectIcon} size={16} />
+                        </div>
+                    </div>
+
+                    <div className={styles.divider} />
+
+                    {/* 3. View Toggle (Segmented) */}
+                    <div className={styles.viewToggle}>
                         <button
-                            key={filter}
-                            className={`${styles.filterBtn} ${activeFilter === filter ? styles.activeFilter : ''}`}
-                            onClick={() => updateFilter(filter)}
+                            onClick={() => setViewMode('list')}
+                            className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.activeToggle : ''}`}
+                            aria-label="List View"
                         >
-                            {filter}
+                            <List size={18} />
                         </button>
-                    ))}
-                </div>
+                        <button
+                            onClick={() => setViewMode('calendar')}
+                            className={`${styles.toggleBtn} ${viewMode === 'calendar' ? styles.activeToggle : ''}`}
+                            aria-label="Calendar View"
+                        >
+                            <Calendar size={18} />
+                        </button>
+                    </div>
 
-                <div className={styles.sortContainer}>
-                    <span style={{ opacity: 0.6 }}>Sort by:</span>
-                    <select
-                        className={styles.sortSelect}
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                    >
-                        <option value="Date">Date</option>
-                        <option value="Popularity">Popularity</option>
-                    </select>
-                </div>
-
-                <Link href="/events/create" className={`btn ${styles.hostBtn}`}>
-                    Host Event ✨
-                </Link>
-
-                {/* View Toggle */}
-                <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--surface-color)', borderRadius: '0.5rem', padding: '0.25rem' }}>
-                    <button
-                        onClick={() => setViewMode('list')}
-                        style={{
-                            padding: '0.5rem 0.75rem',
-                            borderRadius: '0.375rem',
-                            border: 'none',
-                            background: viewMode === 'list' ? 'var(--primary-color)' : 'transparent',
-                            color: viewMode === 'list' ? 'white' : 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: 500
-                        }}
-                    >
-                        📋 List
-                    </button>
-                    <button
-                        onClick={() => setViewMode('calendar')}
-                        style={{
-                            padding: '0.5rem 0.75rem',
-                            borderRadius: '0.375rem',
-                            border: 'none',
-                            background: viewMode === 'calendar' ? 'var(--primary-color)' : 'transparent',
-                            color: viewMode === 'calendar' ? 'white' : 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: 500
-                        }}
-                    >
-                        📅 Calendar
-                    </button>
+                    {/* 4. Host Button (Gradient Pop) */}
+                    <Link href="/events/create" className={styles.hostBtn}>
+                        <span className={styles.btnText}>Host Event</span>
+                        <div className={styles.btnIconBox}>
+                            <Sparkles size={16} className={styles.btnIcon} />
+                        </div>
+                    </Link>
                 </div>
             </div>
 
