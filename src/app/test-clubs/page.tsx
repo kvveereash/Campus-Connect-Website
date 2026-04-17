@@ -1,6 +1,8 @@
 
 import prismadb from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DebugPage() {
     const clubs = await prismadb.club.findMany({
         include: { members: true, college: true }
