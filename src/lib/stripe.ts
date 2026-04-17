@@ -5,20 +5,30 @@ import Stripe from 'stripe';
  * Uses server-side secret key for secure API calls
  */
 
-// Initialize Stripe with API key
-// In development, we'll use a placeholder if not set
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+// Lazy Stripe initialization to avoid errors during build
+let _stripe: Stripe | null = null;
 
-if (!stripeSecretKey && process.env.NODE_ENV === 'production') {
-    throw new Error('STRIPE_SECRET_KEY is required in production');
-}
+function getStripeInstance(): Stripe | null {
+    if (_stripe) return _stripe;
 
-export const stripe = stripeSecretKey
-    ? new Stripe(stripeSecretKey, {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+    if (!stripeSecretKey) {
+        if (process.env.NODE_ENV === 'production') {
+            console.error('STRIPE_SECRET_KEY is not set');
+        }
+        return null;
+    }
+
+    _stripe = new Stripe(stripeSecretKey, {
         apiVersion: '2024-12-18.acacia' as any,
         typescript: true,
-    })
-    : null;
+    });
+
+    return _stripe;
+}
+
+export const stripe = typeof window === 'undefined' ? getStripeInstance() : null;
 
 /**
  * Check if Stripe is properly configured
