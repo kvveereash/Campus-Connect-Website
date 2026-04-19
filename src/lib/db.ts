@@ -14,6 +14,7 @@ const SLOW_QUERY_THRESHOLD_MS = 500
 
 const prismaClientSingleton = () => {
     const client = new PrismaClient({
+        datasourceUrl: process.env.DATABASE_URL,
         log: [
             { emit: 'event', level: 'query' },
             { emit: 'event', level: 'error' },
