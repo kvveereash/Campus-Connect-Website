@@ -29,6 +29,17 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Inject server-side env vars into the bundle at build time
+  // This ensures they're available in Netlify serverless functions
+  env: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    JWT_SECRET: process.env.JWT_SECRET,
+    PUSHER_APP_ID: process.env.PUSHER_APP_ID,
+    PUSHER_KEY: process.env.PUSHER_KEY,
+    PUSHER_SECRET: process.env.PUSHER_SECRET,
+    PUSHER_CLUSTER: process.env.PUSHER_CLUSTER,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  },
   images: {
     remotePatterns: [
       {
