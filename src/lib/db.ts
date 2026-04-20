@@ -12,6 +12,11 @@ import { PrismaClient, Prisma } from '@prisma/client'
 
 const SLOW_QUERY_THRESHOLD_MS = 500
 
+// Explicitly set the environment variable for Prisma's query engine
+if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = "postgresql://postgres.esvxkoizojyrwhtqynck:15aug2004%40veereash@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+}
+
 const prismaClientSingleton = () => {
     const client = new PrismaClient({
         datasourceUrl: process.env.DATABASE_URL,

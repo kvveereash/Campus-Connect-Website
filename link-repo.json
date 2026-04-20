@@ -1,0 +1,12 @@
+{
+  "site_id": "9af7c61d-9534-44b6-ae63-e205865adccb",
+  "body": {
+    "repo": {
+      "provider": "github",
+      "repo": "kvveereash/Campus-Connect-Website",
+      "branch": "main",
+      "cmd": "npx prisma generate && npm run build",
+      "dir": ".next"
+    }
+  }
+}

@@ -24,6 +24,7 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://campusconnect2026.netlify.app'),
   title: {
     default: 'Campus Connect',
     template: '%s | Campus Connect'

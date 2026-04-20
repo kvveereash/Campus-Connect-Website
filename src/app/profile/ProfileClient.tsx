@@ -50,7 +50,7 @@ import { getUserBadges } from '@/lib/actions';
 import { BadgeType } from '@/components/profile/ProfileHeader';
 
 export default function ProfileClient() {
-    const { user, login, updateProfile, logout } = useAuth();
+    const { user, login, updateProfile, logout, isLoading } = useAuth();
     const { clubs } = useClubs();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('Events');
@@ -104,12 +104,12 @@ export default function ProfileClient() {
 
     // If no user, show loading or redirect
     useEffect(() => {
-        if (!user) {
-            // Wait for auth context to load
+        if (!isLoading && !user) {
+            router.push('/login');
         }
-    }, [user, login]);
+    }, [user, isLoading, router]);
 
-    if (!user) return <div role="status" aria-busy="true">Loading...</div>;
+    if (isLoading || !user) return <div role="status" aria-busy="true">Loading...</div>;
 
     // Followed colleges come from DB now
     const followedColleges = dbFollowedColleges;

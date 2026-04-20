@@ -95,9 +95,5 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// Disable body parsing - we need raw body for signature verification
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
+// Note: In Next.js App Router, request.text() automatically gets the raw body, 
+// so we don't need the legacy bodyParser: false config.
