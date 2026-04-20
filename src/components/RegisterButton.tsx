@@ -10,7 +10,7 @@ import { verifyPaymentStatus } from '@/lib/actions/verify-payment';
 import { toast } from 'sonner';
 
 export default function RegisterButton({ eventId, price = 0 }: { eventId: string, price?: number }) {
-    const { user, registerForEvent } = useAuth();
+    const { user, registerForEvent, isLoading } = useAuth();
     const router = useRouter();
     const [status, setStatus] = useState<'idle' | 'registering' | 'payment_pending' | 'processing_payment' | 'success'>('idle');
     const [isOpen, setIsOpen] = useState(false);
@@ -22,6 +22,8 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
     const isPendingPayment = registration && registration.status === 'PENDING_PAYMENT';
 
     const handleOpenModal = () => {
+        if (isLoading) return; // Do nothing if still checking session
+
         if (!user) {
             router.push('/login');
             return;

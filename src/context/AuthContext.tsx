@@ -15,12 +15,14 @@ interface AuthContextType {
     updateProfile: (updates: Partial<User>) => void;
     refreshUser: () => Promise<void>;
     isAuthenticated: boolean;
+    isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const checkSession = async () => {
         try {
@@ -111,6 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error('Session check failed', error);
             setUser(null);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -199,7 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, registerForEvent, toggleFollow, toggleFollowUser, updateProfile, refreshUser, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ user, login, logout, registerForEvent, toggleFollow, toggleFollowUser, updateProfile, refreshUser, isAuthenticated: !!user, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

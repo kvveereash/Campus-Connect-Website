@@ -6,14 +6,14 @@ import { useAuth } from '@/context/AuthContext';
 import styles from './Navbar.module.css';
 
 export default function UserNav() {
-    const { user, logout } = useAuth();
+    const { user, logout, isLoading } = useAuth();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    if (!mounted) {
+    if (!mounted || isLoading) {
         return (
             <div style={{ width: '40px', height: '40px' }}></div> // Placeholder to prevent layout shift
         );
