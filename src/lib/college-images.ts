@@ -30,6 +30,24 @@ const CAMPUS_IMAGES = [
     'https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?w=800', // 19 Campus Path
 ] as const;
 
+/** Curated event photography based on category */
+const EVENT_IMAGES = {
+    'hackathon': 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800',
+    'fest':      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
+    'workshop':  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800',
+    'cultural':  'https://images.unsplash.com/photo-1460666819451-74129999a31d?w=800',
+    'social':    'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800',
+    'general':   'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800',
+} as const;
+
+/** Clean placeholders for clubs/logos */
+const LOGO_PLACEHOLDERS = [
+    'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100', // Minimal Business
+    'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=100', // Abstract Tech
+    'https://images.unsplash.com/photo-1557683316-973673baf926?w=100', // Blue Gradient
+] as const;
+
+
 /**
  * Named mapping for seeded/known colleges.
  */
@@ -82,7 +100,38 @@ export function getCollegeImage(collegeName: string, _collegeId?: string): strin
  * Database logos are bypassed since they're unreliable.
  */
 export function resolveCollegeImage(
-    college: { name: string; id?: string; logo?: string }
+    college?: { name: string; id?: string; logo?: string } | null
 ): string {
+    if (!college) return CAMPUS_IMAGES[0];
     return getCollegeImage(college.name, college.id);
+}
+
+/**
+ * Returns a high-quality event thumbnail based on category.
+ */
+export function resolveEventImage(category?: string | null, thumbnail?: string | null): string {
+    if (thumbnail && !thumbnail.includes('placeholder') && thumbnail.startsWith('http')) {
+        return thumbnail;
+    }
+
+    const cat = (category || 'general').toLowerCase();
+    
+    if (cat.includes('hack') || cat.includes('tech')) return EVENT_IMAGES.hackathon;
+    if (cat.includes('fest') || cat.includes('concert')) return EVENT_IMAGES.fest;
+    if (cat.includes('work') || cat.includes('learn')) return EVENT_IMAGES.workshop;
+    if (cat.includes('cult') || cat.includes('art')) return EVENT_IMAGES.cultural;
+    if (cat.includes('soc') || cat.includes('meet')) return EVENT_IMAGES.social;
+    
+    return EVENT_IMAGES.general;
+}
+
+/**
+ * Returns a consistent logo for a club or college.
+ */
+export function resolveClubLogo(club?: { name: string; logo?: string } | null): string {
+    if (club?.logo && club.logo.startsWith('http')) return club.logo;
+    
+    // Fallback to a deterministic abstract logo
+    const name = club?.name || 'Unknown';
+    return LOGO_PLACEHOLDERS[stableHash(name) % LOGO_PLACEHOLDERS.length];
 }
