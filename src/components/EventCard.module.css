@@ -60,7 +60,7 @@
     position: absolute;
     bottom: 1rem;
     left: 1.5rem;
-    background: var(--color-mint); /* Using mint by default to match club card style */
+    background: var(--color-mint);
     color: var(--color-forest);
     padding: 0.4rem 1rem;
     font-size: 0.75rem;
@@ -71,6 +71,13 @@
     z-index: 2;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
+.chipHackathon { background: #E0F2FE; color: #0369A1; }
+.chipFest      { background: #FEE2E2; color: #B91C1C; }
+.chipWorkshop  { background: #F0FDF4; color: #15803D; }
+.chipCultural  { background: #F5F3FF; color: #6D28D9; }
+.chipSocial    { background: #FEF3C7; color: #B45309; }
+.chipDefault   { background: var(--color-mint); color: var(--color-forest); }
 
 /* Pricing Tag (Top Right/Left) */
 .priceTag {

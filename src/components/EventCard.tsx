@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
-import { resolveCollegeImage } from '@/lib/college-images';
+import { resolveCollegeImage, resolveEventImage, resolveClubLogo } from '@/lib/college-images';
 import { EventWithRelations } from '@/lib/actions';
 import styles from './EventCard.module.css';
 import { motion } from 'framer-motion';
@@ -43,6 +43,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
             case 'Fest': return styles.chipFest;
             case 'Workshop': return styles.chipWorkshop;
             case 'Cultural': return styles.chipCultural;
+            case 'Social': return styles.chipSocial;
             default: return styles.chipDefault;
         }
     };
@@ -63,7 +64,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                     style={{ flexShrink: 0, position: 'relative', width: '100%', height: '200px', overflow: 'hidden' }}
                 >
                     <Image
-                        src={event.thumbnail || '/hero.png'}
+                        src={resolveEventImage(event.category, event.thumbnail)}
                         alt={event.title || 'Event image'}
                         fill
                         className={styles.image}
@@ -118,23 +119,13 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                     {/* Host Info */}
                     <div className={styles.hostRow}>
                         <div className={styles.hostLogoWrapper}>
-                            {event.club?.logo ? (
-                                <Image
-                                    src={event.club.logo}
-                                    alt={event.club.name}
-                                    fill
-                                    style={{ objectFit: 'cover' }}
-                                    className={styles.hostLogo}
-                                />
-                            ) : hostCollege?.logo ? (
-                                <Image
-                                    src={resolveCollegeImage(hostCollege)}
-                                    alt={hostCollege.name}
-                                    fill
-                                    style={{ objectFit: 'cover' }}
-                                    className={styles.hostLogo}
-                                />
-                            ) : null}
+                            <Image
+                                src={event.club ? resolveClubLogo(event.club) : resolveClubLogo({ name: hostCollege?.name || 'Unknown', logo: resolveCollegeImage(hostCollege) })}
+                                alt={event.club?.name || hostCollege?.name || 'Host'}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                className={styles.hostLogo}
+                            />
                         </div>
                         <span className={styles.hostText}>
                             Hosted by <strong>{event.club ? event.club.name : (hostCollege?.name || 'Unknown')}</strong>
