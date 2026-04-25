@@ -20,6 +20,47 @@ interface CollegesClientProps {
     initialColleges: College[];
 }
 
+// Curated campus photography for consistent premium visuals
+const CAMPUS_IMAGES = [
+    'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=600', // grand campus building
+    'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=600', // graduation caps
+    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=600', // campus aerial
+    'https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&q=80&w=600', // university hall
+    'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&q=80&w=600', // modern campus
+    'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&q=80&w=600', // library interior
+    'https://images.unsplash.com/photo-1574958269340-fa927503f3dd?auto=format&fit=crop&q=80&w=600', // campus walkway
+    'https://images.unsplash.com/photo-1580537659466-0a9bfa916a54?auto=format&fit=crop&q=80&w=600', // lecture hall
+    'https://images.unsplash.com/photo-1519452635265-7b1fbfd1e4e0?auto=format&fit=crop&q=80&w=600', // study area
+    'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=600', // campus quad
+];
+
+function getCollegeImage(college: College): string {
+    const logo = college.logo;
+    // Filter out low-quality sources: ui-avatars, placehold.co, placeholder.png, empty, or SVG-based cartoon logos
+    const isLowQuality = !logo
+        || logo.includes('ui-avatars.com')
+        || logo.includes('placehold.co')
+        || logo.includes('placeholder.png')
+        || logo.includes('default-college')
+        || logo.endsWith('.svg')
+        || logo.includes('data:image');
+
+    if (isLowQuality) {
+        // Deterministic pick based on college name for consistency across renders
+        const hash = college.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return CAMPUS_IMAGES[hash % CAMPUS_IMAGES.length];
+    }
+
+    // Only trust URLs that start with https:// and look like actual photos
+    if (logo.startsWith('https://') || logo.startsWith('/')) {
+        return logo;
+    }
+
+    // Fallback for anything else
+    const hash = college.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return CAMPUS_IMAGES[hash % CAMPUS_IMAGES.length];
+}
+
 export default function CollegesClient({ initialColleges }: CollegesClientProps) {
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -93,10 +134,11 @@ export default function CollegesClient({ initialColleges }: CollegesClientProps)
                             <div className={styles.card}>
                                 <div className={styles.imageContainer}>
                                     <Image
-                                        src={college.logo || '/images/college-placeholder.png'}
+                                        src={getCollegeImage(college)}
                                         alt={`${college.name} campus`}
                                         fill
                                         className={styles.collegeImage}
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     />
                                 </div>
                                 <div className={styles.content}>
