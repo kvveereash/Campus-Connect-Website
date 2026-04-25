@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Button from '@/components/ui/Button';
+import Link from 'next/link';
+import { resolveCollegeImage } from '@/lib/college-images';
 import { EventWithRelations } from '@/lib/actions';
 import styles from './EventCard.module.css';
 import { motion } from 'framer-motion';
@@ -126,7 +128,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                                 />
                             ) : hostCollege?.logo ? (
                                 <Image
-                                    src={hostCollege.logo}
+                                    src={resolveCollegeImage(hostCollege)}
                                     alt={hostCollege.name}
                                     fill
                                     style={{ objectFit: 'cover' }}

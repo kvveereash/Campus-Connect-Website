@@ -16,6 +16,7 @@ interface AuthContextType {
     refreshUser: () => Promise<void>;
     isAuthenticated: boolean;
     isLoading: boolean;
+    isInitialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const checkSession = async () => {
         try {
@@ -115,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
         } finally {
             setIsLoading(false);
+            setIsInitialized(true);
         }
     };
 
@@ -203,7 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, registerForEvent, toggleFollow, toggleFollowUser, updateProfile, refreshUser, isAuthenticated: !!user, isLoading }}>
+        <AuthContext.Provider value={{ user, login, logout, registerForEvent, toggleFollow, toggleFollowUser, updateProfile, refreshUser, isAuthenticated: !!user, isLoading, isInitialized }}>
             {children}
         </AuthContext.Provider>
     );

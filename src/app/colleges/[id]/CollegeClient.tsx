@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import EventCard from '@/components/EventCard';
 import styles from './page.module.css';
+import { resolveCollegeImage } from '@/lib/college-images';
 import { EventWithRelations } from '@/lib/actions';
 import EditCollegeModal from '@/components/colleges/EditCollegeModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -56,7 +57,7 @@ export default function CollegeClient({ college, events, clubs = [] }: CollegeCl
                             transition={{ delay: 0.4, duration: 1 }}
                         >
                             <Image
-                                src={college.logo}
+                                src={resolveCollegeImage(college)}
                                 alt={`${college.name} photo`}
                                 fill
                                 className={styles.logo}

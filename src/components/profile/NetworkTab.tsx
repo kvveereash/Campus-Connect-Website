@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { User, Club, College } from '@/types';
+import { resolveCollegeImage } from '@/lib/college-images';
 import styles from '@/app/profile/page.module.css';
 import EmptyState from '@/components/common/EmptyState';
 import { motion } from 'framer-motion';
@@ -75,7 +76,7 @@ export default function NetworkTab({ user, clubs, followedColleges }: NetworkTab
                         {followedColleges.map((college) => (
                             <div key={college.id} className={styles.networkCard} onClick={() => router.push(`/colleges/${college.id}`)}>
                                 <Image
-                                    src={college.logo}
+                                    src={resolveCollegeImage(college)}
                                     alt=""
                                     width={48}
                                     height={48}
