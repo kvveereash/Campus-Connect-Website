@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Button from '@/components/ui/Button';
-import Link from 'next/link';
-import { resolveCollegeImage, resolveEventImage, resolveClubLogo } from '@/lib/college-images';
+import { resolveEventImage, resolveClubLogo } from '@/lib/college-images';
 import { EventWithRelations } from '@/lib/actions';
 import styles from './EventCard.module.css';
 import { motion } from 'framer-motion';
@@ -13,14 +11,18 @@ interface EventCardProps {
     index?: number;
 }
 
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=800';
+
 export default function EventCard({ event, index = 0 }: EventCardProps) {
     const { openModal } = useModal();
     const [mounted, setMounted] = useState(false);
     const [imgSrc, setImgSrc] = useState(resolveEventImage(event.category, event.thumbnail, event.title));
     const [logoSrc, setLogoSrc] = useState(
-        event.club 
-            ? resolveClubLogo(event.club) 
-            : resolveClubLogo({ name: event.college?.name || 'Unknown' })
+        resolveClubLogo(
+            event.club
+                ? event.club
+                : { name: event.college?.name || event.hostCollege?.name || 'Unknown' }
+        )
     );
 
     useEffect(() => {
@@ -40,7 +42,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
     };
 
     const dateInfo = formatDate(event.date);
-    const hostCollege = event.hostCollege;
+    const hostName = event.club?.name || event.hostCollege?.name || event.college?.name || 'Unknown';
 
     // Helper for category badge styles
     const getChipClass = (cat: string) => {
@@ -54,6 +56,16 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
         }
     };
 
+    const handleShare = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const eventUrl = mounted ? `${window.location.origin}/events/${event.id}` : `/events/${event.id}`;
+        openModal('SHARE', {
+            eventUrl,
+            eventName: event.title
+        });
+    };
+
     return (
         <motion.div
             className={styles.card}
@@ -65,8 +77,8 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
         >
             <a href={`/events/${event.id}`} style={{ display: 'flex', flexDirection: 'column', flex: 1, textDecoration: 'none', color: 'inherit', height: '100%' }}>
                 {/* Image & Top Badges */}
-                <div 
-                    className={styles.imageContainer} 
+                <div
+                    className={styles.imageContainer}
                     style={{ flexShrink: 0, position: 'relative', width: '100%', height: '200px', overflow: 'hidden' }}
                 >
                     <Image
@@ -75,7 +87,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                         fill
                         className={styles.image}
                         style={{ objectFit: 'cover' }}
-                        onError={() => setImgSrc('https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=800')}
+                        onError={() => setImgSrc(FALLBACK_IMAGE)}
                     />
 
                     {/* Price Tag (Top Left) */}
@@ -87,13 +99,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
 
                     {/* Share Button (Top Right) */}
                     <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            openModal('SHARE', {
-                                eventUrl: `${window.location.origin}/events/${event.id}`,
-                                eventName: event.title
-                            });
-                        }}
+                        onClick={handleShare}
                         className={styles.shareButton}
                         title="Share Event"
                         aria-label={`Share ${event.title}`}
@@ -128,15 +134,15 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                         <div className={styles.hostLogoWrapper}>
                             <Image
                                 src={logoSrc}
-                                alt={event.club?.name || event.college?.name || 'Host'}
+                                alt={hostName}
                                 fill
                                 style={{ objectFit: 'cover' }}
                                 className={styles.hostLogo}
-                                onError={() => setLogoSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(event.club?.name || event.college?.name || 'C')}&background=0F1F1C&color=EBF3F1`)}
+                                onError={() => setLogoSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(hostName)}&background=0F1F1C&color=EBF3F1`)}
                             />
                         </div>
                         <span className={styles.hostText}>
-                            Hosted by <strong>{event.club ? event.club.name : (hostCollege?.name || 'Unknown')}</strong>
+                            Hosted by <strong>{hostName}</strong>
                         </span>
                     </div>
 
