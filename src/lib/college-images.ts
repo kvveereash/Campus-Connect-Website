@@ -40,6 +40,19 @@ const EVENT_IMAGES = {
     'general':   'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800',
 } as const;
 
+/** Curated club hero photography */
+const CLUB_IMAGES = {
+    'tech':     'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800',
+    'coding':   'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800',
+    'arts':     'https://images.unsplash.com/photo-1460666819451-74129999a31d?w=800',
+    'music':    'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800',
+    'mun':      'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?w=800', // Diplomacy/Global
+    'social':   'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800',
+    'business': 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800',
+    'sports':   'https://images.unsplash.com/photo-1461896704530-571f893118ac?w=800',
+    'general':  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800',
+} as const;
+
 /** Clean placeholders for clubs/logos */
 const LOGO_PLACEHOLDERS = [
     'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100', // Minimal Business
@@ -134,4 +147,30 @@ export function resolveClubLogo(club?: { name: string; logo?: string } | null): 
     // Fallback to a deterministic abstract logo
     const name = club?.name || 'Unknown';
     return LOGO_PLACEHOLDERS[stableHash(name) % LOGO_PLACEHOLDERS.length];
+}
+
+/**
+ * Returns a premium hero image for a club.
+ */
+export function resolveClubImage(club: { name: string; category?: string | null; logo?: string | null }): string {
+    if (club.logo && !club.logo.includes('placeholder') && club.logo.startsWith('http')) {
+        return club.logo;
+    }
+
+    const name = club.name.toLowerCase();
+    const cat = (club.category || '').toLowerCase();
+
+    if (name.includes('mun') || name.includes('nations') || name.includes('diplomacy')) return CLUB_IMAGES.mun;
+    if (name.includes('code') || name.includes('dev') || name.includes('program')) return CLUB_IMAGES.coding;
+    if (name.includes('tech') || name.includes('robo') || name.includes('science')) return CLUB_IMAGES.tech;
+    if (name.includes('art') || name.includes('design') || name.includes('paint')) return CLUB_IMAGES.arts;
+    if (name.includes('music') || name.includes('dance') || name.includes('sing')) return CLUB_IMAGES.music;
+    if (name.includes('biz') || name.includes('ent') || name.includes('money')) return CLUB_IMAGES.business;
+    if (name.includes('sport') || name.includes('play') || name.includes('fit')) return CLUB_IMAGES.sports;
+    
+    if (cat.includes('tech')) return CLUB_IMAGES.tech;
+    if (cat.includes('art')) return CLUB_IMAGES.arts;
+    if (cat.includes('soc')) return CLUB_IMAGES.social;
+    
+    return CLUB_IMAGES.general;
 }
