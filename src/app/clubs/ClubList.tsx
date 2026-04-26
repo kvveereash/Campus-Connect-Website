@@ -37,6 +37,38 @@ interface ClubListProps {
 import Search from '@/components/Search';
 import EmptyState from '@/components/common/EmptyState';
 
+function ClubCard({ club }: { club: Club }) {
+    const [imgSrc, setImgSrc] = useState(resolveClubImage(club));
+    const memberCount = club._count.members;
+
+    return (
+        <Link href={`/clubs/${club.id}`} className={styles.card}>
+            <div className={styles.imageContainer}>
+                <Image
+                    src={imgSrc}
+                    alt={club.name}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    className={styles.clubImage}
+                    onError={() => setImgSrc('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800')}
+                />
+            </div>
+            <div className={styles.content}>
+                <div className={styles.category}>{club.category}</div>
+                <h2 className={styles.clubName}>{club.name}</h2>
+                <p className={styles.description}>
+                    {club.description.length > 100
+                        ? `${club.description.substring(0, 100)}...`
+                        : club.description}
+                </p>
+                <div className={styles.footer}>
+                    <span className={styles.members}>👥 {memberCount} members</span>
+                </div>
+            </div>
+        </Link>
+    );
+}
+
 export default function ClubList({ initialClubs, user, joinedClubIds }: ClubListProps) {
     const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
 
@@ -82,36 +114,9 @@ export default function ClubList({ initialClubs, user, joinedClubIds }: ClubList
 
             {filteredClubs.length > 0 ? (
                 <div className={styles.grid}>
-                    {filteredClubs.map(club => {
-                        const clubImage = resolveClubImage(club);
-                        const memberCount = club._count.members;
-
-                        return (
-                            <Link href={`/clubs/${club.id}`} key={club.id} className={styles.card}>
-                                <div className={styles.imageContainer}>
-                                    <Image
-                                        src={clubImage}
-                                        alt={club.name}
-                                        fill
-                                        style={{ objectFit: 'cover' }}
-                                        className={styles.clubImage}
-                                    />
-                                </div>
-                                <div className={styles.content}>
-                                    <div className={styles.category}>{club.category}</div>
-                                    <h2 className={styles.clubName}>{club.name}</h2>
-                                    <p className={styles.description}>
-                                        {club.description.length > 100
-                                            ? `${club.description.substring(0, 100)}...`
-                                            : club.description}
-                                    </p>
-                                    <div className={styles.footer}>
-                                        <span className={styles.members}>👥 {memberCount} members</span>
-                                    </div>
-                                </div>
-                            </Link>
-                        );
-                    })}
+                    {filteredClubs.map(club => (
+                        <ClubCard key={club.id} club={club} />
+                    ))}
                 </div>
             ) : (
                 <EmptyState
