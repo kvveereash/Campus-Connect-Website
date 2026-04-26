@@ -36,9 +36,9 @@ const EVENT_IMAGES = {
     'fest':      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
     'workshop':  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800',
     'cultural':  'https://images.unsplash.com/photo-1460666819451-74129999a31d?w=800',
-    'social':    'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800',
-    'mun':       'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?w=800', // Diplomacy
-    'general':   'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800',
+    'social':    'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80&w=800',
+    'mun':       'https://images.unsplash.com/photo-1475721027187-40aeae739572?auto=format&fit=crop&q=80&w=800', // Earth/Global
+    'general':   'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=800',
 } as const;
 
 /** Curated club hero photography */
@@ -47,11 +47,11 @@ const CLUB_IMAGES = {
     'coding':   'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800',
     'arts':     'https://images.unsplash.com/photo-1460666819451-74129999a31d?w=800',
     'music':    'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800',
-    'mun':      'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?w=800', // Diplomacy
-    'social':   'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800',
-    'business': 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800',
-    'sports':   'https://images.unsplash.com/photo-1461896704530-571f893118ac?w=800',
-    'general':  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800',
+    'mun':      'https://images.unsplash.com/photo-1475721027187-40aeae739572?auto=format&fit=crop&q=80&w=800',
+    'social':   'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&q=80&w=800',
+    'business': 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&q=80&w=800',
+    'sports':   'https://images.unsplash.com/photo-1461896704530-571f893118ac?auto=format&fit=crop&q=80&w=800',
+    'general':  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800',
 } as const;
 
 /** Clean placeholders for clubs/logos */
@@ -152,11 +152,13 @@ export function resolveEventImage(
  * Returns a consistent logo for a club or college.
  */
 export function resolveClubLogo(club?: { name: string; logo?: string } | null): string {
-    if (club?.logo && club.logo.startsWith('http')) return club.logo;
+    if (club?.logo && club.logo.startsWith('http') && !club.logo.includes('placeholder')) {
+        return club.logo;
+    }
     
-    // Fallback to a deterministic abstract logo
-    const name = club?.name || 'Unknown';
-    return LOGO_PLACEHOLDERS[stableHash(name) % LOGO_PLACEHOLDERS.length];
+    // Use UI-Avatars for a foolproof logo fallback
+    const name = encodeURIComponent(club?.name || 'Club');
+    return `https://ui-avatars.com/api/?name=${name}&background=0F1F1C&color=EBF3F1&bold=true`;
 }
 
 /**
