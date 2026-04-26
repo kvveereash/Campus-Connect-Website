@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from './page.module.css';
+import { resolveClubImage } from '@/lib/college-images';
 
 // Define types locally or import from shared types if consistent
 // The server action returns a specific structure, let's match it
@@ -33,20 +34,8 @@ interface ClubListProps {
     joinedClubIds: string[];
 }
 
-const FALLBACK_IMAGES = [
-    'https://placehold.co/600x400/1e293b/ffffff?text=Tech+Club',
-    'https://placehold.co/600x400/334155/ffffff?text=Art+Club',
-    'https://placehold.co/600x400/475569/ffffff?text=Music+Club',
-    'https://placehold.co/600x400/64748b/ffffff?text=Social+Club',
-    'https://placehold.co/600x400/0f172a/ffffff?text=Science+Club',
-    'https://placehold.co/600x400/1e293b/ffffff?text=Book+Club'
-];
-
 import Search from '@/components/Search';
 import EmptyState from '@/components/common/EmptyState';
-// ... styles ...
-
-// ... (interfaces)
 
 export default function ClubList({ initialClubs, user, joinedClubIds }: ClubListProps) {
     const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
@@ -94,20 +83,18 @@ export default function ClubList({ initialClubs, user, joinedClubIds }: ClubList
             {filteredClubs.length > 0 ? (
                 <div className={styles.grid}>
                     {filteredClubs.map(club => {
-                        const clubImage = club.logo;
-                        const fallbackImage = FALLBACK_IMAGES[(club.name.charCodeAt(0) + club.id.charCodeAt(0)) % FALLBACK_IMAGES.length];
-
-                        // Handle member count safely
+                        const clubImage = resolveClubImage(club);
                         const memberCount = club._count.members;
 
                         return (
                             <Link href={`/clubs/${club.id}`} key={club.id} className={styles.card}>
-                                <div>
+                                <div className={styles.imageContainer}>
                                     <Image
-                                        src={(clubImage?.startsWith('http') || clubImage?.startsWith('/')) ? clubImage : fallbackImage}
+                                        src={clubImage}
                                         alt={club.name}
                                         fill
                                         style={{ objectFit: 'cover' }}
+                                        className={styles.clubImage}
                                     />
                                 </div>
                                 <div className={styles.content}>
