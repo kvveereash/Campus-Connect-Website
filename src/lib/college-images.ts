@@ -36,7 +36,8 @@ const EVENT_IMAGES = {
     'fest':      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
     'workshop':  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800',
     'cultural':  'https://images.unsplash.com/photo-1460666819451-74129999a31d?w=800',
-    'social':    'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800',
+    'social':    'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800',
+    'mun':       'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?w=800', // Diplomacy
     'general':   'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800',
 } as const;
 
@@ -46,8 +47,8 @@ const CLUB_IMAGES = {
     'coding':   'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800',
     'arts':     'https://images.unsplash.com/photo-1460666819451-74129999a31d?w=800',
     'music':    'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800',
-    'mun':      'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?w=800', // Diplomacy/Global
-    'social':   'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800',
+    'mun':      'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?w=800', // Diplomacy
+    'social':   'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800',
     'business': 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800',
     'sports':   'https://images.unsplash.com/photo-1461896704530-571f893118ac?w=800',
     'general':  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800',
@@ -120,15 +121,24 @@ export function resolveCollegeImage(
 }
 
 /**
- * Returns a high-quality event thumbnail based on category.
+ * Returns a high-quality event thumbnail based on category and title.
  */
-export function resolveEventImage(category?: string | null, thumbnail?: string | null): string {
+export function resolveEventImage(
+    category?: string | null, 
+    thumbnail?: string | null,
+    title?: string | null
+): string {
     if (thumbnail && !thumbnail.includes('placeholder') && thumbnail.startsWith('http')) {
         return thumbnail;
     }
 
     const cat = (category || 'general').toLowerCase();
+    const name = (title || '').toLowerCase();
     
+    // Title specific overrides (Priority 1)
+    if (name.includes('mun') || name.includes('nations') || name.includes('diplomacy')) return EVENT_IMAGES.mun;
+
+    // Category based (Priority 2)
     if (cat.includes('hack') || cat.includes('tech')) return EVENT_IMAGES.hackathon;
     if (cat.includes('fest') || cat.includes('concert')) return EVENT_IMAGES.fest;
     if (cat.includes('work') || cat.includes('learn')) return EVENT_IMAGES.workshop;

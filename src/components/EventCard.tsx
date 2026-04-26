@@ -64,7 +64,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                     style={{ flexShrink: 0, position: 'relative', width: '100%', height: '200px', overflow: 'hidden' }}
                 >
                     <Image
-                        src={resolveEventImage(event.category, event.thumbnail)}
+                        src={resolveEventImage(event.category, event.thumbnail, event.title)}
                         alt={event.title || 'Event image'}
                         fill
                         className={styles.image}
