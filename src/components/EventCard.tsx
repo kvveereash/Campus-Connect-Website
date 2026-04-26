@@ -15,6 +15,7 @@ interface EventCardProps {
 
 export default function EventCard({ event, index = 0 }: EventCardProps) {
     const { openModal } = useModal();
+    const [mounted, setMounted] = useState(false);
     const [imgSrc, setImgSrc] = useState(resolveEventImage(event.category, event.thumbnail, event.title));
     const [logoSrc, setLogoSrc] = useState(
         event.club 
