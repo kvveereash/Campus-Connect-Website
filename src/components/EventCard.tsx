@@ -15,7 +15,12 @@ interface EventCardProps {
 
 export default function EventCard({ event, index = 0 }: EventCardProps) {
     const { openModal } = useModal();
-    const [mounted, setMounted] = useState(false);
+    const [imgSrc, setImgSrc] = useState(resolveEventImage(event.category, event.thumbnail, event.title));
+    const [logoSrc, setLogoSrc] = useState(
+        event.club 
+            ? resolveClubLogo(event.club) 
+            : resolveClubLogo({ name: event.college?.name || 'Unknown' })
+    );
 
     useEffect(() => {
         setMounted(true);
@@ -64,11 +69,12 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                     style={{ flexShrink: 0, position: 'relative', width: '100%', height: '200px', overflow: 'hidden' }}
                 >
                     <Image
-                        src={resolveEventImage(event.category, event.thumbnail, event.title)}
+                        src={imgSrc}
                         alt={event.title || 'Event image'}
                         fill
                         className={styles.image}
                         style={{ objectFit: 'cover' }}
+                        onError={() => setImgSrc('https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=800')}
                     />
 
                     {/* Price Tag (Top Left) */}
@@ -120,11 +126,12 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                     <div className={styles.hostRow}>
                         <div className={styles.hostLogoWrapper}>
                             <Image
-                                src={event.club ? resolveClubLogo(event.club) : resolveClubLogo({ name: hostCollege?.name || 'Unknown', logo: resolveCollegeImage(hostCollege) })}
-                                alt={event.club?.name || hostCollege?.name || 'Host'}
+                                src={logoSrc}
+                                alt={event.club?.name || event.college?.name || 'Host'}
                                 fill
                                 style={{ objectFit: 'cover' }}
                                 className={styles.hostLogo}
+                                onError={() => setLogoSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(event.club?.name || event.college?.name || 'C')}&background=0F1F1C&color=EBF3F1`)}
                             />
                         </div>
                         <span className={styles.hostText}>
