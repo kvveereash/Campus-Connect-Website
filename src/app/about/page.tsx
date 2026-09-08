@@ -1,104 +1,141 @@
-import styles from './page.module.css';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { getLandingStats } from '@/lib/actions/landing';
+import styles from './about.module.css';
 
-export default function AboutPage() {
+export const metadata: Metadata = {
+    title: 'About',
+    description:
+        'What Campus Connect is, what it actually does, and what it is built with.',
+};
+
+const STEPS = [
+    {
+        title: 'Discover',
+        body: 'Every verified event across campus in one list, grouped by when it happens rather than when it was posted.',
+    },
+    {
+        title: 'Connect',
+        body: 'Clubs with their own feed, members and events. Join one and its posts arrive in your Buzz.',
+    },
+    {
+        title: 'Team up',
+        body: 'Say what you are looking for before a hackathon and get matched with people whose skills fill the gaps.',
+    },
+];
+
+const STACK = [
+    'Next.js 16',
+    'React 19',
+    'TypeScript',
+    'PostgreSQL',
+    'Prisma',
+    'Pusher',
+    'Stripe',
+    'Upstash Redis',
+    'Jest',
+];
+
+export default async function AboutPage() {
+    const stats = await getLandingStats();
+
     return (
-        <div className={styles.container}>
-            {/* Hero */}
-            <section className={styles.hero}>
-                <h1 className={styles.heroTitle}>We fit the <br /> <span className={styles.highlight}>puzzle</span>.</h1>
-                <p className={styles.heroSubtitle}>
-                    Campus Connect is the missing piece in your university life.
-                    We bridge the gap between students, clubs, and opportunities.
-                </p>
-            </section>
+        <div className={styles.page}>
+            <p className={styles.label}>About</p>
+            <h1 className={styles.lede}>
+                Campus life is spread across forty group chats.
+            </h1>
 
-            {/* Ticker Tape */}
-            <div className={styles.tickerWrapper}>
-                <div className={styles.tickerContent}>
-                    <span className={styles.tickerItem}>COMMUNITY</span>
-                    <span className={styles.tickerItem}>INNOVATION</span>
-                    <span className={styles.tickerItem}>GROWTH</span>
-                    <span className={styles.tickerItem}>COLLABORATION</span>
-                    <span className={styles.tickerItem}>•</span>
-                    <span className={styles.tickerItem}>COMMUNITY</span>
-                    <span className={styles.tickerItem}>INNOVATION</span>
-                    <span className={styles.tickerItem}>GROWTH</span>
-                    <span className={styles.tickerItem}>COLLABORATION</span>
-                </div>
-                {/* Duplicate for seamless loop */}
-                <div className={styles.tickerContent}>
-                    <span className={styles.tickerItem}>COMMUNITY</span>
-                    <span className={styles.tickerItem}>INNOVATION</span>
-                    <span className={styles.tickerItem}>GROWTH</span>
-                    <span className={styles.tickerItem}>COLLABORATION</span>
-                    <span className={styles.tickerItem}>•</span>
-                    <span className={styles.tickerItem}>COMMUNITY</span>
-                    <span className={styles.tickerItem}>INNOVATION</span>
-                    <span className={styles.tickerItem}>GROWTH</span>
-                    <span className={styles.tickerItem}>COLLABORATION</span>
-                </div>
+            <div className={styles.prose}>
+                <p>
+                    Events get announced in one place, clubs recruit in another, and the
+                    people who would have joined never hear about either. Nothing is
+                    missing exactly — it is just scattered, and scattered is the same as
+                    invisible.
+                </p>
+                <p>
+                    Campus Connect puts it in one feed. Every event, every club, every
+                    college, in the order things are actually happening.
+                </p>
             </div>
 
-            {/* Manifesto TEXT - Replaced with Philosophy */}
-            <section className={styles.manifestoSection}>
-                <p className={styles.manifestoText}>
-                    <span className={styles.highlight}>Universities are chaotic.</span> <br />
-                    Thousands of students, hundreds of clubs, endless events.
-                    It's easy to get lost in the noise.
-                    <br /><br />
-                    Campus Connect cuts through the clutter. We are the operating system
-                    for your campus life—a single, beautiful space where
-                    <span className={styles.highlight}> clarity meets community</span>.
-                </p>
-            </section>
-
-            {/* Values / How it Works */}
-            <section className={styles.valuesSection}>
-                <div className={styles.valueGrid}>
-                    <div className={styles.valueCard}>
-                        <h3 className={styles.valueTitle}>01. Discover</h3>
-                        <p className={styles.valueDesc}>
-                            No more WhatsApp spam. Find events, hackathons, and clubs
-                            in a unified, searchable feed powered by real-time updates.
-                        </p>
+            {/* Real counts. There is no point writing about a platform on a page
+                that cannot say how big it is. */}
+            <section className={styles.section}>
+                <p className={styles.label}>Where it stands</p>
+                <div className={styles.figures}>
+                    <div className={styles.figure}>
+                        <b>{String(stats.events).padStart(2, '0')}</b>
+                        <span>Events</span>
                     </div>
-                    <div className={styles.valueCard}>
-                        <h3 className={styles.valueTitle}>02. Connect</h3>
-                        <p className={styles.valueDesc}>
-                            Find your tribe. Whether you're a coder, artist, or organizer,
-                            smart filtering helps you meet the right people.
-                        </p>
+                    <div className={styles.figure}>
+                        <b>{String(stats.clubs).padStart(2, '0')}</b>
+                        <span>Clubs</span>
                     </div>
-                    <div className={styles.valueCard}>
-                        <h3 className={styles.valueTitle}>03. Lead</h3>
-                        <p className={styles.valueDesc}>
-                            Tools for leaders. Manage registrations, track analytics,
-                            and grow your community with professional-grade admin tools.
-                        </p>
+                    <div className={styles.figure}>
+                        <b>{String(stats.colleges).padStart(2, '0')}</b>
+                        <span>Colleges</span>
+                    </div>
+                    <div className={styles.figure}>
+                        <b>{String(stats.students).padStart(2, '0')}</b>
+                        <span>Students</span>
                     </div>
                 </div>
             </section>
 
-            {/* Team / Credits */}
-            <section className={styles.teamSection}>
-                <div className={styles.teamHeader}>
-                    <h2 className={styles.sectionTitle}>Built with <span style={{ fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>intent</span>.</h2>
-                    <p style={{ maxWidth: '600px', margin: '0 auto', color: 'var(--text-secondary)' }}>
-                        Crafted by students who wanted more from their campus experience.
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>What it does</h2>
+                <div className={styles.steps}>
+                    {STEPS.map((step, i) => (
+                        <div key={step.title} className={styles.step}>
+                            <span className={styles.stepNo}>
+                                {String(i + 1).padStart(2, '0')}
+                            </span>
+                            <h3>{step.title}</h3>
+                            <p>{step.body}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* The page previously credited "Engineering" and "Community" as though
+                they were people. This is a student project with one author, and
+                saying so plainly is both true and more interesting than a team grid
+                of gradient circles. */}
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>Who built it</h2>
+                <div className={styles.prose}>
+                    <p>
+                        One student, as a portfolio project. Every event, club and profile
+                        on the site is a real record in a real database — nothing here is
+                        a mockup or a screenshot.
+                    </p>
+                    <p>
+                        It runs custom JWT authentication, role-based access, an admin
+                        verification queue, rate limiting, audit logging, real-time chat
+                        and Stripe payments. <strong>Built with:</strong>
                     </p>
                 </div>
+                <div className={styles.stack} style={{ marginTop: 24 }}>
+                    {STACK.map((tech) => (
+                        <span key={tech} className={styles.chip}>
+                            {tech}
+                        </span>
+                    ))}
+                </div>
+            </section>
 
-                <div className={styles.teamGrid}>
-                    <div className={styles.teamCard}>
-                        <div className={styles.avatar} style={{ background: 'linear-gradient(135deg, #0F1F1C 0%, #475569 100%)' }}></div>
-                        <h3 className={styles.memberName}>Engineering</h3>
-                        <span className={styles.memberRole}>Building the Foundation</span>
-                    </div>
-                    <div className={styles.teamCard}>
-                        <div className={styles.avatar} style={{ background: 'linear-gradient(135deg, #FF7D5D 0%, #E0C0F8 100%)' }}></div>
-                        <h3 className={styles.memberName}>Community</h3>
-                        <span className={styles.memberRole}>Driving the Culture</span>
-                    </div>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>Have a look around.</h2>
+                <div className={styles.actions}>
+                    <Link href="/events" className={styles.pill}>
+                        Browse events
+                        <ArrowRight size={15} aria-hidden="true" />
+                    </Link>
+                    <Link href="/clubs" className={styles.pill}>
+                        Explore clubs
+                    </Link>
                 </div>
             </section>
         </div>

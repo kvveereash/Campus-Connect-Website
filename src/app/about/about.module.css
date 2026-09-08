@@ -1,0 +1,188 @@
+/* ============================================================
+   ABOUT — an editorial statement
+   Long measure, whisper-weight headings, hairline rules. No
+   buzzword ticker, no decorative word swaps.
+   ============================================================ */
+
+.page {
+    max-width: 1078px;
+    margin: 0 auto;
+    padding: clamp(48px, 8vw, 120px) 0 clamp(72px, 10vw, 152px);
+}
+
+.label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 24px;
+}
+
+.lede {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2rem, 5.4vw, 4.875rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    margin: 0 0 40px;
+    max-width: 18ch;
+    text-wrap: balance;
+}
+
+.section {
+    padding: clamp(48px, 7vw, 96px) 0;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.sectionTitle {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
+    line-height: 1.19;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0 0 28px;
+    max-width: 20ch;
+    text-wrap: balance;
+}
+
+/* Body copy gets a real measure and generous leading — this is the one
+   page on the site meant to be read rather than scanned. */
+.prose {
+    max-width: 62ch;
+}
+
+.prose p {
+    font-size: 18px;
+    line-height: 1.58;
+    color: var(--color-inkstone);
+    margin-bottom: 20px;
+}
+
+.prose p:last-child {
+    margin-bottom: 0;
+}
+
+.prose strong {
+    font-weight: 500;
+    color: var(--color-obsidian);
+}
+
+/* ---------- figures ---------- */
+.figures {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    padding-top: 8px;
+}
+
+.figure b {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2rem, 4vw, 3.375rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: var(--color-obsidian);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 10px;
+}
+
+.figure span {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+/* ---------- numbered list ---------- */
+.steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 40px;
+}
+
+.step {
+    border-top: 1px solid var(--border-hairline);
+    padding-top: 20px;
+}
+
+.stepNo {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.step h3 {
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.21;
+    letter-spacing: 0;
+    color: var(--color-obsidian);
+    margin: 0 0 10px;
+}
+
+.step p {
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-felt);
+}
+
+/* ---------- stack ---------- */
+.stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip {
+    padding: 6px 16px;
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--color-inkstone);
+}
+
+/* ---------- close ---------- */
+.actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 28px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    color: var(--color-obsidian);
+    font-size: 14px;
+    transition: letter-spacing var(--duration-base) var(--ease-glide);
+}
+
+.pill:hover {
+    letter-spacing: 0.05em;
+}
+
+@media (max-width: 620px) {
+    .figures {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pill {
+        transition: none;
+    }
+}

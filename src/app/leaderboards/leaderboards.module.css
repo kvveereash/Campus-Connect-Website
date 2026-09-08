@@ -1,0 +1,250 @@
+/* ============================================================
+   LEADERBOARDS — a ranked table, set as an index
+   Rank is a number, so it is set as one: large, light, tabular.
+   No medals, no metallic fills — position and scale already say
+   who is ahead.
+   ============================================================ */
+
+.page {
+    max-width: 1078px;
+    margin: 0 auto;
+    padding: clamp(40px, 7vw, 88px) 0 clamp(72px, 10vw, 152px);
+}
+
+.masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-bottom: 28px;
+}
+
+.label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2.25rem, 6vw, 4.875rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    margin: 0;
+    max-width: 16ch;
+    text-wrap: balance;
+}
+
+.note {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    padding-bottom: 10px;
+    max-width: 22ch;
+    text-align: right;
+}
+
+/* ---------- tabs ---------- */
+.tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 26px 0;
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
+    margin-bottom: clamp(32px, 5vw, 56px);
+}
+
+.tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: transparent;
+    color: var(--color-inkstone);
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color var(--duration-base) var(--ease-glide),
+                background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
+}
+
+.tab:hover {
+    border-color: var(--color-obsidian);
+}
+
+.tab[aria-selected='true'] {
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.tabDesc {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 24px;
+}
+
+/* ---------- table ---------- */
+.list {
+    border-top: 1px solid var(--border-hairline);
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 68px 1fr auto;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    color: var(--color-obsidian);
+    transition: padding-left var(--duration-base) var(--ease-glide);
+}
+
+.row:hover {
+    padding-left: 12px;
+}
+
+/* Rank set large and light. Leading zero keeps the column aligned. */
+.rank {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.75rem, 3.4vw, 2.4375rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-obsidian);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Anyone below the top three recedes — the ranking is the point. */
+.rankQuiet {
+    color: var(--color-ash);
+}
+
+.who {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.avatar {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    flex: none;
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.avatar img {
+    object-fit: cover;
+}
+
+.name {
+    font-size: clamp(1rem, 1.8vw, 1.125rem);
+    font-weight: 400;
+    line-height: 1.21;
+    color: var(--color-obsidian);
+    margin: 0;
+}
+
+.sub {
+    margin-top: 3px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+.score {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.scoreValue {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    font-variant-numeric: tabular-nums;
+}
+
+/* A zero is real information, but it should not shout. */
+.scoreZero .scoreValue {
+    color: var(--color-ash);
+}
+
+.scoreLabel {
+    margin-top: 5px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+/* ---------- empty ---------- */
+.empty {
+    padding: clamp(64px, 10vw, 120px) 0;
+    text-align: center;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.emptyTitle {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0 0 12px;
+}
+
+.emptyText {
+    font-size: 16px;
+    line-height: 1.58;
+    color: var(--color-felt);
+    max-width: 44ch;
+    margin: 0 auto;
+}
+
+@media (max-width: 620px) {
+    .row {
+        grid-template-columns: 46px 1fr auto;
+        gap: 14px;
+    }
+
+    .avatar {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .row,
+    .tab {
+        transition: none;
+    }
+
+    .row:hover {
+        padding-left: 0;
+    }
+}
