@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache';
+import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
 'use server';
 
 import prisma from '@/lib/db';
@@ -78,9 +80,8 @@ export async function getCollegesList() {
     }
 }
 
-export async function getAllColleges() {
-    try {
-        const colleges = await prisma.college.findMany({
+async function _getAllCollegesUncached() {
+    const colleges = await prisma.college.findMany({
             select: {
                 id: true,
                 name: true,
@@ -101,16 +102,27 @@ export async function getAllColleges() {
             orderBy: { name: 'asc' },
         });
 
-        return colleges.map((c) => ({
-            id: c.id,
-            name: c.name,
-            location: c.location,
-            logo: c.logo,
-            description: c.description,
-            students: c._count.students,
-            clubs: c._count.clubs,
-            events: c._count.events,
-        }));
+    return colleges.map((c) => ({
+        id: c.id,
+        name: c.name,
+        location: c.location,
+        logo: c.logo,
+        description: c.description,
+        students: c._count.students,
+        clubs: c._count.clubs,
+        events: c._count.events,
+    }));
+}
+
+export async function getAllColleges() {
+    try {
+        // Colleges change rarely, so this is the cheapest cache in the app.
+        const cached = unstable_cache(
+            _getAllCollegesUncached,
+            ['all-colleges'],
+            { tags: [CACHE_TAGS.COLLEGES], revalidate: CACHE_TTL.COLLEGES }
+        );
+        return await cached();
     } catch (error) {
         console.error('Failed to get all colleges:', error);
         return [];

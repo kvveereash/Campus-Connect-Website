@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Inter, Outfit, Fraunces, Archivo, DM_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import { AuthProvider } from "@/context/AuthContext";
-import { EventProvider } from "@/context/EventContext";
-import { TeamProvider } from "@/context/TeamContext";
-import { ClubProvider } from "@/context/ClubContext"; // Added ClubProvider import
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 import { ModalProvider } from "@/context/ModalContext";
@@ -17,17 +14,11 @@ import "./globals.css";
 import SWRegister from "@/components/SWRegister"; // Added
 import { GlobalNotificationListener } from "@/components/chat/GlobalNotificationListener";
 import { CommandPalette } from "@/components/CommandPalette";
-import BackgroundBlobs from "@/components/common/BackgroundBlobs";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces" });
-// Display face for the Campus Press events surface — heavy grotesk, poster weights.
-const archivo = Archivo({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-archivo" });
-// Primary UI face. DM Sans is the substitute the reference system names for
-// Cosmica: one geometric family carrying everything from 12px labels to 64px
-// editorial headlines.
-const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-dm-sans" });
+// Inter is the only face any stylesheet references. Outfit, Fraunces, Archivo
+// and DM_Sans were each being downloaded on every page load with zero CSS
+// referring to them.
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://campusconnect2026.netlify.app'),
@@ -75,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable} ${fraunces.variable} ${archivo.variable} ${dmSans.variable}`}>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body>
         <SWRegister /> {/* Added Service Worker Registration */}
         <ThemeProvider
@@ -86,25 +77,18 @@ export default function RootLayout({
         >
           <ModalProvider>
             <AuthProvider>
-              <BackgroundBlobs />
-              <ClubProvider> {/* Wrapped with ClubProvider */}
-                <CommandProvider>
-                  <EventProvider>
-                    <TeamProvider>
-                      <Navbar />
-                      <main className="container">
-                        {children}
-                      </main>
-                      <FloatingChatButton />
-                      <GlobalNotificationListener />
-                      <CommandPalette />
-                      <Footer />
-                      <ToastProvider />
-                      <GlobalModal />
-                    </TeamProvider>
-                  </EventProvider>
-                </CommandProvider>
-              </ClubProvider> {/* Closing ClubProvider tag */}
+              <CommandProvider>
+                <Navbar />
+                <main className="container">
+                  {children}
+                </main>
+                <FloatingChatButton />
+                <GlobalNotificationListener />
+                <CommandPalette />
+                <Footer />
+                <ToastProvider />
+                <GlobalModal />
+              </CommandProvider>
             </AuthProvider>
           </ModalProvider>
         </ThemeProvider>

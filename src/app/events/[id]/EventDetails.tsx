@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import RegisterButton from '@/components/RegisterButton';
 import TeamFinder from '@/components/TeamFinder';
+import { TeamProvider } from '@/context/TeamContext';
 import EventReviews from '@/components/EventReviews';
 import styles from './page.module.css';
 import { deleteEvent } from '@/lib/actions/events';
@@ -110,7 +111,11 @@ export default function EventDetails({ event }: { event: ExtendedEvent }) {
                 </div>
 
                 {/* Team Finder Section */}
-                <TeamFinder eventId={event.id} />
+                {/* TeamProvider was mounted globally, so every page paid for
+                    its state. Only this component consumes it. */}
+                <TeamProvider>
+                    <TeamFinder eventId={event.id} />
+                </TeamProvider>
 
                 {/* Reviews Section - Only for past events */}
                 <EventReviews eventId={event.id} isPastEvent={new Date(event.date) < new Date()} />

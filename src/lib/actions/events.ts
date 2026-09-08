@@ -328,7 +328,15 @@ async function _getUpcomingEventsUncached(limit: number = 3): Promise<EventWithR
 
 export async function getUpcomingEvents(limit: number = 3): Promise<EventWithRelations[]> {
     try {
-        return await _getUpcomingEventsUncached(limit);
+        // The helper was already named "uncached" but nothing ever wrapped it,
+        // so every request hit the database. The landing page calls this on
+        // each load, which is where its 1.2s time-to-first-byte came from.
+        const cached = unstable_cache(
+            () => _getUpcomingEventsUncached(limit),
+            [`upcoming-events-${limit}`],
+            { tags: [CACHE_TAGS.EVENTS], revalidate: CACHE_TTL.EVENTS_LIST }
+        );
+        return await cached();
     } catch (error) {
         console.error('Failed to fetch upcoming events:', error);
         return [];

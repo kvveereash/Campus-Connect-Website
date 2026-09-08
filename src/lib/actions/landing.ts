@@ -1,6 +1,8 @@
 'use server';
 
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
 
 /**
  * Everything the landing page renders, read from the database.
@@ -12,7 +14,7 @@ import prisma from '@/lib/db';
  * be caught making things up. Everything below is real or absent.
  */
 
-export async function getLandingStats() {
+async function _landingStats() {
     try {
         const [students, clubs, colleges, events] = await Promise.all([
             prisma.user.count({ where: { deletedAt: null } }),
@@ -31,7 +33,7 @@ export async function getLandingStats() {
  * Categories that actually have upcoming events, with a cover image borrowed
  * from one of them. A category with nothing in it is not offered.
  */
-export async function getCategoryBand() {
+async function _categoryBand() {
     try {
         const events = await prisma.event.findMany({
             where: { date: { gte: new Date() }, verified: true, deletedAt: null },
@@ -58,7 +60,7 @@ export async function getCategoryBand() {
 }
 
 /** The most-joined clubs, so the grid leads with the ones that are alive. */
-export async function getFeaturedClubs(limit = 6) {
+async function _featuredClubs(limit = 6) {
     try {
         const clubs = await prisma.club.findMany({
             where: { verified: true, deletedAt: null },
@@ -89,6 +91,33 @@ export async function getFeaturedClubs(limit = 6) {
     }
 }
 
-export type LandingStats = Awaited<ReturnType<typeof getLandingStats>>;
-export type CategoryBandItem = Awaited<ReturnType<typeof getCategoryBand>>[number];
-export type FeaturedClub = Awaited<ReturnType<typeof getFeaturedClubs>>[number];
+/**
+ * The landing page runs all three of these on every request. The database URL
+ * pins the pooler to a single connection, so they queue rather than run in
+ * parallel — which is what made this page cost over a second before its first
+ * byte. Cached, they cost nothing on a hit and still refresh within the minute.
+ */
+export async function getLandingStats() {
+    return unstable_cache(_landingStats, ['landing-stats'], {
+        tags: [CACHE_TAGS.EVENTS, CACHE_TAGS.CLUBS],
+        revalidate: CACHE_TTL.EVENTS_LIST,
+    })();
+}
+
+export async function getCategoryBand() {
+    return unstable_cache(_categoryBand, ['landing-categories'], {
+        tags: [CACHE_TAGS.EVENTS],
+        revalidate: CACHE_TTL.EVENTS_LIST,
+    })();
+}
+
+export async function getFeaturedClubs(limit = 6) {
+    return unstable_cache(() => _featuredClubs(limit), [`landing-clubs-${limit}`], {
+        tags: [CACHE_TAGS.CLUBS],
+        revalidate: CACHE_TTL.CLUBS_LIST,
+    })();
+}
+
+export type LandingStats = Awaited<ReturnType<typeof _landingStats>>;
+export type CategoryBandItem = Awaited<ReturnType<typeof _categoryBand>>[number];
+export type FeaturedClub = Awaited<ReturnType<typeof _featuredClubs>>[number];
