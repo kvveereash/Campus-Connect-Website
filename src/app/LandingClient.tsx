@@ -37,7 +37,16 @@ export default function LandingClient({ initialEvents, stats, categories, clubs 
                 One monumental phrase over the page's only colour. No
                 subhead crowding it, one action beneath. */}
             <section className={styles.hero}>
-                <div className={styles.iridescence} aria-hidden="true" />
+                {/* The sphere reads as a globe — a world of study. Three stacked
+                    layers: colour bands, a slower sheen for depth, and a shadow
+                    terminator so it has a lit side. Grain over the lot keeps it
+                    from looking like flat CSS. */}
+                <div className={styles.orbWrap} aria-hidden="true">
+                    <div className={styles.orb} />
+                    <div className={styles.orbSheen} />
+                    <div className={styles.orbShade} />
+                </div>
+                <div className={styles.grain} aria-hidden="true" />
                 <div className={styles.heroScrim} aria-hidden="true" />
 
                 <motion.div
@@ -47,9 +56,10 @@ export default function LandingClient({ initialEvents, stats, categories, clubs 
                     variants={stagger}
                 >
                     <motion.h1 className={styles.heroTitle} variants={rise}>
-                        Campus,
-                        <em>assembled.</em>
+                        Curious, <em>Connected</em>
                     </motion.h1>
+
+                    <motion.div className={styles.heroDot} variants={rise} aria-hidden="true" />
 
                     <motion.p className={styles.heroMeta} variants={rise}>
                         {stats.events} events &middot; {stats.clubs} clubs &middot; {stats.colleges} colleges
@@ -58,7 +68,7 @@ export default function LandingClient({ initialEvents, stats, categories, clubs 
                     <motion.div className={styles.heroActions} variants={rise}>
                         <Link href="/events" className={styles.pillOnDark}>
                             See what&rsquo;s on
-                            <ArrowRight size={15} aria-hidden="true" />
+                            <ArrowRight size={14} aria-hidden="true" />
                         </Link>
                     </motion.div>
                 </motion.div>

@@ -7,6 +7,15 @@
     padding: 1rem 0;
 }
 
+/* On the landing page the header floats over the hero instead of
+   occupying space above it. */
+.navbarFloating {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+
 /* This is the Pill itself */
 .navContainer {
     /* Re-enable clicks on the actually navbar */
@@ -439,4 +448,33 @@
 .loginBtn:active {
     transform: translateY(0) scale(0.98);
     box-shadow: none;
+}
+
+/* ------------------------------------------------------------------
+   Over the dark hero: no fill, no border, light type. The header stays
+   invisible until content scrolls behind it. Compound selectors so this
+   wins over .navContainer and its scrolled variant.
+   ------------------------------------------------------------------ */
+.navContainer.navOverHero {
+    background: transparent;
+    border-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: #ffffff;
+}
+
+.navContainer.navOverHero:hover {
+    transform: none;
+}
+
+.navContainer.navOverHero .logo,
+.navContainer.navOverHero .navLink,
+.navContainer.navOverHero a,
+.navContainer.navOverHero button {
+    color: #ffffff;
+}
+
+.navContainer.navOverHero .navLink:hover,
+.navContainer.navOverHero a:hover {
+    color: rgba(255, 255, 255, 0.72);
 }

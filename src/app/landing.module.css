@@ -20,7 +20,12 @@
     padding: 0 clamp(20px, 5vw, 40px);
 }
 
-/* ---------- hero ---------- */
+/* ---------- hero ----------
+   A dark chamber with one luminous sphere in it. The sphere reads as a
+   globe — a world of study — which is why it is a contained form rather
+   than a full-bleed wash. Palette is scholarly rather than nocturnal:
+   ivy green, brass-lamp amber, and the brand lilac.
+   ------------------------------------------------------------------ */
 .hero {
     position: relative;
     min-height: 100svh;
@@ -28,36 +33,99 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: var(--color-obsidian);
+    background: #0A0B0A;
+    isolation: isolate;
 }
 
-/* The iridescent atmosphere. Built from overlapping radial washes that
-   drift, so it reads as liquid rather than as a flat linear gradient. */
-.iridescence {
+.orbWrap {
     position: absolute;
-    inset: -30%;
+    inset: 0;
+    display: grid;
+    place-items: center;
+}
+
+/* The sphere. Conic bands blurred into one another give the oil-on-water
+   silk; the mask keeps it a sphere rather than a square of colour. */
+.orb {
+    width: clamp(420px, 96vmin, 1180px);
+    aspect-ratio: 1;
+    border-radius: 50%;
     background:
-        radial-gradient(38% 44% at 22% 30%, #E0C0F8 0%, transparent 62%),
-        radial-gradient(42% 46% at 72% 26%, #FFAC2E 0%, transparent 64%),
-        radial-gradient(46% 52% at 62% 76%, #A52D25 0%, transparent 66%),
-        radial-gradient(40% 44% at 24% 78%, #A0E0AB 0%, transparent 62%);
-    filter: blur(46px) saturate(126%);
-    animation: drift 26s var(--ease-glide) infinite alternate;
+        conic-gradient(from 210deg at 52% 46%,
+            #10130F 0deg,
+            #2C3A2A 42deg,
+            #6E7A4A 84deg,
+            #C9A24B 126deg,
+            #E4C98A 156deg,
+            #8A7C58 192deg,
+            #2A2F26 232deg,
+            #171A15 268deg,
+            #B08BC9 300deg,
+            #6A5B72 330deg,
+            #10130F 360deg);
+    filter: blur(42px) saturate(112%) contrast(112%);
+    animation: swirl 54s linear infinite;
+    opacity: 0.92;
 }
 
-@keyframes drift {
-    0% { transform: translate3d(-3%, -2%, 0) scale(1.04) rotate(0deg); }
-    50% { transform: translate3d(3%, 2%, 0) scale(1.12) rotate(4deg); }
-    100% { transform: translate3d(-2%, 3%, 0) scale(1.06) rotate(-3deg); }
+/* A second, slower pass adds depth so the silk does not read as one flat
+   rotation. */
+.orbSheen {
+    position: absolute;
+    width: clamp(420px, 96vmin, 1180px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(52% 44% at 34% 30%, rgba(228, 201, 138, 0.55) 0%, transparent 62%),
+        radial-gradient(46% 40% at 70% 66%, rgba(176, 139, 201, 0.42) 0%, transparent 64%),
+        radial-gradient(60% 56% at 62% 22%, rgba(15, 19, 14, 0.72) 0%, transparent 70%);
+    filter: blur(56px);
+    animation: swirlSlow 78s linear infinite reverse;
+    mix-blend-mode: screen;
 }
 
-/* A scrim over the wash. The lilac end is light enough that white type
-   would fail against it otherwise, and the system already uses a dark
-   overlay behind hero media. */
+/* Shadow terminator — gives the sphere a lit side and a dark side. */
+.orbShade {
+    position: absolute;
+    width: clamp(420px, 96vmin, 1180px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(68% 68% at 36% 30%, transparent 30%, rgba(6, 7, 6, 0.86) 78%);
+}
+
+@keyframes swirl {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes swirlSlow {
+    to { transform: rotate(360deg) scale(1.06); }
+}
+
+/* Film grain. Keeps the gradient from looking like flat CSS and gives the
+   whole frame a printed, photographic quality. */
+.grain {
+    position: absolute;
+    inset: -50%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity: 0.17;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    animation: grainShift 0.9s steps(3) infinite;
+}
+
+@keyframes grainShift {
+    0% { transform: translate3d(0, 0, 0); }
+    33% { transform: translate3d(-3%, 2%, 0); }
+    66% { transform: translate3d(2%, -3%, 0); }
+    100% { transform: translate3d(0, 0, 0); }
+}
+
+/* A light vignette pulls attention to the centre. */
 .heroScrim {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.42);
+    background: radial-gradient(72% 62% at 50% 50%, transparent 30%, rgba(6, 7, 6, 0.62) 100%);
+    pointer-events: none;
 }
 
 .heroInner {
@@ -69,43 +137,52 @@
     text-align: center;
 }
 
-/* The headline is the hero. No subhead crowding it, one action beneath. */
+/* Modest, not monumental. The atmosphere carries the drama; the words
+   only have to be read. */
 .heroTitle {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(3.25rem, 13vw, 9.75rem);
-    line-height: 0.86;
-    letter-spacing: -0.04em;
+    font-size: clamp(1.75rem, 4.4vw, 3.375rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
     color: var(--color-paper);
     margin: 0;
-    text-wrap: balance;
 }
 
+/* The reference sets one letter apart inside the word. Here the italic
+   marks the join between the two halves of the phrase. */
 .heroTitle em {
-    font-style: normal;
+    font-style: italic;
     font-weight: 300;
-    display: block;
+}
+
+/* Small mark beneath the line, as in the reference. */
+.heroDot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-paper);
+    margin: 28px auto 0;
+    opacity: 0.85;
 }
 
 .heroMeta {
-    margin-top: 32px;
-    font-size: 12px;
+    margin-top: 26px;
+    font-size: 11px;
     font-weight: 400;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.72);
+    color: rgba(255, 255, 255, 0.55);
 }
 
 .heroActions {
-    margin-top: 40px;
+    margin-top: 32px;
     display: flex;
     gap: 12px;
     justify-content: center;
     flex-wrap: wrap;
 }
 
-/* Ghost pill over dark media — the translucent border dissolves into the
-   wash while the pill silhouette stays unmistakable. */
 .pillOnDark {
     display: inline-flex;
     align-items: center;
@@ -115,18 +192,18 @@
     border: 1px solid rgba(255, 255, 255, 0.3);
     background: transparent;
     color: var(--color-paper);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 400;
+    letter-spacing: 0.02em;
     transition: border-color var(--duration-base) var(--ease-glide),
                 letter-spacing var(--duration-base) var(--ease-glide);
 }
 
 .pillOnDark:hover {
     border-color: rgba(255, 255, 255, 0.85);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.06em;
 }
 
-/* Same geometry, inverted palette. */
 .pillOnLight {
     display: inline-flex;
     align-items: center;
@@ -136,25 +213,25 @@
     border: 1px solid var(--color-obsidian);
     background: transparent;
     color: var(--color-obsidian);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 400;
-    transition: border-color var(--duration-base) var(--ease-glide),
-                letter-spacing var(--duration-base) var(--ease-glide);
+    letter-spacing: 0.02em;
+    transition: letter-spacing var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide);
 }
 
 .pillOnLight:hover {
-    letter-spacing: 0.02em;
+    letter-spacing: 0.06em;
 }
 
-/* Rotating typographic badge — punctuation, not a button. */
 .scrollBadge {
     position: absolute;
-    left: clamp(20px, 5vw, 40px);
-    bottom: clamp(20px, 5vw, 40px);
-    width: 96px;
-    height: 96px;
-    animation: spin 18s linear infinite;
-    color: var(--color-paper);
+    left: clamp(20px, 5vw, 44px);
+    bottom: clamp(20px, 5vw, 44px);
+    width: 84px;
+    height: 84px;
+    animation: spin 22s linear infinite;
+    color: rgba(255, 255, 255, 0.72);
 }
 
 @keyframes spin {

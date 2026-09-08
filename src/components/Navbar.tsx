@@ -18,15 +18,29 @@ export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
+    // The landing hero is a full-viewport dark chamber. A white pill sitting on
+    // top of it reads as a sticker stuck to a photograph, so while the nav is
+    // still over that hero it goes transparent with light type — the way the
+    // reference keeps its header invisible until content scrolls behind it.
+    const isLanding = pathname === '/';
+    const [overHero, setOverHero] = useState(isLanding);
+
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 50);
+        const handleScroll = () => {
+            const y = window.scrollY;
+            setScrolled(y > 50);
+            setOverHero(isLanding && y < window.innerHeight - 120);
+        };
+        handleScroll();
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [isLanding]);
 
     return (
-        <nav className={styles.navbar}>
-            <div className={`container ${styles.navContainer} ${scrolled ? styles.navContainerScrolled : ''}`}>
+        <nav className={`${styles.navbar} ${isLanding ? styles.navbarFloating : ''}`}>
+            <div
+                className={`container ${styles.navContainer} ${scrolled ? styles.navContainerScrolled : ''} ${overHero ? styles.navOverHero : ''}`}
+            >
                 <Link href="/" className={styles.logo}>
                     Campus Connect
                 </Link>
