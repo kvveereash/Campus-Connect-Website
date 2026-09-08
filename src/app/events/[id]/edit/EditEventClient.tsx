@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import styles from './page.module.css';
-import { EventWithRelations } from '@/lib/actions/events';
+import { EventDetail } from '@/lib/actions/events';
 import { updateEvent } from '@/lib/actions/events'; // We'll need to create/ensure this action exists
 
 const CATEGORIES = ['Hackathon', 'Fest', 'Workshop', 'Seminar', 'Tech Talk'];
@@ -15,7 +15,7 @@ const COLLEGES = [
     // Ideally fetch this dynamically too, but hardcoded list matches seed for now
 ];
 
-export default function EditEventClient({ event }: { event: EventWithRelations }) {
+export default function EditEventClient({ event }: { event: EventDetail }) {
     const router = useRouter();
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);

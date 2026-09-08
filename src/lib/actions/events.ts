@@ -379,10 +379,36 @@ export async function getAllEvents(filters?: { search?: string; category?: strin
     }
 }
 
+/**
+ * One event, with only the fields its pages actually render.
+ *
+ * This used to be `include: { creator: true, ... }`, which pulls the whole User
+ * row — and since the detail page is a client component that takes the event as
+ * a prop, React serialised that row into the HTML. Every visitor to an event
+ * page was served the creator's email address and bcrypt password hash in the
+ * page source. Relations are selected field by field from here on, so adding a
+ * column to a model can never quietly publish it.
+ */
 async function _getEventByIdUncached(id: string) {
     const event = await prisma.event.findUnique({
         where: { id },
-        include: { hostCollege: true, creator: true, club: true },
+        select: {
+            id: true,
+            title: true,
+            description: true,
+            date: true,
+            venue: true,
+            category: true,
+            price: true,
+            thumbnail: true,
+            verified: true,
+            creatorId: true,
+            clubId: true,
+            hostCollegeId: true,
+            hostCollege: { select: { id: true, name: true, logo: true } },
+            club: { select: { id: true, name: true, logo: true } },
+            creator: { select: { id: true, name: true, avatar: true } },
+        },
     });
     return event;
 }
@@ -428,6 +454,9 @@ export async function getUserRegisteredEvents(userId: string) {
         return [];
     }
 }
+
+/** Exactly what getEventById returns — narrower than the list type on purpose. */
+export type EventDetail = NonNullable<Awaited<ReturnType<typeof _getEventByIdUncached>>>;
 
 export async function getEventById(id: string) {
     try {
