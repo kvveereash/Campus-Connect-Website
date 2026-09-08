@@ -1,0 +1,572 @@
+/* ============================================================
+   LANDING
+   Zinc canvas, white cards, hairline borders, one accent.
+   Rhythm: light card sections, one inverted dark block, light
+   again — with 80px between major sections.
+   ============================================================ */
+
+.page {
+    /* Break out of the layout container so sections can run full width. */
+    margin: 0 calc(50% - 50vw);
+    padding: 0 calc(50vw - 50%);
+    background: var(--color-paper);
+}
+
+.inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 5vw, 48px);
+}
+
+.section {
+    padding: clamp(56px, 8vw, 80px) 0;
+}
+
+.sectionHead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.eyebrow {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--color-fog);
+    margin-bottom: 8px;
+}
+
+.sectionTitle {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(28px, 3.4vw, 40px);
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0;
+    text-wrap: balance;
+}
+
+.seeAll {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-steel);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color var(--duration-base) var(--ease-glide);
+}
+
+.seeAll:hover {
+    color: var(--color-obsidian);
+}
+
+/* ---------- hero ---------- */
+.hero {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: end;
+    padding: clamp(48px, 7vw, 96px) 0 clamp(40px, 5vw, 64px);
+}
+
+.heroTitle {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(40px, 6.2vw, 64px);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    margin: 0;
+    text-wrap: balance;
+}
+
+/* The one place the brand accent appears in the hero: an underline behind a
+   phrase, not a colour swap on the word. */
+.heroMark {
+    box-shadow: inset 0 -0.16em 0 var(--color-lilac);
+}
+
+.heroLede {
+    margin-top: 20px;
+    font-size: 18px;
+    line-height: 1.45;
+    color: var(--color-steel);
+    max-width: 46ch;
+    text-wrap: pretty;
+}
+
+.heroActions {
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btnDark,
+.btnGhost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--radius-button);
+    font-size: 15px;
+    font-weight: 500;
+    transition: transform var(--duration-base) var(--ease-glide),
+                background-color var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide);
+}
+
+.btnDark {
+    background: var(--color-obsidian);
+    color: var(--color-snow);
+    border: 1.5px solid #2c2e34;
+    box-shadow: var(--shadow-button);
+}
+
+.btnGhost {
+    background: var(--color-snow);
+    color: var(--color-graphite);
+    border: 1px solid var(--color-cloud);
+}
+
+.btnDark:hover,
+.btnGhost:hover {
+    transform: translateY(-1px);
+}
+
+.btnGhost:hover {
+    border-color: var(--color-ash);
+}
+
+/* Hero side panel — the next event, as a real card */
+.heroAside {
+    background: var(--color-snow);
+    border: 1px solid var(--color-cloud);
+    border-radius: var(--radius-card);
+    padding: 8px 8px 24px;
+    overflow: hidden;
+}
+
+.asideMedia {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: 28px;
+    overflow: hidden;
+    background: var(--color-paper);
+}
+
+.asideMedia img {
+    object-fit: cover;
+}
+
+.asideStub {
+    width: 100%;
+    height: 100%;
+    background: var(--cat, var(--color-graphite));
+}
+
+.asideBody {
+    padding: 20px 16px 0;
+}
+
+.asideLabel {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-fog);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.asideDot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: var(--cat, var(--color-obsidian));
+    flex: none;
+}
+
+.asideTitle {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    margin: 10px 0 6px;
+    color: var(--color-obsidian);
+}
+
+.asideMeta {
+    font-size: 14px;
+    color: var(--color-steel);
+}
+
+/* ---------- stats ---------- */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--color-cloud);
+    border: 1px solid var(--color-cloud);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+}
+
+.stat {
+    background: var(--color-snow);
+    padding: 28px;
+}
+
+.statValue {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(32px, 4vw, 44px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--color-steel);
+}
+
+/* ---------- category band ---------- */
+.band {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.catCard {
+    background: var(--color-snow);
+    border: 1px solid var(--color-cloud);
+    border-radius: var(--radius-card);
+    padding: 8px 8px 20px;
+    overflow: hidden;
+    transition: transform var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide);
+}
+
+.catCard:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-ash);
+}
+
+.catMedia {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 28px;
+    overflow: hidden;
+    background: var(--cat);
+}
+
+.catMedia img {
+    object-fit: cover;
+}
+
+.catBody {
+    padding: 16px 12px 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.catName {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+}
+
+.catCount {
+    font-size: 13px;
+    color: var(--color-fog);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- event cards ---------- */
+.eventGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.eventCard {
+    background: var(--color-snow);
+    border: 1px solid var(--color-cloud);
+    border-radius: var(--radius-card);
+    padding: 8px 8px 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide);
+}
+
+.eventCard:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-ash);
+}
+
+.eventMedia {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: 28px;
+    overflow: hidden;
+    background: var(--cat, var(--color-paper));
+}
+
+.eventMedia img {
+    object-fit: cover;
+}
+
+.eventBody {
+    padding: 18px 16px 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.eventTitle {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0 0 6px;
+    text-wrap: balance;
+}
+
+.eventMeta {
+    font-size: 14px;
+    color: var(--color-steel);
+    margin-bottom: 14px;
+}
+
+.tagRow {
+    margin-top: auto;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Outlined tag — hairline border keeps categories quiet */
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--color-cloud);
+    border-radius: var(--radius-tag);
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-graphite);
+}
+
+.tagDot {
+    width: 7px;
+    height: 7px;
+    border-radius: var(--radius-pill);
+    background: var(--cat);
+    flex: none;
+}
+
+/* The single accent: a filled badge, never a button or a body colour. */
+.tagAccent {
+    background: var(--color-lilac);
+    border-color: var(--color-lilac);
+    color: var(--color-obsidian);
+    font-weight: 500;
+}
+
+/* ---------- dark block ---------- */
+.darkBlock {
+    background: var(--color-slate);
+    border-radius: var(--radius-card);
+    padding: clamp(32px, 5vw, 56px);
+    color: var(--color-snow);
+}
+
+.darkTitle {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(26px, 3.2vw, 36px);
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    margin: 0 0 32px;
+    color: var(--color-snow);
+    max-width: 20ch;
+    text-wrap: balance;
+}
+
+.darkList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 28px;
+}
+
+.darkItem h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    color: var(--color-snow);
+    margin: 14px 0 6px;
+    line-height: 1.3;
+}
+
+.darkItem p {
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--color-ash);
+}
+
+.darkIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-snow);
+}
+
+/* ---------- clubs ---------- */
+.clubGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.clubCard {
+    background: var(--color-snow);
+    border: 1px solid var(--color-cloud);
+    border-radius: var(--radius-card);
+    padding: 24px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: transform var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide);
+}
+
+.clubCard:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-ash);
+}
+
+.clubLogo {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    flex: none;
+    background: var(--color-paper);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-steel);
+}
+
+.clubName {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    line-height: 1.3;
+}
+
+.clubMeta {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--color-fog);
+}
+
+/* ---------- closing ---------- */
+.cta {
+    background: var(--color-snow);
+    border: 1px solid var(--color-cloud);
+    border-radius: var(--radius-card);
+    padding: clamp(40px, 6vw, 72px) clamp(24px, 4vw, 48px);
+    text-align: center;
+}
+
+.ctaTitle {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(28px, 3.6vw, 44px);
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    color: var(--color-obsidian);
+    margin: 0 auto;
+    max-width: 18ch;
+    text-wrap: balance;
+}
+
+.ctaLede {
+    margin: 16px auto 28px;
+    font-size: 17px;
+    color: var(--color-steel);
+    max-width: 48ch;
+    text-wrap: pretty;
+}
+
+.ctaActions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+    .hero {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 520px) {
+    .stat {
+        padding: 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .catCard,
+    .eventCard,
+    .clubCard,
+    .btnDark,
+    .btnGhost {
+        transition: none;
+    }
+
+    .catCard:hover,
+    .eventCard:hover,
+    .clubCard:hover,
+    .btnDark:hover,
+    .btnGhost:hover {
+        transform: none;
+    }
+}
