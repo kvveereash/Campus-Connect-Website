@@ -109,3 +109,27 @@ export async function getPublicProfileEvents(userId: string) {
         return { registered: [], hosted: [] };
     }
 }
+
+/**
+ * Headline counts for the landing page.
+ *
+ * These were previously hardcoded marketing numbers (12,000 students, 340
+ * clubs, 50 colleges, 1,200 events) on a site with 14 users — the kind of
+ * claim that does not survive being asked about. Real counts, rendered
+ * honestly, are the better answer.
+ */
+export async function getPlatformStats() {
+    try {
+        const [students, clubs, colleges, events] = await Promise.all([
+            prisma.user.count({ where: { deletedAt: null } }),
+            prisma.club.count({ where: { deletedAt: null, verified: true } }),
+            prisma.college.count(),
+            prisma.event.count({ where: { deletedAt: null, verified: true } }),
+        ]);
+
+        return { students, clubs, colleges, events };
+    } catch (error) {
+        console.error('Failed to load platform stats:', error);
+        return { students: 0, clubs: 0, colleges: 0, events: 0 };
+    }
+}

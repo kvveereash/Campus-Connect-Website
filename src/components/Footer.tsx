@@ -24,18 +24,22 @@ export default function Footer() {
                 <div className={styles.column}>
                     <h4 className={styles.heading}>Community</h4>
                     <ul className={styles.links}>
-                        <li><Link href="#">About Us</Link></li>
-                        <li><Link href="#">Partner with Us</Link></li>
-                        <li><Link href="#">Guidelines</Link></li>
+                        <li><Link href="/about">About Us</Link></li>
+                        <li><Link href="/clubs">Browse Clubs</Link></li>
+                        <li><Link href="/leaderboards">Leaderboards</Link></li>
                     </ul>
                 </div>
 
+                {/* The social column previously held three href="#" links to
+                    accounts that do not exist. Pointing them at real pages
+                    beats shipping links that go nowhere; swap in real profile
+                    URLs once the accounts are created. */}
                 <div className={styles.column}>
-                    <h4 className={styles.heading}>Connect</h4>
+                    <h4 className={styles.heading}>Discover</h4>
                     <ul className={styles.links}>
-                        <li><Link href="#">Twitter</Link></li>
-                        <li><Link href="#">LinkedIn</Link></li>
-                        <li><Link href="#">Instagram</Link></li>
+                        <li><Link href="/team-finder">Find Teammates</Link></li>
+                        <li><Link href="/map">Campus Map</Link></li>
+                        <li><Link href="/buzz">Campus Buzz</Link></li>
                     </ul>
                 </div>
             </div>

@@ -41,8 +41,16 @@ const CARD_IMAGES = [
 const ROTATING_WORDS = ['connected.', 'amplified.', 'elevated.', 'unleashed.'];
 
 // ─── Type ──────────────────────────────────────────────────────────────────
+interface PlatformStats {
+    students: number;
+    clubs: number;
+    colleges: number;
+    events: number;
+}
+
 interface LandingClientProps {
     initialEvents: EventWithRelations[];
+    stats: PlatformStats;
 }
 
 // ─── Sparkline Component ───────────────────────────────────────────────────
@@ -78,7 +86,7 @@ function StarRating({ count }: { count: number }) {
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────
-export default function LandingClient({ initialEvents }: LandingClientProps) {
+export default function LandingClient({ initialEvents, stats }: LandingClientProps) {
     const [mounted, setMounted] = useState(false);
     const [activeCard, setActiveCard] = useState(0);
     const [wordIndex, setWordIndex] = useState(0);
@@ -303,8 +311,10 @@ export default function LandingClient({ initialEvents }: LandingClientProps) {
                                 <div className={styles.widgetAvatar} style={{ background: '#E0C0F8', marginLeft: '-12px', zIndex: 1 }} />
                             </div>
                             <div>
-                                <h4 className={styles.widgetTitle}>12k+ Students</h4>
-                                <p className={styles.widgetSub}>Active right now</p>
+                                <h4 className={styles.widgetTitle}>
+                                    {stats.students} {stats.students === 1 ? 'Student' : 'Students'}
+                                </h4>
+                                <p className={styles.widgetSub}>On the platform</p>
                             </div>
                         </motion.div>
 
@@ -366,10 +376,10 @@ export default function LandingClient({ initialEvents }: LandingClientProps) {
                     variants={stagger}
                 >
                     {[
-                        { value: 12000, suffix: '+', label: 'Students' },
-                        { value: 340, suffix: '+', label: 'Clubs' },
-                        { value: 50, suffix: '+', label: 'Colleges' },
-                        { value: 1200, suffix: '+', label: 'Events' },
+                        { value: stats.students, suffix: '', label: 'Students' },
+                        { value: stats.clubs, suffix: '', label: 'Clubs' },
+                        { value: stats.colleges, suffix: '', label: 'Colleges' },
+                        { value: stats.events, suffix: '', label: 'Events' },
                     ].map((stat) => (
                         <motion.div key={stat.label} className={styles.statBlock} variants={fadeInUp}>
                             <span className={styles.statNumber}>
@@ -471,9 +481,9 @@ export default function LandingClient({ initialEvents }: LandingClientProps) {
                     <motion.div className={styles.bentoStat} variants={fadeInUp}>
                         <div>
                             <span className={styles.bentoStatNumber}>
-                                <AnimatedCounter to={147} duration={1.2} />
+                                <AnimatedCounter to={stats.events} duration={1.2} />
                             </span>
-                            <p className={styles.bentoStatLabel}>events this month</p>
+                            <p className={styles.bentoStatLabel}>events on the platform</p>
                         </div>
                         <div className={styles.bentoStatBadge}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

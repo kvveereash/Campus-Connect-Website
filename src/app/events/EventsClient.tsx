@@ -194,7 +194,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
                                 <div style={{ gridColumn: '1 / -1' }}>
                                     <EmptyState
                                         title="No Events Found"
-                                        description="Try converting your search or filters to find more events."
+                                        description="Try adjusting your search or filters to find more events."
                                         icon="🔍"
                                         actionLabel="Reset Filters"
                                         onAction={() => {
@@ -208,32 +208,9 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
                 </motion.div>
             )}
 
-            {viewMode === 'list' && sortedEvents.length > 0 && (
-                <div className={styles.loadMoreContainer}>
-                    <button className={styles.loadMoreBtn}>
-                        Load More Events ▼
-                    </button>
-                </div>
-            )}
-
-            {viewMode === 'list' && sortedEvents.length === 0 && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}
-                >
-                    <p>No events found in {activeFilter} category.</p>
-                    <button
-                        className="btn btn-outline"
-                        style={{ marginTop: '1rem' }}
-                        onClick={() => {
-                            replace(pathname);
-                        }}
-                    >
-                        Clear Filters
-                    </button>
-                </motion.div>
-            )}
+            {/* Removed a "Load More Events" button that had no click handler,
+                and a second empty-state block that rendered underneath the
+                EmptyState above — an empty list showed both messages at once. */}
         </div>
     );
 }

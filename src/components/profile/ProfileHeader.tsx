@@ -1,7 +1,6 @@
 'use client';
 
 import { User } from '@/types';
-import { COLLEGES } from '@/lib/data';
 import styles from '@/app/profile/page.module.css';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
@@ -30,7 +29,9 @@ export default function ProfileHeader({ user, badges = [], onEdit, onLogout }: P
         toast.success('Profile link copied to clipboard!');
     };
 
-    const collegeName = user.college?.name || COLLEGES.find(c => c.id === user.collegeId)?.name || 'Unknown University';
+    // Was falling back to a hardcoded COLLEGES list whose ids ('c1','c2') do
+    // not exist in the database, so the fallback could never match anyway.
+    const collegeName = user.college?.name || 'Unknown University';
 
     return (
         <div className={styles.idCardContainer}>

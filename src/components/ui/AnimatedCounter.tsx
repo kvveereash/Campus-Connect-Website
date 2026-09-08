@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useInView, motion, useSpring, useMotionValue } from 'framer-motion';
+import { useInView, motion, animate } from 'framer-motion';
 
 interface AnimatedCounterProps {
     from?: number;
@@ -26,25 +26,21 @@ export default function AnimatedCounter({
     const isInView = useInView(ref, { once: true, margin: '-80px' });
     const [displayValue, setDisplayValue] = useState(from);
 
-    const motionValue = useMotionValue(from);
-    const springValue = useSpring(motionValue, {
-        stiffness: 50,
-        damping: 20,
-        duration: duration * 1000,
-    });
-
+    // animate() rather than useSpring(). The previous version passed `duration`
+    // alongside `stiffness`/`damping` — two mutually exclusive ways to describe
+    // a spring. It did animate, so this is an API-correctness cleanup rather
+    // than a bug fix; animate() says plainly what is meant by `duration`.
     useEffect(() => {
-        if (isInView) {
-            motionValue.set(to);
-        }
-    }, [isInView, motionValue, to]);
+        if (!isInView) return;
 
-    useEffect(() => {
-        const unsubscribe = springValue.on('change', (latest) => {
-            setDisplayValue(Math.round(latest));
+        const controls = animate(from, to, {
+            duration,
+            ease: 'easeOut',
+            onUpdate: (latest) => setDisplayValue(Math.round(latest)),
         });
-        return unsubscribe;
-    }, [springValue]);
+
+        return () => controls.stop();
+    }, [isInView, from, to, duration]);
 
     return (
         <motion.span

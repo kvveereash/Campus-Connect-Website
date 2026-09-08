@@ -312,7 +312,10 @@ export async function completePayment(registrationId: string) {
 
 async function _getUpcomingEventsUncached(limit: number = 3): Promise<EventWithRelations[]> {
     const events = await prisma.event.findMany({
-        where: { date: { gte: new Date() } },
+        // Only approved, live events are public. The admin verification queue
+        // existed but nothing filtered on `verified`, so every event went live
+        // the moment it was created; soft-deleted events showed too.
+        where: { date: { gte: new Date() }, verified: true, deletedAt: null },
         orderBy: { date: 'asc' },
         take: limit,
         include: {
@@ -335,7 +338,7 @@ export async function getUpcomingEvents(limit: number = 3): Promise<EventWithRel
 export async function getAllEvents(filters?: { search?: string; category?: string }) {
     try {
         const { search, category } = filters || {};
-        const where: any = { date: { gte: new Date() } };
+        const where: any = { date: { gte: new Date() }, verified: true, deletedAt: null };
 
         if (search) {
             where.OR = [
@@ -379,7 +382,9 @@ async function _getEventByIdUncached(id: string) {
 export async function getUserCreatedEvents(userId: string) {
     try {
         const events = await prisma.event.findMany({
-            where: { creatorId: userId },
+            // Creators see their own events whether or not an admin has approved
+            // them yet, so a pending event does not simply vanish.
+            where: { creatorId: userId, deletedAt: null },
             include: {
                 hostCollege: { select: { id: true, name: true, logo: true } },
                 club: { select: { id: true, name: true, logo: true } },
@@ -433,7 +438,7 @@ export async function getEventById(id: string) {
 export async function getEventsByHost(hostCollegeId: string): Promise<EventWithRelations[]> {
     try {
         const events = await prisma.event.findMany({
-            where: { hostCollegeId, date: { gte: new Date() } },
+            where: { hostCollegeId, date: { gte: new Date() }, verified: true, deletedAt: null },
             orderBy: { date: 'asc' },
             include: {
                 hostCollege: { select: { id: true, name: true, logo: true } },

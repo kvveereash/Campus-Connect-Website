@@ -9,7 +9,6 @@ import { ArrowLeft, ArrowRight, Sparkles, Calendar, MapPin, Users, Megaphone, Do
 import { createEvent } from '@/lib/actions';
 import { useAuth } from '@/context/AuthContext';
 import ImageUpload from '@/components/ImageUpload';
-import { COLLEGES } from '@/lib/data';
 import styles from './page.module.css';
 
 const CATEGORIES = [
@@ -33,7 +32,10 @@ export default function CreateEventPage() {
         description: '',
         date: '',
         venue: '',
-        hostCollegeId: user?.collegeId || COLLEGES[0].id,
+        // Signup always assigns a real college, so this is populated in
+        // practice. It previously fell back to a mock id ('c1') that does not
+        // exist in the database, which would have failed the foreign key.
+        hostCollegeId: user?.collegeId || '',
         category: CATEGORIES[0].value,
         thumbnail: '/event-placeholder.png',
         clubId: adminClubs.length > 0 ? adminClubs[0]?.id || '' : '',
