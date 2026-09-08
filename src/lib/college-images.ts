@@ -151,7 +151,7 @@ export function resolveEventImage(
 /**
  * Returns a consistent logo for a club or college.
  */
-export function resolveClubLogo(club?: { name: string; logo?: string } | null): string {
+export function resolveClubLogo(club?: { name: string; logo?: string | null } | null): string {
     if (club?.logo && club.logo.startsWith('http') && !club.logo.includes('placeholder')) {
         return club.logo;
     }

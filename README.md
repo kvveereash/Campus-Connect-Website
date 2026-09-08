@@ -32,12 +32,19 @@
 
 ## 🛠️ Tech Stack
 
--   **Frontend**: Next.js 15 (App Router), React, CSS Modules.
--   **Backend**: Next.js Server Actions.
--   **Database**: SQLite (via Prisma ORM).
+-   **Frontend**: Next.js 16 (App Router), React 19, CSS Modules + Tailwind.
+-   **Backend**: Next.js Server Actions (see `src/lib/actions/`).
+-   **Database**: PostgreSQL on Supabase (via Prisma ORM).
 -   **Real-time**: Pusher Channels.
--   **Storage**: Local FS (Uploads) / Cloudinary (ready).
--   **Authentication**: Custom JWT-based Auth (encrypted sessions).
+-   **Payments**: Stripe.
+-   **Rate limiting**: Upstash Redis.
+-   **Storage**: Local FS (see caveat below).
+-   **Authentication**: Custom JWT-based Auth (httpOnly cookie sessions).
+-   **Hosting**: Netlify — pushing to `main` deploys automatically.
+
+> ⚠️ **Uploads are not durable.** `/api/upload` writes to `public/uploads`, which
+> does not survive on Netlify's ephemeral filesystem. Move to Cloudinary or S3
+> before relying on uploads in production.
 
 ## 🏃‍♂️ Getting Started
 
@@ -59,12 +66,20 @@
     ```
 
 3.  **Setup Environment**:
-    Create a `.env` file based on `.env.example` (ensure Pusher keys are set).
+    ```bash
+    cp .env.example .env
+    ```
+    Then fill in the values. `DATABASE_URL` and `JWT_SECRET` are required — the
+    app throws on startup without them. Every variable is documented inline in
+    `.env.example`.
+
+    In production these live in the Netlify dashboard
+    (Site settings → Environment variables), **not** in the source tree.
 
 4.  **Initialize Database**:
     ```bash
     npx prisma generate
-    npx prisma db push
+    npx prisma migrate deploy
     ```
 
 5.  **Run Development Server**:

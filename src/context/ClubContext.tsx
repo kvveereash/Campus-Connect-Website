@@ -49,7 +49,6 @@ export function ClubProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('clubs');
 
         const fetchClubs = async () => {
-            console.log("--- FETCHING CLUBS FROM DB ---");
             try {
                 // Import dynamically to allow client usage
                 const { getClubs } = await import('@/lib/actions');

@@ -2,7 +2,7 @@ import ChatLayout from '@/components/chat/ChatLayout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Messages | Campus Connect',
+    title: 'Messages',
     description: 'Direct Messages',
 };
 

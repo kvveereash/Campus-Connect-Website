@@ -4,7 +4,7 @@ import styles from './page.module.css';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: 'Find Teammates | Campus Connect',
+    title: 'Find Teammates',
     description: 'Find the perfect teammates for your next hackathon or project using AI matchmaking.',
 };
 

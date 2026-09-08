@@ -3,7 +3,7 @@ import LeaderboardsClient from './LeaderboardsClient';
 import { getAllLeaderboards } from '@/lib/actions/leaderboards';
 
 export const metadata: Metadata = {
-    title: 'Leaderboards | Campus Connect',
+    title: 'Leaderboards',
     description: 'See top event attendees, hosts, and most active clubs on campus.',
 };
 

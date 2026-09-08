@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { getEventById } from '@/lib/actions/events';
 import EventDetails from './EventDetails';
 
@@ -8,16 +8,10 @@ export default async function EventPage(props: { params: Promise<{ id: string }>
 
     const event = await getEventById(id);
 
-    if (!event) {
-        return (
-            <div className="container" style={{ padding: '4rem 0', textAlign: 'center' }}>
-                <h2>Event not found</h2>
-                <Link href="/events" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                    Back to Events
-                </Link>
-            </div>
-        );
-    }
+    // notFound() rather than a hand-rolled message: this returns a real HTTP 404
+    // so search engines and link checkers see a missing event as missing. The
+    // previous version rendered "Event not found" with a 200 status.
+    if (!event) notFound();
 
     return <EventDetails event={event} />;
 }

@@ -18,11 +18,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
     const [mounted, setMounted] = useState(false);
     const [imgSrc, setImgSrc] = useState(resolveEventImage(event.category, event.thumbnail, event.title));
     const [logoSrc, setLogoSrc] = useState(
-        resolveClubLogo(
-            event.club
-                ? event.club
-                : { name: event.college?.name || event.hostCollege?.name || 'Unknown' }
-        )
+        resolveClubLogo(event.club ?? { name: event.hostCollege?.name || 'Unknown' })
     );
 
     useEffect(() => {
@@ -42,7 +38,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
     };
 
     const dateInfo = formatDate(event.date);
-    const hostName = event.club?.name || event.hostCollege?.name || event.college?.name || 'Unknown';
+    const hostName = event.club?.name || event.hostCollege?.name || 'Unknown';
 
     // Helper for category badge styles
     const getChipClass = (cat: string) => {
