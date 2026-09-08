@@ -1,12 +1,12 @@
 'use client';
+
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowRight, MapPin } from 'lucide-react';
-import { fadeInUp, staggerGrid, viewportOnce } from '@/lib/motion-variants';
+import { motion } from 'framer-motion';
+import { Search, ArrowRight } from 'lucide-react';
 import { resolveCollegeImage } from '@/lib/college-images';
-import styles from './page.module.css';
+import styles from './colleges.module.css';
 
 interface College {
     id: string;
@@ -14,125 +14,126 @@ interface College {
     location: string;
     description: string;
     logo: string;
+    students?: number;
+    clubs?: number;
+    events?: number;
 }
 
 interface CollegesClientProps {
     initialColleges: College[];
 }
 
-export default function CollegesClient({ initialColleges }: CollegesClientProps) {
-    const [searchTerm, setSearchTerm] = useState('');
+const rise = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 1.25, ease: [0.19, 1, 0.22, 1] as const },
+    },
+};
 
-    const filteredColleges = initialColleges.filter(college =>
-        college.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        college.location.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.04 } } };
+
+export default function CollegesClient({ initialColleges }: CollegesClientProps) {
+    const [query, setQuery] = useState('');
+
+    const visible = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return initialColleges;
+        return initialColleges.filter(
+            (c) =>
+                c.name.toLowerCase().includes(q) ||
+                (c.location ?? '').toLowerCase().includes(q)
+        );
+    }, [initialColleges, query]);
 
     return (
-        <div className={styles.container}>
-            <motion.div
-                className={styles.header}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
-                <h1 className={styles.title}>
-                    Top <span className={styles.highlight}>Campuses</span>
-                </h1>
-                <p className={styles.subtitle}>
-                    Explore premier institutes, their culture, and opportunities.
-                </p>
-
-                {/* Search Bar */}
-                <div className={styles.searchWrapper}>
-                    <Search size={18} className={styles.searchIcon} />
-                    <input
-                        type="text"
-                        placeholder="Search colleges by name or location..."
-                        className={styles.searchInput}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+        <div className={styles.page}>
+            <header className={styles.masthead}>
+                <div>
+                    <p className={styles.label}>Campuses</p>
+                    <h1 className={styles.title}>Every campus, one feed.</h1>
                 </div>
+                <span className={styles.count}>
+                    {initialColleges.length} institutions
+                </span>
+            </header>
 
-                {/* Stats Bar */}
-                <div className={styles.statsBar}>
-                    <div className={styles.stat}>
-                        <div className={styles.statValue}>{initialColleges.length}</div>
-                        <div className={styles.statLabel}>Campuses</div>
-                    </div>
-                    <div className={styles.stat}>
-                        <div className={styles.statValue}>{initialColleges.length * 12}+</div>
-                        <div className={styles.statLabel}>Clubs</div>
-                    </div>
-                    <div className={styles.stat}>
-                        <div className={styles.statValue}>{initialColleges.length * 45}+</div>
-                        <div className={styles.statLabel}>Events</div>
-                    </div>
+            <div className={styles.searchRow}>
+                <Search size={16} aria-hidden="true" />
+                <input
+                    className={styles.searchInput}
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search by name or city"
+                    aria-label="Search colleges"
+                />
+                {query && (
+                    <button type="button" className={styles.clear} onClick={() => setQuery('')}>
+                        Clear
+                    </button>
+                )}
+            </div>
+
+            {visible.length === 0 ? (
+                <div className={styles.empty}>
+                    <h2 className={styles.emptyTitle}>Nothing matches “{query}”.</h2>
+                    <p className={styles.emptyText}>Try a different name or city.</p>
                 </div>
-            </motion.div>
-
-            <AnimatePresence mode="wait">
+            ) : (
                 <motion.div
-                    key={searchTerm ? 'filtered' : 'all'}
-                    className={styles.grid}
+                    className={styles.list}
                     initial="hidden"
                     animate="visible"
-                    exit={{ opacity: 0 }}
-                    variants={staggerGrid}
+                    variants={stagger}
+                    key={query}
                 >
-                    {filteredColleges.map((college) => (
-                        <motion.div
-                            key={college.id}
-                            className={styles.cardWrapper}
-                            variants={fadeInUp}
-                            whileHover={{
-                                y: -6,
-                                transition: { type: 'spring', stiffness: 300, damping: 20 }
-                            }}
-                        >
-                            <div className={styles.card}>
-                                <div className={styles.imageContainer}>
-                                    <Image
-                                        src={resolveCollegeImage(college)}
-                                        alt={`${college.name} campus`}
-                                        fill
-                                        className={styles.collegeImage}
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    />
-                                </div>
-                                <div className={styles.content}>
-                                    <h2 className={styles.collegeName}>{college.name}</h2>
-                                    <p className={styles.location}><MapPin size={14} aria-hidden="true" /> {college.location}</p>
-                                    <p className={styles.description}>{college.description}</p>
-                                    <div className={styles.footer}>
-                                        <Link href={`/colleges/${college.id}`} className={styles.viewBtn}>
-                                            View Details
-                                            <ArrowRight size={16} className={styles.viewBtnArrow} />
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
+                    {visible.map((college) => (
+                        <motion.div key={college.id} variants={rise}>
+                            <CollegeRow college={college} />
                         </motion.div>
                     ))}
                 </motion.div>
-            </AnimatePresence>
-
-            <AnimatePresence>
-                {filteredColleges.length === 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className={styles.emptyState}
-                    >
-                        <Search size={34} strokeWidth={1.5} className={styles.emptyIcon} aria-hidden="true" />
-                        <p className={styles.emptyText}>
-                            No colleges found matching &ldquo;{searchTerm}&rdquo;
-                        </p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            )}
         </div>
+    );
+}
+
+function CollegeRow({ college }: { college: College }) {
+    const clubs = college.clubs ?? 0;
+    const events = college.events ?? 0;
+
+    return (
+        <Link href={`/colleges/${college.id}`} className={styles.row}>
+            <div>
+                <h2 className={styles.name}>{college.name}</h2>
+                <p className={styles.place}>{college.location || 'Location unknown'}</p>
+            </div>
+
+            {/* The photograph rides the row and appears only on approach, so
+                ten of them do not turn an index into a gallery. */}
+            <span className={styles.peek} aria-hidden="true">
+                <Image
+                    src={resolveCollegeImage(college)}
+                    alt=""
+                    fill
+                    sizes="148px"
+                />
+            </span>
+
+            <div className={styles.figures}>
+                <span className={styles.figure}>
+                    <b>{String(clubs).padStart(2, '0')}</b>
+                    Clubs
+                </span>
+                <span className={styles.figure}>
+                    <b>{String(events).padStart(2, '0')}</b>
+                    Events
+                </span>
+            </div>
+
+            <ArrowRight size={18} className={styles.arrow} aria-hidden="true" />
+        </Link>
     );
 }

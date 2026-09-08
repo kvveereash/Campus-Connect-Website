@@ -1,0 +1,250 @@
+/* ============================================================
+   COLLEGES — index
+   Ten institutions read better as a list than a grid: the names
+   are long, the numbers want aligning, and an index lets the eye
+   run down them. Imagery arrives on approach rather than sitting
+   in a card.
+   ============================================================ */
+
+.page {
+    max-width: 1078px;
+    margin: 0 auto;
+    padding: clamp(40px, 7vw, 88px) 0 clamp(72px, 10vw, 152px);
+}
+
+.masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-bottom: 28px;
+}
+
+.label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2.25rem, 6vw, 4.875rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    margin: 0;
+    max-width: 16ch;
+    text-wrap: balance;
+}
+
+.count {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+    padding-bottom: 10px;
+}
+
+/* Search as a ruled line rather than a box — a field, not a control. */
+.searchRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 0;
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
+    margin-bottom: clamp(32px, 5vw, 56px);
+    color: var(--color-felt);
+}
+
+.searchInput {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--color-obsidian);
+    padding: 4px 0;
+}
+
+.searchInput::placeholder {
+    color: var(--color-ash);
+}
+
+.clear {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color var(--duration-base) var(--ease-glide);
+}
+
+.clear:hover {
+    color: var(--color-obsidian);
+}
+
+/* ---------- index ---------- */
+.list {
+    border-top: 1px solid var(--border-hairline);
+}
+
+.row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 24px;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    color: var(--color-obsidian);
+    transition: padding-left var(--duration-base) var(--ease-glide);
+}
+
+.row:hover {
+    padding-left: 16px;
+}
+
+.name {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.375rem, 3vw, 2.4375rem);
+    line-height: 1.19;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.place {
+    margin-top: 6px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+.figures {
+    display: flex;
+    gap: 28px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.figure b {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin-bottom: 4px;
+}
+
+.arrow {
+    color: var(--color-ash);
+    transition: transform var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
+}
+
+.row:hover .arrow {
+    transform: translateX(6px);
+    color: var(--color-obsidian);
+}
+
+/* The campus photograph rides along the row, appearing only on approach.
+   It keeps the index quiet at rest while still being image-led. */
+.peek {
+    position: absolute;
+    right: 132px;
+    top: 50%;
+    width: 148px;
+    aspect-ratio: 3 / 2;
+    transform: translateY(-50%) scale(0.96);
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity var(--duration-base) var(--ease-glide),
+                transform var(--duration-base) var(--ease-glide);
+}
+
+.peek img {
+    object-fit: cover;
+    filter: grayscale(1) brightness(1.1) contrast(0.96);
+}
+
+.row:hover .peek {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+}
+
+/* ---------- empty ---------- */
+.empty {
+    padding: clamp(64px, 10vw, 120px) 0;
+    text-align: center;
+}
+
+.emptyTitle {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
+    line-height: 1.19;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0 0 12px;
+}
+
+.emptyText {
+    font-size: 16px;
+    line-height: 1.58;
+    color: var(--color-felt);
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 780px) {
+    .row {
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+    }
+
+    .figures {
+        gap: 18px;
+    }
+
+    .peek,
+    .arrow {
+        display: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .figures {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .row,
+    .arrow,
+    .peek {
+        transition: none;
+    }
+
+    .row:hover {
+        padding-left: 0;
+    }
+
+    .row:hover .arrow {
+        transform: none;
+    }
+}

@@ -81,9 +81,36 @@ export async function getCollegesList() {
 export async function getAllColleges() {
     try {
         const colleges = await prisma.college.findMany({
-            orderBy: { name: 'asc' }
+            select: {
+                id: true,
+                name: true,
+                location: true,
+                logo: true,
+                description: true,
+                // What a campus actually has on it is more use on a listing
+                // than its name alone. Only live, approved records are counted,
+                // so the numbers match what a visitor can actually open.
+                _count: {
+                    select: {
+                        students: true,
+                        clubs: true,
+                        events: true,
+                    },
+                },
+            },
+            orderBy: { name: 'asc' },
         });
-        return colleges;
+
+        return colleges.map((c) => ({
+            id: c.id,
+            name: c.name,
+            location: c.location,
+            logo: c.logo,
+            description: c.description,
+            students: c._count.students,
+            clubs: c._count.clubs,
+            events: c._count.events,
+        }));
     } catch (error) {
         console.error('Failed to get all colleges:', error);
         return [];

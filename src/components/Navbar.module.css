@@ -4,10 +4,9 @@
     position: relative;
     z-index: 100;
     width: 100%;
-    padding: 1rem 0;
 }
 
-/* On the landing page the header floats over the hero instead of
+/* On the landing page the header floats over the hero rather than
    occupying space above it. */
 .navbarFloating {
     position: absolute;
@@ -15,96 +14,102 @@
     left: 0;
 }
 
-
-/* This is the Pill itself */
+/* The header is a transparent bar, not a container. No fill, no border,
+   no shadow — it stays invisible until content scrolls behind it, which
+   is what keeps the page reading as one surface rather than a pill
+   stuck on top of a document. */
 .navContainer {
-    /* Re-enable clicks on the actually navbar */
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 24px;
 
-    /* Sizing & Positioning */
-    max-width: 960px;
-    /* Constrain width for "Pill" look */
+    max-width: 1078px;
     margin: 0 auto;
-    /* Center horizontally */
-    padding: 0.75rem 2rem;
+    height: 66px;
+    padding: 0 clamp(20px, 5vw, 40px);
 
-    /* Sticker Style */
-    background: #ffffff;
-    border: 1.5px solid var(--color-forest);
-    border-radius: 75px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
     box-shadow: none;
-    /* Subtle deep shadow for floating element */
 
-    transition: all 0.3s var(--ease-glide);
+    transition: background-color var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide);
 }
 
 .navContainer:hover {
-    transform: translateY(-2px);
+    transform: none;
     box-shadow: none;
 }
 
-/* Scrolled state — compact + glassmorphism */
+/* Once content is behind it, a hairline and a wash of paper keep the
+   links legible without turning the header into an object. */
 .navContainerScrolled {
-    padding: 0.5rem 1.75rem;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border-hairline);
     box-shadow: none;
-    transform: scale(0.98);
 }
 
 .navContainerScrolled:hover {
-    transform: scale(0.98) translateY(-2px);
+    transform: translateX(-50%);
     box-shadow: none;
 }
 
+/* Wordmark sits at reading weight. Bold here would compete with the
+   page's own headlines. */
 .logo {
-    font-size: 1.5rem;
     font-family: var(--font-display);
-    /* Use the new Serif font */
-    font-weight: 600;
-    letter-spacing: -0.03em;
-    color: var(--text-primary);
-    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--color-obsidian);
+    white-space: nowrap;
 }
 
 .navLinks {
     display: flex;
-    gap: 2rem;
     align-items: center;
+    gap: 28px;
 }
 
 .navLink {
-    font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    transition: all 0.2s var(--ease-glide);
     position: relative;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    transition: color var(--duration-base) var(--ease-glide);
 }
 
 .navLink:hover {
-    color: var(--text-primary);
+    color: var(--color-obsidian);
 }
 
 .active {
-    color: var(--text-primary);
-    font-weight: 600;
+    color: var(--color-obsidian);
 }
 
-/* Add a small dot for active state if desired, or simplified bold */
+/* A dot rather than an underline — quieter, and it does not fight the
+   letter-spacing. */
 .active::after {
     content: '';
     position: absolute;
-    bottom: -4px;
     left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: 4px;
-    background: var(--color-orange);
+    bottom: -8px;
+    width: 3px;
+    height: 3px;
     border-radius: 50%;
+    background: currentColor;
+    transform: translateX(-50%);
 }
 
 .navActions {
@@ -114,22 +119,23 @@
 }
 
 .searchButton {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: var(--text-secondary);
-    /* Darker text */
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    transition: color 0.2s;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-pill);
+    color: var(--color-felt);
+    cursor: pointer;
+    transition: color var(--duration-base) var(--ease-glide);
 }
 
 .searchButton:hover {
-    color: var(--text-primary);
-    transform: scale(1.05);
+    color: var(--color-obsidian);
 }
 
-/* User Menu & Avatar */
 .userMenu {
     display: flex;
     align-items: center;
@@ -419,30 +425,36 @@
 }
 
 /* Premium Login Button */
+/* Ghost pill, not a filled block. The system's only solid action is
+   reserved for genuinely terminal moments; a header sign-in is not one,
+   and a black slab here pulls the eye away from the page itself. */
 .loginBtn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem 1.4rem;
+    padding: 8px 22px;
     font-family: var(--font-sans);
-    font-weight: 600;
-    font-size: 0.85rem;
-    letter-spacing: 0.02em;
-    color: #ffffff;
-    background: var(--color-forest, #0f1f1c);
-    border: none;
-    border-radius: 75px;
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
+    background: transparent;
+    border: 1px solid var(--color-obsidian);
+    border-radius: var(--radius-pill);
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    white-space: nowrap;
     box-shadow: none;
+    transition: letter-spacing var(--duration-base) var(--ease-glide),
+                background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
 }
 
 .loginBtn:hover {
-    transform: translateY(-1px) scale(1.04);
+    letter-spacing: 0.16em;
     box-shadow: none;
-    background: var(--color-forest, #1a2f2a);
-    filter: brightness(1.15);
+    transform: none;
 }
 
 .loginBtn:active {
@@ -477,4 +489,21 @@
 .navContainer.navOverHero .navLink:hover,
 .navContainer.navOverHero a:hover {
     color: rgba(255, 255, 255, 0.72);
+}
+
+.navContainer.navOverHero .loginBtn {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.navContainer.navOverHero .loginBtn:hover {
+    border-color: rgba(255, 255, 255, 0.85);
+}
+
+.navContainer.navOverHero .searchButton {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.navContainer.navOverHero .searchButton:hover {
+    color: #ffffff;
 }
