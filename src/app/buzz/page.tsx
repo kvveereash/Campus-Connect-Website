@@ -338,7 +338,7 @@ function BuzzContent() {
                                 </div>
                                 <div className={styles.authorInfo}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                        <Link href={`/user/${post.author.id}`} className={styles.authorName}>
+                                        <Link href={`/profile/${post.author.id}`} className={styles.authorName}>
                                             {post.author.name}
                                         </Link>
                                         {post.isVerified && (

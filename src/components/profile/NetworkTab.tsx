@@ -100,7 +100,7 @@ export default function NetworkTab({ user, clubs, followedColleges }: NetworkTab
                 <div className={styles.networkGrid}>
                     {user.following && user.following.length > 0 ? (
                         user.following.map(userId => (
-                            <div key={userId} className={styles.networkCard} onClick={() => router.push(`/user/${userId}`)}>
+                            <div key={userId} className={styles.networkCard} onClick={() => router.push(`/profile/${userId}`)}>
                                 <div style={{
                                     width: '48px', height: '48px', borderRadius: '50%', background: 'var(--primary-color)',
                                     color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold'
