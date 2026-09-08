@@ -15,9 +15,14 @@ const CSRF_HEADER_NAME = 'x-csrf-token';
 const CSRF_TOKEN_LENGTH = 32;
 
 /**
- * Generate a cryptographically secure CSRF token
+ * Generate a cryptographically secure CSRF token.
+ *
+ * Deliberately not exported: this file carries the 'use server' directive, and
+ * every export from such a file must be an async server action. Exporting this
+ * synchronous helper made the whole module fail to compile the moment anything
+ * imported it.
  */
-export function generateCsrfToken(): string {
+function generateCsrfToken(): string {
     return crypto.randomBytes(CSRF_TOKEN_LENGTH).toString('hex');
 }
 

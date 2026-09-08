@@ -30,8 +30,15 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — never commit real secrets, but keep the template
 .env*
+!.env.example
+
+# local database + debug leftovers
+*.db
+*.db-journal
+*.log
+/scratch
 
 # vercel
 .vercel
@@ -42,3 +49,6 @@ next-env.d.ts
 
 # Local Netlify folder
 .netlify
+
+# local editor/agent tooling
+/.claude

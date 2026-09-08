@@ -12,9 +12,13 @@ import { PrismaClient, Prisma } from '@prisma/client'
 
 const SLOW_QUERY_THRESHOLD_MS = 500
 
-// Explicitly set the environment variable for Prisma's query engine
+// Fail loudly at startup rather than handing Prisma an undefined URL and
+// getting an opaque connection error on the first query.
 if (!process.env.DATABASE_URL) {
-    process.env.DATABASE_URL = "***REMOVED-CREDENTIAL***"
+    throw new Error(
+        'DATABASE_URL is not set. Copy .env.example to .env and fill it in ' +
+        '(locally), or set it in the Netlify dashboard (production).'
+    )
 }
 
 const prismaClientSingleton = () => {

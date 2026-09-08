@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = "***REMOVED-CREDENTIAL***"
+  url       = env("DATABASE_URL")
 }
 
 // ── Enums ──

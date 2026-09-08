@@ -8,6 +8,7 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { checkRateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
 import { audit, AuditAction, AuditEntityType } from '@/lib/audit';
 import { ApiResult, ok, fail, ApiErrorCode } from '@/lib/api-response';
+import { validateCsrfSafe } from '@/lib/csrf';
 
 /**
  * Session type returned from getSession with user data
@@ -149,7 +150,21 @@ export function createProtectedAction<TInput, TOutput>(
                 }
             }
 
-            // 4. Input Validation
+            // 4. CSRF Validation (double-submit cookie).
+            // Defence in depth: Next.js already checks Origin/Host on server
+            // actions, but callers that opt in here must actually get the check.
+            if (options.validateCsrf) {
+                const csrfResult = await validateCsrfSafe();
+                if (!csrfResult.valid) {
+                    logger.warn('CSRF validation failed', {
+                        userId: authSession.userId,
+                        reason: csrfResult.error,
+                    });
+                    return fail('Security check failed. Please refresh and try again.', 'FORBIDDEN');
+                }
+            }
+
+            // 5. Input Validation
             const validationResult = schema.safeParse(input);
 
             if (!validationResult.success) {
@@ -158,10 +173,10 @@ export function createProtectedAction<TInput, TOutput>(
                 return fail(firstError as string, 'VALIDATION_ERROR');
             }
 
-            // 5. Execute Handler
+            // 6. Execute Handler
             const result = await handler(validationResult.data, authSession);
 
-            // 6. Audit Log (non-blocking)
+            // 7. Audit Log (non-blocking)
             if (options.audit) {
                 const entityId = options.audit.getEntityId
                     ? options.audit.getEntityId(validationResult.data)
@@ -184,7 +199,7 @@ export function createProtectedAction<TInput, TOutput>(
                 ).catch((err) => logger.error('Audit log failed', err as Error));
             }
 
-            // 7. Performance monitoring
+            // 8. Performance monitoring
             const duration = Date.now() - startTime;
             if (duration > 1000) {
                 logger.warn('Slow action detected', {

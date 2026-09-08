@@ -28,18 +28,12 @@ const securityHeaders = [
   },
 ];
 
+// NOTE: Do not add a `env: {...}` block here for secrets. Next.js inlines those
+// values into the build output at compile time, which bakes them into artifacts
+// and risks leaking any that a client component happens to reference. Server
+// code reads process.env at runtime on Netlify already — set the values in the
+// Netlify dashboard (Site settings → Environment variables) instead.
 const nextConfig: NextConfig = {
-  // Inject server-side env vars into the bundle at build time
-  // This ensures they're available in Netlify serverless functions
-  env: {
-    DATABASE_URL: process.env.DATABASE_URL,
-    JWT_SECRET: process.env.JWT_SECRET,
-    PUSHER_APP_ID: process.env.PUSHER_APP_ID,
-    PUSHER_KEY: process.env.PUSHER_KEY,
-    PUSHER_SECRET: process.env.PUSHER_SECRET,
-    PUSHER_CLUSTER: process.env.PUSHER_CLUSTER,
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-  },
   images: {
     remotePatterns: [
       {
@@ -70,13 +64,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
-  // Skip type checking during build (handled by IDE and CI separately)
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   // Security headers
   async headers() {
     return [
@@ -84,6 +71,14 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: securityHeaders,
       },
+    ];
+  },
+  // Retired duplicate routes — keep old links working.
+  async redirects() {
+    return [
+      { source: '/leaderboard', destination: '/leaderboards', permanent: true },
+      { source: '/chat', destination: '/messages', permanent: true },
+      { source: '/user/:id', destination: '/profile/:id', permanent: true },
     ];
   },
 };

@@ -73,6 +73,14 @@ export const globalApiLimiter = new Ratelimit({
     prefix: 'ratelimit:api:global',
 });
 
+// Uploads: 20 per hour (writes to disk — keep it tight)
+export const uploadLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(20, '1 h'),
+    analytics: false,
+    prefix: 'ratelimit:upload',
+});
+
 // Sensitive Actions: 10 per hour (profile updates, password changes)
 export const sensitiveActionLimiter = new Ratelimit({
     redis,
