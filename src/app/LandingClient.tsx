@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import type { EventWithRelations } from '@/lib/actions';
@@ -30,6 +31,39 @@ const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.09 } }
 const inView = { once: true, margin: '-80px' } as const;
 
 export default function LandingClient({ initialEvents, stats, categories, clubs }: LandingClientProps) {
+    const orbRef = useRef<HTMLDivElement>(null);
+
+    /**
+     * Pointer parallax. The sphere leans away from the cursor by a few pixels,
+     * which is enough to make it feel like an object in space rather than a
+     * texture painted on the page. Written to CSS custom properties so the
+     * easing stays in the stylesheet, and skipped entirely for anyone who has
+     * asked for reduced motion or is on a touch device.
+     */
+    useEffect(() => {
+        const el = orbRef.current;
+        if (!el) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (!window.matchMedia('(hover: hover)').matches) return;
+
+        let frame = 0;
+        const onMove = (e: PointerEvent) => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => {
+                const x = e.clientX / window.innerWidth - 0.5;
+                const y = e.clientY / window.innerHeight - 0.5;
+                el.style.setProperty('--px', String(x));
+                el.style.setProperty('--py', String(y));
+            });
+        };
+
+        window.addEventListener('pointermove', onMove, { passive: true });
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener('pointermove', onMove);
+        };
+    }, []);
+
     return (
         <div className={styles.page}>
 
@@ -41,10 +75,22 @@ export default function LandingClient({ initialEvents, stats, categories, clubs 
                     layers: colour bands, a slower sheen for depth, and a shadow
                     terminator so it has a lit side. Grain over the lot keeps it
                     from looking like flat CSS. */}
-                <div className={styles.orbWrap} aria-hidden="true">
-                    <div className={styles.orb} />
-                    <div className={styles.orbSheen} />
-                    <div className={styles.orbShade} />
+                <div className={styles.orbWrap} ref={orbRef} aria-hidden="true">
+                    <div className={styles.orb}>
+                        {/* Four blobs drifting on unrelated cycles. The churn
+                            between them is the liquid; a single rotating
+                            gradient only ever looks like a spinning disc. */}
+                        <div className={styles.plasma}>
+                            <span className={`${styles.blob} ${styles.blob1}`} />
+                            <span className={`${styles.blob} ${styles.blob2}`} />
+                            <span className={`${styles.blob} ${styles.blob3}`} />
+                            <span className={`${styles.blob} ${styles.blob4}`} />
+                        </div>
+                        <div className={styles.orbSheen} />
+                        <div className={styles.orbSpecular} />
+                        <div className={styles.orbShade} />
+                        <div className={styles.orbRim} />
+                    </div>
                 </div>
                 <div className={styles.grain} aria-hidden="true" />
                 <div className={styles.heroScrim} aria-hidden="true" />

@@ -42,63 +42,176 @@
     inset: 0;
     display: grid;
     place-items: center;
+    /* Set by a pointer listener; the sphere leans away from the cursor. */
+    transform: translate3d(calc(var(--px, 0) * -14px), calc(var(--py, 0) * -14px), 0);
+    transition: transform 1.4s var(--ease-glide);
+    will-change: transform;
 }
 
-/* The sphere. Conic bands blurred into one another give the oil-on-water
-   silk; the mask keeps it a sphere rather than a square of colour. */
+/* The sphere. A clipped circle holding several independently drifting
+   layers — the churn between them is what reads as liquid, where a single
+   rotating gradient only ever reads as a spinning disc. */
 .orb {
+    position: relative;
     width: clamp(420px, 96vmin, 1180px);
     aspect-ratio: 1;
     border-radius: 50%;
-    background:
-        conic-gradient(from 210deg at 52% 46%,
-            #10130F 0deg,
-            #2C3A2A 42deg,
-            #6E7A4A 84deg,
-            #C9A24B 126deg,
-            #E4C98A 156deg,
-            #8A7C58 192deg,
-            #2A2F26 232deg,
-            #171A15 268deg,
-            #B08BC9 300deg,
-            #6A5B72 330deg,
-            #10130F 360deg);
-    filter: blur(42px) saturate(112%) contrast(112%);
-    animation: swirl 54s linear infinite;
-    opacity: 0.92;
+    overflow: hidden;
+    background: #0B0D0B;
+    animation: breathe 14s ease-in-out infinite;
+    will-change: transform;
 }
 
-/* A second, slower pass adds depth so the silk does not read as one flat
-   rotation. */
+/* Blurring the group rather than each blob keeps this cheap, and lets the
+   blobs bleed into one another instead of staying separate shapes. */
+.plasma {
+    position: absolute;
+    inset: -22%;
+    /* The group blur is re-rendered every frame as the blobs move inside it,
+       which is the expensive part of this effect. Promoting the layer and
+       keeping the radius moderate holds it at a sensible cost; contain tells
+       the browser nothing outside needs repainting. */
+    filter: blur(48px) saturate(118%);
+    transform: translateZ(0);
+    contain: paint;
+}
+
+.blob {
+    position: absolute;
+    width: 62%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    will-change: transform;
+}
+
+/* Four blobs on prime-ish durations so their cycles never line up and the
+   motion never visibly repeats. */
+.blob1 {
+    background: radial-gradient(circle at 50% 50%, #E4C98A 0%, rgba(228, 201, 138, 0) 68%);
+    top: 6%;
+    left: 10%;
+    animation: churn1 23s ease-in-out infinite;
+}
+
+.blob2 {
+    background: radial-gradient(circle at 50% 50%, #6E7A4A 0%, rgba(110, 122, 74, 0) 70%);
+    top: 26%;
+    left: 42%;
+    animation: churn2 31s ease-in-out infinite;
+}
+
+.blob3 {
+    background: radial-gradient(circle at 50% 50%, #B08BC9 0%, rgba(176, 139, 201, 0) 72%);
+    top: 48%;
+    left: 18%;
+    animation: churn3 41s ease-in-out infinite;
+}
+
+.blob4 {
+    background: radial-gradient(circle at 50% 50%, #C9A24B 0%, rgba(201, 162, 75, 0) 66%);
+    top: 40%;
+    left: 52%;
+    animation: churn4 53s ease-in-out infinite;
+}
+
+@keyframes churn1 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    33%      { transform: translate3d(26%, 18%, 0) scale(1.22); }
+    66%      { transform: translate3d(-14%, 30%, 0) scale(0.88); }
+}
+
+@keyframes churn2 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1.08); }
+    40%      { transform: translate3d(-30%, 14%, 0) scale(0.86); }
+    70%      { transform: translate3d(16%, -22%, 0) scale(1.24); }
+}
+
+@keyframes churn3 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(0.94); }
+    35%      { transform: translate3d(30%, -20%, 0) scale(1.18); }
+    72%      { transform: translate3d(10%, 22%, 0) scale(1.02); }
+}
+
+@keyframes churn4 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1.1); }
+    45%      { transform: translate3d(-24%, -26%, 0) scale(0.9); }
+    80%      { transform: translate3d(-8%, 20%, 0) scale(1.16); }
+}
+
+/* A slow conic pass over the churn — this is the silk, the thing that makes
+   it look like oil on water rather than four coloured lights. */
 .orbSheen {
     position: absolute;
-    width: clamp(420px, 96vmin, 1180px);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background:
-        radial-gradient(52% 44% at 34% 30%, rgba(228, 201, 138, 0.55) 0%, transparent 62%),
-        radial-gradient(46% 40% at 70% 66%, rgba(176, 139, 201, 0.42) 0%, transparent 64%),
-        radial-gradient(60% 56% at 62% 22%, rgba(15, 19, 14, 0.72) 0%, transparent 70%);
-    filter: blur(56px);
-    animation: swirlSlow 78s linear infinite reverse;
+    inset: -20%;
+    background: conic-gradient(from 0deg at 50% 50%,
+        rgba(255, 255, 255, 0) 0deg,
+        rgba(228, 201, 138, 0.20) 46deg,
+        rgba(255, 255, 255, 0) 96deg,
+        rgba(176, 139, 201, 0.18) 168deg,
+        rgba(255, 255, 255, 0) 224deg,
+        rgba(110, 122, 74, 0.20) 286deg,
+        rgba(255, 255, 255, 0) 340deg);
+    filter: blur(34px);
     mix-blend-mode: screen;
+    animation: swirlSlow 68s linear infinite;
+    will-change: transform;
 }
 
-/* Shadow terminator — gives the sphere a lit side and a dark side. */
+/* A specular highlight orbiting just inside the edge, the way light travels
+   across a wet surface. */
+.orbSpecular {
+    position: absolute;
+    inset: 0;
+    animation: orbit 37s linear infinite;
+    will-change: transform;
+}
+
+.orbSpecular::before {
+    content: '';
+    position: absolute;
+    top: 6%;
+    left: 30%;
+    width: 40%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 244, 214, 0.42) 0%, rgba(255, 244, 214, 0) 66%);
+    filter: blur(30px);
+}
+
+/* Terminator: a lit side and a dark side, so it reads as a sphere. */
 .orbShade {
     position: absolute;
-    width: clamp(420px, 96vmin, 1180px);
-    aspect-ratio: 1;
+    inset: 0;
     border-radius: 50%;
-    background: radial-gradient(68% 68% at 36% 30%, transparent 30%, rgba(6, 7, 6, 0.86) 78%);
+    background: radial-gradient(66% 66% at 34% 28%, transparent 26%, rgba(5, 6, 5, 0.88) 82%);
 }
 
-@keyframes swirl {
-    to { transform: rotate(360deg); }
+/* Rim light picking out the upper edge. */
+.orbRim {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, transparent 62%, rgba(228, 201, 138, 0.16) 78%, transparent 84%);
+    mix-blend-mode: screen;
+    animation: rimPulse 11s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.025); }
 }
 
 @keyframes swirlSlow {
-    to { transform: rotate(360deg) scale(1.06); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes orbit {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes rimPulse {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
 }
 
 /* Film grain. Keeps the gradient from looking like flat CSS and gives the
@@ -536,10 +649,33 @@
     }
 }
 
+/* On small screens the sphere is mostly cropped anyway, so drop the two
+   most expensive layers rather than spend a phone's battery on them. */
+@media (max-width: 640px) {
+    .orbSheen,
+    .orbSpecular {
+        display: none;
+    }
+
+    .plasma {
+        filter: blur(38px) saturate(118%);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .iridescence,
+    .orb,
+    .blob,
+    .orbSheen,
+    .orbSpecular,
+    .orbRim,
+    .grain,
     .scrollBadge {
         animation: none;
+    }
+
+    .orbWrap {
+        transform: none;
+        transition: none;
     }
 
     .rowMedia img,
