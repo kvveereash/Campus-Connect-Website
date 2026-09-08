@@ -1,4 +1,5 @@
 'use client';
+import { Camera } from 'lucide-react';
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
@@ -129,7 +130,7 @@ export default function ImageUpload({ value, onChange, disabled, label = "Upload
                             'Uploading...'
                         ) : (
                             <>
-                                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📷</div>
+                                <Camera size={30} strokeWidth={1.5} aria-hidden="true" style={{ marginBottom: '0.5rem' }} />
                                 <p>Click to upload image</p>
                                 <p style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Max 5MB</p>
                             </>

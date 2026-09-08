@@ -156,7 +156,7 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                                     <div style={{ flex: 1 }}>
                                         <p className={styles.memberName}>{member.user.name}</p>
                                         <p className={styles.memberSub}>
-                                            {member.role === 'ADMIN' ? '⚡ ' : ''}{member.user.college?.name || 'Campus'}
+                                            {member.role === 'ADMIN' ? 'Admin · ' : ''}{member.user.college?.name || 'Campus'}
                                         </p>
                                     </div>
                                 </div>
@@ -172,7 +172,7 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                             return (
                                 <section className={styles.card} style={{ border: '1px solid rgba(15, 31, 28, 0.08)', background: 'linear-gradient(135deg, rgba(209, 250, 229, 0.3), rgba(224, 192, 248, 0.15))' }}>
                                     <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', color: 'var(--color-forest)' }}>
-                                        🤝 Multi-College Network
+                                        Multi-college network
                                     </h3>
                                     <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
                                         Bringing together students from <strong>{colleges.size}</strong> institutions.

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { Share2, CalendarDays, Users } from 'lucide-react';
 import { resolveEventImage, resolveClubLogo } from '@/lib/college-images';
 import { EventWithRelations } from '@/lib/actions';
 import styles from './EventCard.module.css';
@@ -100,7 +101,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                         title="Share Event"
                         aria-label={`Share ${event.title}`}
                     >
-                        <span aria-hidden="true" style={{ fontSize: '14px' }}>📤</span>
+                        <Share2 size={14} aria-hidden="true" />
                     </button>
 
                     {/* Category Chip (Bottom Left) */}
@@ -119,7 +120,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                     {/* Next Event / Date Info Box */}
                     {mounted && (
                         <div className={styles.infoBox}>
-                            <span className={styles.infoIcon}>📅</span>
+                            <CalendarDays size={14} className={styles.infoIcon} aria-hidden="true" />
                             <span className={styles.infoLabel}>Date:</span>
                             {dateInfo.month} {dateInfo.day} — {dateInfo.weekday}
                         </div>
@@ -145,7 +146,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                     {/* Footer */}
                     <div className={styles.footer} onClick={(e) => e.stopPropagation()}>
                         <span className={styles.stats}>
-                            <span style={{ fontSize: '14px' }}>👥</span>
+                            <Users size={14} aria-hidden="true" />
                             {event.registrationCount || 0} Reg.
                         </span>
                         <span className={styles.joinBtn}>

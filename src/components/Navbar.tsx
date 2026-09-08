@@ -40,7 +40,7 @@ export default function Navbar() {
                         href="/buzz"
                         className={`${styles.navLink} ${pathname === '/buzz' ? styles.active : ''}`}
                     >
-                        Buzz ⚡
+                        Buzz
                     </Link>
                     <Link
                         href="/clubs"
@@ -87,7 +87,7 @@ export default function Navbar() {
                             Events
                         </Link>
                         <Link href="/buzz" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                            Buzz ⚡
+                            Buzz
                         </Link>
                         <Link href="/clubs" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
                             Clubs
@@ -100,7 +100,7 @@ export default function Navbar() {
                                     Colleges
                                 </Link>
                                 <Link href="/leaderboards" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                                    Leaderboard 🏆
+                                    Leaderboard
                                 </Link>
                                 <Link href="/map" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
                                     Campus Map

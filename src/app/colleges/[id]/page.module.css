@@ -195,7 +195,7 @@
 /* Club Cards - Glass style */
 .clubCard {
     background: #ffffff;
-    border-radius: 1.25rem;
+    border-radius: 4px;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;

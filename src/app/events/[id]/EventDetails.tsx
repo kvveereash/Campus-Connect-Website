@@ -1,4 +1,5 @@
 'use client';
+import { MapPin } from 'lucide-react';
 
 import { toast } from 'sonner';
 
@@ -81,7 +82,7 @@ export default function EventDetails({ event }: { event: ExtendedEvent }) {
                 </div>
 
                 <div className={styles.venue}>
-                    📍 {event.venue}
+                    <MapPin size={15} aria-hidden="true" /> {event.venue}
                 </div>
 
                 <div className={styles.description}>

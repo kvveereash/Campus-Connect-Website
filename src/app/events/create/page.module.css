@@ -54,7 +54,7 @@
     position: sticky;
     top: 2rem;
     background: var(--color-forest);
-    border-radius: 2rem;
+    border-radius: 4px;
     padding: 3rem 2.5rem;
     color: var(--color-cream);
     overflow: hidden;
@@ -90,7 +90,7 @@
 }
 
 .sideTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 2rem;
     font-weight: 700;
     line-height: 1.2;
@@ -167,7 +167,7 @@
 }
 
 .formTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: clamp(2rem, 3.5vw, 2.5rem);
     font-weight: 800;
     color: var(--color-forest);
@@ -233,7 +233,7 @@
     padding: 0.9rem 1.1rem;
     background: white;
     border: 1.5px solid rgba(15, 31, 28, 0.15);
-    border-radius: 0.85rem;
+    border-radius: 4px;
     font-size: 1rem;
     color: var(--color-forest);
     transition: all 0.25s ease;
@@ -399,7 +399,7 @@
     padding: 3rem 2rem;
     background: white;
     border: 1.5px dashed var(--color-forest);
-    border-radius: 1.5rem;
+    border-radius: 4px;
     box-shadow: 8px 8px 0px var(--color-lilac);
 }
 
@@ -409,7 +409,7 @@
 }
 
 .accessDeniedTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-forest);

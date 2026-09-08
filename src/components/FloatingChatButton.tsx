@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { MessageCircle } from 'lucide-react';
 
 export default function FloatingChatButton() {
     const pathname = usePathname();
@@ -37,7 +38,7 @@ export default function FloatingChatButton() {
                     transition: 'all 0.2s ease'
                 }}
             >
-                💬
+                <MessageCircle size={26} strokeWidth={2} />
             </motion.div>
         </Link>
     );

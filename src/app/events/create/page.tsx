@@ -5,19 +5,27 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Sparkles, Calendar, MapPin, Users, Megaphone, DollarSign } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Briefcase, Calendar, Code, Cpu, DollarSign, Globe, Lock as LockIcon, MapPin, Megaphone, Palette, Sparkles, Trophy, Users, Wrench } from 'lucide-react';
 import { createEvent } from '@/lib/actions';
 import { useAuth } from '@/context/AuthContext';
 import ImageUpload from '@/components/ImageUpload';
 import styles from './page.module.css';
 
+/**
+ * Matches the categories events actually carry. The previous list offered
+ * "Fest", "Tech Talk" and "Seminar" — none of which exist elsewhere in the
+ * app — so an event created here got a category with no ink on the listing
+ * and no filter tab to find it under.
+ */
 const CATEGORIES = [
-    { value: 'Hackathon', icon: '💻', label: 'Hackathon' },
-    { value: 'Fest', icon: '🎪', label: 'Fest' },
-    { value: 'Workshop', icon: '🔧', label: 'Workshop' },
-    { value: 'Cultural', icon: '🎭', label: 'Cultural' },
-    { value: 'Tech Talk', icon: '🎤', label: 'Tech Talk' },
-    { value: 'Seminar', icon: '📚', label: 'Seminar' },
+    { value: 'Technology', Icon: Cpu, label: 'Technology' },
+    { value: 'Hackathon', Icon: Code, label: 'Hackathon' },
+    { value: 'Workshop', Icon: Wrench, label: 'Workshop' },
+    { value: 'Cultural', Icon: Globe, label: 'Cultural' },
+    { value: 'Social', Icon: Users, label: 'Social' },
+    { value: 'Art', Icon: Palette, label: 'Art' },
+    { value: 'Sports', Icon: Trophy, label: 'Sports' },
+    { value: 'Business', Icon: Briefcase, label: 'Business' },
 ];
 
 export default function CreateEventPage() {
@@ -68,7 +76,7 @@ export default function CreateEventPage() {
                     Back to Events
                 </Link>
                 <div className={styles.accessDenied}>
-                    <div className={styles.accessDeniedIcon}>🔒</div>
+                    <LockIcon size={40} strokeWidth={1.5} className={styles.accessDeniedIcon} aria-hidden="true" />
                     <h2 className={styles.accessDeniedTitle}>Club Admin Required</h2>
                     <p className={styles.accessDeniedText}>
                         Events must be hosted by an official club. Create or join a club first to start hosting events.
@@ -138,7 +146,7 @@ export default function CreateEventPage() {
                     <div className={styles.sidePanelBg} />
 
                     <div className={styles.sideContent}>
-                        <span className={styles.sideEmoji}>🎉</span>
+                        
                         <h2 className={styles.sideTitle}>
                             Create an <span className={styles.sideHighlight}>Unforgettable</span> Event
                         </h2>
@@ -278,7 +286,7 @@ export default function CreateEventPage() {
                                         onClick={() => setFormData(prev => ({ ...prev, category: cat.value }))}
                                         whileTap={{ scale: 0.95 }}
                                     >
-                                        <span className={styles.pillIcon}>{cat.icon}</span>
+                                        <span className={styles.pillIcon}><cat.Icon size={16} aria-hidden="true" /></span>
                                         {cat.label}
                                     </motion.button>
                                 ))}

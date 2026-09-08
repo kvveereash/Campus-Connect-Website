@@ -53,7 +53,7 @@
 
 .logo {
     font-size: 1.5rem;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     /* Use the new Serif font */
     font-weight: 700;
     letter-spacing: -0.03em;
@@ -180,7 +180,7 @@
     padding: 1.5rem;
     background: var(--color-cream);
     border: 1px solid var(--border-color);
-    border-radius: 1.5rem;
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;

@@ -1,5 +1,7 @@
 'use client';
 
+import { Search as SearchIcon } from 'lucide-react';
+
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
 import { useState, useEffect } from 'react';
@@ -36,7 +38,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
                 transform: 'translateY(-50%)',
                 color: 'rgba(255,255,255,0.4)',
                 pointerEvents: 'none'
-            }} aria-hidden="true">🔍</span>
+            }} aria-hidden="true"><SearchIcon size={16} /></span>
             <input
                 type="text"
                 placeholder={placeholder}

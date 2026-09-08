@@ -1,4 +1,5 @@
 'use client';
+import { Twitter, Linkedin, MessageCircle } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
@@ -23,19 +24,19 @@ export default function ShareModal({ isOpen, onClose, eventUrl, eventName }: Sha
         {
             name: 'Twitter',
             url: `https://twitter.com/intent/tweet?text=Check out ${encodeURIComponent(eventName)}!&url=${encodeURIComponent(eventUrl)}`,
-            icon: '🐦',
+            Icon: Twitter,
             color: '#1DA1F2'
         },
         {
             name: 'LinkedIn',
             url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(eventUrl)}`,
-            icon: '💼',
+            Icon: Linkedin,
             color: '#0A66C2'
         },
         {
             name: 'WhatsApp',
             url: `https://wa.me/?text=${encodeURIComponent(`Check out ${eventName} at ${eventUrl}`)}`,
-            icon: '💬',
+            Icon: MessageCircle,
             color: '#25D366'
         }
     ];
@@ -105,7 +106,7 @@ export default function ShareModal({ isOpen, onClose, eventUrl, eventName }: Sha
                                         fontSize: '1.5rem',
                                         color: link.color
                                     }}>
-                                        {link.icon}
+                                        <link.Icon size={20} aria-hidden="true" />
                                     </div>
                                     <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>{link.name}</span>
                                 </a>

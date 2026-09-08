@@ -27,7 +27,7 @@
 
 .logo {
     font-size: 2.5rem;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-weight: 700;
     color: var(--color-lilac);
     /* Lilac accent for logo */
@@ -42,7 +42,8 @@
     line-height: 1.6;
     max-width: 320px;
     font-size: 1.1rem;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
+    font-weight: 700;
     /* Serif for tagline too */
 }
 

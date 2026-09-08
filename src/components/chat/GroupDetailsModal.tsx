@@ -1,4 +1,5 @@
 'use client';
+import { Users, User } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 import { getConversationDetails, addMemberToGroup, leaveGroup, searchUsers } from '@/lib/actions/chat';
@@ -91,7 +92,7 @@ export function GroupDetailsModal({ conversationId, onClose }: GroupDetailsModal
 
                 <div className={styles.groupHeaderInfo}>
                     <div className={styles.groupAvatarLarge}>
-                        {details.isGroup ? '👥' : '👤'}
+                        {details.isGroup ? <Users size={18} aria-hidden="true" /> : <User size={18} aria-hidden="true" />}
                     </div>
                     <div>
                         <h2 className={styles.groupTitle}>{details.name || 'Group Chat'}</h2>

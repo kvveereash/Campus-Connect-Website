@@ -90,7 +90,7 @@
 .title {
     font-size: 2.5rem;
     font-weight: 800;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     color: var(--color-forest);
     margin-bottom: 0.5rem;
     text-transform: uppercase;
@@ -170,7 +170,7 @@
     padding: 1rem;
     background: var(--color-forest);
     color: var(--color-cream);
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -218,7 +218,7 @@
     transform: rotate(90deg);
     white-space: nowrap;
     position: absolute;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 1.5rem;
     letter-spacing: 0.2em;

@@ -1,4 +1,5 @@
 'use client';
+import { Building2 } from 'lucide-react';
 
 import { useChat } from '@/context/ChatContext';
 import styles from './Chat.module.css';
@@ -62,7 +63,7 @@ function RoomItem({ room, isActive, onClick }: { room: any, isActive: boolean, o
             className={`${styles.roomItem} ${isActive ? styles.active : ''}`}
         >
             <div className={styles.roomIcon}>
-                {room.type === 'topic' ? '#' : '🏛️'}
+                {room.type === 'topic' ? '#' : <Building2 size={15} aria-hidden="true" />}
             </div>
             <div className={styles.roomInfo}>
                 <div className={styles.roomName}>{room.name}</div>

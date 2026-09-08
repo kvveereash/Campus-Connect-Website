@@ -132,7 +132,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
     if (isRegistered) {
         return (
             <button className="btn btn-outline" disabled style={{ background: 'var(--color-mint)', color: 'var(--color-forest)', opacity: 1, border: 'none' }}>
-                ✅ Registered
+                Registered
             </button>
         );
     }
@@ -145,7 +145,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                 onClick={handleVerifyPayment}
                 disabled={status === 'processing_payment'}
             >
-                {status === 'processing_payment' ? '⏳ Verifying...' : '🔄 Verify Payment'}
+                {status === 'processing_payment' ? 'Verifying…' : 'Verify payment'}
             </button>
         );
     }
@@ -213,7 +213,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                                             lineHeight: 1
                                         }}
                                     >
-                                        🎉
+                                        
                                     </motion.div>
                                     <h3 style={{ marginBottom: '0.5rem' }}>You're In!</h3>
                                     <p style={{ color: 'var(--text-secondary)' }}>
@@ -239,7 +239,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                                         disabled={status === 'processing_payment'}
                                         style={{ width: '100%' }}
                                     >
-                                        {status === 'processing_payment' ? 'Redirecting to Stripe...' : '💳 Pay with Stripe'}
+                                        {status === 'processing_payment' ? 'Redirecting to Stripe...' : 'Pay with Stripe'}
                                     </button>
                                 </div>
                             ) : (

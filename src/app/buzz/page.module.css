@@ -31,7 +31,7 @@
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: var(--color-forest);
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     display: inline-block;
 }
 
@@ -127,7 +127,7 @@
 .createCard {
     background: #ffffff;
     border: 2px solid var(--color-forest);
-    border-radius: 1.5rem;
+    border-radius: 4px;
     padding: 1.5rem;
     margin-bottom: 3rem;
     box-shadow: 8px 8px 0px var(--color-lilac);
@@ -145,7 +145,7 @@
 .userAvatar {
     width: 3rem;
     height: 3rem;
-    border-radius: 1rem;
+    border-radius: 4px;
     background: var(--color-cream);
     border: 1.5px solid var(--color-forest);
     display: flex;
@@ -192,7 +192,7 @@
     border: 1.5px solid var(--color-forest);
     cursor: pointer;
     padding: 0.5rem;
-    border-radius: 0.5rem;
+    border-radius: 4px;
     transition: all 0.2s;
     box-shadow: 2px 2px 0px rgba(15, 31, 28, 0.1);
 }
@@ -232,7 +232,7 @@
 .postCard {
     background: #ffffff;
     border: 2px solid var(--color-forest);
-    border-radius: 1.5rem;
+    border-radius: 4px;
     overflow: hidden;
     margin-bottom: 2rem;
     transition: transform 0.3s ease;
@@ -263,7 +263,7 @@
     font-size: 1rem;
     color: var(--color-forest);
     text-decoration: none;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
 }
 
 .timestamp {

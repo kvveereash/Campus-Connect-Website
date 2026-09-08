@@ -30,13 +30,17 @@
 :root {
   /* --- Modern Editorial Theme --- */
 
-  /* Primary Palette */
-  --color-cream: #FBF9F0;
-  /* Main Background */
+  /* Primary Palette
+     Campus Press: the canvas moved from a warm cream to a cooler paper stock.
+     This token is consumed both as a background and as text-on-dark, and a
+     near-white serves both, so the change propagates correctly in either role. */
+  --color-cream: #FAFAF8;
+  /* Main Background — "paper" */
   --color-forest: #0F1F1C;
-  /* Primary Text / Footer / Dark Backgrounds */
+  /* Primary Text / Footer / Dark Backgrounds — "ink" */
   --color-lilac: #E0C0F8;
-  /* Accents / Primary Buttons */
+  /* Brand accent. Light enough to carry forest ink on top, which is the one
+     place it works as a fill. */
   --color-mint: #D1FAE5;
   /* Secondary Highlight */
   --color-orange: #FF7D5D;
@@ -55,19 +59,24 @@
   --primary-color: var(--color-forest);
   --secondary-color: var(--color-lilac);
 
-  --border-color: rgba(15, 31, 28, 0.1);
+  --border-color: rgba(15, 31, 28, 0.14);
 
-  /* Typography */
+  /* Typography
+     Headings moved from Fraunces to Archivo. A serif display on a warm canvas
+     is the pattern the redesign is deliberately leaving behind; a heavy grotesk
+     carries the poster direction and stays legible at listing density.
+     Fraunces stays defined so anything still asking for it renders. */
   --font-serif: var(--font-fraunces), serif;
   --font-sans: var(--font-inter), sans-serif;
+  --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
 
-  --font-heading: var(--font-serif);
+  --font-heading: var(--font-display);
   --font-body: var(--font-sans);
 
-  /* UI Shapes */
-  --radius-pill: 0.75rem;
-  /* Soft Rounded (was 999px) */
-  --radius-card: 1.5rem;
+  /* UI Shapes — posters have square corners. Not 0, which reads as unfinished
+     on interactive controls, but far tighter than the previous 1.5rem. */
+  --radius-pill: 4px;
+  --radius-card: 4px;
 
   --transition-speed: 0.3s;
 }
@@ -131,24 +140,35 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  font-weight: 600;
-  /* Fraunces looks better slightly lighter than bold */
-  letter-spacing: -0.02em;
+  /* Archivo needs more weight and tighter tracking than Fraunces did to read
+     as display type rather than bold body text. */
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
   margin-bottom: 0.75rem;
+  text-wrap: balance;
 }
 
 h1 {
-  font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
-  line-height: 1.1;
+  font-size: clamp(2.25rem, 5vw + 1rem, 4rem);
+  line-height: 1;
 }
 
 h2 {
-  font-size: clamp(1.75rem, 3vw + 0.5rem, 3rem);
-  line-height: 1.2;
+  font-size: clamp(1.6rem, 3vw + 0.5rem, 2.6rem);
+  line-height: 1.08;
 }
 
 h3 {
-  font-size: clamp(1.25rem, 2vw + 0.25rem, 2rem);
+  font-size: clamp(1.2rem, 2vw + 0.25rem, 1.75rem);
+  letter-spacing: -0.03em;
+}
+
+h4,
+h5,
+h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 button {

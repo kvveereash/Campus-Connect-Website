@@ -1,4 +1,5 @@
 'use client';
+import { Trophy } from 'lucide-react';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -14,32 +15,28 @@ interface LeaderboardsData {
 }
 
 const TABS = [
-    { id: 'attendees', label: '🎟️ Top Attendees', description: 'Most events attended' },
-    { id: 'hosts', label: '🎤 Top Hosts', description: 'Most events created' },
-    { id: 'clubs', label: '🏆 Top Clubs', description: 'Most active clubs' },
-    { id: 'badges', label: '🏅 Badge Leaders', description: 'Most badges earned' },
+    { id: 'attendees', label: 'Top Attendees', description: 'Most events attended' },
+    { id: 'hosts', label: 'Top Hosts', description: 'Most events created' },
+    { id: 'clubs', label: 'Top Clubs', description: 'Most active clubs' },
+    { id: 'badges', label: 'Badge Leaders', description: 'Most badges earned' },
 ];
 
 export default function LeaderboardsClient({ data }: { data: LeaderboardsData }) {
     const [activeTab, setActiveTab] = useState('attendees');
 
+    /**
+     * The top three were metallic gradients with medal emoji on top. A ranking
+     * already communicates order through position and number, so the medals
+     * were saying it a second time. Rank one is now simply inverted — ink on
+     * paper reversed — and the rest sit quiet.
+     */
     const getRankStyle = (rank: number) => {
-        switch (rank) {
-            case 1: return { background: 'linear-gradient(135deg, #ffd700, #ffed4a)', color: '#1a1a1a' };
-            case 2: return { background: 'linear-gradient(135deg, #c0c0c0, #e8e8e8)', color: '#1a1a1a' };
-            case 3: return { background: 'linear-gradient(135deg, #cd7f32, #daa06d)', color: '#1a1a1a' };
-            default: return { background: 'var(--surface-color)', color: 'var(--text-primary)' };
-        }
+        if (rank === 1) return { background: 'var(--color-forest)', color: 'var(--color-cream)' };
+        if (rank <= 3) return { background: 'var(--color-lilac)', color: 'var(--color-forest)' };
+        return { background: 'transparent', color: 'var(--text-secondary)' };
     };
 
-    const getRankEmoji = (rank: number) => {
-        switch (rank) {
-            case 1: return '🥇';
-            case 2: return '🥈';
-            case 3: return '🥉';
-            default: return `#${rank}`;
-        }
-    };
+    const getRankLabel = (rank: number) => String(rank).padStart(2, '0');
 
     const UserCard = ({ user, scoreLabel }: { user: LeaderboardUser; scoreLabel: string }) => (
         <motion.div
@@ -69,7 +66,7 @@ export default function LeaderboardsClient({ data }: { data: LeaderboardsData })
                 fontSize: user.rank <= 3 ? '1.25rem' : '0.875rem',
                 flexShrink: 0
             }}>
-                {getRankEmoji(user.rank)}
+                {getRankLabel(user.rank)}
             </div>
 
             {/* Avatar */}
@@ -142,7 +139,7 @@ export default function LeaderboardsClient({ data }: { data: LeaderboardsData })
                 fontSize: club.rank <= 3 ? '1.25rem' : '0.875rem',
                 flexShrink: 0
             }}>
-                {getRankEmoji(club.rank)}
+                {getRankLabel(club.rank)}
             </div>
 
             {/* Logo */}
@@ -246,7 +243,7 @@ export default function LeaderboardsClient({ data }: { data: LeaderboardsData })
 
     const EmptyState = ({ message }: { message: string }) => (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-            <p style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏆</p>
+            <Trophy size={40} strokeWidth={1.5} aria-hidden="true" style={{ marginBottom: '1rem' }} />
             <p>{message}</p>
         </div>
     );
@@ -260,7 +257,7 @@ export default function LeaderboardsClient({ data }: { data: LeaderboardsData })
                 style={{ textAlign: 'center', marginBottom: '2rem' }}
             >
                 <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-                    🏆 Leaderboards
+                    Leaderboards
                 </h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
                     See who's making waves on campus!

@@ -47,7 +47,7 @@
     width: 340px;
     background: #ffffff;
     border: 1px solid var(--border-color);
-    border-radius: 1.5rem;
+    border-radius: 4px;
     /* Match card radius */
     box-shadow: 0 10px 40px rgba(15, 31, 28, 0.1);
     /* Premium shadow */
@@ -92,7 +92,7 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 700;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     color: var(--color-forest);
 }
 

@@ -31,7 +31,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(15, 31, 28, 0.05);
-  border-radius: 1.25rem;
+  border-radius: 4px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   gap: 1rem;
 }
@@ -41,7 +41,7 @@
   display: flex;
   background: rgba(0, 0, 0, 0.03);
   padding: 0.25rem;
-  border-radius: 1rem;
+  border-radius: 4px;
   gap: 0.25rem;
   position: relative;
 }
@@ -59,7 +59,7 @@
   z-index: 1;
   /* Above bubble */
   transition: color 0.2s;
-  border-radius: 0.75rem;
+  border-radius: 4px;
 }
 
 .filterTab:hover {
@@ -75,7 +75,7 @@
   position: absolute;
   inset: 0;
   background: white;
-  border-radius: 0.75rem;
+  border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   z-index: -1;
   /* Behind text */
@@ -123,7 +123,7 @@
   color: var(--color-forest);
   padding: 0.4rem 2rem 0.4rem 0.75rem;
   cursor: pointer;
-  border-radius: 0.5rem;
+  border-radius: 4px;
   transition: all 0.2s;
   outline: none;
 }
@@ -145,7 +145,7 @@
   display: flex;
   background: white;
   padding: 0.25rem;
-  border-radius: 0.75rem;
+  border-radius: 4px;
   border: 1px solid rgba(0, 0, 0, 0.04);
   gap: 0.25rem;
 }
@@ -159,7 +159,7 @@
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  border-radius: 0.5rem;
+  border-radius: 4px;
   transition: all 0.2s;
   cursor: pointer;
 }
@@ -186,7 +186,7 @@
   /* Dark elegant bg */
   color: var(--color-cream);
   text-decoration: none;
-  border-radius: 2rem;
+  border-radius: 4px;
   /* Full pill */
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 4px 12px rgba(15, 31, 28, 0.15);
@@ -241,7 +241,7 @@
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.1);
   padding: 0.75rem 1.5rem;
-  border-radius: 2rem;
+  border-radius: 4px;
   color: var(--text-secondary);
   font-weight: 500;
   font-size: 0.9rem;
@@ -270,7 +270,7 @@
     height: auto;
     padding: 1rem;
     gap: 1.5rem;
-    border-radius: 1rem;
+    border-radius: 4px;
   }
 
   .filterGroup {

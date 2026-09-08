@@ -97,7 +97,7 @@
 }
 
 .statValue {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 1.75rem;
     font-weight: 700;
     color: var(--text-primary);
@@ -137,7 +137,7 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: 1.25rem;
+    border-radius: 4px;
     overflow: hidden;
     transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
@@ -183,7 +183,7 @@
 }
 
 .collegeName {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 1.35rem;
     font-weight: 700;
     margin-bottom: 0.4rem;

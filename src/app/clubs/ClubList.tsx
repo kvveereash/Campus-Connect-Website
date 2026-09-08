@@ -1,4 +1,5 @@
 'use client';
+import { Users } from 'lucide-react';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -62,7 +63,7 @@ function ClubCard({ club }: { club: Club }) {
                         : club.description}
                 </p>
                 <div className={styles.footer}>
-                    <span className={styles.members}>👥 {memberCount} members</span>
+                    <span className={styles.members}><Users size={14} aria-hidden="true" /> {memberCount} members</span>
                 </div>
             </div>
         </Link>

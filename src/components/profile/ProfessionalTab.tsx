@@ -1,4 +1,5 @@
 'use client';
+import { FileText, Trophy, Zap, Rocket, Link2, ArrowUpRight } from 'lucide-react';
 
 import { useState, useRef } from 'react';
 import { User, Achievement } from '@/types';
@@ -154,7 +155,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <h3 className={styles.cardTitle}>
-                        📄 Resume
+                        <FileText size={17} aria-hidden="true" /> Resume
                     </h3>
                 </div>
                 <div className={styles.resumeContainer}>
@@ -192,7 +193,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <h3 className={styles.cardTitle}>
-                        🏆 Achievements
+                        <Trophy size={17} aria-hidden="true" /> Achievements
                     </h3>
                     {(user.achievements && user.achievements.length > 0) && (
                         <Button
@@ -235,7 +236,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <h3 className={styles.cardTitle}>
-                        ⚡ Skills
+                        <Zap size={17} aria-hidden="true" /> Skills
                     </h3>
                 </div>
                 <div className={styles.skillsContainer}>
@@ -280,7 +281,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <h3 className={styles.cardTitle}>
-                        🚀 Project Showcase
+                        <Rocket size={17} aria-hidden="true" /> Project Showcase
                     </h3>
                     {(user.projects && user.projects.length > 0) && (
                         <Button
@@ -324,7 +325,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <h3 className={styles.cardTitle}>
-                        🔗 Portfolio & Socials
+                        <Link2 size={17} aria-hidden="true" /> Portfolio &amp; Socials
                     </h3>
                     {(user.portfolioLinks && user.portfolioLinks.length > 0) && (
                         <Button
@@ -345,7 +346,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
                                 <span className={styles.linkUrl}>{link.url}</span>
                             </div>
                             <a href={link.url} target="_blank" rel="noopener noreferrer" className={styles.externalLink}>
-                                Visit ↗
+                                Visit <ArrowUpRight size={13} aria-hidden="true" />
                             </a>
                         </div>
                     ))}

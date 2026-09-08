@@ -1,4 +1,5 @@
 'use client';
+import { MapPin, Pencil } from 'lucide-react';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -81,7 +82,7 @@ export default function CollegeClient({ college, events, clubs = [] }: CollegeCl
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.5 }}
                         >
-                            <span className={styles.locationPin}>📍</span> {college.location}
+                            <MapPin size={14} className={styles.locationPin} aria-hidden="true" /> {college.location}
                         </motion.div>
 
                         <motion.p
@@ -115,7 +116,7 @@ export default function CollegeClient({ college, events, clubs = [] }: CollegeCl
                                     variant="secondary"
                                     size="sm"
                                     onClick={() => setIsEditModalOpen(true)}
-                                    leftIcon="✏️"
+                                    leftIcon={<Pencil size={15} aria-hidden="true" />}
                                 >
                                     Edit Profile
                                 </Button>

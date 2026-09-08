@@ -1,4 +1,5 @@
 'use client';
+import { Heart, MessageCircle } from 'lucide-react';
 
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
@@ -336,13 +337,13 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                         )}
                                         <div className={styles.postFooter}>
                                             <button className={styles.actionButton}>
-                                                ❤️ {post.likes}
+                                                <Heart size={14} aria-hidden="true" /> {post.likes}
                                             </button>
                                             <button
                                                 className={`${styles.actionButton} ${expandedPostId === post.id ? styles.activeAction : ''}`}
                                                 onClick={() => toggleComments(post.id)}
                                             >
-                                                💬 {post.comments || 0}
+                                                <MessageCircle size={14} aria-hidden="true" /> {post.comments || 0}
                                             </button>
                                         </div>
 

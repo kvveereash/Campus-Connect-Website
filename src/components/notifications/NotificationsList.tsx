@@ -1,4 +1,5 @@
 'use client';
+import { Bell } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 import { getNotifications, markNotificationAsRead as markAsRead, markAllNotificationsAsRead as markAllAsRead } from '@/lib/actions/notifications';
@@ -80,7 +81,7 @@ function Content({ n }: { n: any }) {
                 {n.actor?.avatar ? (
                     <Image src={n.actor.avatar} width={32} height={32} alt="" style={{ borderRadius: '50%' }} />
                 ) : (
-                    <div className={styles.placeholderAvatar}>🔔</div>
+                    <div className={styles.placeholderAvatar}><Bell size={16} aria-hidden="true" /></div>
                 )}
             </div>
             <div className={styles.content}>

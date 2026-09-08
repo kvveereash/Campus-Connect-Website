@@ -72,7 +72,6 @@ export default function VerificationClient({ initialData }: VerificationClientPr
                 <EmptyState
                     title="All Caught Up!"
                     description="There are no clubs or events pending verification at the moment."
-                    icon="✨"
                 />
             </div>
         );

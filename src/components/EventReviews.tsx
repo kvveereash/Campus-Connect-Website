@@ -1,4 +1,5 @@
 'use client';
+import { Trash2 } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -124,7 +125,7 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
                     Reviews & Ratings
                 </h3>
                 <p style={{ color: 'var(--text-secondary)' }}>
-                    ⏳ Reviews will be available after the event ends.
+                    Reviews open once the event has ended.
                 </p>
             </div>
         );
@@ -151,7 +152,7 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
                         className="btn btn-primary"
                         style={{ padding: '0.5rem 1rem' }}
                     >
-                        {userReview ? '✏️ Edit Review' : '⭐ Write Review'}
+                        {userReview ? 'Edit review' : 'Write a review'}
                     </button>
                 )}
             </div>
@@ -239,7 +240,7 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
                                         onClick={() => handleDelete(review.id)}
                                         style={{ background: 'none', border: 'none', color: 'var(--error-color)', cursor: 'pointer' }}
                                     >
-                                        🗑️
+                                        <Trash2 size={15} aria-hidden="true" />
                                     </button>
                                 )}
                             </div>

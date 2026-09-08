@@ -1,4 +1,5 @@
 'use client';
+import { Users } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 import { getConversations } from '@/lib/actions/chat';
@@ -44,7 +45,7 @@ export function ConversationList({ activeId, onSelect }: ConversationListProps) 
                             <Image src={c.avatar} width={48} height={48} alt="" style={{ borderRadius: '16px', objectFit: 'cover' }} />
                         ) : (
                             <div className={styles.placeholderAvatarChat}>
-                                {c.isGroup ? '👥' : (c.name?.[0] || '?')}
+                                {c.isGroup ? <Users size={16} aria-hidden="true" /> : (c.name?.[0] || '?')}
                             </div>
                         )}
                         {c.isOnline && !c.isGroup && <div className={styles.onlineStatusDot} />}

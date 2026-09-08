@@ -24,13 +24,31 @@ const TESTIMONIALS_ROW_2 = [
     { text: "Found my co-founder here. No joke. The smart matching actually works.", author: "Ananya K.", role: "Startup Founder", stars: 5 },
 ];
 
-const ACTIVITY_FEED = [
-    { emoji: "⚡", text: "Sarah joined React Developers Club", time: "2m ago", color: "#c4b5fd" },
-    { emoji: "🔥", text: "New hackathon posted: BuildCon 2026", time: "12m ago", color: "#FF7D5D" },
-    { emoji: "🎯", text: "Team formed for AI Challenge", time: "28m ago", color: "#86efac" },
-    { emoji: "🎨", text: "Design Sprint event registration open", time: "1h ago", color: "#fde047" },
-    { emoji: "🚀", text: "3 new clubs created this week", time: "3h ago", color: "#fda4af" },
-];
+/**
+ * The "Live Activity" tile used to be five invented lines — "Sarah joined
+ * React Developers Club", "New hackathon posted: BuildCon 2026" — none of
+ * which referred to anything in the database. It is now built from the real
+ * upcoming events passed into this page, so the tile says something true.
+ */
+const CATEGORY_DOT: Record<string, string> = {
+    Technology: 'var(--press-technology)',
+    Cultural: 'var(--press-cultural)',
+    Social: 'var(--press-social)',
+    Art: 'var(--press-art)',
+    Sports: 'var(--press-sports)',
+    Workshop: 'var(--press-workshop)',
+    Hackathon: 'var(--press-hackathon)',
+    Business: 'var(--press-business)',
+};
+
+function countdownLabel(date: Date | string) {
+    const days = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
+    if (days <= 0) return 'today';
+    if (days === 1) return 'tomorrow';
+    if (days < 7) return `in ${days}d`;
+    if (days < 30) return `in ${Math.round(days / 7)}w`;
+    return `in ${Math.round(days / 30)}mo`;
+}
 
 const CARD_IMAGES = [
     '/featured-hackathon.jpg',
@@ -176,13 +194,6 @@ export default function LandingClient({ initialEvents, stats }: LandingClientPro
                         variants={stagger}
                     >
                         <motion.div className={styles.heroLabel} variants={fadeInUp}>
-                            <motion.span
-                                animate={{ rotate: [0, 10, -10, 0] }}
-                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", repeatDelay: 3 }}
-                                style={{ display: 'inline-block' }}
-                            >
-                                ✨
-                            </motion.span>
                             Built for students, by students
                         </motion.div>
 
@@ -285,7 +296,7 @@ export default function LandingClient({ initialEvents, stats }: LandingClientPro
                             }}
                             whileHover={{ scale: 1.05, rotateY: 5, rotateX: -3 }}
                         >
-                            <div className={styles.widgetIcon} style={{ background: 'var(--color-mint)', color: 'var(--color-forest)' }}>💡</div>
+                            <div className={styles.widgetIcon} style={{ background: 'var(--color-mint)', color: 'var(--color-forest)' }}></div>
                             <div>
                                 <h4 className={styles.widgetTitle}>Smart Matching</h4>
                                 <p className={styles.widgetSub}>AI-driven team finder</p>
@@ -457,21 +468,24 @@ export default function LandingClient({ initialEvents, stats }: LandingClientPro
                     <motion.div className={styles.bentoActivity} variants={fadeInUp}>
                         <span className={styles.bentoTileLabel}>
                             <span className={styles.livePulse} />
-                            Live Activity
+                            Coming up
                         </span>
                         <div className={styles.activityList}>
-                            {ACTIVITY_FEED.slice(0, 5).map((item, i) => (
+                            {initialEvents.slice(0, 5).map((event, i) => (
                                 <motion.div
-                                    key={i}
+                                    key={event.id}
                                     className={styles.activityItem}
                                     initial={{ opacity: 0, x: -20 }}
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: i * 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                                 >
-                                    <span className={styles.activityDot} style={{ backgroundColor: item.color }} />
-                                    <span>{item.emoji} {item.text}</span>
-                                    <span className={styles.activityTime}>{item.time}</span>
+                                    <span
+                                        className={styles.activityDot}
+                                        style={{ backgroundColor: CATEGORY_DOT[event.category] ?? 'var(--color-forest)' }}
+                                    />
+                                    <span>{event.title}</span>
+                                    <span className={styles.activityTime}>{countdownLabel(event.date)}</span>
                                 </motion.div>
                             ))}
                         </div>
@@ -515,7 +529,7 @@ export default function LandingClient({ initialEvents, stats }: LandingClientPro
                             <span className={styles.typingCursor} />
                         </div>
                         <div className={styles.matchReply}>
-                            Let&apos;s connect! 🚀
+                            Let&apos;s connect
                         </div>
                     </div>
 

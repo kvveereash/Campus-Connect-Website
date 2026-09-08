@@ -1,4 +1,5 @@
 'use client';
+import { MapPin } from 'lucide-react';
 
 import { useState } from 'react';
 import styles from './page.module.css';
@@ -34,7 +35,7 @@ export default function MapClient({ events }: { events: any[] }) {
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.title}>Campus Map 🗺️</h1>
+                <h1 className={styles.title}>Campus Map</h1>
                 <p style={{ color: '#94a3b8' }}>Real-time event tracking system</p>
             </header>
 
@@ -94,7 +95,7 @@ export default function MapClient({ events }: { events: any[] }) {
                                 onMouseLeave={() => setSelectedEvent(null)}
                             >
                                 <div className={styles.pin}>
-                                    <span className={styles.pinIcon}>📍</span>
+                                    <MapPin size={15} className={styles.pinIcon} aria-hidden="true" />
                                 </div>
                                 <div className={styles.pulse}></div>
 

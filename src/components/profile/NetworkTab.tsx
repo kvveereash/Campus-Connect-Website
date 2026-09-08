@@ -114,7 +114,7 @@ export default function NetworkTab({ user, clubs, followedColleges }: NetworkTab
                             </div>
                         ))
                     ) : (
-                        <EmptyState title="No Connections" description="Connect with other students." icon="👥" />
+                        <EmptyState title="No Connections" description="Connect with other students." />
                     )}
                 </div>
             </div>

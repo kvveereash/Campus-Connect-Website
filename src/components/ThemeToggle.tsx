@@ -1,5 +1,7 @@
 'use client';
 
+import { Moon, Sun } from 'lucide-react';
+
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -43,7 +45,7 @@ export default function ThemeToggle() {
                 exit={{ y: 20, opacity: 0 }}
                 transition={{ duration: 0.2 }}
             >
-                {theme === 'dark' ? '🌙' : '☀️'}
+                {theme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
             </motion.div>
         </button>
     );

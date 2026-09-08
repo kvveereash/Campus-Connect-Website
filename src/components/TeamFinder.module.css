@@ -14,7 +14,7 @@
 .title {
     font-size: 2.5rem;
     font-weight: 700;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     color: var(--color-forest);
     margin: 0;
     letter-spacing: -0.02em;
@@ -24,7 +24,7 @@
     background: var(--color-cream);
     border: 1.5px solid var(--color-forest);
     padding: 2.5rem;
-    border-radius: 2rem;
+    border-radius: 4px;
     margin-bottom: 3rem;
     box-shadow: 8px 8px 0 var(--color-forest);
     animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -47,7 +47,7 @@
 }
 
 .formTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 1.75rem;
     color: var(--color-forest);
     margin-bottom: 2rem;
@@ -83,7 +83,7 @@
     width: 100%;
     padding: 0.85rem 1.25rem;
     border: 1.5px solid var(--color-forest);
-    border-radius: 1rem;
+    border-radius: 4px;
     background: white;
     color: var(--color-forest);
     font-family: var(--font-sans);
@@ -132,9 +132,9 @@
     padding: 5rem 2rem;
     background: rgba(15, 31, 28, 0.02);
     border: 2px dashed rgba(15, 31, 28, 0.1);
-    border-radius: 2rem;
+    border-radius: 4px;
     color: var(--text-secondary);
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-style: italic;
     font-size: 1.2rem;
 }

@@ -5,20 +5,23 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Sparkles, Zap, Trophy, Globe } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Briefcase, Cpu, Globe, Palette, Sparkles, Trophy, Users, Wrench, Zap } from 'lucide-react';
 import { createClub } from '@/lib/actions';
 import { getCollegesList } from '@/lib/actions';
 import { useAuth } from '@/context/AuthContext';
 import ImageUpload from '@/components/ImageUpload';
 import styles from './page.module.css';
 
+/** Mirrors the categories clubs actually carry, so a new club is findable. */
 const CATEGORIES = [
-    { value: 'Technical', icon: '⚙️', label: 'Technical' },
-    { value: 'Cultural', icon: '🎭', label: 'Cultural' },
-    { value: 'Sports', icon: '⚽', label: 'Sports' },
-    { value: 'Art', icon: '🎨', label: 'Art' },
-    { value: 'Music', icon: '🎵', label: 'Music' },
-    { value: 'Other', icon: '✨', label: 'Other' },
+    { value: 'Technology', Icon: Cpu, label: 'Technology' },
+    { value: 'Technical', Icon: Wrench, label: 'Technical' },
+    { value: 'Art', Icon: Palette, label: 'Art' },
+    { value: 'Social', Icon: Users, label: 'Social' },
+    { value: 'Sports', Icon: Trophy, label: 'Sports' },
+    { value: 'Cultural', Icon: Globe, label: 'Cultural' },
+    { value: 'Literature', Icon: BookOpen, label: 'Literature' },
+    { value: 'Business', Icon: Briefcase, label: 'Business' },
 ];
 
 export default function CreateClubPage() {
@@ -111,7 +114,7 @@ export default function CreateClubPage() {
                     <div className={styles.sidePanelBg} />
 
                     <div className={styles.sideContent}>
-                        <span className={styles.sideEmoji}>🚀</span>
+                        
                         <h2 className={styles.sideTitle}>
                             Build Your <span className={styles.sideHighlight}>Community</span>
                         </h2>
@@ -239,7 +242,7 @@ export default function CreateClubPage() {
                                         onClick={() => setFormData(prev => ({ ...prev, category: cat.value }))}
                                         whileTap={{ scale: 0.95 }}
                                     >
-                                        <span className={styles.pillIcon}>{cat.icon}</span>
+                                        <span className={styles.pillIcon}><cat.Icon size={16} aria-hidden="true" /></span>
                                         {cat.label}
                                     </motion.button>
                                 ))}

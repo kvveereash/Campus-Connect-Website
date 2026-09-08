@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { getSessionUser, getRecommendedTeammates } from '@/lib/actions'; // These will fail if prisma fetch failed, but we handle it
 import styles from './page.module.css';
 import Link from 'next/link';
+import { AlertTriangle, Sparkles, Flame, Bot } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Find Teammates',
@@ -38,7 +39,7 @@ export default async function TeamFinderPage() {
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.title}>AI Team Matchmaker 🧠</h1>
+                <h1 className={styles.title}>Team Matchmaker</h1>
                 <p className={styles.subtitle}>
                     We analyzed your skills and interests to find these perfect teammates for your next project.
                 </p>
@@ -56,7 +57,7 @@ export default async function TeamFinderPage() {
                     justifyContent: 'space-between'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+                        <AlertTriangle size={22} aria-hidden="true" />
                         <div>
                             <h4 style={{ color: '#facc15', margin: 0 }}>Improve your matches!</h4>
                             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
@@ -72,7 +73,7 @@ export default async function TeamFinderPage() {
 
             <section className={styles.section}>
                 <div className={styles.sectionTitle}>
-                    <span>⚡</span> Recommended for You
+                    <Sparkles size={16} aria-hidden="true" /> Recommended for you
                 </div>
 
                 {matches.length > 0 ? (
@@ -80,7 +81,7 @@ export default async function TeamFinderPage() {
                         {matches.map((match) => (
                             <div key={match.id} className={styles.matchCard}>
                                 <div className={styles.matchScore}>
-                                    <span>🔥</span> {Math.min(match.matchScore, 100)}% Match
+                                    <Flame size={14} aria-hidden="true" /> {Math.min(match.matchScore, 100)}% match
                                 </div>
 
                                 <div className={styles.avatar}>
@@ -121,7 +122,7 @@ export default async function TeamFinderPage() {
                     </div>
                 ) : (
                     <div className={styles.emptyState}>
-                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🤖</div>
+                        <Bot size={40} strokeWidth={1.5} aria-hidden="true" style={{ marginBottom: '1rem' }} />
                         <h3>No matches found yet</h3>
                         <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 1.5rem' }}>
                             We couldn't find any strong matches. Try adding more interests or skills to your profile to help our AI find your tribe.

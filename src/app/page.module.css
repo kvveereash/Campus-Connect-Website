@@ -139,23 +139,29 @@
 }
 
 .heroTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: clamp(3.5rem, 6vw, 6.5rem);
     line-height: 1.05;
     color: var(--text-primary);
     margin-bottom: 2rem;
-    letter-spacing: -0.03em;
-    font-weight: 500;
+    letter-spacing: -0.045em;
+    /* Archivo needs real weight to read as display type. At 500 it looked
+       like bold body copy rather than a headline. */
+    font-weight: 800;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
 }
 
+/* The rotating word was set in italic as a decorative contrast. A one-word
+   italic swap is a recognisable generic-design tell, and it fought Archivo,
+   whose italic is a mechanical slant rather than a true cursive. Distinction
+   now comes from the brand lilac underline instead — colour doing a job. */
 .heroTitleItalic {
-    font-style: italic;
     color: var(--color-forest);
     position: relative;
     display: inline-block;
+    box-shadow: inset 0 -0.14em 0 var(--color-lilac);
 }
 
 /* Rotating word container — sized for longest word */
@@ -320,7 +326,7 @@
         0 20px 50px rgba(15, 31, 28, 0.1),
         0 0 0 1px rgba(255, 255, 255, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    border-radius: 1.5rem;
+    border-radius: 4px;
     padding: 1rem 1.25rem;
     position: absolute;
     display: flex;
@@ -459,9 +465,9 @@
 }
 
 .statNumber {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: clamp(2.5rem, 4vw, 4rem);
-    font-weight: 500;
+    font-weight: 800;
     line-height: 1;
     background: linear-gradient(180deg, #ffffff 30%, rgba(224, 192, 248, 0.8) 100%);
     background-clip: text;
@@ -494,10 +500,10 @@
 }
 
 .bentoTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: clamp(2rem, 3.5vw, 3.5rem);
     color: var(--color-forest);
-    font-weight: 500;
+    font-weight: 700;
     letter-spacing: -0.02em;
     margin-bottom: 0.5rem;
 }
@@ -517,7 +523,7 @@
 /* Featured card with animated gradient border */
 .bentoFeatured {
     grid-row: 1 / 3;
-    border-radius: 2rem;
+    border-radius: 4px;
     overflow: hidden;
     position: relative;
     min-height: 480px;
@@ -532,7 +538,7 @@
     content: '';
     position: absolute;
     inset: -2px;
-    border-radius: 2rem;
+    border-radius: 4px;
     padding: 2px;
     background: conic-gradient(from var(--border-angle, 0deg),
             var(--color-mint),
@@ -613,7 +619,8 @@
 }
 
 .bentoFeaturedTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
+    font-weight: 800;
     font-size: clamp(1.5rem, 2vw, 2.2rem);
     margin-bottom: 0.5rem;
     line-height: 1.15;
@@ -628,7 +635,7 @@
 .bentoActivity {
     background: #fff;
     border: 1.5px solid var(--color-forest);
-    border-radius: 1.5rem;
+    border-radius: 4px;
     padding: 1.75rem;
     overflow: hidden;
     display: flex;
@@ -702,7 +709,7 @@
     font-size: 0.9rem;
     color: var(--color-forest);
     padding: 0.4rem 0.6rem;
-    border-radius: 0.5rem;
+    border-radius: 4px;
     transition: background 0.2s ease;
 }
 
@@ -732,7 +739,7 @@
 .bentoStat {
     background: var(--color-forest);
     color: white;
-    border-radius: 1.5rem;
+    border-radius: 4px;
     padding: 1.75rem;
     display: flex;
     flex-direction: column;
@@ -768,9 +775,9 @@
 }
 
 .bentoStatNumber {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: clamp(2.5rem, 3.5vw, 3.5rem);
-    font-weight: 500;
+    font-weight: 800;
     line-height: 1;
     margin-bottom: 0.25rem;
     position: relative;
@@ -862,7 +869,7 @@
 .matchPhone {
     width: 320px;
     background: var(--color-forest);
-    border-radius: 2.5rem;
+    border-radius: 4px;
     padding: 2rem;
     position: relative;
     box-shadow:
@@ -909,13 +916,13 @@
 
 .matchBubble {
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 1.25rem;
+    border-radius: 4px;
     padding: 1.25rem;
     margin-bottom: 1rem;
     color: rgba(255, 255, 255, 0.9);
     font-size: 0.95rem;
     line-height: 1.5;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     border-bottom-left-radius: 4px;
     position: relative;
 }
@@ -947,7 +954,7 @@
     background: var(--color-lilac);
     color: var(--color-forest);
     padding: 0.85rem 1.25rem;
-    border-radius: 1.25rem;
+    border-radius: 4px;
     border-bottom-right-radius: 4px;
     font-weight: 600;
     font-size: 0.95rem;
@@ -991,12 +998,12 @@
 }
 
 .matchTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: clamp(2.5rem, 3.5vw, 3.5rem);
     color: var(--color-forest);
     margin-bottom: 1.25rem;
     line-height: 1.08;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 .matchDesc {
@@ -1028,7 +1035,8 @@
 }
 
 .testimonialTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
+    font-weight: 700;
     font-size: clamp(2rem, 3.5vw, 3.5rem);
     line-height: 1.1;
     background: linear-gradient(135deg, #fff 0%, rgba(224, 192, 248, 0.8) 50%, rgba(184, 232, 208, 0.8) 100%);
@@ -1110,7 +1118,7 @@
     border: 1px solid rgba(255, 255, 255, 0.06);
     color: white;
     padding: 1.75rem;
-    border-radius: 1.25rem;
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -1159,7 +1167,7 @@
     position: absolute;
     top: -0.5rem;
     right: 1rem;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 6rem;
     line-height: 1;
     color: rgba(255, 255, 255, 0.04);
@@ -1188,7 +1196,7 @@
     font-size: 0.95rem;
     line-height: 1.55;
     margin-bottom: 1.25rem;
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-style: italic;
     color: rgba(255, 255, 255, 0.85);
 }
@@ -1289,7 +1297,8 @@
 }
 
 .ctaTitle {
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
+    font-weight: 800;
     font-size: clamp(3rem, 5vw, 5rem);
     color: white;
     margin-bottom: 1.25rem;

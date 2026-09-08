@@ -1,5 +1,7 @@
 'use client';
 
+import { Compass } from 'lucide-react';
+
 import { motion } from 'framer-motion';
 import Button from '@/components/ui/Button';
 
@@ -11,7 +13,6 @@ interface EmptyStateProps {
     actionLabel?: string;
     actionLink?: string;
     onAction?: () => void;
-    icon?: string;
     compact?: boolean;
 }
 
@@ -25,7 +26,7 @@ export default function EmptyState({ title, description, actionLabel, actionLink
         >
             <div className={styles.illustration}>
                 {compact ? (
-                    <div style={{ fontSize: '3rem' }}>🔭</div>
+                    <Compass size={44} strokeWidth={1.5} aria-hidden="true" />
                 ) : (
                     <svg width="160" height="160" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="100" cy="100" r="80" fill="#FF7D5D" fillOpacity="0.1" />

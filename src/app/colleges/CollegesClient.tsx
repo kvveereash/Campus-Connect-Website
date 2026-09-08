@@ -1,10 +1,9 @@
 'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowRight } from 'lucide-react';
+import { Search, ArrowRight, MapPin } from 'lucide-react';
 import { fadeInUp, staggerGrid, viewportOnce } from '@/lib/motion-variants';
 import { resolveCollegeImage } from '@/lib/college-images';
 import styles from './page.module.css';
@@ -104,7 +103,7 @@ export default function CollegesClient({ initialColleges }: CollegesClientProps)
                                 </div>
                                 <div className={styles.content}>
                                     <h2 className={styles.collegeName}>{college.name}</h2>
-                                    <p className={styles.location}>📍 {college.location}</p>
+                                    <p className={styles.location}><MapPin size={14} aria-hidden="true" /> {college.location}</p>
                                     <p className={styles.description}>{college.description}</p>
                                     <div className={styles.footer}>
                                         <Link href={`/colleges/${college.id}`} className={styles.viewBtn}>
@@ -127,7 +126,7 @@ export default function CollegesClient({ initialColleges }: CollegesClientProps)
                         exit={{ opacity: 0 }}
                         className={styles.emptyState}
                     >
-                        <div className={styles.emptyIcon}>🔍</div>
+                        <Search size={34} strokeWidth={1.5} className={styles.emptyIcon} aria-hidden="true" />
                         <p className={styles.emptyText}>
                             No colleges found matching &ldquo;{searchTerm}&rdquo;
                         </p>

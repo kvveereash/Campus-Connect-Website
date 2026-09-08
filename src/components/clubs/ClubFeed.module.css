@@ -11,7 +11,7 @@
 .createPostForm {
     background: #ffffff;
     border: 2px solid var(--color-forest);
-    border-radius: 1rem;
+    border-radius: 4px;
     padding: 1.5rem;
     box-shadow: 6px 6px 0px rgba(15, 31, 28, 0.1);
     transition: all 0.2s ease;
