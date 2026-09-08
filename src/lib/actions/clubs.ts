@@ -263,6 +263,11 @@ async function _getClubsUncached(filters?: { search?: string; category?: string 
         where.category = category;
     }
 
+    // Only approved, live clubs are public — the same rule the events listing
+    // follows, and what the admin verification queue exists to enforce.
+    where.verified = true;
+    where.deletedAt = null;
+
     const clubs = await prisma.club.findMany({
         where,
         select: {
@@ -278,10 +283,12 @@ async function _getClubsUncached(filters?: { search?: string; category?: string 
                 select: { id: true, name: true }
             },
             _count: {
-                select: { members: true }
+                // Events and posts say whether a club is actually alive, which
+                // is more useful on a listing than its creation date.
+                select: { members: true, events: true, posts: true }
             }
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ members: { _count: 'desc' } }, { createdAt: 'desc' }],
         take: 50
     });
 

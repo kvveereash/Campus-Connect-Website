@@ -1,0 +1,252 @@
+/* ============================================================
+   CLUBS — editorial index
+   Same system as the landing page: monochrome, hairline rules,
+   sharp images, pill controls, patient motion.
+   ============================================================ */
+
+.page {
+    max-width: 1078px;
+    margin: 0 auto;
+    padding: clamp(40px, 7vw, 88px) 0 clamp(72px, 10vw, 152px);
+}
+
+/* ---------- masthead ---------- */
+.masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.label {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2.25rem, 6vw, 4.875rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    margin: 0;
+    max-width: 18ch;
+    text-wrap: balance;
+}
+
+.count {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+    padding-bottom: 10px;
+}
+
+/* ---------- controls ---------- */
+.controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    margin-bottom: clamp(40px, 6vw, 68px);
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: transparent;
+    color: var(--color-inkstone);
+    font-size: 13px;
+    font-weight: 400;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide),
+                background-color var(--duration-base) var(--ease-glide);
+}
+
+.pill:hover {
+    border-color: var(--color-obsidian);
+}
+
+.pill[aria-pressed='true'] {
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.pillCount {
+    font-size: 11px;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+.pill[aria-pressed='true'] .pillCount {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.spacer {
+    flex: 1;
+}
+
+/* Create sits apart from the filters — it is a different kind of action. */
+.create {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    color: var(--color-obsidian);
+    font-size: 13px;
+    transition: letter-spacing var(--duration-base) var(--ease-glide);
+}
+
+.create:hover {
+    letter-spacing: 0.04em;
+}
+
+/* ---------- grid ----------
+   Two columns of image-and-caption blocks. No card chrome: no border,
+   no fill, no radius. The photograph is the content and the caption
+   annotates it. */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: clamp(32px, 5vw, 56px) clamp(24px, 3vw, 40px);
+}
+
+.item {
+    display: block;
+    color: inherit;
+}
+
+.media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-image);
+    background: var(--color-obsidian);
+}
+
+.media img {
+    object-fit: cover;
+    transition: transform var(--duration-slow) var(--ease-glide),
+                filter var(--duration-slow) var(--ease-glide);
+    /* Desaturating keeps eighteen photographs from competing, but a dark
+       photograph turns into an empty black rectangle under grayscale alone.
+       Lifting brightness and easing contrast keeps every image readable at
+       rest, and leaves the hover somewhere to go. */
+    filter: grayscale(1) brightness(1.18) contrast(0.94);
+}
+
+/* Colour arrives on approach. Desaturating at rest keeps eighteen
+   photographs from competing with one another, and gives the hover
+   somewhere to go. */
+.item:hover .media img {
+    transform: scale(1.04);
+    filter: grayscale(0) brightness(1) contrast(1);
+}
+
+.foot {
+    margin-top: 16px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.name {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.125rem, 2vw, 1.375rem);
+    line-height: 1.21;
+    letter-spacing: -0.015em;
+    color: var(--color-obsidian);
+    margin: 0;
+}
+
+.category {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    white-space: nowrap;
+}
+
+.meta {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-felt);
+}
+
+.metaDivider {
+    opacity: 0.5;
+    margin: 0 8px;
+}
+
+.joined {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 3px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
+}
+
+/* ---------- empty ---------- */
+.empty {
+    padding: clamp(72px, 12vw, 152px) 0;
+    text-align: center;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.emptyTitle {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
+    line-height: 1.19;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0 0 14px;
+}
+
+.emptyText {
+    font-size: 16px;
+    line-height: 1.58;
+    color: var(--color-felt);
+    max-width: 44ch;
+    margin: 0 auto 28px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .media img,
+    .pill,
+    .create {
+        transition: none;
+    }
+
+    .item:hover .media img {
+        transform: none;
+    }
+}
