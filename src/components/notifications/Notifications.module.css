@@ -32,7 +32,7 @@
     font-size: 0.65rem;
     font-weight: 700;
     padding: 2px 5px;
-    border-radius: 12px;
+    border-radius: 0px;
     border: 2px solid #ffffff;
     /* White border to cut out from bell */
     min-width: 16px;
@@ -47,9 +47,9 @@
     width: 340px;
     background: #ffffff;
     border: 1px solid var(--border-color);
-    border-radius: 36px;
+    border-radius: 0px;
     /* Match card radius */
-    box-shadow: 0 10px 40px rgba(15, 31, 28, 0.1);
+    box-shadow: none;
     /* Premium shadow */
     z-index: 100;
     overflow: hidden;
@@ -166,7 +166,7 @@
 .placeholderAvatar {
     width: 36px;
     height: 36px;
-    background: var(--color-lilac);
+    background: var(--color-obsidian);
     color: var(--color-forest);
     border-radius: 50%;
     display: flex;
@@ -205,6 +205,6 @@
     border-radius: 50%;
     margin-top: 8px;
     flex-shrink: 0;
-    box-shadow: 0 0 0 2px white;
+    box-shadow: none;
     /* Halo effect */
 }

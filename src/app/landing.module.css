@@ -1,572 +1,483 @@
 /* ============================================================
-   LANDING
-   Zinc canvas, white cards, hairline borders, one accent.
-   Rhythm: light card sections, one inverted dark block, light
-   again — with 80px between major sections.
+   LANDING — editorial monochrome
+   Black, white and gray carry the whole page. The only colour is
+   the hero's iridescent wash, which is media rather than chrome.
+   Geometry jumps from sharp 0px to full 75px pill with nothing
+   in between. No shadows anywhere.
    ============================================================ */
 
 .page {
-    /* Break out of the layout container so sections can run full width. */
+    /* Break the layout container so the hero can run full-bleed. */
     margin: 0 calc(50% - 50vw);
-    padding: 0 calc(50vw - 50%);
+    padding: 0;
     background: var(--color-paper);
 }
 
+/* Body sections sit in a narrow measure; the hero does not. */
 .inner {
-    max-width: 1200px;
+    max-width: 1078px;
     margin: 0 auto;
-    padding: 0 clamp(20px, 5vw, 48px);
-}
-
-.section {
-    padding: clamp(56px, 8vw, 80px) 0;
-}
-
-.sectionHead {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 32px;
-    flex-wrap: wrap;
-}
-
-.eyebrow {
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    color: var(--color-fog);
-    margin-bottom: 8px;
-}
-
-.sectionTitle {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(28px, 3.4vw, 40px);
-    line-height: 1.28;
-    letter-spacing: -0.02em;
-    color: var(--color-obsidian);
-    margin: 0;
-    text-wrap: balance;
-}
-
-.seeAll {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-steel);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: color var(--duration-base) var(--ease-glide);
-}
-
-.seeAll:hover {
-    color: var(--color-obsidian);
+    padding: 0 clamp(20px, 5vw, 40px);
 }
 
 /* ---------- hero ---------- */
 .hero {
-    display: grid;
-    grid-template-columns: 1.35fr 1fr;
-    gap: clamp(32px, 5vw, 64px);
-    align-items: end;
-    padding: clamp(48px, 7vw, 96px) 0 clamp(40px, 5vw, 64px);
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--color-obsidian);
 }
 
+/* The iridescent atmosphere. Built from overlapping radial washes that
+   drift, so it reads as liquid rather than as a flat linear gradient. */
+.iridescence {
+    position: absolute;
+    inset: -30%;
+    background:
+        radial-gradient(38% 44% at 22% 30%, #E0C0F8 0%, transparent 62%),
+        radial-gradient(42% 46% at 72% 26%, #FFAC2E 0%, transparent 64%),
+        radial-gradient(46% 52% at 62% 76%, #A52D25 0%, transparent 66%),
+        radial-gradient(40% 44% at 24% 78%, #A0E0AB 0%, transparent 62%);
+    filter: blur(46px) saturate(126%);
+    animation: drift 26s var(--ease-glide) infinite alternate;
+}
+
+@keyframes drift {
+    0% { transform: translate3d(-3%, -2%, 0) scale(1.04) rotate(0deg); }
+    50% { transform: translate3d(3%, 2%, 0) scale(1.12) rotate(4deg); }
+    100% { transform: translate3d(-2%, 3%, 0) scale(1.06) rotate(-3deg); }
+}
+
+/* A scrim over the wash. The lilac end is light enough that white type
+   would fail against it otherwise, and the system already uses a dark
+   overlay behind hero media. */
+.heroScrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.42);
+}
+
+.heroInner {
+    position: relative;
+    width: 100%;
+    max-width: 1078px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 5vw, 40px);
+    text-align: center;
+}
+
+/* The headline is the hero. No subhead crowding it, one action beneath. */
 .heroTitle {
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(40px, 6.2vw, 64px);
-    line-height: 1.12;
-    letter-spacing: -0.03em;
-    color: var(--color-obsidian);
+    font-weight: 400;
+    font-size: clamp(3.25rem, 13vw, 9.75rem);
+    line-height: 0.86;
+    letter-spacing: -0.04em;
+    color: var(--color-paper);
     margin: 0;
     text-wrap: balance;
 }
 
-/* The one place the brand accent appears in the hero: an underline behind a
-   phrase, not a colour swap on the word. */
-.heroMark {
-    box-shadow: inset 0 -0.16em 0 var(--color-lilac);
+.heroTitle em {
+    font-style: normal;
+    font-weight: 300;
+    display: block;
 }
 
-.heroLede {
-    margin-top: 20px;
-    font-size: 18px;
-    line-height: 1.45;
-    color: var(--color-steel);
-    max-width: 46ch;
-    text-wrap: pretty;
+.heroMeta {
+    margin-top: 32px;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.72);
 }
 
 .heroActions {
-    margin-top: 32px;
+    margin-top: 40px;
     display: flex;
     gap: 12px;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
-.btnDark,
-.btnGhost {
+/* Ghost pill over dark media — the translucent border dissolves into the
+   wash while the pill silhouette stays unmistakable. */
+.pillOnDark {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
+    gap: 10px;
+    padding: 11px 33px;
     border-radius: var(--radius-button);
-    font-size: 15px;
-    font-weight: 500;
-    transition: transform var(--duration-base) var(--ease-glide),
-                background-color var(--duration-base) var(--ease-glide),
-                border-color var(--duration-base) var(--ease-glide);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    color: var(--color-paper);
+    font-size: 16px;
+    font-weight: 400;
+    transition: border-color var(--duration-base) var(--ease-glide),
+                letter-spacing var(--duration-base) var(--ease-glide);
 }
 
-.btnDark {
-    background: var(--color-obsidian);
-    color: var(--color-snow);
-    border: 1.5px solid #2c2e34;
-    box-shadow: var(--shadow-button);
+.pillOnDark:hover {
+    border-color: rgba(255, 255, 255, 0.85);
+    letter-spacing: 0.02em;
 }
 
-.btnGhost {
-    background: var(--color-snow);
-    color: var(--color-graphite);
-    border: 1px solid var(--color-cloud);
-}
-
-.btnDark:hover,
-.btnGhost:hover {
-    transform: translateY(-1px);
-}
-
-.btnGhost:hover {
-    border-color: var(--color-ash);
-}
-
-/* Hero side panel — the next event, as a real card */
-.heroAside {
-    background: var(--color-snow);
-    border: 1px solid var(--color-cloud);
-    border-radius: var(--radius-card);
-    padding: 8px 8px 24px;
-    overflow: hidden;
-}
-
-.asideMedia {
-    position: relative;
-    aspect-ratio: 16 / 10;
-    border-radius: 28px;
-    overflow: hidden;
-    background: var(--color-paper);
-}
-
-.asideMedia img {
-    object-fit: cover;
-}
-
-.asideStub {
-    width: 100%;
-    height: 100%;
-    background: var(--cat, var(--color-graphite));
-}
-
-.asideBody {
-    padding: 20px 16px 0;
-}
-
-.asideLabel {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--color-fog);
-    display: flex;
+/* Same geometry, inverted palette. */
+.pillOnLight {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-}
-
-.asideDot {
-    width: 8px;
-    height: 8px;
-    border-radius: var(--radius-pill);
-    background: var(--cat, var(--color-obsidian));
-    flex: none;
-}
-
-.asideTitle {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 20px;
-    line-height: 1.28;
-    letter-spacing: -0.02em;
-    margin: 10px 0 6px;
+    gap: 10px;
+    padding: 11px 33px;
+    border-radius: var(--radius-button);
+    border: 1px solid var(--color-obsidian);
+    background: transparent;
     color: var(--color-obsidian);
+    font-size: 16px;
+    font-weight: 400;
+    transition: border-color var(--duration-base) var(--ease-glide),
+                letter-spacing var(--duration-base) var(--ease-glide);
 }
 
-.asideMeta {
-    font-size: 14px;
-    color: var(--color-steel);
+.pillOnLight:hover {
+    letter-spacing: 0.02em;
 }
 
-/* ---------- stats ---------- */
+/* Rotating typographic badge — punctuation, not a button. */
+.scrollBadge {
+    position: absolute;
+    left: clamp(20px, 5vw, 40px);
+    bottom: clamp(20px, 5vw, 40px);
+    width: 96px;
+    height: 96px;
+    animation: spin 18s linear infinite;
+    color: var(--color-paper);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---------- editorial sections ---------- */
+.section {
+    padding: clamp(64px, 9vw, 152px) 0;
+}
+
+.sectionLabel {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 28px;
+}
+
+/* Whisper weight at large scale — spoken, not shouted. */
+.sectionTitle {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2rem, 5.4vw, 4.875rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    margin: 0 0 40px;
+    max-width: 20ch;
+    text-wrap: balance;
+}
+
+/* ---------- stats, as a quiet editorial row ---------- */
 .stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--color-cloud);
-    border: 1px solid var(--color-cloud);
-    border-radius: var(--radius-card);
-    overflow: hidden;
-}
-
-.stat {
-    background: var(--color-snow);
-    padding: 28px;
+    gap: 28px;
+    border-top: 1px solid var(--border-hairline);
+    padding-top: 28px;
 }
 
 .statValue {
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(32px, 4vw, 44px);
+    font-weight: 300;
+    font-size: clamp(2.5rem, 5vw, 3.375rem);
     line-height: 1;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.035em;
     color: var(--color-obsidian);
     font-variant-numeric: tabular-nums;
 }
 
 .statLabel {
-    margin-top: 8px;
-    font-size: 14px;
-    color: var(--color-steel);
+    margin-top: 12px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
 }
 
-/* ---------- category band ---------- */
-.band {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
+/* ---------- project-style rows ----------
+   Single column, full-width image, title beneath. No card chrome —
+   the content is the card. */
+.rows {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(40px, 6vw, 68px);
 }
 
-.catCard {
-    background: var(--color-snow);
-    border: 1px solid var(--color-cloud);
-    border-radius: var(--radius-card);
-    padding: 8px 8px 20px;
-    overflow: hidden;
-    transition: transform var(--duration-base) var(--ease-glide),
-                border-color var(--duration-base) var(--ease-glide);
+.row {
+    display: block;
+    color: inherit;
 }
 
-.catCard:hover {
-    transform: translateY(-3px);
-    border-color: var(--color-ash);
-}
-
-.catMedia {
+.rowMedia {
     position: relative;
-    aspect-ratio: 4 / 3;
-    border-radius: 28px;
+    width: 100%;
+    aspect-ratio: 16 / 7;
     overflow: hidden;
-    background: var(--cat);
+    border-radius: var(--radius-image);
+    background: var(--color-obsidian);
 }
 
-.catMedia img {
+.rowMedia img {
     object-fit: cover;
+    transition: transform var(--duration-slow) var(--ease-glide);
 }
 
-.catBody {
-    padding: 16px 12px 0;
+.row:hover .rowMedia img {
+    transform: scale(1.04);
+}
+
+.rowStub {
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-iridescent);
+    opacity: 0.5;
+}
+
+.rowFoot {
+    margin-top: 14px;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 8px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.rowTitle {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.125rem, 2.2vw, 1.8125rem);
+    line-height: 1.21;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0;
+}
+
+.rowMeta {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+/* ---------- category list, as text ---------- */
+.catList {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.catRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    color: var(--color-obsidian);
+    transition: padding-left var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
+}
+
+.catRow:hover {
+    padding-left: 14px;
+    color: var(--color-felt);
 }
 
 .catName {
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: 300;
+    font-size: clamp(1.375rem, 3vw, 2.4375rem);
+    line-height: 1.19;
     letter-spacing: -0.02em;
-    color: var(--color-obsidian);
 }
 
 .catCount {
-    font-size: 13px;
-    color: var(--color-fog);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--color-felt);
     font-variant-numeric: tabular-nums;
 }
 
-/* ---------- event cards ---------- */
-.eventGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
+/* ---------- inverse band ---------- */
+.inverse {
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    margin: 0 calc(50% - 50vw);
+    padding: clamp(64px, 9vw, 152px) calc(50vw - 50%);
 }
 
-.eventCard {
-    background: var(--color-snow);
-    border: 1px solid var(--color-cloud);
-    border-radius: var(--radius-card);
-    padding: 8px 8px 24px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: transform var(--duration-base) var(--ease-glide),
-                border-color var(--duration-base) var(--ease-glide);
+.inverse .sectionLabel {
+    color: var(--color-pewter);
 }
 
-.eventCard:hover {
-    transform: translateY(-3px);
-    border-color: var(--color-ash);
-}
-
-.eventMedia {
-    position: relative;
-    aspect-ratio: 16 / 10;
-    border-radius: 28px;
-    overflow: hidden;
-    background: var(--cat, var(--color-paper));
-}
-
-.eventMedia img {
-    object-fit: cover;
-}
-
-.eventBody {
-    padding: 18px 16px 0;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.eventTitle {
+.inverseTitle {
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 1.28;
-    letter-spacing: -0.02em;
-    color: var(--color-obsidian);
-    margin: 0 0 6px;
+    font-weight: 300;
+    font-size: clamp(2rem, 5.4vw, 4.875rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--color-paper);
+    margin: 0 0 48px;
+    max-width: 18ch;
     text-wrap: balance;
 }
 
-.eventMeta {
-    font-size: 14px;
-    color: var(--color-steel);
-    margin-bottom: 14px;
-}
-
-.tagRow {
-    margin-top: auto;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-/* Outlined tag — hairline border keeps categories quiet */
-.tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 1px solid var(--color-cloud);
-    border-radius: var(--radius-tag);
-    padding: 4px 8px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--color-graphite);
-}
-
-.tagDot {
-    width: 7px;
-    height: 7px;
-    border-radius: var(--radius-pill);
-    background: var(--cat);
-    flex: none;
-}
-
-/* The single accent: a filled badge, never a button or a body colour. */
-.tagAccent {
-    background: var(--color-lilac);
-    border-color: var(--color-lilac);
-    color: var(--color-obsidian);
-    font-weight: 500;
-}
-
-/* ---------- dark block ---------- */
-.darkBlock {
-    background: var(--color-slate);
-    border-radius: var(--radius-card);
-    padding: clamp(32px, 5vw, 56px);
-    color: var(--color-snow);
-}
-
-.darkTitle {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(26px, 3.2vw, 36px);
-    line-height: 1.28;
-    letter-spacing: -0.02em;
-    margin: 0 0 32px;
-    color: var(--color-snow);
-    max-width: 20ch;
-    text-wrap: balance;
-}
-
-.darkList {
+.inverseList {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 28px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    padding-top: 40px;
 }
 
-.darkItem h3 {
+.inverseItem h3 {
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 18px;
-    letter-spacing: -0.02em;
-    color: var(--color-snow);
-    margin: 14px 0 6px;
-    line-height: 1.3;
+    font-weight: 400;
+    font-size: 1.125rem;
+    line-height: 1.21;
+    color: var(--color-paper);
+    margin: 0 0 12px;
+    letter-spacing: 0;
 }
 
-.darkItem p {
-    font-size: 15px;
-    line-height: 1.45;
+.inverseItem p {
+    font-size: 16px;
+    line-height: 1.58;
     color: var(--color-ash);
 }
 
-.darkIcon {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, 0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-snow);
-}
-
-/* ---------- clubs ---------- */
-.clubGrid {
+/* ---------- club list ---------- */
+.clubList {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border-hairline);
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
 }
 
-.clubCard {
-    background: var(--color-snow);
-    border: 1px solid var(--color-cloud);
-    border-radius: var(--radius-card);
-    padding: 24px;
+.clubItem {
+    background: var(--color-paper);
+    padding: 28px 24px;
     display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    transition: transform var(--duration-base) var(--ease-glide),
-                border-color var(--duration-base) var(--ease-glide);
+    gap: 16px;
+    align-items: center;
+    color: var(--color-obsidian);
+    transition: background-color var(--duration-base) var(--ease-glide);
 }
 
-.clubCard:hover {
-    transform: translateY(-3px);
-    border-color: var(--color-ash);
+.clubItem:hover {
+    background: #fafafa;
 }
 
 .clubLogo {
+    position: relative;
     width: 44px;
     height: 44px;
     border-radius: var(--radius-pill);
     overflow: hidden;
     flex: none;
-    background: var(--color-paper);
-    position: relative;
+    background: var(--color-obsidian);
+    color: var(--color-paper);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 16px;
-    color: var(--color-steel);
+    font-size: 15px;
+    font-weight: 400;
 }
 
 .clubName {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 16px;
-    letter-spacing: -0.02em;
-    color: var(--color-obsidian);
-    line-height: 1.3;
+    display: block;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.21;
+    letter-spacing: -0.01em;
 }
 
 .clubMeta {
-    margin-top: 4px;
-    font-size: 13px;
-    color: var(--color-fog);
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-felt);
 }
 
-/* ---------- closing ---------- */
-.cta {
-    background: var(--color-snow);
-    border: 1px solid var(--color-cloud);
-    border-radius: var(--radius-card);
-    padding: clamp(40px, 6vw, 72px) clamp(24px, 4vw, 48px);
-    text-align: center;
+/* ---------- close ---------- */
+.close {
+    padding: clamp(72px, 11vw, 152px) 0;
+    border-top: 1px solid var(--border-hairline);
 }
 
-.ctaTitle {
+.closeTitle {
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(28px, 3.6vw, 44px);
-    line-height: 1.2;
-    letter-spacing: -0.025em;
+    font-weight: 300;
+    font-size: clamp(2.25rem, 6.6vw, 5.875rem);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
     color: var(--color-obsidian);
-    margin: 0 auto;
-    max-width: 18ch;
+    margin: 0 0 40px;
+    max-width: 16ch;
     text-wrap: balance;
 }
 
-.ctaLede {
-    margin: 16px auto 28px;
-    font-size: 17px;
-    color: var(--color-steel);
-    max-width: 48ch;
-    text-wrap: pretty;
-}
-
-.ctaActions {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
 /* ---------- responsive ---------- */
-@media (max-width: 900px) {
-    .hero {
-        grid-template-columns: 1fr;
-        align-items: start;
-    }
-
+@media (max-width: 760px) {
     .stats {
         grid-template-columns: repeat(2, 1fr);
+        gap: 32px 20px;
     }
-}
 
-@media (max-width: 520px) {
-    .stat {
-        padding: 20px;
+    .rowMedia {
+        aspect-ratio: 4 / 3;
+    }
+
+    .scrollBadge {
+        width: 72px;
+        height: 72px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .catCard,
-    .eventCard,
-    .clubCard,
-    .btnDark,
-    .btnGhost {
+    .iridescence,
+    .scrollBadge {
+        animation: none;
+    }
+
+    .rowMedia img,
+    .catRow,
+    .pillOnDark,
+    .pillOnLight,
+    .clubItem {
         transition: none;
     }
 
-    .catCard:hover,
-    .eventCard:hover,
-    .clubCard:hover,
-    .btnDark:hover,
-    .btnGhost:hover {
+    .row:hover .rowMedia img {
         transform: none;
+    }
+
+    .catRow:hover {
+        padding-left: 0;
     }
 }

@@ -56,7 +56,7 @@
     border: 1.5px solid var(--color-forest);
     color: var(--color-forest);
     padding: 0.5rem 1.25rem;
-    border-radius: 99px;
+    border-radius: 75px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -71,7 +71,7 @@
 .categoryTab.activeTab {
     background: var(--color-forest);
     color: white;
-    box-shadow: 4px 4px 0px var(--color-orange);
+    box-shadow: none;
     transform: translateY(-2px);
 }
 
@@ -101,7 +101,7 @@
     background: #ffffff;
     border: 1.5px solid var(--color-forest);
     padding: 0.6rem 1.25rem;
-    border-radius: 99px;
+    border-radius: 75px;
     color: var(--color-forest);
     font-weight: 600;
     white-space: nowrap;
@@ -110,13 +110,13 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 2px 2px 0px rgba(15, 31, 28, 0.1);
+    box-shadow: none;
 }
 
 .trendingTag:hover {
     background: var(--color-mint);
     transform: translateY(-2px);
-    box-shadow: 4px 4px 0px rgba(15, 31, 28, 0.1);
+    box-shadow: none;
 }
 
 .trendingIcon {
@@ -127,10 +127,10 @@
 .createCard {
     background: #ffffff;
     border: 2px solid var(--color-forest);
-    border-radius: 36px;
+    border-radius: 0px;
     padding: 1.5rem;
     margin-bottom: 3rem;
-    box-shadow: 8px 8px 0px var(--color-lilac);
+    box-shadow: none;
     /* Sticker Shadow */
     transition: all 0.3s var(--ease-glide);
     display: flex;
@@ -138,14 +138,14 @@
 }
 
 .createCard:focus-within {
-    box-shadow: 12px 12px 0px var(--color-orange);
+    box-shadow: none;
     transform: translateY(-2px);
 }
 
 .userAvatar {
     width: 3rem;
     height: 3rem;
-    border-radius: 14px;
+    border-radius: 0px;
     background: var(--color-cream);
     border: 1.5px solid var(--color-forest);
     display: flex;
@@ -192,9 +192,9 @@
     border: 1.5px solid var(--color-forest);
     cursor: pointer;
     padding: 0.5rem;
-    border-radius: 12px;
+    border-radius: 0px;
     transition: all 0.2s;
-    box-shadow: 2px 2px 0px rgba(15, 31, 28, 0.1);
+    box-shadow: none;
 }
 
 .mediaBtn:hover {
@@ -206,12 +206,12 @@
     background: var(--color-forest);
     border: 2px solid var(--color-forest);
     padding: 0.6rem 2rem;
-    border-radius: 99px;
+    border-radius: 75px;
     color: white;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 .postBtn:disabled {
@@ -225,23 +225,23 @@
 .postBtn:not(:disabled):hover {
     transform: translateY(-2px);
     background: var(--color-orange);
-    box-shadow: 4px 4px 0px rgba(15, 31, 28, 0.2);
+    box-shadow: none;
 }
 
 /* Feed Post Card */
 .postCard {
     background: #ffffff;
     border: 2px solid var(--color-forest);
-    border-radius: 36px;
+    border-radius: 0px;
     overflow: hidden;
     margin-bottom: 2rem;
     transition: transform 0.3s var(--ease-glide);
-    box-shadow: 6px 6px 0px rgba(15, 31, 28, 0.05);
+    box-shadow: none;
 }
 
 .postCard:hover {
     transform: translateY(-2px);
-    box-shadow: 8px 8px 0px rgba(15, 31, 28, 0.1);
+    box-shadow: none;
 }
 
 .postHeader {
@@ -307,13 +307,13 @@
     cursor: pointer;
     transition: all 0.2s;
     padding: 0.4rem 1rem;
-    border-radius: 99px;
-    box-shadow: 2px 2px 0px rgba(15, 31, 28, 0.1);
+    border-radius: 75px;
+    box-shadow: none;
 }
 
 .actionBtn:hover {
     transform: translateY(-2px);
-    box-shadow: 3px 3px 0px rgba(15, 31, 28, 0.15);
+    box-shadow: none;
 }
 
 .actionBtn.liked {
@@ -357,7 +357,7 @@
     background: var(--color-mint);
     border-color: var(--color-forest);
     transform: translateY(-2px);
-    box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 .pollContainer {
@@ -370,18 +370,18 @@
 .pollOption {
     position: relative;
     border: 2px solid var(--color-forest);
-    border-radius: 12px;
+    border-radius: 0px;
     height: 48px;
     background: #ffffff;
     cursor: pointer;
     overflow: hidden;
     transition: all 0.2s;
-    box-shadow: 2px 2px 0px rgba(15, 31, 28, 0.05);
+    box-shadow: none;
 }
 
 .pollOption:hover {
     transform: translateY(-1px);
-    box-shadow: 4px 4px 0px rgba(15, 31, 28, 0.1);
+    box-shadow: none;
 }
 
 .pollProgress {
@@ -441,14 +441,14 @@
 
 @keyframes pulseBorder {
     0% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+        box-shadow: none;
     }
 
     70% {
-        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+        box-shadow: none;
     }
 
     100% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        box-shadow: none;
     }
 }

@@ -37,8 +37,8 @@
     left: 0;
     width: 60px;
     height: 4px;
-    border-radius: 12px;
-    background: linear-gradient(90deg, var(--color-lilac), var(--color-orange));
+    border-radius: 0px;
+    background: linear-gradient(90deg, var(--color-obsidian), var(--color-orange));
 }
 
 .createButton {
@@ -46,7 +46,7 @@
     color: var(--color-cream);
     border: none;
     padding: 0.75rem 1.75rem;
-    border-radius: 999px;
+    border-radius: 75px;
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
@@ -56,14 +56,14 @@
     align-items: center;
     gap: 0.4rem;
     letter-spacing: 0.01em;
-    box-shadow: 0 4px 14px rgba(15, 31, 28, 0.15);
+    box-shadow: none;
     white-space: nowrap;
     flex-shrink: 0;
 }
 
 .createButton:hover {
     transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 8px 24px rgba(15, 31, 28, 0.22);
+    box-shadow: none;
     filter: brightness(1.1);
 }
 
@@ -88,7 +88,7 @@
     display: flex;
     gap: 0.25rem;
     background: rgba(15, 31, 28, 0.04);
-    border-radius: 999px;
+    border-radius: 75px;
     padding: 4px;
 }
 
@@ -103,7 +103,7 @@
     position: relative;
     transition: all 0.25s var(--ease-glide);
     font-family: var(--font-sans);
-    border-radius: 999px;
+    border-radius: 75px;
 }
 
 .tab:hover {
@@ -114,7 +114,7 @@
     color: var(--color-forest);
     font-weight: 600;
     background: #ffffff;
-    box-shadow: 0 1px 4px rgba(15, 31, 28, 0.08);
+    box-shadow: none;
 }
 
 /* Remove old underline */
@@ -133,22 +133,18 @@
 .card {
     background: #ffffff;
     border: 1px solid rgba(15, 31, 28, 0.08);
-    border-radius: 36px;
+    border-radius: 0px;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     flex-direction: column;
     position: relative;
-    box-shadow:
-        0 1px 3px rgba(15, 31, 28, 0.04),
-        0 4px 12px rgba(15, 31, 28, 0.03);
+    box-shadow: none;
 }
 
 .card:hover {
     transform: translateY(-6px);
-    box-shadow:
-        0 12px 32px rgba(15, 31, 28, 0.1),
-        0 4px 12px rgba(15, 31, 28, 0.04);
+    box-shadow: none;
     border-color: rgba(15, 31, 28, 0.12);
 }
 
@@ -206,7 +202,7 @@
     margin-bottom: 0.6rem;
     padding: 0.3rem 0.75rem;
     background: var(--color-mint);
-    border-radius: 999px;
+    border-radius: 75px;
 }
 
 .clubName {

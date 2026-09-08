@@ -20,10 +20,10 @@
 .form {
     background: var(--surface-color);
     padding: 2.5rem;
-    border-radius: 36px;
+    border-radius: 0px;
     border: 1px solid var(--border-color);
     backdrop-filter: var(--glass-blur);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: none;
 }
 
 .formGroup {
@@ -48,7 +48,7 @@
     background: rgba(15, 23, 42, 0.4);
     /* Darker inner background */
     border: 1px solid var(--border-color);
-    border-radius: 14px;
+    border-radius: 0px;
     font-size: 1rem;
     color: var(--text-primary);
     transition: all 0.2s var(--ease-glide);
@@ -75,7 +75,7 @@
     outline: none;
     border-color: var(--primary-color);
     background: rgba(15, 23, 42, 0.6);
-    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+    box-shadow: none;
 }
 
 /* Option styling for select dropdowns (browser dependent but helpful) */

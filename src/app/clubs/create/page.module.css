@@ -11,7 +11,7 @@
     font-family: var(--font-sans);
     text-decoration: none;
     padding: 0.5rem 1rem;
-    border-radius: 999px;
+    border-radius: 75px;
     border: 1.5px solid var(--border-color);
     background: transparent;
     cursor: pointer;
@@ -54,7 +54,7 @@
     position: sticky;
     top: 2rem;
     background: var(--color-forest);
-    border-radius: 36px;
+    border-radius: 0px;
     padding: 3rem 2.5rem;
     color: var(--color-cream);
     overflow: hidden;
@@ -72,7 +72,7 @@
     bottom: 0;
     opacity: 0.08;
     background:
-        radial-gradient(circle at 20% 80%, var(--color-lilac) 0%, transparent 50%),
+        radial-gradient(circle at 20% 80%, var(--color-obsidian) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, var(--color-mint) 0%, transparent 50%),
         radial-gradient(circle at 60% 60%, var(--color-orange) 0%, transparent 40%);
     pointer-events: none;
@@ -100,7 +100,7 @@
 }
 
 .sideHighlight {
-    color: var(--color-lilac);
+    color: var(--color-obsidian);
 }
 
 .sideDesc {
@@ -131,7 +131,7 @@
 .featureIcon {
     width: 36px;
     height: 36px;
-    border-radius: 12px;
+    border-radius: 0px;
     background: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
@@ -235,7 +235,7 @@
     width: 40px;
     height: 2px;
     background: var(--border-color);
-    border-radius: 999px;
+    border-radius: 75px;
 }
 
 /* Form Card */
@@ -270,7 +270,7 @@
     padding: 0.9rem 1.1rem;
     background: white;
     border: 1.5px solid rgba(15, 31, 28, 0.15);
-    border-radius: 14px;
+    border-radius: 0px;
     font-size: 1rem;
     color: var(--text-primary);
     transition: all 0.25s var(--ease-glide);
@@ -289,7 +289,7 @@
 .textarea:focus {
     outline: none;
     border-color: var(--color-forest);
-    box-shadow: 0 0 0 4px rgba(15, 31, 28, 0.06);
+    box-shadow: none;
 }
 
 .input::placeholder,
@@ -345,7 +345,7 @@
     align-items: center;
     gap: 0.4rem;
     padding: 0.6rem 1.1rem;
-    border-radius: 999px;
+    border-radius: 75px;
     border: 1.5px solid rgba(15, 31, 28, 0.15);
     background: white;
     color: var(--color-forest);
@@ -366,7 +366,7 @@
     background: var(--color-forest);
     border-color: var(--color-forest);
     color: var(--color-cream);
-    box-shadow: 0 2px 8px rgba(15, 31, 28, 0.2);
+    box-shadow: none;
 }
 
 .categoryPillActive:hover {
@@ -395,8 +395,8 @@
 .logoPreviewCircle {
     width: 80px;
     height: 80px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, var(--color-mint), var(--color-lilac));
+    border-radius: 0px;
+    background: linear-gradient(135deg, var(--color-mint), var(--color-obsidian));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -431,7 +431,7 @@
     gap: 0.5rem;
     width: 100%;
     padding: 1rem 2rem;
-    border-radius: 999px;
+    border-radius: 75px;
     border: 1.5px solid var(--color-forest);
     background: var(--color-forest);
     color: var(--color-cream);
@@ -445,7 +445,7 @@
 
 .submitBtn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 4px 4px 0px var(--color-lilac);
+    box-shadow: none;
 }
 
 .submitBtn:disabled {

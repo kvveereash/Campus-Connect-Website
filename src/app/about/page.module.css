@@ -108,7 +108,7 @@
     background: rgba(255, 255, 255, 0.05);
     /* Wispr-like subtle transparent card */
     padding: 2.5rem;
-    border-radius: 36px;
+    border-radius: 0px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s;
 }
@@ -123,7 +123,7 @@
     font-weight: 600;
     font-size: 2rem;
     margin-bottom: 1rem;
-    color: var(--color-lilac);
+    color: var(--color-obsidian);
 }
 
 .valueDesc {
@@ -180,7 +180,7 @@
 
 .teamCard:hover .avatar {
     filter: grayscale(0%);
-    border-color: var(--color-lilac);
+    border-color: var(--color-obsidian);
     transform: scale(1.05);
 }
 

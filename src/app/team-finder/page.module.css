@@ -47,7 +47,7 @@
 .matchCard {
     background: var(--surface-color);
     border: 1px solid var(--border-color);
-    border-radius: 14px;
+    border-radius: 0px;
     padding: 1.5rem;
     position: relative;
     overflow: hidden;
@@ -57,7 +57,7 @@
 .matchCard:hover {
     transform: translateY(-5px);
     border-color: var(--border-highlight);
-    box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.2);
+    box-shadow: none;
 }
 
 .matchScore {
@@ -68,7 +68,7 @@
     color: #10b981;
     border: 1px solid rgba(16, 185, 129, 0.2);
     padding: 0.25rem 0.75rem;
-    border-radius: 36px;
+    border-radius: 0px;
     font-size: 0.875rem;
     font-weight: 600;
     display: flex;
@@ -88,7 +88,7 @@
     font-weight: 700;
     color: white;
     margin-bottom: 1rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 .userInfo {
@@ -118,14 +118,14 @@
     font-size: 0.75rem;
     padding: 0.25rem 0.75rem;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 36px;
+    border-radius: 0px;
     color: var(--text-primary);
     border: 1px solid var(--border-color);
 }
 
 .reasonsList {
     background: rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
+    border-radius: 0px;
     padding: 0.75rem;
     margin-bottom: 1.25rem;
 }
@@ -149,7 +149,7 @@
     background: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 0px;
     font-weight: 600;
     cursor: pointer;
     transition: opacity 0.2s;
@@ -163,6 +163,6 @@
     text-align: center;
     padding: 4rem 2rem;
     background: var(--surface-color);
-    border-radius: 14px;
+    border-radius: 0px;
     border: 1px dashed var(--border-color);
 }

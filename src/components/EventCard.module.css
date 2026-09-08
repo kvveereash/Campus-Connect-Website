@@ -2,7 +2,7 @@
 
 .card {
     background: #ffffff;
-    border-radius: 36px;
+    border-radius: 0px;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
@@ -11,16 +11,12 @@
     text-decoration: none;
     color: inherit;
     border: 1px solid rgba(15, 31, 28, 0.06);
-    box-shadow: 
-        0 4px 12px rgba(15, 31, 28, 0.03),
-        0 1px 3px rgba(15, 31, 28, 0.04);
+    box-shadow: none;
 }
 
 .card:hover {
     transform: translateY(-6px);
-    box-shadow: 
-        0 16px 32px rgba(15, 31, 28, 0.08),
-        0 4px 12px rgba(15, 31, 28, 0.04);
+    box-shadow: none;
     border-color: rgba(15, 31, 28, 0.12);
 }
 
@@ -67,9 +63,9 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    border-radius: 999px;
+    border-radius: 75px;
     z-index: 2;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 .chipHackathon { background: #E0F2FE; color: #0369A1; }
@@ -87,7 +83,7 @@
     background: var(--color-forest);
     color: var(--color-cream);
     padding: 0.3rem 0.8rem;
-    border-radius: 999px;
+    border-radius: 75px;
     font-size: 0.75rem;
     font-weight: 800;
     z-index: 2;
@@ -112,7 +108,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: none;
     z-index: 2;
     transition: all 0.2s;
 }

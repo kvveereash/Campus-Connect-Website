@@ -7,7 +7,7 @@
     /* Extra top padding for Pin */
     margin-bottom: 2rem;
     position: relative;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
     transition: all 0.3s var(--ease-glide);
     transform-origin: top center;
 }
@@ -16,7 +16,7 @@
     transform: scale(1.02) rotate(0deg) !important;
     /* Reset rotation on hover to lift up */
     z-index: 10;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: none;
 }
 
 /* The Push Pin */
@@ -30,7 +30,7 @@
     border-radius: 50%;
     background: radial-gradient(circle at 30% 30%, #ff6b6b, #c92a2a);
     /* Red Pin */
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: none;
     z-index: 20;
 }
 
@@ -67,7 +67,7 @@
     height: 2.5rem;
     background: var(--color-forest);
     color: white;
-    border-radius: 12px;
+    border-radius: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -139,7 +139,7 @@
     padding: 0.25rem 0.75rem;
     font-size: 0.85rem;
     font-weight: 600;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
     transform: rotate(-1deg);
     border: 1px solid #ddd;
 }

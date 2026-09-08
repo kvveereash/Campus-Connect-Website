@@ -31,8 +31,8 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(15, 31, 28, 0.05);
-  border-radius: 36px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  border-radius: 0px;
+  box-shadow: none;
   gap: 1rem;
 }
 
@@ -41,7 +41,7 @@
   display: flex;
   background: rgba(0, 0, 0, 0.03);
   padding: 0.25rem;
-  border-radius: 14px;
+  border-radius: 0px;
   gap: 0.25rem;
   position: relative;
 }
@@ -59,7 +59,7 @@
   z-index: 1;
   /* Above bubble */
   transition: color 0.2s;
-  border-radius: 14px;
+  border-radius: 0px;
 }
 
 .filterTab:hover {
@@ -75,8 +75,8 @@
   position: absolute;
   inset: 0;
   background: white;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 0px;
+  box-shadow: none;
   z-index: -1;
   /* Behind text */
 }
@@ -123,7 +123,7 @@
   color: var(--color-forest);
   padding: 0.4rem 2rem 0.4rem 0.75rem;
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: 0px;
   transition: all 0.2s;
   outline: none;
 }
@@ -145,7 +145,7 @@
   display: flex;
   background: white;
   padding: 0.25rem;
-  border-radius: 14px;
+  border-radius: 0px;
   border: 1px solid rgba(0, 0, 0, 0.04);
   gap: 0.25rem;
 }
@@ -159,7 +159,7 @@
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  border-radius: 12px;
+  border-radius: 0px;
   transition: all 0.2s;
   cursor: pointer;
 }
@@ -172,7 +172,7 @@
 .activeToggle {
   background: var(--color-mint) !important;
   color: var(--color-forest) !important;
-  box-shadow: inset 0 0 0 1px rgba(15, 31, 28, 0.05);
+  box-shadow: none;
 }
 
 /* 4. Host Button */
@@ -186,15 +186,15 @@
   /* Dark elegant bg */
   color: var(--color-cream);
   text-decoration: none;
-  border-radius: 36px;
+  border-radius: 0px;
   /* Full pill */
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(15, 31, 28, 0.15);
+  box-shadow: none;
 }
 
 .hostBtn:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 16px rgba(15, 31, 28, 0.2);
+  box-shadow: none;
   background: black;
 }
 
@@ -213,7 +213,7 @@
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   backdrop-filter: blur(4px);
-  color: var(--color-lilac);
+  color: var(--color-obsidian);
   /* Distinctive Icon Color */
 }
 
@@ -241,18 +241,18 @@
   background: white;
   border: 1px solid rgba(0, 0, 0, 0.1);
   padding: 0.75rem 1.5rem;
-  border-radius: 36px;
+  border-radius: 0px;
   color: var(--text-secondary);
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: none;
 }
 
 .loadMoreBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
   color: var(--color-forest);
 }
 
@@ -270,7 +270,7 @@
     height: auto;
     padding: 1rem;
     gap: 1.5rem;
-    border-radius: 14px;
+    border-radius: 0px;
   }
 
   .filterGroup {

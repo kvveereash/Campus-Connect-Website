@@ -31,81 +31,91 @@
   /* --- Modern Editorial Theme --- */
 
   /* ── Palette ──────────────────────────────────────────────────
-     Near-achromatic zinc scale carrying the whole interface, with a
-     single accent. Pure black is avoided: #09090b is the deepest ink,
-     which keeps warmth in the neutrals.
+     Radical monochrome. Black, white and grays carry the entire
+     interface; no chromatic colour appears in UI at all. The one
+     exception is the hero gradient, which is media, not chrome.
      ------------------------------------------------------------- */
-  --color-obsidian: #09090b;   /* primary actions, display headlines */
-  --color-graphite: #18181b;   /* body text, nav */
-  --color-slate: #27272a;      /* dark feature surfaces */
-  --color-steel: #52525b;      /* secondary text, captions */
-  --color-fog: #71717a;        /* helper text */
-  --color-ash: #a1a1aa;        /* placeholders, disabled */
-  --color-cloud: #ececee;      /* the 1px hairline that replaces shadows */
-  --color-paper: #f4f4f5;      /* canvas */
-  --color-snow: #ffffff;       /* cards, elevated surfaces */
+  --color-obsidian: #000000;   /* all foreground: text, strokes, fills */
+  --color-paper: #ffffff;      /* canvas, and text on dark surfaces */
+  --color-inkstone: #181818;   /* long-form body, softened black */
+  --color-felt: #6d6d6d;       /* muted helper text, captions */
+  --color-slate: #636363;      /* the one solid neutral button fill */
+  --color-ash: #9a9a9a;        /* disabled, low-contrast surfaces */
+  --color-pewter: #808080;     /* hover and muted state layers */
 
-  /* The brand lilac takes the accent slot. It is light enough to carry
-     dark ink on top, so it fills badges rather than tinting text. Like
-     any badge accent it stays out of body copy, links and chrome. */
+  /* The brand lilac survives in one place only: as a stop inside the
+     hero's iridescent wash. The system forbids chromatic UI colour,
+     so a badge or button tint would break it — but the gradient is
+     media, and that is where colour is allowed to live. */
   --color-lilac: #E0C0F8;
-  --color-lilac-deep: #7E22CE; /* same hue, dark enough for text on paper */
+  --gradient-iridescent:
+      linear-gradient(90deg, #E0C0F8 0%, #FFAC2E 50%, #A52D25 100%);
 
-  /* Legacy aliases. These names are consumed across ~33 files; repointing
-     the values migrates every consumer without touching those files. */
-  --color-cream: var(--color-snow);
-  --color-forest: var(--color-graphite);
-  --color-mint: #a5ebd6;
-  --color-orange: #ff5a00;
+  /* Legacy aliases — consumed across ~33 files, repointed rather than
+     edited in place. */
+  --color-cream: var(--color-paper);
+  --color-forest: var(--color-obsidian);
+  --color-graphite: var(--color-inkstone);
+  --color-snow: var(--color-paper);
+  --color-cloud: var(--color-obsidian);
+  --color-fog: var(--color-felt);
+  --color-steel: var(--color-inkstone);
+  --color-mist: var(--color-ash);
+  --color-mint: var(--color-ash);
+  --color-orange: var(--color-felt);
+  --color-lilac-deep: var(--color-obsidian);
 
   /* ── Functional mappings ── */
   --background-color: var(--color-paper);
-  --surface-color: var(--color-snow);
-  --surface-dark: var(--color-graphite);
+  --surface-color: var(--color-paper);
+  --surface-dark: var(--color-obsidian);
 
   --text-primary: var(--color-obsidian);
-  --text-secondary: var(--color-steel);
-  --text-muted: var(--color-fog);
-  --text-on-dark: var(--color-snow);
+  --text-secondary: var(--color-felt);
+  --text-muted: var(--color-ash);
+  --text-on-dark: var(--color-paper);
 
   --primary-color: var(--color-obsidian);
-  --secondary-color: var(--color-lilac);
+  --secondary-color: var(--color-obsidian);
 
-  --border-color: var(--color-cloud);
+  /* Hairline rules, in ink rather than gray. */
+  --border-color: var(--color-obsidian);
+  --border-hairline: rgba(0, 0, 0, 0.14);
+  --border-on-dark: rgba(255, 255, 255, 0.3);
 
   /* ── Typography ──
-     One family across every role, 12px labels through display headlines. */
+     One geometric-humanist sans across every role, from 11px labels to
+     the hero. Inter stands in for Roobert. */
   --font-serif: var(--font-fraunces), serif;
-  --font-sans: var(--font-dm-sans), var(--font-inter), sans-serif;
-  --font-display: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
   --font-heading: var(--font-display);
   --font-body: var(--font-sans);
 
   /* ── Geometry ──
-     Three radii repeat everywhere: 12px on tags, 14px on buttons and
-     inputs, 36px on cards. Buttons stay precise, cards stay generous.
-     Nothing visible drops below 12px. */
-  --radius-tag: 12px;
-  --radius-button: 14px;
-  --radius-input: 14px;
-  --radius-card: 36px;
-  --radius-pill: 9999px;
+     The system jumps from sharp to fully round with nothing between.
+     Cards, images and inputs sit at 0. Buttons and tags are pills.
+     Never use a radius between 1px and 74px. */
+  --radius-card: 0px;
+  --radius-image: 0px;
+  --radius-input: 0px;
+  --radius-tag: 75px;
+  --radius-button: 75px;
+  --radius-pill: 75px;
 
   /* ── Elevation ──
-     Hairline borders, not drop shadows. The only real shadow is the one
-     that gives the dark primary button its inset lip. */
+     There is none. Surfaces separate by inversion and hairline rules. */
   --shadow-card: none;
-  --shadow-soft: rgba(0, 0, 0, 0.04) 0px 4px 12px 0px;
-  --shadow-button: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.5),
-                   0 0 0 1.5px #2c2e34,
-                   0 4px 6px 0 rgba(0, 0, 0, 0.14);
+  --shadow-soft: none;
+  --shadow-button: none;
 
   /* ── Motion ──
-     A patient ease-out. Elements glide rather than snap. */
+     Slow camera moves rather than UI snaps. */
   --ease-glide: cubic-bezier(0.19, 1, 0.22, 1);
-  --duration-slow: 0.8s;
-  --duration-base: 0.4s;
+  --duration-slow: 1.25s;
+  --duration-base: 0.8s;
+  --duration-micro: 0.4s;
 
   --transition-speed: 0.3s;
 }
@@ -169,39 +179,50 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  /* Display weight is 600, not 800. The reference is explicit that headings
-     below 600 lose authority while heavier weights tip into shouting; DM Sans
-     at 600 with tight line-height is what makes the type read as editorial. */
-  font-weight: 600;
+  /* Large type whispers rather than shouts. Weight never goes above 400
+     at display sizes — the restraint is what gives the editorial voice
+     its authority. Line-height tightens as size grows so lines lock
+     together into a typographic block. */
+  font-weight: 300;
   letter-spacing: -0.02em;
-  line-height: 1.28;
+  line-height: 1.1;
   margin-bottom: 0.75rem;
   text-wrap: balance;
+  color: var(--text-primary);
 }
 
-/* Display: 64px / 1.12 */
 h1 {
-  font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
-  line-height: 1.12;
+  font-size: clamp(3rem, 8vw, 5.875rem);
+  font-weight: 400;
+  line-height: 0.76;
+  letter-spacing: -0.035em;
 }
 
-/* Section heading: 40px / 1.28 */
 h2 {
-  font-size: clamp(1.75rem, 3vw + 0.5rem, 2.5rem);
-  line-height: 1.28;
+  font-size: clamp(2rem, 5vw, 4.875rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
-/* 32px / 1.5 */
 h3 {
-  font-size: clamp(1.35rem, 2vw + 0.25rem, 2rem);
-  line-height: 1.4;
+  font-size: clamp(1.5rem, 3vw, 2.4375rem);
+  font-weight: 300;
+  line-height: 1.19;
 }
 
-h4,
+h4 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
 h5,
 h6 {
-  font-weight: 600;
-  line-height: 1.4;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.21;
+  letter-spacing: 0;
 }
 
 button {
@@ -571,22 +592,21 @@ html {
   --press-rule: var(--color-cloud);
   --press-rule-strong: var(--color-mist, #d4d4d8);
 
-  /* SPOT INKS — category identity only.
-     Never a background, button, or decorative fill. */
-  --press-technology: #1D4ED8;
-  --press-cultural: #C2410C;
-  --press-social: #047857;
-  --press-sports: #B45309;
-  --press-workshop: #4338CA;
-  --press-hackathon: #BE123C;
-  --press-business: #0F766E;
-
-  /* Art carries the brand lilac. #E0C0F8 is too light to hold
-     text on paper, so the label uses a darkened tone of the same
-     hue; the pure lilac is reserved for the one case where it
-     works — a fill with forest ink on top. */
-  --press-art: var(--color-lilac-deep);
-  --press-lilac: var(--color-lilac);
+  /* CATEGORY MARKS
+     These were eight saturated inks doing wayfinding. The system this
+     page now follows admits no chromatic colour in the interface at
+     all, so they resolve to ink. The category name sits beside every
+     mark, which is what actually names it — the colour was saying a
+     second time what the label already said. */
+  --press-technology: var(--color-obsidian);
+  --press-cultural: var(--color-obsidian);
+  --press-social: var(--color-obsidian);
+  --press-sports: var(--color-obsidian);
+  --press-workshop: var(--color-obsidian);
+  --press-hackathon: var(--color-obsidian);
+  --press-business: var(--color-obsidian);
+  --press-art: var(--color-obsidian);
+  --press-lilac: var(--color-obsidian);
 
   /* type */
   --press-display: var(--font-display);

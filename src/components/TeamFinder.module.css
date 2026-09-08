@@ -24,9 +24,9 @@
     background: var(--color-cream);
     border: 1.5px solid var(--color-forest);
     padding: 2.5rem;
-    border-radius: 36px;
+    border-radius: 0px;
     margin-bottom: 3rem;
-    box-shadow: 8px 8px 0 var(--color-forest);
+    box-shadow: none;
     animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
@@ -83,7 +83,7 @@
     width: 100%;
     padding: 0.85rem 1.25rem;
     border: 1.5px solid var(--color-forest);
-    border-radius: 14px;
+    border-radius: 0px;
     background: white;
     color: var(--color-forest);
     font-family: var(--font-sans);
@@ -110,7 +110,7 @@
 .textarea:focus {
     outline: none;
     background: white;
-    box-shadow: 4px 4px 0 var(--color-orange);
+    box-shadow: none;
     transform: translate(-2px, -2px);
 }
 
@@ -132,7 +132,7 @@
     padding: 5rem 2rem;
     background: rgba(15, 31, 28, 0.02);
     border: 2px dashed rgba(15, 31, 28, 0.1);
-    border-radius: 36px;
+    border-radius: 0px;
     color: var(--text-secondary);
     font-family: var(--font-display);
     font-style: italic;

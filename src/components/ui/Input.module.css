@@ -20,7 +20,7 @@
 .input {
     width: 100%;
     padding: 0.625rem 1rem;
-    border-radius: 12px;
+    border-radius: 0px;
     border: 1px solid var(--border-color);
     background-color: var(--background-color);
     color: var(--text-primary);
@@ -32,7 +32,7 @@
 .input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: none;
 }
 
 .input:disabled {
@@ -46,7 +46,7 @@
 }
 
 .errorInput:focus {
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    box-shadow: none;
 }
 
 .startIcon {

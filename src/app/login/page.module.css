@@ -175,7 +175,7 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     border: none;
-    border-radius: 14px;
+    border-radius: 0px;
     cursor: pointer;
     transition: all 0.2s;
     /* Noise texture for stamp effect */
@@ -184,7 +184,7 @@
 }
 
 .submitButton:hover {
-    background: var(--color-lilac);
+    background: var(--color-obsidian);
     color: var(--color-forest);
     transform: scale(1.02);
 }

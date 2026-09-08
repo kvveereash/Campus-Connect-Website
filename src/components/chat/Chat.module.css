@@ -9,9 +9,9 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   max-width: 1440px;
   margin: 1.5rem auto;
-  border-radius: 16px;
+  border-radius: 0px;
   border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 10px 20px -5px rgba(0, 0, 0, 0.02);
+  box-shadow: none;
   overflow: hidden;
   position: relative;
 }
@@ -106,7 +106,7 @@
   padding: 0.75rem 1rem;
   gap: 1rem;
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: 0px;
   margin-bottom: 0.25rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   background: transparent;
@@ -143,9 +143,9 @@
 }
 
 @keyframes pulseLive {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% { box-shadow: none; }
+  70% { box-shadow: none; }
+  100% { box-shadow: none; }
 }
 
 .onlineStatusDot {
@@ -262,7 +262,7 @@
 
 .messagesArea::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 12px;
+  border-radius: 0px;
 }
 
 /* --- Message Rows --- */
@@ -318,12 +318,12 @@
 /* --- Bubbles --- */
 .bubble {
   padding: 0.75rem 1.25rem;
-  border-radius: 18px;
+  border-radius: 0px;
   position: relative;
   word-wrap: break-word;
   line-height: 1.5;
   font-size: 0.95rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow: none;
 }
 
 /* My Bubble */
@@ -382,7 +382,7 @@
 .chatInput {
   flex: 1;
   padding: 0.875rem 1.5rem;
-  border-radius: 24px;
+  border-radius: 0px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   font-size: 0.95rem;
@@ -399,7 +399,7 @@
   outline: none;
   background: #ffffff;
   border-color: #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  box-shadow: none;
 }
 
 .attachBtn {
@@ -433,13 +433,13 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s var(--ease-glide);
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+  box-shadow: none;
 }
 
 .sendBtn:hover:not(:disabled) {
   transform: translateY(-1px);
   background: #1e293b;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
+  box-shadow: none;
 }
 
 .sendBtn:disabled {
@@ -467,10 +467,10 @@
 .modalContent {
   background: #ffffff;
   padding: 2.5rem;
-  border-radius: 20px;
+  border-radius: 0px;
   width: 90%;
   max-width: 480px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -525,7 +525,7 @@
   padding: 0.875rem 1rem;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 0px;
   color: #0f172a;
   font-size: 0.95rem;
   transition: all 0.2s var(--ease-glide);
@@ -535,7 +535,7 @@
   outline: none;
   background: #ffffff;
   border-color: #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  box-shadow: none;
 }
 
 .primaryBtn {
@@ -544,7 +544,7 @@
   background: #0f172a;
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 0px;
   font-weight: 600;
   cursor: pointer;
   margin-top: 1rem;
@@ -576,7 +576,7 @@
   justify-content: center;
   margin-bottom: 1.5rem;
   color: #94a3b8;
-  box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), inset 0 2px 4px rgba(255,255,255,1);
+  box-shadow: none;
   animation: floatEmpty 4s ease-in-out infinite;
 }
 
@@ -609,7 +609,7 @@
   align-self: flex-start;
   background: #ffffff;
   padding: 0.75rem 1.25rem;
-  border-radius: 18px;
+  border-radius: 0px;
   border: 1px solid rgba(0, 0, 0, 0.04);
   font-size: 1.2rem;
   color: transparent;
@@ -639,7 +639,7 @@
   color: #64748b;
   cursor: pointer;
   transition: all 0.2s var(--ease-glide);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .bubble:hover .addReactionBtn {
@@ -661,10 +661,10 @@
 .reactionItem {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 0px;
   padding: 2px 6px;
   font-size: 0.75rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 
 /* User search, selected API tags reused */
@@ -679,7 +679,7 @@
   background: #f1f5f9;
   color: #334155;
   padding: 0.3rem 0.75rem;
-  border-radius: 12px;
+  border-radius: 0px;
   font-size: 0.85rem;
   font-weight: 500;
   display: flex;
@@ -700,11 +700,11 @@
 .searchResults {
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 0px;
   margin-top: 0.5rem;
   max-height: 200px;
   overflow-y: auto;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .searchItem {
@@ -735,7 +735,7 @@
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   background: rgba(0, 0, 0, 0.04);
-  border-radius: 12px;
+  border-radius: 0px;
   color: inherit;
   text-decoration: none;
   font-size: 0.85rem;
@@ -758,7 +758,7 @@
   justify-content: space-between;
   background: #f1f5f9;
   padding: 0.5rem 0.75rem;
-  border-radius: 12px;
+  border-radius: 0px;
   margin-bottom: 0.5rem;
   border: 1px solid #e2e8f0;
 }
@@ -813,7 +813,7 @@
   align-items: center;
   justify-content: center;
   font-size: 1.75rem;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.5), 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: none;
 }
 
 .groupTitle {
@@ -881,7 +881,7 @@
 }
 .memberList::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 12px;
+  border-radius: 0px;
 }
 
 .memberItem {
@@ -890,7 +890,7 @@
   align-items: center;
   padding: 0.75rem;
   background: #f8fafc;
-  border-radius: 12px;
+  border-radius: 0px;
   border: 1px solid transparent;
   transition: all 0.2s;
 }
@@ -898,7 +898,7 @@
 .memberItem:hover {
   background: #ffffff;
   border-color: #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  box-shadow: none;
 }
 
 .memberInfo {
@@ -940,7 +940,7 @@
   background: #fff1f2;
   color: #e11d48;
   border: 1px solid #ffe4e6;
-  border-radius: 12px;
+  border-radius: 0px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -957,9 +957,9 @@
   margin-bottom: 1.5rem;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 0px;
   padding: 0.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+  box-shadow: none;
 }
 
 .inputWrapper {
@@ -968,7 +968,7 @@
   gap: 0.5rem;
   padding: 0.5rem;
   background: #f8fafc;
-  border-radius: 12px;
+  border-radius: 0px;
 }
 
 .miniInput {
@@ -993,7 +993,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem;
-  border-radius: 12px;
+  border-radius: 0px;
   cursor: pointer;
   transition: background 0.2s;
 }

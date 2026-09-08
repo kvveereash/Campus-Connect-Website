@@ -35,9 +35,7 @@
     margin-bottom: 5rem;
     border-radius: var(--radius-card);
     border: 1px solid rgba(15, 31, 28, 0.08);
-    box-shadow: 
-        0 24px 48px rgba(15, 31, 28, 0.04),
-        0 4px 12px rgba(15, 31, 28, 0.02);
+    box-shadow: none;
     position: relative;
     overflow: hidden;
 }
@@ -74,10 +72,8 @@
     height: 220px;
     position: relative;
     background: #ffffff;
-    border-radius: 32px;
-    box-shadow: 
-        0 16px 32px rgba(15, 31, 28, 0.08),
-        0 0 0 1px rgba(15, 31, 28, 0.04) inset;
+    border-radius: 0px;
+    box-shadow: none;
     padding: 1rem;
     display: flex;
     align-items: center;
@@ -87,7 +83,7 @@
 
 .logo {
     object-fit: cover;
-    border-radius: 20px;
+    border-radius: 0px;
     width: 100%;
     height: 100%;
 }
@@ -161,7 +157,7 @@
     width: 60px;
     height: 3px;
     background: var(--color-mint);
-    border-radius: 12px;
+    border-radius: 0px;
 }
 
 .sectionTitle {
@@ -180,7 +176,7 @@
     color: var(--color-forest);
     background: var(--color-mint);
     padding: 0.4rem 1rem;
-    border-radius: 999px;
+    border-radius: 75px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
@@ -195,7 +191,7 @@
 /* Club Cards - Glass style */
 .clubCard {
     background: #ffffff;
-    border-radius: 36px;
+    border-radius: 0px;
     overflow: hidden;
     transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
@@ -204,16 +200,12 @@
     text-decoration: none;
     color: inherit;
     border: 1px solid rgba(15, 31, 28, 0.06);
-    box-shadow: 
-        0 4px 12px rgba(15, 31, 28, 0.03),
-        0 1px 3px rgba(15, 31, 28, 0.04);
+    box-shadow: none;
 }
 
 .clubCard:hover {
     transform: translateY(-6px);
-    box-shadow: 
-        0 16px 32px rgba(15, 31, 28, 0.08),
-        0 4px 12px rgba(15, 31, 28, 0.04);
+    box-shadow: none;
     border-color: rgba(15, 31, 28, 0.12);
 }
 
@@ -249,16 +241,16 @@
     position: absolute;
     bottom: 1rem;
     left: 1.5rem;
-    background: var(--color-lilac);
+    background: var(--color-obsidian);
     color: var(--color-forest);
     padding: 0.4rem 1rem;
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    border-radius: 999px;
+    border-radius: 75px;
     z-index: 2;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 .clubInfo {

@@ -27,10 +27,10 @@
 
 /* Variants */
 .primary {
-    background-color: var(--color-lilac);
+    background-color: var(--color-obsidian);
     color: var(--color-forest);
     border-color: transparent;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
     /* Softer shadow */
 }
 
@@ -38,7 +38,7 @@
     background-color: #d1a8f0;
     /* Slightly darker lilac */
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 .secondary {

@@ -3,10 +3,10 @@
     display: flex;
     background: #ffffff;
     border: 1px solid #000;
-    border-radius: 36px;
+    border-radius: 0px;
     overflow: hidden;
     position: relative;
-    box-shadow: 12px 12px 0px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
     margin-bottom: 3rem;
     min-height: 380px;
     background: linear-gradient(to bottom right, #ffffff, #f8fafc);
@@ -34,7 +34,7 @@
     height: 35px;
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 36px;
+    border-radius: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -57,8 +57,8 @@
     height: 140px;
     background: white;
     padding: 6px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-radius: 0px;
+    box-shadow: none;
 }
 
 .idAvatarImage {
@@ -213,19 +213,19 @@
 }
 
 .idFollowBtn {
-    background: var(--color-lilac) !important;
+    background: var(--color-obsidian) !important;
     border: 1px solid #000 !important;
     color: #000 !important;
     font-weight: 700 !important;
     padding: 0.6rem 1.5rem !important;
     border-radius: 99px !important;
-    box-shadow: 3px 3px 0 #000 !important;
+    box-shadow: none;
     transition: all 0.2s !important;
 }
 
 .idFollowBtn:hover {
     transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 #000 !important;
+    box-shadow: none;
 }
 
 .idUtilityActions {
@@ -301,7 +301,7 @@
     color: var(--color-forest);
     background: #f1f5f9;
     padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    border-radius: 0px;
     border: 1px solid #e2e8f0;
 }
 
@@ -316,12 +316,12 @@
     height: 32px;
     background: white;
     border: 1px solid #eee;
-    border-radius: 12px;
+    border-radius: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
 }
 
 /* Verified Stamp */
@@ -336,7 +336,7 @@
     font-weight: 900;
     letter-spacing: 0.2rem;
     text-transform: uppercase;
-    border-radius: 12px;
+    border-radius: 0px;
     transform: rotate(15deg);
     font-family: var(--font-sans);
     z-index: 3;
@@ -347,7 +347,7 @@
     position: absolute;
     inset: -6px;
     border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 12px;
+    border-radius: 0px;
 }
 
 @media (max-width: 950px) {
@@ -435,7 +435,7 @@
 .card {
     background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(10px);
-    border-radius: 12px;
+    border-radius: 0px;
     padding: 2rem;
     border: 1px solid rgba(15, 31, 28, 0.05);
 }
@@ -454,7 +454,7 @@
     justify-content: space-between;
     padding: 1rem;
     background-color: var(--surface-color);
-    border-radius: 12px;
+    border-radius: 0px;
     border: 1px dashed var(--border-color);
 }
 
@@ -470,7 +470,7 @@
     justify-content: flex-end;
     padding: 1rem;
     background-color: var(--surface-color);
-    border-radius: 12px;
+    border-radius: 0px;
     border: 1px dashed var(--border-color);
     margin-top: 1rem;
 }
@@ -504,12 +504,12 @@
     padding: 1rem;
     background-color: var(--background-color);
     border: 1px solid var(--border-color);
-    border-radius: 36px;
+    border-radius: 0px;
     transition: box-shadow 0.2s;
 }
 
 .achievementItem:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 .achievementHeader {
@@ -542,7 +542,7 @@
 .addButton:hover {
     background-color: var(--primary-color);
     color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
 }
 
 /* Modal Styles */
@@ -573,10 +573,8 @@
     width: 95%;
     max-width: 650px;
     padding: 2.5rem;
-    border-radius: 14px;
-    box-shadow:
-        0 10px 40px -10px rgba(0, 0, 0, 0.1),
-        0 0 0 1px rgba(0, 0, 0, 0.05);
+    border-radius: 0px;
+    box-shadow: none;
     max-height: 85vh;
     overflow-y: auto;
     position: relative;
@@ -594,7 +592,7 @@
 
 .modalContent::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 20px;
+    border-radius: 0px;
     border: 3px solid transparent;
     background-clip: content-box;
 }
@@ -650,7 +648,7 @@
     width: 100%;
     padding: 0.75rem 1rem;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
+    border-radius: 0px;
     background-color: #fafafa;
     color: var(--text-primary);
     font-family: var(--font-sans);
@@ -664,7 +662,7 @@
     outline: none;
     border-color: var(--color-forest);
     background-color: #ffffff;
-    box-shadow: 0 0 0 4px rgba(15, 31, 28, 0.05);
+    box-shadow: none;
 }
 
 /* Fix for Select dropdown styling */
@@ -711,7 +709,7 @@
     /* Mint tags */
     color: var(--color-forest);
     padding: 0.5rem 1rem;
-    border-radius: 9999px;
+    border-radius: 75px;
     font-size: 0.9rem;
     font-weight: 600;
     display: flex;
@@ -737,7 +735,7 @@
     font-size: 1.25rem;
     padding-bottom: 4px;
     border: 1.5px solid var(--color-forest);
-    border-radius: 14px;
+    border-radius: 0px;
     color: var(--color-forest);
     transition: all 0.2s;
 }
@@ -784,18 +782,18 @@
 .projectCard {
     background-color: white;
     border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 14px;
+    border-radius: 0px;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     transition: all 0.3s;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    box-shadow: none;
 }
 
 .projectCard:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
 }
 
 .projectTitle {
@@ -824,7 +822,7 @@
 
 .projectLink:hover {
     text-decoration: underline;
-    color: var(--color-lilac);
+    color: var(--color-obsidian);
 }
 
 /* Portfolio Links */
@@ -841,7 +839,7 @@
     padding: 1.25rem;
     background-color: white;
     border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 12px;
+    border-radius: 0px;
     transition: all 0.2s;
 }
 
@@ -871,7 +869,7 @@
     color: var(--text-secondary);
     text-decoration: none;
     padding: 0.5rem;
-    border-radius: 14px;
+    border-radius: 0px;
     transition: all 0.2s;
 }
 
@@ -909,7 +907,7 @@
     padding: 1rem 1.25rem;
     background: white;
     border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 14px;
+    border-radius: 0px;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -917,13 +915,13 @@
 .networkCard:hover {
     border-color: var(--color-mint);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
 }
 
 .miniLogo {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 0px;
     overflow: hidden;
     flex-shrink: 0;
     border: 1px solid rgba(0, 0, 0, 0.06);

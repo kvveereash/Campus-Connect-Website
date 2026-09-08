@@ -24,8 +24,8 @@
     /* Sticker Style */
     background: #ffffff;
     border: 1.5px solid var(--color-forest);
-    border-radius: 999px;
-    box-shadow: 0 8px 0px rgba(15, 31, 28, 0.1);
+    border-radius: 75px;
+    box-shadow: none;
     /* Subtle deep shadow for floating element */
 
     transition: all 0.3s var(--ease-glide);
@@ -33,7 +33,7 @@
 
 .navContainer:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 0px rgba(15, 31, 28, 0.1);
+    box-shadow: none;
 }
 
 /* Scrolled state — compact + glassmorphism */
@@ -42,13 +42,13 @@
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 4px 20px rgba(15, 31, 28, 0.08);
+    box-shadow: none;
     transform: scale(0.98);
 }
 
 .navContainerScrolled:hover {
     transform: scale(0.98) translateY(-2px);
-    box-shadow: 0 8px 24px rgba(15, 31, 28, 0.1);
+    box-shadow: none;
 }
 
 .logo {
@@ -131,7 +131,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: var(--color-lilac);
+    background: var(--color-obsidian);
     /* Lilac background */
     color: var(--color-forest);
     /* Dark text */
@@ -141,7 +141,7 @@
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -180,11 +180,11 @@
     padding: 1.5rem;
     background: var(--color-cream);
     border: 1px solid var(--border-color);
-    border-radius: 36px;
+    border-radius: 0px;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
     z-index: 1000;
     animation: slideDown 0.3s ease-out;
     pointer-events: auto;
@@ -311,7 +311,7 @@
     font-weight: 500;
     color: var(--text-secondary);
     padding: 0.5rem 1rem;
-    border-radius: 999px;
+    border-radius: 75px;
     /* Default Pill State */
     transition: all 0.2s var(--ease-glide);
     font-family: var(--font-sans);
@@ -336,7 +336,7 @@
     border-bottom-right-radius: 0;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.02);
+    box-shadow: none;
     transform: translateY(1px);
     /* Push down slightly to overlap border */
 }
@@ -353,11 +353,11 @@
     width: 260px;
     background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
+    border-radius: 0px;
     /* Important: Top right radius 0 if trigger is right aligned, or custom radius hack */
     border-top-right-radius: 0;
     padding: 1rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -370,7 +370,7 @@
     align-items: flex-start;
     gap: 12px;
     padding: 12px;
-    border-radius: 12px;
+    border-radius: 0px;
     text-decoration: none;
     color: var(--text-secondary);
     transition: all 0.2s var(--ease-glide);
@@ -387,7 +387,7 @@
 }
 
 .dropdownItem:hover .dropdownIcon {
-    color: var(--color-lilac);
+    color: var(--color-obsidian);
 }
 
 .dropdownText {
@@ -422,21 +422,21 @@
     color: #ffffff;
     background: var(--color-forest, #0f1f1c);
     border: none;
-    border-radius: 999px;
+    border-radius: 75px;
     text-decoration: none;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-    box-shadow: 0 2px 8px rgba(15, 31, 28, 0.18);
+    box-shadow: none;
 }
 
 .loginBtn:hover {
     transform: translateY(-1px) scale(1.04);
-    box-shadow: 0 4px 16px rgba(15, 31, 28, 0.25);
+    box-shadow: none;
     background: var(--color-forest, #1a2f2a);
     filter: brightness(1.15);
 }
 
 .loginBtn:active {
     transform: translateY(0) scale(0.98);
-    box-shadow: 0 1px 4px rgba(15, 31, 28, 0.2);
+    box-shadow: none;
 }
