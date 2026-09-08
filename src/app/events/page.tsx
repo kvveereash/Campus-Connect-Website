@@ -14,8 +14,13 @@ export default async function EventsPage({
 }) {
   const unresolvedParams = await searchParams;
   const search = (unresolvedParams?.search as string) || '';
-  const category = (unresolvedParams?.category as string) || 'All';
 
-  const events = await getAllEvents({ search, category });
+  // Deliberately not passing `category` to the query. The filter rail shows a
+  // count beside every category, and those counts have to describe the whole
+  // set — filtering server-side first would collapse every count to the
+  // selected category. The client applies the category from the URL instead,
+  // which also keeps ?category= links shareable.
+  const events = await getAllEvents({ search });
+
   return <EventsClient initialEvents={events} />;
 }

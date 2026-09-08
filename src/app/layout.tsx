@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Outfit, Fraunces } from "next/font/google";
+import { Inter, Outfit, Fraunces, Archivo } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingChatButton from "@/components/FloatingChatButton";
@@ -22,6 +22,8 @@ import BackgroundBlobs from "@/components/common/BackgroundBlobs";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces" });
+// Display face for the Campus Press events surface — heavy grotesk, poster weights.
+const archivo = Archivo({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-archivo" });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://campusconnect2026.netlify.app'),
@@ -69,7 +71,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable} ${fraunces.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable} ${fraunces.variable} ${archivo.variable}`}>
       <body>
         <SWRegister /> {/* Added Service Worker Registration */}
         <ThemeProvider

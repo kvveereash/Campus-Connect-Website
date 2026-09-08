@@ -496,3 +496,47 @@ html {
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+/* ============================================================
+   CAMPUS PRESS — design tokens for the events surface
+   ------------------------------------------------------------
+   Direction: poster-editorial. Primary reference Resident
+   Advisor (heavy type, sharp contrast, colour as wayfinding);
+   cover discipline from Luma; host + attendance on the listing
+   row from Posh.
+
+   These are ADDITIVE. Every token is newly named, so no
+   existing page changes. Scoped in use to the /events screen.
+   ============================================================ */
+:root {
+  /* canvas + ink */
+  --press-paper: #FAFAF8;
+  --press-paper-2: #F2F2EE;
+  --press-ink: #0F1F1C;              /* kept from the current system */
+  --press-ink-70: rgba(15, 31, 28, 0.70);
+  --press-ink-45: rgba(15, 31, 28, 0.45);
+  --press-rule: rgba(15, 31, 28, 0.14);
+  --press-rule-strong: rgba(15, 31, 28, 0.30);
+
+  /* SPOT INKS — category identity only.
+     Never a background, button, or decorative fill. */
+  --press-technology: #1D4ED8;
+  --press-cultural: #C2410C;
+  --press-social: #047857;
+  --press-sports: #B45309;
+  --press-workshop: #4338CA;
+  --press-hackathon: #BE123C;
+  --press-business: #0F766E;
+
+  /* Art carries the brand lilac. #E0C0F8 is too light to hold
+     text on paper, so the label uses a darkened tone of the same
+     hue; the pure lilac is reserved for the one case where it
+     works — a fill with forest ink on top. */
+  --press-art: #7E22CE;
+  --press-lilac: var(--color-lilac);
+
+  /* type */
+  --press-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
+
+  /* shape — posters have square corners */
+  --press-radius: 2px;
+}

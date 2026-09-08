@@ -1,217 +1,297 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import EventCard from '@/components/EventCard';
-import EventCardSkeleton from '@/components/EventCardSkeleton';
-import EventCalendar from '@/components/EventCalendar';
-import EmptyState from '@/components/common/EmptyState';
-import styles from './page.module.css';
-import { motion, AnimatePresence } from 'framer-motion';
 import { EventWithRelations } from '@/lib/actions';
-import Search from '@/components/Search';
-import { Calendar, List, Sparkles, ChevronDown } from 'lucide-react';
+import { inkFor, dateParts, groupByProximity } from './press';
+import styles from './press.module.css';
 
-const FILTERS = ['All', 'Hackathon', 'Fest', 'Workshop', 'Cultural', 'This Week'];
+type TimeFilter = 'Any' | 'This week' | 'This month';
+const TIME_FILTERS: TimeFilter[] = ['Any', 'This week', 'This month'];
 
 interface EventsClientProps {
     initialEvents: EventWithRelations[];
 }
 
 export default function EventsClient({ initialEvents }: EventsClientProps) {
-    const events = initialEvents;
-    const isLoading = false;
-
-    // URL State Sync
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const { replace } = useRouter();
+    const railRef = useRef<HTMLElement>(null);
 
-    const activeFilter = searchParams.get('category') || 'All';
-    const [sortBy, setSortBy] = useState('Date');
-    const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+    const activeCategory = searchParams.get('category') || 'All';
+    const [activeTime, setActiveTime] = useState<TimeFilter>('Any');
 
-    const updateFilter = (filter: string) => {
-        const params = new URLSearchParams(searchParams);
-        if (filter === 'All') {
-            params.delete('category');
-        } else {
-            params.set('category', filter);
+    /**
+     * Category tabs are derived from the events themselves rather than a
+     * hardcoded list. The previous list offered "Fest" and "This Week", neither
+     * of which is a category any event carries, so both returned nothing, while
+     * Technology — the largest category — had no tab at all.
+     */
+    const categories = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const e of initialEvents) {
+            counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
         }
-        replace(`${pathname}?${params.toString()}`);
+        return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    }, [initialEvents]);
+
+    const { endOfWeek, endOfMonth } = useMemo(() => {
+        const now = new Date();
+        const week = new Date(now);
+        week.setDate(now.getDate() + (7 - now.getDay()));
+        week.setHours(23, 59, 59, 999);
+        return {
+            endOfWeek: week,
+            endOfMonth: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999),
+        };
+    }, []);
+
+    const visible = useMemo(() => {
+        return initialEvents
+            .filter((e) => activeCategory === 'All' || e.category === activeCategory)
+            .filter((e) => {
+                if (activeTime === 'Any') return true;
+                const d = new Date(e.date);
+                return activeTime === 'This week' ? d <= endOfWeek : d <= endOfMonth;
+            })
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [initialEvents, activeCategory, activeTime, endOfWeek, endOfMonth]);
+
+    /**
+     * The featured slot is an editorial choice for the default view only. Once
+     * the user filters they have asked for a list, and promoting one result out
+     * of it made a single match render as "nothing matches your filters".
+     */
+    const isDefaultView = activeCategory === 'All' && activeTime === 'Any';
+    const featured = isDefaultView ? visible[0] : undefined;
+    const listed = isDefaultView ? visible.slice(1) : visible;
+    const groups = useMemo(() => groupByProximity(listed), [listed]);
+
+    const setCategory = (category: string) => {
+        const params = new URLSearchParams(searchParams);
+        if (category === 'All') params.delete('category');
+        else params.set('category', category);
+        replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
-    // Client-side sorting on server-filtered results
-    // (Ideally sort on server too, but keeping client-sort for "Popularity" vs "Date" for now as it doesn't query extra data)
-    // Actually, "Popularity" (registration count) is available on the data, so client sort works fine for the current page of results.
-    const sortedEvents = [...events].sort((a, b) => {
-        if (sortBy === 'Date') {
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-        } else if (sortBy === 'Popularity') {
-            return b.registrationCount - a.registrationCount;
-        }
-        return 0;
-    });
-
-    // Sorting Logic
-    // const sortedEvents = ... (already retrieved above)
+    // Sticky group headings must clear the sticky rail above them.
+    useEffect(() => {
+        const sync = () => {
+            const h = railRef.current?.offsetHeight ?? 112;
+            document.documentElement.style.setProperty('--rail-h', `${h}px`);
+        };
+        sync();
+        window.addEventListener('resize', sync);
+        return () => window.removeEventListener('resize', sync);
+    }, [categories.length]);
 
     return (
-        <div>
-            <header className={styles.header}>
-                <motion.h1
-                    className={styles.title}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                >
-                    Upcoming Events
-                </motion.h1>
-                <motion.p
-                    className={styles.subtitle}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    Explore hackathons, fests, workshops, and cultural events across campuses.
-                </motion.p>
-            </header>
+        <div className={styles.screen}>
+            <div className={styles.inner}>
+                <header className={styles.masthead}>
+                    <div className={styles.mastheadRow}>
+                        <h1 className={styles.wordmark}>Events</h1>
+                        <span className={styles.count}>{visible.length} upcoming</span>
+                    </div>
+                    <p className={styles.strap}>
+                        Hackathons, fests, workshops and cultural nights across campus. Everything
+                        that&rsquo;s coming, in the order it arrives.
+                    </p>
+                </header>
 
-            {/* <div className={styles.searchBarContainer}><Search /></div> Hidden based on ref */}
+                {featured && <Featured event={featured} />}
 
-            {/* Premium Filter Bar */}
-            <div className={styles.filterContainer}>
-
-                {/* 1. Filter Tabs (Gliding Pill) */}
-                <div className={styles.filterGroup}>
-                    {FILTERS.map((filter) => {
-                        const isActive = activeFilter === filter;
-                        return (
+                <nav className={styles.rail} ref={railRef} aria-label="Filter events">
+                    <div className={styles.railRow}>
+                        <span className={styles.railLabel}>Category</span>
+                        <button
+                            type="button"
+                            className={styles.chip}
+                            aria-pressed={activeCategory === 'All'}
+                            onClick={() => setCategory('All')}
+                        >
+                            All
+                            <span className={styles.chipCount}>{initialEvents.length}</span>
+                        </button>
+                        {categories.map(([name, n]) => (
                             <button
-                                key={filter}
-                                onClick={() => updateFilter(filter)}
-                                className={`${styles.filterTab} ${isActive ? styles.activeTab : ''}`}
+                                key={name}
+                                type="button"
+                                className={styles.chip}
+                                data-cat={name}
+                                aria-pressed={activeCategory === name}
+                                onClick={() => setCategory(name)}
+                                style={{ ['--cat' as string]: inkFor(name) }}
                             >
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="activeFilterBubble"
-                                        className={styles.activeBubble}
-                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                    />
-                                )}
-                                <span className={styles.tabLabel}>{filter}</span>
+                                <i className={styles.swatch} aria-hidden="true" />
+                                {name}
+                                <span className={styles.chipCount}>{n}</span>
                             </button>
-                        );
-                    })}
-                </div>
+                        ))}
+                    </div>
 
-                <div className={styles.controlsGroup}>
-                    {/* 2. Sort Dropdown (Styled) */}
-                    <div className={styles.sortWrapper}>
-                        <span className={styles.sortLabel}>Sort by</span>
-                        <div className={styles.selectContainer}>
-                            <select
-                                className={styles.sortSelect}
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
+                    {/* Time is a separate axis from category. Conflating them is
+                        what made the old "This Week" tab return nothing. */}
+                    <div className={styles.railRow}>
+                        <span className={styles.railLabel}>When</span>
+                        {TIME_FILTERS.map((t) => (
+                            <button
+                                key={t}
+                                type="button"
+                                className={styles.chip}
+                                aria-pressed={activeTime === t}
+                                onClick={() => setActiveTime(t)}
                             >
-                                <option value="Date">Date</option>
-                                <option value="Popularity">Popularity</option>
-                            </select>
-                            <ChevronDown className={styles.selectIcon} size={16} />
-                        </div>
+                                {t}
+                            </button>
+                        ))}
                     </div>
+                </nav>
 
-                    <div className={styles.divider} />
+                <main>
+                    {groups.length === 0 ? (
+                        <p className={styles.empty}>Nothing matches those filters.</p>
+                    ) : (
+                        groups.map((group) => (
+                            <section key={group.label}>
+                                <div className={styles.groupHead}>
+                                    <h2>{group.label}</h2>
+                                    <span className={styles.groupCount}>{group.items.length}</span>
+                                </div>
+                                {group.items.map((event) => (
+                                    <EventRow key={event.id} event={event} />
+                                ))}
+                            </section>
+                        ))
+                    )}
+                </main>
 
-                    {/* 3. View Toggle (Segmented) */}
-                    <div className={styles.viewToggle}>
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`${styles.toggleBtn} ${viewMode === 'list' ? styles.activeToggle : ''}`}
-                            aria-label="List View"
-                        >
-                            <List size={18} />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('calendar')}
-                            className={`${styles.toggleBtn} ${viewMode === 'calendar' ? styles.activeToggle : ''}`}
-                            aria-label="Calendar View"
-                        >
-                            <Calendar size={18} />
-                        </button>
-                    </div>
-
-                    {/* 4. Host Button (Gradient Pop) */}
-                    <Link href="/events/create" className={styles.hostBtn}>
-                        <span className={styles.btnText}>Host Event</span>
-                        <div className={styles.btnIconBox}>
-                            <Sparkles size={16} className={styles.btnIcon} />
-                        </div>
-                    </Link>
+                <div className={styles.footRule}>
+                    <span>Campus Press</span>
+                    <span>{initialEvents.length} live events</span>
                 </div>
             </div>
-
-            {/* Calendar View */}
-            {viewMode === 'calendar' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    style={{ marginTop: '1.5rem' }}
-                >
-                    <EventCalendar events={events.map(e => ({ id: e.id, title: e.title, date: new Date(e.date), category: e.category }))} />
-                </motion.div>
-            )}
-
-            {/* List View */}
-            {viewMode === 'list' && (
-                <motion.div
-                    layout
-                    className={styles.grid}
-                >
-                    <div className={styles.eventsGrid} id="events-grid" role="tabpanel">
-                        <AnimatePresence mode="popLayout">
-                            {isLoading ? (
-                                Array(4).fill(0).map((_, i) => (
-                                    <motion.div key={`skeleton-${i}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                        <EventCardSkeleton />
-                                    </motion.div>
-                                ))
-                            ) : sortedEvents.length > 0 ? (
-                                sortedEvents.map((event, index) => (
-                                    <motion.div
-                                        layout
-                                        key={event.id}
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <EventCard event={event} index={index} />
-                                    </motion.div>
-                                ))
-                            ) : (
-                                <div style={{ gridColumn: '1 / -1' }}>
-                                    <EmptyState
-                                        title="No Events Found"
-                                        description="Try adjusting your search or filters to find more events."
-                                        icon="🔍"
-                                        actionLabel="Reset Filters"
-                                        onAction={() => {
-                                            replace(pathname); // Clear all params
-                                        }}
-                                    />
-                                </div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* Removed a "Load More Events" button that had no click handler,
-                and a second empty-state block that rendered underneath the
-                EmptyState above — an empty list showed both messages at once. */}
         </div>
     );
 }
 
+function hostOf(event: EventWithRelations) {
+    return event.club?.name || event.hostCollege?.name || 'Campus';
+}
+
+function initialsOf(title: string) {
+    return title
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((w) => w[0] ?? '')
+        .join('')
+        .toUpperCase();
+}
+
+function Featured({ event }: { event: EventWithRelations }) {
+    const ink = inkFor(event.category);
+    const { month, day, weekday } = dateParts(event.date);
+
+    return (
+        <Link
+            href={`/events/${event.id}`}
+            className={styles.featured}
+            style={{ ['--cat' as string]: ink }}
+        >
+            {event.thumbnail ? (
+                <Image
+                    src={event.thumbnail}
+                    alt=""
+                    fill
+                    priority
+                    sizes="(max-width: 1140px) 100vw, 1140px"
+                    className={styles.featuredImage}
+                />
+            ) : (
+                <div className={styles.typePoster} role="img" aria-label={event.title}>
+                    {Array.from({ length: 5 }, (_, i) => (
+                        <span key={i} aria-hidden="true">
+                            {event.category}
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            <div className={styles.featuredBody}>
+                <span className={styles.featuredKicker}>
+                    <i aria-hidden="true" />
+                    {event.category} &middot; Next up
+                </span>
+                <h2 className={styles.featuredTitle}>{event.title}</h2>
+                <div className={styles.featuredMeta}>
+                    <span>
+                        {month} {day}, {weekday}
+                    </span>
+                    <span className={styles.sep}>/</span>
+                    <span>{event.venue}</span>
+                    <span className={styles.sep}>/</span>
+                    <span>{hostOf(event)}</span>
+                </div>
+            </div>
+        </Link>
+    );
+}
+
+function EventRow({ event }: { event: EventWithRelations }) {
+    const ink = inkFor(event.category);
+    const { month, day, weekday } = dateParts(event.date);
+    const going = event.registrationCount ?? 0;
+
+    return (
+        <Link
+            href={`/events/${event.id}`}
+            className={styles.row}
+            style={{ ['--cat' as string]: ink }}
+        >
+            <div className={styles.date}>
+                <div className={styles.dateMonth}>{month}</div>
+                <div className={styles.dateDay}>{day}</div>
+                <div className={styles.dateWeekday}>{weekday}</div>
+            </div>
+
+            <div>
+                <h3 className={styles.rowTitle}>{event.title}</h3>
+                <div className={styles.rowMeta}>
+                    <span>{event.venue}</span>
+                    <span className={styles.sep}>/</span>
+                    <span>{hostOf(event)}</span>
+                </div>
+                <div className={styles.rowTags}>
+                    <span className={styles.cat}>
+                        <i aria-hidden="true" />
+                        {event.category}
+                    </span>
+                    <span className={`${styles.price} ${event.price > 0 ? '' : styles.priceFree}`}>
+                        {event.price > 0 ? `$${event.price}` : 'Free'}
+                    </span>
+                    {/* Zero is not shown — the old card advertised "0 Reg." */}
+                    {going > 0 && <span className={styles.going}>{going} going</span>}
+                </div>
+            </div>
+
+            <div className={styles.cover}>
+                {event.thumbnail ? (
+                    <Image
+                        src={event.thumbnail}
+                        alt=""
+                        fill
+                        sizes="132px"
+                        style={{ objectFit: 'cover' }}
+                    />
+                ) : (
+                    <div className={styles.coverStub} aria-hidden="true">
+                        <span>{initialsOf(event.title)}</span>
+                    </div>
+                )}
+            </div>
+        </Link>
+    );
+}
