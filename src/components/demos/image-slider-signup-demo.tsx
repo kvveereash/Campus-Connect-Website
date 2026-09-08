@@ -2,33 +2,31 @@
 
 import * as React from "react";
 import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 import { ImageSlider } from "@/components/ui/image-slider";
 import { Button } from "@/components/ui/shadcn-button";
 import { Input } from "@/components/ui/shadcn-input";
 import { Label } from "@/components/ui/shadcn-label";
-import { Chrome, Apple, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { signup } from "@/lib/actions/auth";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
 
 export function ImageSliderSignupDemo() {
-  const router = useRouter();
-  const { refreshUser } = useAuth();
   const [state, formAction, isPending] = useActionState(signup, null);
 
   useEffect(() => {
     if (state?.success) {
       toast.success(state.message || "Account created successfully!");
-      refreshUser().then(() => {
-        router.push("/events"); // Destination after successful signup
-      });
+      // Navigate immediately — refreshUser() can stay pending forever, which
+      // used to strand a newly signed-up user on this page. The full load
+      // re-creates AuthProvider, so refreshing here first buys nothing.
+      // See the login form for why this is not router.replace().
+      window.location.assign("/events");
     } else if (state?.error) {
       toast.error(state.error);
     }
-  }, [state, router, refreshUser]);
+  }, [state]);
 
   const images = [
     "/auth-hero-signup.png",
@@ -88,27 +86,8 @@ export function ImageSliderSignupDemo() {
               Start your journey with Campus Connect today.
             </motion.p>
 
-            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <Button variant="outline">
-                <Chrome className="mr-2 h-4 w-4" />
-                Google
-              </Button>
-              <Button variant="outline">
-                <Apple className="mr-2 h-4 w-4" />
-                Apple
-              </Button>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or register with email
-                </span>
-              </div>
-            </motion.div>
+            {/* Google/Apple buttons removed — no OAuth provider is wired up,
+                so they were controls that did nothing. See the login form. */}
 
             <motion.form variants={itemVariants} className="space-y-4" action={formAction}>
               <div className="space-y-2">

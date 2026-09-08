@@ -2,33 +2,53 @@
 
 import * as React from "react";
 import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
 import { ImageSlider } from "@/components/ui/image-slider";
 import { Button } from "@/components/ui/shadcn-button";
 import { Input } from "@/components/ui/shadcn-input";
 import { Label } from "@/components/ui/shadcn-label";
-import { Chrome, Apple, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { login } from "@/lib/actions/auth";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
 
 export function ImageSliderLoginDemo() {
-  const router = useRouter();
-  const { refreshUser } = useAuth();
+  const searchParams = useSearchParams();
   const [state, formAction, isPending] = useActionState(login, null);
 
   useEffect(() => {
     if (state?.success) {
       toast.success(state.message || "Logged in successfully");
-      refreshUser().then(() => {
-        router.push("/profile"); // Assuming '/profile' is a good post-login destination
-      });
+
+      // Send the user back where they were headed before the middleware
+      // bounced them here; fall back to their profile.
+      // Only same-site paths are honoured, so a crafted ?redirect=//evil.com
+      // cannot turn our login page into an open redirect.
+      const requested = searchParams.get("redirect");
+      const destination =
+        requested && requested.startsWith("/") && !requested.startsWith("//")
+          ? requested
+          : "/profile";
+
+      // Navigate immediately, and do NOT wait on refreshUser().
+      //
+      // Two bugs lived here. The redirect used to sit inside
+      // refreshUser().then(...), and refreshUser() can stay pending
+      // indefinitely — so a user who logged in successfully was left sitting
+      // on the login page, staring at a success toast. Awaiting it at all is
+      // also pointless: the full page load below re-creates AuthProvider,
+      // which fetches the session itself.
+      //
+      // It is a full load rather than router.replace() on purpose. The session
+      // cookie is set by the server action, and a soft navigation re-runs the
+      // middleware before that cookie is in play, so the middleware saw no
+      // session and bounced straight back to /login.
+      window.location.assign(destination);
     } else if (state?.error) {
       toast.error(state.error);
     }
-  }, [state, router, refreshUser]);
+  }, [searchParams, state]);
 
   const images = [
     "/auth-hero.png",
@@ -88,27 +108,10 @@ export function ImageSliderLoginDemo() {
               Enter your credentials to access your account.
             </motion.p>
 
-            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <Button variant="outline">
-                <Chrome className="mr-2 h-4 w-4" />
-                Google
-              </Button>
-              <Button variant="outline">
-                <Apple className="mr-2 h-4 w-4" />
-                Apple
-              </Button>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </motion.div>
+            {/* Google/Apple buttons were here. They had no handler — the app
+                uses its own JWT auth and no OAuth provider is configured — so
+                they were decorative controls that did nothing when clicked.
+                Removed rather than faked; add them back alongside real OAuth. */}
 
             <motion.form variants={itemVariants} className="space-y-6" action={formAction}>
               <div className="space-y-2">
@@ -118,9 +121,9 @@ export function ImageSliderLoginDemo() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <a href="#" className="text-sm font-medium text-primary hover:underline">
+                  <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <Input id="password" name="password" type="password" required />
               </div>

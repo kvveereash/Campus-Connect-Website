@@ -41,25 +41,40 @@ export async function middleware(request: NextRequest) {
 
     const isApiRoute = pathname.startsWith('/api/');
 
-    // Optional auth extraction for logging or admin checks
+    /**
+     * Routes that require a logged-in user.
+     *
+     * Note `/profile` is matched exactly: your own profile needs a session, but
+     * `/profile/[id]` is a public page anyone can view.
+     */
+    const isProtectedPath =
+        pathname === '/profile' ||
+        pathname === '/buzz' ||
+        pathname.startsWith('/messages') ||
+        pathname.startsWith('/team-finder') ||
+        pathname.startsWith('/admin') ||
+        pathname === '/events/create' ||
+        pathname === '/clubs/create' ||
+        /^\/events\/[^/]+\/edit$/.test(pathname);
+
     if (!isPublicPath && !isApiRoute) {
         const session = await getSessionFromRequest(request);
 
-        // Admin-only routes
-        if (pathname.startsWith('/admin')) {
-            if (!session) {
-                const loginUrl = new URL('/login', request.url);
-                loginUrl.searchParams.set('redirect', pathname);
-                return NextResponse.redirect(loginUrl);
-            }
-            if (session.user?.role !== 'ADMIN') {
-                logger.warn('Forbidden: Non-admin attempted admin access', {
-                    requestId,
-                    userId: session.userId,
-                    path: pathname,
-                });
-                return NextResponse.redirect(new URL('/events', request.url));
-            }
+        // Send anonymous visitors to log in, remembering where they were headed.
+        if (isProtectedPath && !session) {
+            const loginUrl = new URL('/login', request.url);
+            loginUrl.searchParams.set('redirect', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
+
+        // Admin-only routes need the role on top of a session.
+        if (pathname.startsWith('/admin') && session?.user?.role !== 'ADMIN') {
+            logger.warn('Forbidden: Non-admin attempted admin access', {
+                requestId,
+                userId: session?.userId,
+                path: pathname,
+            });
+            return NextResponse.redirect(new URL('/events', request.url));
         }
 
         if (session) {
