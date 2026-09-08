@@ -13,7 +13,7 @@
 
 .title {
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: 600;
     font-family: var(--font-display);
     color: var(--color-forest);
     margin: 0;
@@ -51,7 +51,7 @@
     font-size: 1.75rem;
     color: var(--color-forest);
     margin-bottom: 2rem;
-    font-weight: 700;
+    font-weight: 600;
     position: relative;
 }
 

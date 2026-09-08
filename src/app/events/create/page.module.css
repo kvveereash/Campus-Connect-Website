@@ -92,7 +92,7 @@
 .sideTitle {
     font-family: var(--font-display);
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.2;
     margin-bottom: 1rem;
     letter-spacing: -0.02em;
@@ -169,7 +169,7 @@
 .formTitle {
     font-family: var(--font-display);
     font-size: clamp(2rem, 3.5vw, 2.5rem);
-    font-weight: 800;
+    font-weight: 600;
     color: var(--color-forest);
     letter-spacing: -0.02em;
     margin-bottom: 0.25rem;
@@ -411,7 +411,7 @@
 .accessDeniedTitle {
     font-family: var(--font-display);
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-forest);
     margin-bottom: 0.75rem;
 }

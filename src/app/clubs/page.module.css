@@ -21,7 +21,7 @@
 
 .title {
     font-size: clamp(2.8rem, 5vw, 4.2rem);
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-forest);
     font-family: var(--font-display);
     letter-spacing: -0.03em;

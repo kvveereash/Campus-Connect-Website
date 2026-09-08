@@ -15,7 +15,7 @@
 
 .title {
     font-size: 3.5rem;
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 0.5rem;
     color: var(--color-forest);
     font-family: var(--font-display);
@@ -74,7 +74,7 @@
     align-items: center;
     justify-content: center;
     color: var(--color-forest);
-    font-weight: 700;
+    font-weight: 600;
     font-family: var(--font-display);
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -318,7 +318,7 @@
 }
 
 .tooltipTitle {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 1.25rem;
     color: var(--color-forest);
     margin-bottom: 0.25rem;

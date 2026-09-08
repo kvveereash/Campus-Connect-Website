@@ -15,7 +15,7 @@
 .heroTitle {
     font-size: 6rem;
     font-family: var(--font-display);
-    font-weight: 800;
+    font-weight: 600;
     line-height: 0.9;
     color: var(--color-forest);
     margin-bottom: 2rem;
@@ -51,7 +51,7 @@
     animation: ticker 20s linear infinite;
     font-family: var(--font-display);
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
@@ -120,7 +120,7 @@
 
 .valueTitle {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 600;
     font-size: 2rem;
     margin-bottom: 1rem;
     color: var(--color-lilac);
@@ -148,7 +148,7 @@
     text-align: center;
     font-size: 3rem;
     font-family: var(--font-display);
-    font-weight: 800;
+    font-weight: 600;
     margin-bottom: 4rem;
     color: var(--color-forest);
 }
@@ -186,7 +186,7 @@
 
 .memberName {
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 0.25rem;
     font-family: var(--font-display);
 }

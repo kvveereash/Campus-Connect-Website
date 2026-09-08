@@ -28,7 +28,7 @@
 
 .title {
     font-size: 3.5rem;
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 0.5rem;
     color: var(--color-forest);
     font-family: var(--font-display);
@@ -259,7 +259,7 @@
 }
 
 .authorName {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 1rem;
     color: var(--color-forest);
     text-decoration: none;

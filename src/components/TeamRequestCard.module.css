@@ -71,14 +71,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 600;
     font-family: var(--font-display);
     border: 1.5px solid #000;
 }
 
 .userName {
     display: block;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-forest);
     font-family: var(--font-display);
     font-size: 1.1rem;

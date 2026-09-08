@@ -89,7 +89,7 @@
 
 .title {
     font-size: 2.5rem;
-    font-weight: 800;
+    font-weight: 600;
     font-family: var(--font-display);
     color: var(--color-forest);
     margin-bottom: 0.5rem;
@@ -171,7 +171,7 @@
     background: var(--color-forest);
     color: var(--color-cream);
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     border: none;
@@ -219,7 +219,7 @@
     white-space: nowrap;
     position: absolute;
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 600;
     font-size: 1.5rem;
     letter-spacing: 0.2em;
     color: rgba(15, 31, 28, 0.2);
