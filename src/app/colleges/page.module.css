@@ -64,7 +64,7 @@
     outline: none;
     background: var(--surface-color);
     color: var(--text-primary);
-    transition: all 0.25s ease;
+    transition: all 0.25s var(--ease-glide);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
@@ -137,7 +137,7 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: 4px;
+    border-radius: 36px;
     overflow: hidden;
     transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
@@ -166,7 +166,7 @@
 
 .collegeImage {
     object-fit: cover;
-    transition: transform 0.4s ease;
+    transition: transform 0.4s var(--ease-glide);
 }
 
 .card:hover .collegeImage {
@@ -235,7 +235,7 @@
     font-size: 0.9rem;
     font-family: var(--font-sans);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all 0.2s var(--ease-glide);
     cursor: pointer;
 }
 
@@ -247,7 +247,7 @@
 }
 
 .viewBtnArrow {
-    transition: transform 0.2s ease;
+    transition: transform 0.2s var(--ease-glide);
     font-size: 0.85rem;
 }
 

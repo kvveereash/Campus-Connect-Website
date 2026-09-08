@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Outfit, Fraunces, Archivo } from "next/font/google";
+import { Inter, Outfit, Fraunces, Archivo, DM_Sans } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FloatingChatButton from "@/components/FloatingChatButton";
@@ -24,6 +24,10 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces" });
 // Display face for the Campus Press events surface — heavy grotesk, poster weights.
 const archivo = Archivo({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-archivo" });
+// Primary UI face. DM Sans is the substitute the reference system names for
+// Cosmica: one geometric family carrying everything from 12px labels to 64px
+// editorial headlines.
+const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-dm-sans" });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://campusconnect2026.netlify.app'),
@@ -71,7 +75,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable} ${fraunces.variable} ${archivo.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${outfit.variable} ${fraunces.variable} ${archivo.variable} ${dmSans.variable}`}>
       <body>
         <SWRegister /> {/* Added Service Worker Registration */}
         <ThemeProvider

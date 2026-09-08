@@ -3,10 +3,10 @@
     color: white;
     border: none;
     padding: 0.6rem 1.2rem;
-    border-radius: 8px;
+    border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s var(--ease-glide);
 }
 
 .joinButton:hover {
@@ -25,10 +25,10 @@
     color: var(--text-secondary);
     border: 1px solid var(--border);
     padding: 0.6rem 1.2rem;
-    border-radius: 8px;
+    border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s var(--ease-glide);
 }
 
 .leaveButton:hover {
@@ -47,7 +47,7 @@
     color: white;
     border: none;
     padding: 0.6rem 1.2rem;
-    border-radius: 8px;
+    border-radius: 12px;
     font-weight: 600;
     cursor: default;
     opacity: 0.9;

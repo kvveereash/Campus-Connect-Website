@@ -106,7 +106,7 @@
     font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s var(--ease-glide);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -127,12 +127,12 @@
 .createCard {
     background: #ffffff;
     border: 2px solid var(--color-forest);
-    border-radius: 4px;
+    border-radius: 36px;
     padding: 1.5rem;
     margin-bottom: 3rem;
     box-shadow: 8px 8px 0px var(--color-lilac);
     /* Sticker Shadow */
-    transition: all 0.3s ease;
+    transition: all 0.3s var(--ease-glide);
     display: flex;
     gap: 1rem;
 }
@@ -145,7 +145,7 @@
 .userAvatar {
     width: 3rem;
     height: 3rem;
-    border-radius: 4px;
+    border-radius: 14px;
     background: var(--color-cream);
     border: 1.5px solid var(--color-forest);
     display: flex;
@@ -192,7 +192,7 @@
     border: 1.5px solid var(--color-forest);
     cursor: pointer;
     padding: 0.5rem;
-    border-radius: 4px;
+    border-radius: 12px;
     transition: all 0.2s;
     box-shadow: 2px 2px 0px rgba(15, 31, 28, 0.1);
 }
@@ -232,10 +232,10 @@
 .postCard {
     background: #ffffff;
     border: 2px solid var(--color-forest);
-    border-radius: 4px;
+    border-radius: 36px;
     overflow: hidden;
     margin-bottom: 2rem;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s var(--ease-glide);
     box-shadow: 6px 6px 0px rgba(15, 31, 28, 0.05);
 }
 

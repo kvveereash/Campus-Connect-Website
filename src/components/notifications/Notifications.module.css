@@ -32,7 +32,7 @@
     font-size: 0.65rem;
     font-weight: 700;
     padding: 2px 5px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 2px solid #ffffff;
     /* White border to cut out from bell */
     min-width: 16px;
@@ -47,7 +47,7 @@
     width: 340px;
     background: #ffffff;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 36px;
     /* Match card radius */
     box-shadow: 0 10px 40px rgba(15, 31, 28, 0.1);
     /* Premium shadow */

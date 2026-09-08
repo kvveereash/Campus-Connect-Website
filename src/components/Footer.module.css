@@ -72,7 +72,7 @@
 .links a {
     color: rgba(251, 249, 240, 0.8);
     font-size: 1rem;
-    transition: all 0.2s ease;
+    transition: all 0.2s var(--ease-glide);
     text-decoration: none;
     font-family: var(--font-sans);
 }

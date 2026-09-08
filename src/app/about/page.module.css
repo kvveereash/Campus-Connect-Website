@@ -108,7 +108,7 @@
     background: rgba(255, 255, 255, 0.05);
     /* Wispr-like subtle transparent card */
     padding: 2.5rem;
-    border-radius: 4px;
+    border-radius: 36px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s;
 }
@@ -174,7 +174,7 @@
     margin: 0 auto 1.5rem;
     overflow: hidden;
     filter: grayscale(100%);
-    transition: all 0.3s ease;
+    transition: all 0.3s var(--ease-glide);
     border: 2px solid transparent;
 }
 

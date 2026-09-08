@@ -15,7 +15,7 @@
     border: 1.5px solid var(--border-color);
     background: transparent;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s var(--ease-glide);
     margin-bottom: 2rem;
 }
 
@@ -27,7 +27,7 @@
 }
 
 .backArrow {
-    transition: transform 0.2s ease;
+    transition: transform 0.2s var(--ease-glide);
 }
 
 .backBtn:hover .backArrow {
@@ -54,7 +54,7 @@
     position: sticky;
     top: 2rem;
     background: var(--color-forest);
-    border-radius: 4px;
+    border-radius: 36px;
     padding: 3rem 2.5rem;
     color: var(--color-cream);
     overflow: hidden;
@@ -131,7 +131,7 @@
 .featureIcon {
     width: 36px;
     height: 36px;
-    border-radius: 10px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
@@ -200,7 +200,7 @@
     font-weight: 700;
     color: var(--color-forest);
     opacity: 0.5;
-    transition: all 0.3s ease;
+    transition: all 0.3s var(--ease-glide);
 }
 
 .stepActive {
@@ -218,7 +218,7 @@
     justify-content: center;
     font-size: 0.75rem;
     font-weight: 700;
-    transition: all 0.3s ease;
+    transition: all 0.3s var(--ease-glide);
 }
 
 .stepActive .stepNumber {
@@ -270,10 +270,10 @@
     padding: 0.9rem 1.1rem;
     background: white;
     border: 1.5px solid rgba(15, 31, 28, 0.15);
-    border-radius: 4px;
+    border-radius: 14px;
     font-size: 1rem;
     color: var(--text-primary);
-    transition: all 0.25s ease;
+    transition: all 0.25s var(--ease-glide);
     width: 100%;
     font-family: var(--font-sans);
 }
@@ -353,7 +353,7 @@
     font-weight: 600;
     font-family: var(--font-sans);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s var(--ease-glide);
 }
 
 .categoryPill:hover {
@@ -395,7 +395,7 @@
 .logoPreviewCircle {
     width: 80px;
     height: 80px;
-    border-radius: 4px;
+    border-radius: 14px;
     background: linear-gradient(135deg, var(--color-mint), var(--color-lilac));
     display: flex;
     align-items: center;
@@ -439,7 +439,7 @@
     font-size: 1rem;
     font-family: var(--font-sans);
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.25s var(--ease-glide);
     margin-top: 0.5rem;
 }
 
@@ -454,7 +454,7 @@
 }
 
 .submitIcon {
-    transition: transform 0.2s ease;
+    transition: transform 0.2s var(--ease-glide);
 }
 
 .submitBtn:hover:not(:disabled) .submitIcon {

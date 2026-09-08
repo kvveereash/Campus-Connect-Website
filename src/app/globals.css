@@ -30,53 +30,82 @@
 :root {
   /* --- Modern Editorial Theme --- */
 
-  /* Primary Palette
-     Campus Press: the canvas moved from a warm cream to a cooler paper stock.
-     This token is consumed both as a background and as text-on-dark, and a
-     near-white serves both, so the change propagates correctly in either role. */
-  --color-cream: #FAFAF8;
-  /* Main Background — "paper" */
-  --color-forest: #0F1F1C;
-  /* Primary Text / Footer / Dark Backgrounds — "ink" */
+  /* ── Palette ──────────────────────────────────────────────────
+     Near-achromatic zinc scale carrying the whole interface, with a
+     single accent. Pure black is avoided: #09090b is the deepest ink,
+     which keeps warmth in the neutrals.
+     ------------------------------------------------------------- */
+  --color-obsidian: #09090b;   /* primary actions, display headlines */
+  --color-graphite: #18181b;   /* body text, nav */
+  --color-slate: #27272a;      /* dark feature surfaces */
+  --color-steel: #52525b;      /* secondary text, captions */
+  --color-fog: #71717a;        /* helper text */
+  --color-ash: #a1a1aa;        /* placeholders, disabled */
+  --color-cloud: #ececee;      /* the 1px hairline that replaces shadows */
+  --color-paper: #f4f4f5;      /* canvas */
+  --color-snow: #ffffff;       /* cards, elevated surfaces */
+
+  /* The brand lilac takes the accent slot. It is light enough to carry
+     dark ink on top, so it fills badges rather than tinting text. Like
+     any badge accent it stays out of body copy, links and chrome. */
   --color-lilac: #E0C0F8;
-  /* Brand accent. Light enough to carry forest ink on top, which is the one
-     place it works as a fill. */
-  --color-mint: #D1FAE5;
-  /* Secondary Highlight */
-  --color-orange: #FF7D5D;
-  /* Spot color for warmth */
+  --color-lilac-deep: #7E22CE; /* same hue, dark enough for text on paper */
 
-  /* Functional Mappings */
-  --background-color: var(--color-cream);
-  --surface-color: #ffffff;
-  --surface-dark: var(--color-forest);
+  /* Legacy aliases. These names are consumed across ~33 files; repointing
+     the values migrates every consumer without touching those files. */
+  --color-cream: var(--color-snow);
+  --color-forest: var(--color-graphite);
+  --color-mint: #a5ebd6;
+  --color-orange: #ff5a00;
 
-  --text-primary: var(--color-forest);
-  --text-secondary: rgba(15, 31, 28, 0.7);
-  /* Forest with opacity */
-  --text-on-dark: var(--color-cream);
+  /* ── Functional mappings ── */
+  --background-color: var(--color-paper);
+  --surface-color: var(--color-snow);
+  --surface-dark: var(--color-graphite);
 
-  --primary-color: var(--color-forest);
+  --text-primary: var(--color-obsidian);
+  --text-secondary: var(--color-steel);
+  --text-muted: var(--color-fog);
+  --text-on-dark: var(--color-snow);
+
+  --primary-color: var(--color-obsidian);
   --secondary-color: var(--color-lilac);
 
-  --border-color: rgba(15, 31, 28, 0.14);
+  --border-color: var(--color-cloud);
 
-  /* Typography
-     Headings moved from Fraunces to Archivo. A serif display on a warm canvas
-     is the pattern the redesign is deliberately leaving behind; a heavy grotesk
-     carries the poster direction and stays legible at listing density.
-     Fraunces stays defined so anything still asking for it renders. */
+  /* ── Typography ──
+     One family across every role, 12px labels through display headlines. */
   --font-serif: var(--font-fraunces), serif;
-  --font-sans: var(--font-inter), sans-serif;
-  --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), var(--font-inter), sans-serif;
+  --font-display: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
 
   --font-heading: var(--font-display);
   --font-body: var(--font-sans);
 
-  /* UI Shapes — posters have square corners. Not 0, which reads as unfinished
-     on interactive controls, but far tighter than the previous 1.5rem. */
-  --radius-pill: 4px;
-  --radius-card: 4px;
+  /* ── Geometry ──
+     Three radii repeat everywhere: 12px on tags, 14px on buttons and
+     inputs, 36px on cards. Buttons stay precise, cards stay generous.
+     Nothing visible drops below 12px. */
+  --radius-tag: 12px;
+  --radius-button: 14px;
+  --radius-input: 14px;
+  --radius-card: 36px;
+  --radius-pill: 9999px;
+
+  /* ── Elevation ──
+     Hairline borders, not drop shadows. The only real shadow is the one
+     that gives the dark primary button its inset lip. */
+  --shadow-card: none;
+  --shadow-soft: rgba(0, 0, 0, 0.04) 0px 4px 12px 0px;
+  --shadow-button: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.5),
+                   0 0 0 1.5px #2c2e34,
+                   0 4px 6px 0 rgba(0, 0, 0, 0.14);
+
+  /* ── Motion ──
+     A patient ease-out. Elements glide rather than snap. */
+  --ease-glide: cubic-bezier(0.19, 1, 0.22, 1);
+  --duration-slow: 0.8s;
+  --duration-base: 0.4s;
 
   --transition-speed: 0.3s;
 }
@@ -140,35 +169,39 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  /* Archivo needs more weight and tighter tracking than Fraunces did to read
-     as display type rather than bold body text. */
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.05;
+  /* Display weight is 600, not 800. The reference is explicit that headings
+     below 600 lose authority while heavier weights tip into shouting; DM Sans
+     at 600 with tight line-height is what makes the type read as editorial. */
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.28;
   margin-bottom: 0.75rem;
   text-wrap: balance;
 }
 
+/* Display: 64px / 1.12 */
 h1 {
-  font-size: clamp(2.25rem, 5vw + 1rem, 4rem);
-  line-height: 1;
+  font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
+  line-height: 1.12;
 }
 
+/* Section heading: 40px / 1.28 */
 h2 {
-  font-size: clamp(1.6rem, 3vw + 0.5rem, 2.6rem);
-  line-height: 1.08;
+  font-size: clamp(1.75rem, 3vw + 0.5rem, 2.5rem);
+  line-height: 1.28;
 }
 
+/* 32px / 1.5 */
 h3 {
-  font-size: clamp(1.2rem, 2vw + 0.25rem, 1.75rem);
-  letter-spacing: -0.03em;
+  font-size: clamp(1.35rem, 2vw + 0.25rem, 2rem);
+  line-height: 1.4;
 }
 
 h4,
 h5,
 h6 {
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 button {
@@ -226,24 +259,25 @@ button {
   justify-content: center;
   padding: 0.75rem 2rem;
   /* Adjusted vertical padding */
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-button);
   font-weight: 500;
-  /* Regular weight as per image, or slightly bold */
-  transition: all 0.2s ease;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   letter-spacing: -0.01em;
+  transition: background-color var(--duration-base) var(--ease-glide),
+              color var(--duration-base) var(--ease-glide),
+              border-color var(--duration-base) var(--ease-glide),
+              transform var(--duration-base) var(--ease-glide);
 }
 
-/* Primary: Lilac Pill with Black Border */
+/* Primary: the dark filled CTA. The near-black fill with a hairline border and
+   an inset highlight creates depth without a drop shadow. The lilac accent is
+   deliberately not used here — it is a badge colour, not a button colour. */
 .btn-primary {
-  background-color: var(--color-lilac);
-  /* #E0C0F8 */
-  color: var(--color-forest);
-  /* #0F1F1C */
-  border: 1.5px solid var(--color-forest);
-  /* The defining black border */
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0);
-  /* Flatten initially or add small shadow */
+  background-color: var(--color-obsidian);
+  color: var(--color-snow);
+  border: 1.5px solid #2c2e34;
+  border-radius: var(--radius-button);
+  box-shadow: var(--shadow-button);
 }
 
 .btn-primary:hover {
@@ -529,13 +563,13 @@ html {
    ============================================================ */
 :root {
   /* canvas + ink */
-  --press-paper: #FAFAF8;
-  --press-paper-2: #F2F2EE;
-  --press-ink: #0F1F1C;              /* kept from the current system */
-  --press-ink-70: rgba(15, 31, 28, 0.70);
-  --press-ink-45: rgba(15, 31, 28, 0.45);
-  --press-rule: rgba(15, 31, 28, 0.14);
-  --press-rule-strong: rgba(15, 31, 28, 0.30);
+  --press-paper: var(--color-snow);   /* the listing sits on a white card */
+  --press-paper-2: var(--color-paper);/* row hover, one step off white */
+  --press-ink: var(--color-obsidian);
+  --press-ink-70: var(--color-steel);
+  --press-ink-45: var(--color-fog);
+  --press-rule: var(--color-cloud);
+  --press-rule-strong: var(--color-mist, #d4d4d8);
 
   /* SPOT INKS — category identity only.
      Never a background, button, or decorative fill. */
@@ -551,12 +585,12 @@ html {
      text on paper, so the label uses a darkened tone of the same
      hue; the pure lilac is reserved for the one case where it
      works — a fill with forest ink on top. */
-  --press-art: #7E22CE;
+  --press-art: var(--color-lilac-deep);
   --press-lilac: var(--color-lilac);
 
   /* type */
-  --press-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
+  --press-display: var(--font-display);
 
-  /* shape — posters have square corners */
-  --press-radius: 2px;
+  /* shape — matches the app-wide control radius */
+  --press-radius: 14px;
 }

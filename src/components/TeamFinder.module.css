@@ -24,7 +24,7 @@
     background: var(--color-cream);
     border: 1.5px solid var(--color-forest);
     padding: 2.5rem;
-    border-radius: 4px;
+    border-radius: 36px;
     margin-bottom: 3rem;
     box-shadow: 8px 8px 0 var(--color-forest);
     animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -83,12 +83,12 @@
     width: 100%;
     padding: 0.85rem 1.25rem;
     border: 1.5px solid var(--color-forest);
-    border-radius: 4px;
+    border-radius: 14px;
     background: white;
     color: var(--color-forest);
     font-family: var(--font-sans);
     font-size: 1rem;
-    transition: all 0.2s ease;
+    transition: all 0.2s var(--ease-glide);
 }
 
 .select {
@@ -132,7 +132,7 @@
     padding: 5rem 2rem;
     background: rgba(15, 31, 28, 0.02);
     border: 2px dashed rgba(15, 31, 28, 0.1);
-    border-radius: 4px;
+    border-radius: 36px;
     color: var(--text-secondary);
     font-family: var(--font-display);
     font-style: italic;

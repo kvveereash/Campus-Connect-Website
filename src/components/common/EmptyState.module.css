@@ -7,12 +7,12 @@
     text-align: center;
     background: #ffffff;
     border: 1.5px solid var(--color-forest);
-    border-radius: 4px;
+    border-radius: 36px;
     box-shadow: 8px 8px 0px var(--color-orange);
     /* Orange shadow for empty states looks alert but playful */
     padding: 3rem;
     width: 100%;
-    transition: all 0.3s ease;
+    transition: all 0.3s var(--ease-glide);
 }
 
 .title {

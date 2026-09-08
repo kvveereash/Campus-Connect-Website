@@ -77,7 +77,7 @@
   font-size: 1.25rem;
   font-weight: 300;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-glide);
 }
 
 .createGroupBtn:hover {
@@ -234,7 +234,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-glide);
 }
 
 .backBtn:hover {
@@ -262,7 +262,7 @@
 
 .messagesArea::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 /* --- Message Rows --- */
@@ -386,7 +386,7 @@
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   font-size: 0.95rem;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-glide);
   font-family: inherit;
   color: #0f172a;
 }
@@ -413,7 +413,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-glide);
 }
 
 .attachBtn:hover {
@@ -432,7 +432,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-glide);
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
 }
 
@@ -500,7 +500,7 @@
   justify-content: center;
   cursor: pointer;
   color: #64748b;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-glide);
 }
 
 .closeBtn:hover {
@@ -528,7 +528,7 @@
   border-radius: 12px;
   color: #0f172a;
   font-size: 0.95rem;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-glide);
 }
 
 .input:focus {
@@ -548,7 +548,7 @@
   font-weight: 600;
   cursor: pointer;
   margin-top: 1rem;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-glide);
   font-size: 1rem;
 }
 
@@ -638,7 +638,7 @@
   justify-content: center;
   color: #64748b;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-glide);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
@@ -679,7 +679,7 @@
   background: #f1f5f9;
   color: #334155;
   padding: 0.3rem 0.75rem;
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 0.85rem;
   font-weight: 500;
   display: flex;
@@ -735,7 +735,7 @@
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   background: rgba(0, 0, 0, 0.04);
-  border-radius: 8px;
+  border-radius: 12px;
   color: inherit;
   text-decoration: none;
   font-size: 0.85rem;
@@ -758,7 +758,7 @@
   justify-content: space-between;
   background: #f1f5f9;
   padding: 0.5rem 0.75rem;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 0.5rem;
   border: 1px solid #e2e8f0;
 }
@@ -881,7 +881,7 @@
 }
 .memberList::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .memberItem {
@@ -968,7 +968,7 @@
   gap: 0.5rem;
   padding: 0.5rem;
   background: #f8fafc;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .miniInput {
@@ -993,7 +993,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s;
 }
