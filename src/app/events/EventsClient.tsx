@@ -212,11 +212,18 @@ function Featured({ event }: { event: EventWithRelations }) {
                 />
             ) : (
                 <div className={styles.typePoster} role="img" aria-label={event.title}>
-                    {Array.from({ length: 5 }, (_, i) => (
-                        <span key={i} aria-hidden="true">
-                            {event.category}
-                        </span>
-                    ))}
+                    {/* Eight repeats, drifting up by a quarter of the stack —
+                        which is exactly two of them. Every span is identical,
+                        so landing on a whole number of lines means the loop
+                        restarts on a frame that looks the same as the one
+                        before it, and the drift never appears to jump. */}
+                    <div className={styles.typePosterTrack}>
+                        {Array.from({ length: 8 }, (_, i) => (
+                            <span key={i} aria-hidden="true">
+                                {event.category}
+                            </span>
+                        ))}
+                    </div>
                 </div>
             )}
 

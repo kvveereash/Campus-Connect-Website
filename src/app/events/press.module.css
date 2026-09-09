@@ -105,6 +105,37 @@
     padding: 32px 24px;
 }
 
+/* The word drifts.
+   A stack of the category repeated at poster scale is a strong idea sitting
+   completely still, which makes it read as a background image rather than as
+   part of the page. Moving it by exactly one line height and looping means
+   the stack slides continuously with no visible restart — the same trick the
+   marquee uses horizontally. Only transform animates, on its own layer. */
+.typePoster {
+    position: relative;
+}
+
+.typePosterTrack {
+    display: flex;
+    flex-direction: column;
+    animation: posterDrift 26s linear infinite;
+    will-change: transform;
+}
+
+@keyframes posterDrift {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+
+    to {
+        transform: translate3d(0, -25%, 0);
+    }
+}
+
+.featured:hover .typePosterTrack {
+    animation-play-state: paused;
+}
+
 .typePoster span {
     display: block;
     font-family: var(--press-display);
@@ -175,7 +206,13 @@
 /* ---------- filter rail ---------- */
 .rail {
     position: sticky;
-    top: 0;
+    /* Parks below the navbar, not underneath it.
+       At top:0 this stuck to the very top of the viewport — the same 66px the
+       header occupies once scrolling makes it fixed. The header's fill is
+       rgba(255,255,255,0.86), so the filter chips did not disappear behind it,
+       they showed through it: two rows of controls printed over each other. */
+    position: sticky;
+    top: 66px;
     z-index: 30;
     background: var(--press-paper);
     border-bottom: 1px solid var(--press-rule);
@@ -261,7 +298,8 @@
 /* ---------- date group ---------- */
 .groupHead {
     position: sticky;
-    top: var(--rail-h, 112px);
+    /* Below the rail, which is itself below the header. */
+    top: calc(66px + var(--rail-h, 112px));
     z-index: 20;
     background: var(--press-paper);
     display: flex;
@@ -512,6 +550,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .typePosterTrack {
+        animation: none;
+    }
+
     .featuredImage,
     .cover,
     .row,
