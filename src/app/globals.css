@@ -78,9 +78,12 @@
   --primary-color: var(--color-obsidian);
   --secondary-color: var(--color-obsidian);
 
-  /* Hairline rules, in ink rather than gray. */
-  --border-color: var(--color-obsidian);
+  /* Dividers and card edges. Pure black is right for a ghost button's
+     outline, but ~29 files use this token for rules and surfaces, and a
+     solid black hairline on every one of them reads as harsh rather than
+     precise. Buttons that want full ink ask for --color-obsidian. */
   --border-hairline: rgba(0, 0, 0, 0.14);
+  --border-color: var(--border-hairline);
   --border-on-dark: rgba(255, 255, 255, 0.3);
 
   /* ── Typography ──
@@ -274,69 +277,74 @@ button {
 
 /* 1. Buttons */
 /* 1. Buttons */
+/* Buttons.
+   These were left over from the previous palette: 1.5px borders, a lift on
+   hover and a 4px offset "retro pop" shadow. Nothing else on the site moves
+   on hover or casts a shadow any more, so every screen that had not been
+   redesigned yet was betrayed by its buttons. They now do what every other
+   control does — a black pill that either fills or inverts, and letter-spacing
+   as the only motion. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 2rem;
-  /* Adjusted vertical padding */
+  gap: 10px;
+  padding: 11px 28px;
   border-radius: var(--radius-button);
-  font-weight: 500;
-  font-size: 0.9375rem;
-  letter-spacing: -0.01em;
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0;
+  cursor: pointer;
   transition: background-color var(--duration-base) var(--ease-glide),
               color var(--duration-base) var(--ease-glide),
               border-color var(--duration-base) var(--ease-glide),
-              transform var(--duration-base) var(--ease-glide);
+              letter-spacing var(--duration-base) var(--ease-glide),
+              opacity var(--duration-micro) var(--ease-glide);
 }
 
-/* Primary: the dark filled CTA. The near-black fill with a hairline border and
-   an inset highlight creates depth without a drop shadow. The lilac accent is
-   deliberately not used here — it is a badge colour, not a button colour. */
+.btn:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+/* Primary: filled ink. */
 .btn-primary {
   background-color: var(--color-obsidian);
-  color: var(--color-snow);
-  border: 1.5px solid #2c2e34;
-  border-radius: var(--radius-button);
-  box-shadow: var(--shadow-button);
+  color: var(--color-paper);
+  border: 1px solid var(--color-obsidian);
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.02);
-  box-shadow: 4px 4px 0 var(--color-forest);
-  /* Retro pop shadow on hover */
+.btn-primary:hover:not(:disabled) {
+  letter-spacing: 0.05em;
 }
 
-/* Secondary/Outline: Transparent with Black Border */
+/* Outline: the same pill, hollow, filling in on hover. */
 .btn-outline {
   background: transparent;
-  border: 1.5px solid var(--color-forest);
-  color: var(--color-forest);
+  border: 1px solid var(--color-obsidian);
+  color: var(--color-obsidian);
 }
 
-.btn-outline:hover {
-  background: var(--color-forest);
-  color: var(--color-lilac);
-  /* Invert on hover */
-  transform: translateY(-2px);
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+.btn-outline:hover:not(:disabled) {
+  background: var(--color-obsidian);
+  color: var(--color-paper);
 }
 
-/* 2. Cards */
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+}
+
+/* Cards.
+   The lift-and-shadow on hover was the last of the old system still in the
+   global sheet. Redesigned pages don't use .card at all; the ones that still
+   do now get a plain ruled surface instead of a floating panel. */
 .card {
   background: var(--surface-color);
   border-radius: var(--radius-card);
   padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  /* Subtle shadow, cleaner look */
-  border: 1px solid var(--border-color);
-  transition: transform var(--transition-speed);
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-hairline);
 }
 
 /* 3. Text & Layout Utils */

@@ -1,11 +1,11 @@
 'use client';
-import { Trash2 } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { addEventReview, getEventReviews, getUserEventReview, deleteEventReview } from '@/lib/actions/reviews';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import styles from './EventReviews.module.css';
 
 interface Review {
     id: string;
@@ -79,9 +79,12 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
         setSubmitting(false);
     };
 
-    const handleDelete = async (reviewId: string) => {
-        if (!confirm('Delete your review?')) return;
+    // Arms in place instead of opening window.confirm(), which the page
+    // cannot style and which reads as a browser error rather than a choice.
+    const [armedReview, setArmedReview] = useState<string | null>(null);
 
+    const handleDelete = async (reviewId: string) => {
+        setArmedReview(null);
         const result = await deleteEventReview(reviewId);
         if (result.success) {
             toast.success('Review deleted');
@@ -92,24 +95,30 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
         }
     };
 
-    const StarRating = ({ value, onChange, readonly = false }: { value: number; onChange?: (v: number) => void; readonly?: boolean }) => (
-        <div style={{ display: 'flex', gap: '0.25rem' }}>
+    const StarRating = ({
+        value,
+        onChange,
+        readonly = false,
+        large = false,
+    }: {
+        value: number;
+        onChange?: (v: number) => void;
+        readonly?: boolean;
+        large?: boolean;
+    }) => (
+        <div
+            className={`${styles.stars} ${large ? styles.starsLarge : ''}`}
+            role={readonly ? 'img' : undefined}
+            aria-label={readonly ? `${value} out of 5` : undefined}
+        >
             {[1, 2, 3, 4, 5].map((star) => (
                 <button
                     key={star}
                     type="button"
                     onClick={() => !readonly && onChange?.(star)}
                     disabled={readonly}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: readonly ? 'default' : 'pointer',
-                        fontSize: '1.5rem',
-                        color: star <= value ? '#fbbf24' : '#d1d5db',
-                        transition: 'transform 0.1s',
-                    }}
-                    onMouseEnter={(e) => !readonly && (e.currentTarget.style.transform = 'scale(1.2)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                    aria-label={readonly ? undefined : `${star} star${star > 1 ? 's' : ''}`}
+                    className={`${styles.star} ${star <= value ? styles.starOn : ''}`}
                 >
                     ★
                 </button>
@@ -118,143 +127,131 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
     );
 
     if (!isPastEvent) {
-        // For future events, show a message instead of hiding completely
+        // Future events keep the heading, so the page does not simply stop at
+        // the teammate list -- it says the section exists and when it opens.
         return (
-            <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'var(--surface-color)', borderRadius: '1rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-                    Reviews & Ratings
-                </h3>
-                <p style={{ color: 'var(--text-secondary)' }}>
-                    Reviews open once the event has ended.
-                </p>
+            <div className={styles.section}>
+                <div className={styles.head}>
+                    <h2 className={styles.title}>Reviews</h2>
+                </div>
+                <p className={styles.note}>Reviews open once the event has ended.</p>
             </div>
         );
     }
 
     return (
-        <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'var(--surface-color)', borderRadius: '1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div className={styles.section}>
+            <div className={styles.head}>
                 <div>
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                        Reviews & Ratings
-                    </h3>
+                    <h2 className={styles.title}>Reviews</h2>
                     {totalReviews > 0 && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
+                        <div className={styles.summary}>
                             <StarRating value={Math.round(avgRating)} readonly />
-                            <span>{avgRating.toFixed(1)} ({totalReviews} reviews)</span>
+                            <span className={styles.summaryText}>
+                                {avgRating.toFixed(1)} from {totalReviews}{' '}
+                                {totalReviews === 1 ? 'review' : 'reviews'}
+                            </span>
                         </div>
                     )}
                 </div>
 
                 {hasAttended && !showForm && (
                     <button
+                        type="button"
                         onClick={() => setShowForm(true)}
-                        className="btn btn-primary"
-                        style={{ padding: '0.5rem 1rem' }}
+                        className="btn btn-outline"
                     >
-                        {userReview ? 'Edit review' : 'Write a review'}
+                        {userReview ? 'Edit your review' : 'Write a review'}
                     </button>
                 )}
             </div>
 
-            {/* Review Form */}
             {showForm && hasAttended && (
-                <form onSubmit={handleSubmit} style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--background-color)', borderRadius: '0.75rem' }}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Your Rating</label>
-                        <StarRating value={rating} onChange={setRating} />
+                <form onSubmit={handleSubmit} className={styles.form}>
+                    <div className={styles.field}>
+                        <label className={styles.label}>Your rating</label>
+                        <StarRating value={rating} onChange={setRating} large />
                     </div>
 
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Review (optional)</label>
+                    <div className={styles.field}>
+                        <label className={styles.label} htmlFor="review-comment">
+                            In your words (optional)
+                        </label>
                         <textarea
+                            id="review-comment"
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
-                            placeholder="Share your experience..."
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                borderRadius: '0.5rem',
-                                border: '1px solid var(--border-color)',
-                                minHeight: '80px',
-                                resize: 'vertical'
-                            }}
+                            placeholder="What was it actually like?"
+                            className={styles.textarea}
                         />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <div className={styles.formActions}>
                         <button type="submit" className="btn btn-primary" disabled={submitting}>
-                            {submitting ? 'Submitting...' : 'Submit Review'}
+                            {submitting ? 'Saving' : userReview ? 'Update review' : 'Post review'}
                         </button>
-                        <button type="button" className="btn btn-outline" onClick={() => setShowForm(false)}>
+                        <button
+                            type="button"
+                            className="btn btn-outline"
+                            onClick={() => setShowForm(false)}
+                        >
                             Cancel
                         </button>
                     </div>
                 </form>
             )}
 
-            {/* Reviews List */}
             {isLoading ? (
-                <p style={{ color: 'var(--text-secondary)' }}>Loading reviews...</p>
+                <p className={styles.empty}>Loading</p>
             ) : reviews.length === 0 ? (
-                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>
-                    No reviews yet. {hasAttended ? 'Be the first to review!' : 'Attend the event to leave a review.'}
+                <p className={styles.empty}>
+                    No reviews yet.{' '}
+                    {hasAttended
+                        ? 'You were there — say how it went.'
+                        : 'Only people who registered can review this one.'}
                 </p>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className={styles.list}>
                     {reviews.map((review) => (
-                        <div key={review.id} style={{ padding: '1rem', background: 'var(--background-color)', borderRadius: '0.75rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                                    {review.user.avatar ? (
-                                        <Image
-                                            src={review.user.avatar}
-                                            alt=""
-                                            width={40}
-                                            height={40}
-                                            style={{ borderRadius: '50%', objectFit: 'cover' }}
-                                        />
-                                    ) : (
-                                        <div style={{
-                                            width: 40,
-                                            height: 40,
-                                            borderRadius: '50%',
-                                            background: 'var(--primary-color)',
-                                            color: 'white',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontWeight: 600
-                                        }}>
-                                            {review.user.name.charAt(0)}
-                                        </div>
-                                    )}
-                                    <div>
-                                        <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{review.user.name}</p>
-                                        <StarRating value={review.rating} readonly />
-                                    </div>
-                                </div>
-
-                                {user?.id === review.user.id && (
-                                    <button
-                                        onClick={() => handleDelete(review.id)}
-                                        style={{ background: 'none', border: 'none', color: 'var(--error-color)', cursor: 'pointer' }}
-                                    >
-                                        <Trash2 size={15} aria-hidden="true" />
-                                    </button>
+                        <article key={review.id} className={styles.review}>
+                            <span className={styles.avatar} aria-hidden="true">
+                                {review.user.avatar ? (
+                                    <Image src={review.user.avatar} alt="" fill sizes="40px" />
+                                ) : (
+                                    review.user.name.charAt(0).toUpperCase()
                                 )}
+                            </span>
+
+                            <div>
+                                <p className={styles.name}>{review.user.name}</p>
+                                <StarRating value={review.rating} readonly />
+                                {review.comment && (
+                                    <p className={styles.comment}>{review.comment}</p>
+                                )}
+                                <p className={styles.stamp}>
+                                    {new Date(review.createdAt).toLocaleDateString('en-US', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric',
+                                    })}
+                                </p>
                             </div>
 
-                            {review.comment && (
-                                <p style={{ marginTop: '0.75rem', color: 'var(--text-secondary)' }}>
-                                    {review.comment}
-                                </p>
+                            {user?.id === review.user.id && (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        armedReview === review.id
+                                            ? handleDelete(review.id)
+                                            : setArmedReview(review.id)
+                                    }
+                                    onBlur={() => setArmedReview(null)}
+                                    className={styles.remove}
+                                >
+                                    {armedReview === review.id ? 'Confirm' : 'Delete'}
+                                </button>
                             )}
-
-                            <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                {new Date(review.createdAt).toLocaleDateString()}
-                            </p>
-                        </div>
+                        </article>
                     ))}
                 </div>
             )}

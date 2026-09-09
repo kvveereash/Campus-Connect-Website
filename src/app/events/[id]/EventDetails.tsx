@@ -1,125 +1,190 @@
 'use client';
-import { MapPin } from 'lucide-react';
 
-import { toast } from 'sonner';
-
+import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import RegisterButton from '@/components/RegisterButton';
 import TeamFinder from '@/components/TeamFinder';
 import { TeamProvider } from '@/context/TeamContext';
 import EventReviews from '@/components/EventReviews';
+import { deleteEvent, type EventDetail } from '@/lib/actions/events';
 import styles from './page.module.css';
-import { deleteEvent } from '@/lib/actions/events';
-import { EventWithRelations } from '@/lib/actions/events';
 
-// Extend the type to include everything we need
-type ExtendedEvent = any; // Using any temporarily to avoid strict type hell with partial matches, but ideally should be EventWithRelations
-
-export default function EventDetails({ event }: { event: ExtendedEvent }) {
+export default function EventDetails({ event }: { event: EventDetail }) {
     const router = useRouter();
     const { user } = useAuth();
+    const [armed, setArmed] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+
+    const isOwner = Boolean(user && event.creatorId === user.id);
+    const when = new Date(event.date);
+    const isPast = when < new Date();
+    const host = event.club ?? event.hostCollege;
+    const hostHref = event.club ? `/clubs/${event.club.id}` : `/colleges/${event.hostCollege.id}`;
 
     const handleDelete = async () => {
-        if (confirm('Are you sure you want to delete this event? This cannot be undone.')) {
-            try {
-                const result = await deleteEvent(event.id);
-                if (result.success) {
-                    toast.success('Event deleted successfully');
-                    router.push('/events');
-                } else {
-                    toast.error(result.error || 'Failed to delete event');
-                }
-            } catch (error) {
-                toast.error('Failed to delete event');
+        setDeleting(true);
+        try {
+            const result = await deleteEvent(event.id);
+            if (result.success) {
+                toast.success('Event deleted');
+                router.push('/events');
+            } else {
+                toast.error(result.error || 'Could not delete this event');
+                setDeleting(false);
+                setArmed(false);
             }
+        } catch {
+            toast.error('Could not delete this event');
+            setDeleting(false);
+            setArmed(false);
         }
     };
 
-    const hostCollege = event.hostCollege;
-    const isOwner = user && event.creatorId === user.id;
-
     return (
-        <div className="container">
-            <Link href="/events" className={styles.backLink}>
-                ← Back to Events
+        <div className={styles.page}>
+            <Link href="/events" className={styles.back}>
+                <ArrowLeft size={13} aria-hidden="true" />
+                All events
             </Link>
 
-            <div className="card">
-                <div className={styles.header}>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                        <span className={styles.category}>{event.category}</span>
-                        <div className={`${styles.priceBadge} ${event.price === 0 ? styles.freeBadge : ''}`}>
-                            {event.price === 0 ? 'FREE' : `$${event.price}`}
-                        </div>
-                    </div>
-                    <span className={styles.date}>
-                        {new Date(event.date).toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                        })}
-                    </span>
+            <header className={styles.masthead}>
+                <div className={styles.eyebrow}>
+                    <span className={styles.eyebrowInk}>{event.category}</span>
+                    <span className={styles.eyebrowRule}>/</span>
+                    <span>{event.price === 0 ? 'Free' : `$${event.price}`}</span>
+                    <span className={styles.eyebrowRule}>/</span>
+                    <span>{isPast ? 'Past' : 'Upcoming'}</span>
+                    {/* Only the creator ever sees an unverified event. */}
+                    {!event.verified && <span className={styles.pending}>Awaiting approval</span>}
                 </div>
 
                 <h1 className={styles.title}>{event.title}</h1>
 
-                <div className={styles.hostInfo}>
+                <p className={styles.host}>
                     Hosted by{' '}
-                    {/* Handle both College and Club hosting */}
-                    {event.club ? (
-                        <Link href={`/clubs/${event.club.id}`} className={styles.hostLink}>
-                            {event.club.name}
-                        </Link>
-                    ) : (
-                        <Link href={`/colleges/${hostCollege?.id || ''}`} className={styles.hostLink}>
-                            {hostCollege?.name || 'Unknown College'}
-                        </Link>
-                    )}
+                    <Link href={hostHref} className={styles.hostLink}>
+                        {host?.name ?? 'Campus Connect'}
+                    </Link>
+                </p>
+            </header>
+
+            {event.thumbnail && (
+                <div className={styles.hero}>
+                    <Image
+                        src={event.thumbnail}
+                        alt=""
+                        fill
+                        priority
+                        sizes="(max-width: 1078px) 100vw, 1078px"
+                    />
+                </div>
+            )}
+
+            <div className={styles.body}>
+                <div>
+                    <p className={styles.sectionLabel}>About</p>
+                    <p className={styles.prose}>{event.description}</p>
                 </div>
 
-                <div className={styles.venue}>
-                    <MapPin size={15} aria-hidden="true" /> {event.venue}
-                </div>
-
-                <div className={styles.description}>
-                    <h3>About Event</h3>
-                    <p style={{ whiteSpace: 'pre-wrap' }}>{event.description}</p>
-                </div>
-
-                <div className={styles.actions}>
-                    <RegisterButton eventId={event.id} price={event.price || 0} />
-
-                    {isOwner && (
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <Link href={`/events/${event.id}/edit`} className="btn btn-outline">
-                                Edit Event
-                            </Link>
-                            <button
-                                onClick={handleDelete}
-                                className="btn btn-outline"
-                                style={{ borderColor: 'var(--error-color)', color: 'var(--error-color)' }}
-                            >
-                                Delete Event
-                            </button>
+                <aside>
+                    <dl className={styles.facts}>
+                        <div className={styles.fact}>
+                            <dt className={styles.factKey}>When</dt>
+                            <dd className={styles.factValue}>
+                                {when.toLocaleDateString('en-US', {
+                                    weekday: 'long',
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric',
+                                })}
+                                <small>
+                                    {when.toLocaleTimeString('en-US', {
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                    })}
+                                </small>
+                            </dd>
                         </div>
-                    )}
-                </div>
 
-                {/* Team Finder Section */}
-                {/* TeamProvider was mounted globally, so every page paid for
-                    its state. Only this component consumes it. */}
+                        <div className={styles.fact}>
+                            <dt className={styles.factKey}>Where</dt>
+                            <dd className={styles.factValue}>
+                                {event.venue}
+                                <small>{event.hostCollege.name}</small>
+                            </dd>
+                        </div>
+
+                        <div className={styles.fact}>
+                            <dt className={styles.factKey}>Entry</dt>
+                            <dd className={styles.factValue}>
+                                {event.price === 0 ? 'Free to attend' : `$${event.price}`}
+                            </dd>
+                        </div>
+
+                        <div className={styles.actions}>
+                            <RegisterButton eventId={event.id} price={event.price || 0} />
+                        </div>
+
+                        {isOwner && (
+                            <div className={styles.ownerActions}>
+                                <Link
+                                    href={`/events/${event.id}/edit`}
+                                    className={styles.ownerLink}
+                                >
+                                    Edit
+                                </Link>
+                                {armed ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={handleDelete}
+                                            disabled={deleting}
+                                            className={`${styles.ownerBtn} ${styles.ownerBtnArmed}`}
+                                        >
+                                            {deleting ? 'Deleting' : 'Confirm delete'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setArmed(false)}
+                                            disabled={deleting}
+                                            className={styles.ownerBtn}
+                                        >
+                                            Keep
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setArmed(true)}
+                                        className={styles.ownerBtn}
+                                    >
+                                        Delete
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </dl>
+                </aside>
+            </div>
+
+            {/* TeamProvider was mounted globally, so every page paid for its
+                state. Only this component consumes it. */}
+            <section className={styles.panel}>
                 <TeamProvider>
                     <TeamFinder eventId={event.id} />
                 </TeamProvider>
+            </section>
 
-                {/* Reviews Section - Only for past events */}
-                <EventReviews eventId={event.id} isPastEvent={new Date(event.date) < new Date()} />
-            </div>
+            {/* The component decides what to show: the ratings once the event
+                has happened, and a line saying when they open before that. */}
+            <section className={styles.panel}>
+                <EventReviews eventId={event.id} isPastEvent={isPast} />
+            </section>
         </div>
     );
 }

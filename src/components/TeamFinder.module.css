@@ -1,152 +1,128 @@
+/* ============================================================
+   TEAM FINDER — a panel on the event page
+   Was the loudest thing on that page: a 2.5rem semibold heading, a
+   dashed 2px rule, a dotted-pattern form panel and an italic empty
+   state. It sits below someone else's event now, so it behaves like
+   a section of that page rather than a page of its own.
+   ============================================================ */
+
 .container {
-    margin-top: 4rem;
-    padding-top: 3rem;
-    border-top: 2px dashed rgba(15, 31, 28, 0.1);
+    margin: 0;
 }
 
 .header {
     display: flex;
+    align-items: flex-end;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2.5rem;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
 }
 
 .title {
-    font-size: 2.5rem;
-    font-weight: 600;
     font-family: var(--font-display);
-    color: var(--color-forest);
-    margin: 0;
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
+    line-height: 1.19;
     letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0;
 }
 
+/* ---------- form ----------
+   Ruled, not boxed. Fields are lines you write on. */
 .formContainer {
-    background: var(--color-cream);
-    border: 1.5px solid var(--color-forest);
-    padding: 2.5rem;
-    border-radius: 0px;
-    margin-bottom: 3rem;
-    box-shadow: none;
-    animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Subtle pattern for the form container */
-.formContainer::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: radial-gradient(var(--color-forest) 0.5px, transparent 0.5px);
-    background-size: 20px 20px;
-    opacity: 0.03;
-    pointer-events: none;
+    padding: 26px 0 30px;
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
+    margin-bottom: 36px;
 }
 
 .formTitle {
     font-family: var(--font-display);
-    font-size: 1.75rem;
-    color: var(--color-forest);
-    margin-bottom: 2rem;
-    font-weight: 600;
-    position: relative;
+    font-weight: 300;
+    font-size: 1.25rem;
+    letter-spacing: -0.015em;
+    color: var(--color-obsidian);
+    margin: 0 0 24px;
 }
 
 .form {
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
-    position: relative;
+    gap: 22px;
 }
 
 .formGroup {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 8px;
 }
 
 .label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--color-forest);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-left: 0.2rem;
+    color: var(--color-ash);
 }
 
 .input,
 .select,
 .textarea {
     width: 100%;
-    padding: 0.85rem 1.25rem;
-    border: 1.5px solid var(--color-forest);
-    border-radius: 0px;
-    background: white;
-    color: var(--color-forest);
-    font-family: var(--font-sans);
-    font-size: 1rem;
-    transition: all 0.2s var(--ease-glide);
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid var(--border-hairline);
+    border-radius: 0;
+    background: transparent;
+    color: var(--color-obsidian);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+    transition: border-color var(--duration-base) var(--ease-glide);
 }
 
 .select {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%230F1F1C' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 1rem center;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 2px center;
     background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-right: 3rem;
+    background-size: 1.15em 1.15em;
+    padding-right: 32px;
+    cursor: pointer;
 }
 
 .input::placeholder,
 .textarea::placeholder {
-    color: rgba(15, 31, 28, 0.3);
+    color: var(--color-ash);
 }
 
 .input:focus,
 .select:focus,
 .textarea:focus {
     outline: none;
-    background: white;
-    box-shadow: none;
-    transform: translate(-2px, -2px);
+    border-bottom-color: var(--color-obsidian);
 }
 
 .textarea {
-    min-height: 140px;
+    min-height: 96px;
     resize: vertical;
-    line-height: 1.6;
 }
 
+/* ---------- list ---------- */
 .list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0 40px;
 }
 
 .empty {
     grid-column: 1 / -1;
+    padding: clamp(48px, 8vw, 88px) 0;
     text-align: center;
-    padding: 5rem 2rem;
-    background: rgba(15, 31, 28, 0.02);
-    border: 2px dashed rgba(15, 31, 28, 0.1);
-    border-radius: 0px;
-    color: var(--text-secondary);
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 1.2rem;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    border-top: 1px solid var(--border-hairline);
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-felt);
 }

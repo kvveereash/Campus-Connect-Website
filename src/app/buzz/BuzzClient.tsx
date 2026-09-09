@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { MessageCircle, Heart, Send, Users } from 'lucide-react';
+import { ArrowUp, Heart, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { createClubPost, getPostComments, createPostComment } from '@/lib/actions/clubs';
 import type { BuzzPost } from '@/lib/actions/buzz';
+import styles from './buzz.module.css';
 
 interface Props {
     posts: BuzzPost[];
-    topics: { name: string; count: number }[];
     myClubs: { id: string; name: string }[];
 }
 
@@ -25,7 +25,9 @@ interface Comment {
     author: { id: string; name: string; avatar?: string | null };
 }
 
-export default function BuzzClient({ posts, topics, myClubs }: Props) {
+const MAX_POST = 1000;
+
+export default function BuzzClient({ posts, myClubs }: Props) {
     const router = useRouter();
     const { user } = useAuth();
     const [isPending, startTransition] = useTransition();
@@ -38,6 +40,20 @@ export default function BuzzClient({ posts, topics, myClubs }: Props) {
     const [comments, setComments] = useState<Record<string, Comment[]>>({});
     const [commentDraft, setCommentDraft] = useState('');
     const [loadingComments, setLoadingComments] = useState(false);
+
+    /* Topics come from the posts on screen, not from a separate query that
+       counted clubs. A filter that says "Technology 5" now means five posts
+       are behind it — which is what a reader assumes a number beside a filter
+       means, and what the old club-count could not promise. */
+    const topics = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const p of posts) {
+            counts.set(p.club.category, (counts.get(p.club.category) ?? 0) + 1);
+        }
+        return [...counts.entries()]
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    }, [posts]);
 
     const visible =
         activeTopic === 'All' ? posts : posts.filter((p) => p.club.category === activeTopic);
@@ -98,86 +114,100 @@ export default function BuzzClient({ posts, topics, myClubs }: Props) {
     };
 
     return (
-        <div className="mx-auto max-w-3xl px-4 py-8">
-            <header className="mb-6">
-                <h1 className="text-3xl font-bold text-[var(--text-primary)]">Campus Buzz</h1>
-                <p className="mt-1 text-[15px] text-[var(--text-secondary)]">
-                    What clubs across campus are posting right now.
-                </p>
+        <div className={styles.page}>
+            <header className={styles.masthead}>
+                <div>
+                    <p className={styles.label}>Buzz</p>
+                    <h1 className={styles.title}>What clubs are saying.</h1>
+                </div>
+                <p className={styles.note}>Newest first, across every verified club</p>
             </header>
 
             {/* ── Composer ── */}
-            {user ? (
-                myClubs.length > 0 ? (
-                    <div className="mb-8 rounded-2xl border border-[var(--border-color)] bg-[var(--surface-color)] p-4">
-                        <textarea
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            placeholder={`What's happening, ${user.name?.split(' ')[0] ?? 'there'}?`}
-                            rows={3}
-                            maxLength={1000}
-                            className="w-full resize-none bg-transparent text-[15px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)]"
-                        />
-                        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-color)] pt-3">
-                            <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                                Posting to
-                                <select
-                                    value={clubId}
-                                    onChange={(e) => setClubId(e.target.value)}
-                                    className="rounded-lg border border-[var(--border-color)] bg-[var(--background-color)] px-2 py-1 text-sm text-[var(--text-primary)]"
-                                >
-                                    {myClubs.map((c) => (
-                                        <option key={c.id} value={c.id}>{c.name}</option>
-                                    ))}
-                                </select>
-                            </label>
+            {user && myClubs.length > 0 ? (
+                <div className={styles.composer}>
+                    <textarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder={`What's happening, ${user.name?.split(' ')[0] ?? 'there'}?`}
+                        rows={2}
+                        maxLength={MAX_POST}
+                        className={styles.field}
+                        aria-label="Write a post"
+                    />
+                    <div className={styles.composerFoot}>
+                        <label className={styles.destination}>
+                            Posting to
+                            <select
+                                value={clubId}
+                                onChange={(e) => setClubId(e.target.value)}
+                                className={styles.select}
+                            >
+                                {myClubs.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <span className={styles.sendGroup}>
+                            {/* Only worth showing once the limit is in sight. */}
+                            {content.length > MAX_POST - 120 && (
+                                <span className={styles.charCount}>
+                                    {MAX_POST - content.length}
+                                </span>
+                            )}
                             <button
+                                type="button"
                                 onClick={handlePost}
                                 disabled={isPending || !content.trim()}
-                                className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-forest)] px-4 py-2 text-sm font-semibold text-[var(--color-cream)] transition hover:opacity-90 disabled:opacity-40"
+                                className={styles.send}
                             >
-                                <Send size={15} />
-                                {isPending ? 'Posting…' : 'Post'}
+                                {isPending ? 'Posting' : 'Post'}
                             </button>
-                        </div>
+                        </span>
                     </div>
-                ) : (
-                    <div className="mb-8 rounded-2xl border border-dashed border-[var(--border-color)] p-5 text-center">
-                        <Users size={20} className="mx-auto mb-2 text-[var(--text-secondary)]" />
-                        <p className="text-sm text-[var(--text-secondary)]">
-                            Posts belong to a club.{' '}
-                            <Link href="/clubs" className="font-semibold underline">
-                                Join a club
-                            </Link>{' '}
-                            to start posting.
-                        </p>
-                    </div>
-                )
+                </div>
             ) : (
-                <div className="mb-8 rounded-2xl border border-dashed border-[var(--border-color)] p-5 text-center">
-                    <p className="text-sm text-[var(--text-secondary)]">
-                        <Link href="/login?redirect=%2Fbuzz" className="font-semibold underline">
-                            Log in
-                        </Link>{' '}
-                        to join the conversation.
+                <div className={styles.gate}>
+                    <p className={styles.gateText}>
+                        {user ? (
+                            <>
+                                Posts belong to a club. <Link href="/clubs">Join one</Link> and
+                                whatever you write lands both on its page and here.
+                            </>
+                        ) : (
+                            <>
+                                <Link href="/login?redirect=%2Fbuzz">Log in</Link> to join the
+                                conversation. Reading needs no account.
+                            </>
+                        )}
                     </p>
                 </div>
             )}
 
-            {/* ── Topic filter, from real club categories ── */}
+            {/* ── Topics ── */}
             {topics.length > 0 && (
-                <div className="mb-6 flex flex-wrap gap-2">
-                    {['All', ...topics.map((t) => t.name)].map((t) => (
+                <div className={styles.topics}>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTopic('All')}
+                        className={styles.topic}
+                        aria-pressed={activeTopic === 'All'}
+                    >
+                        All
+                        <span className={styles.topicCount}>{posts.length}</span>
+                    </button>
+                    {topics.map((t) => (
                         <button
-                            key={t}
-                            onClick={() => setActiveTopic(t)}
-                            className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
-                                activeTopic === t
-                                    ? 'border-[var(--color-forest)] bg-[var(--color-forest)] text-[var(--color-cream)]'
-                                    : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                            }`}
+                            key={t.name}
+                            type="button"
+                            onClick={() => setActiveTopic(t.name)}
+                            className={styles.topic}
+                            aria-pressed={activeTopic === t.name}
                         >
-                            {t}
+                            {t.name}
+                            <span className={styles.topicCount}>{t.count}</span>
                         </button>
                     ))}
                 </div>
@@ -185,135 +215,132 @@ export default function BuzzClient({ posts, topics, myClubs }: Props) {
 
             {/* ── Feed ── */}
             {visible.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[var(--border-color)] py-16 text-center">
-                    <p className="text-[15px] font-medium text-[var(--text-primary)]">
-                        {posts.length === 0 ? 'No posts yet' : `Nothing in ${activeTopic} yet`}
-                    </p>
-                    <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                <div className={styles.empty}>
+                    <h2 className={styles.emptyTitle}>
+                        {posts.length === 0 ? 'Nothing posted yet.' : `Nothing in ${activeTopic}.`}
+                    </h2>
+                    <p className={styles.emptyText}>
                         {posts.length === 0
-                            ? 'Be the first to post something from one of your clubs.'
-                            : 'Try another topic.'}
+                            ? 'The feed fills in as clubs start posting.'
+                            : 'Try another topic, or read everything.'}
                     </p>
                 </div>
             ) : (
-                <div className="space-y-4">
+                <div className={styles.feed}>
                     {visible.map((post) => (
-                        <article
-                            key={post.id}
-                            className="rounded-2xl border border-[var(--border-color)] bg-[var(--surface-color)] p-5"
-                        >
-                            <div className="flex items-center gap-3">
+                        <article key={post.id} className={styles.post}>
+                            <span className={styles.avatar} aria-hidden="true">
                                 {post.author.avatar ? (
-                                    <Image
-                                        src={post.author.avatar}
-                                        alt={post.author.name}
-                                        width={40}
-                                        height={40}
-                                        className="h-10 w-10 rounded-full object-cover"
-                                    />
+                                    <Image src={post.author.avatar} alt="" fill sizes="40px" />
                                 ) : (
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-forest)] text-sm font-bold text-[var(--color-cream)]">
-                                        {post.author.name.charAt(0).toUpperCase()}
-                                    </div>
+                                    post.author.name.charAt(0).toUpperCase()
                                 )}
-                                <div className="min-w-0">
+                            </span>
+
+                            <div>
+                                {/* The club comes first: a post belongs to a club here,
+                                    and the person who wrote it is the attribution. */}
+                                <div className={styles.byline}>
+                                    <Link href={`/clubs/${post.club.id}`} className={styles.club}>
+                                        {post.club.name}
+                                    </Link>
+                                    <span className={styles.bylineDot}>/</span>
                                     <Link
                                         href={`/profile/${post.author.id}`}
-                                        className="text-sm font-semibold text-[var(--text-primary)] hover:underline"
+                                        className={styles.author}
                                     >
                                         {post.author.name}
                                     </Link>
-                                    <p className="text-xs text-[var(--text-secondary)]">
-                                        <Link href={`/clubs/${post.club.id}`} className="hover:underline">
-                                            {post.club.name}
-                                        </Link>
-                                        {' · '}
-                                        {timeAgo(post.timestamp)}
-                                    </p>
+                                    <span className={styles.bylineDot}>/</span>
+                                    <span className={styles.stamp}>{timeAgo(post.timestamp)}</span>
                                 </div>
-                            </div>
 
-                            <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-[var(--text-primary)]">
-                                {post.content}
-                            </p>
+                                <p className={styles.body}>{post.content}</p>
 
-                            {post.image && (
-                                <div className="relative mt-3 h-64 w-full overflow-hidden rounded-xl">
-                                    <Image src={post.image} alt="" fill className="object-cover" />
+                                {post.image && (
+                                    <div className={styles.figure}>
+                                        <Image
+                                            src={post.image}
+                                            alt=""
+                                            fill
+                                            sizes="(max-width: 760px) 100vw, 700px"
+                                        />
+                                    </div>
+                                )}
+
+                                <div className={styles.meta}>
+                                    {/* Read-only, like the club feed: there is no per-user
+                                        like record in the schema, so a toggle here could
+                                        not tell who liked what and would be theatre. */}
+                                    <span className={styles.metric}>
+                                        <Heart size={13} aria-hidden="true" />
+                                        {post.likes}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleComments(post.id)}
+                                        className={styles.commentToggle}
+                                        aria-expanded={openComments === post.id}
+                                    >
+                                        <MessageCircle size={13} aria-hidden="true" />
+                                        {post.commentCount}
+                                    </button>
                                 </div>
-                            )}
 
-                            <div className="mt-4 flex items-center gap-5 border-t border-[var(--border-color)] pt-3 text-sm text-[var(--text-secondary)]">
-                                {/* Read-only, like the club feed: there is no per-user like
-                                    record in the schema, so a toggle here could not tell who
-                                    liked what and would be theatre. */}
-                                <span className="inline-flex items-center gap-1.5">
-                                    <Heart size={15} />
-                                    {post.likes}
-                                </span>
-                                <button
-                                    onClick={() => toggleComments(post.id)}
-                                    className="inline-flex items-center gap-1.5 transition hover:text-[var(--text-primary)]"
-                                >
-                                    <MessageCircle size={15} />
-                                    {post.commentCount}
-                                </button>
-                            </div>
-
-                            {openComments === post.id && (
-                                <div className="mt-4 space-y-3 border-t border-[var(--border-color)] pt-4">
-                                    {loadingComments && !comments[post.id] ? (
-                                        <p className="text-sm text-[var(--text-secondary)]">Loading…</p>
-                                    ) : (comments[post.id]?.length ?? 0) === 0 ? (
-                                        <p className="text-sm text-[var(--text-secondary)]">
-                                            No comments yet.
-                                        </p>
-                                    ) : (
-                                        comments[post.id].map((c) => (
-                                            <div key={c.id} className="flex gap-2.5">
-                                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--border-color)] text-xs font-bold text-[var(--text-primary)]">
-                                                    {c.author.name.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm">
-                                                        <span className="font-semibold text-[var(--text-primary)]">
+                                {openComments === post.id && (
+                                    <div className={styles.thread}>
+                                        {loadingComments && !comments[post.id] ? (
+                                            <p className={styles.threadNote}>Loading</p>
+                                        ) : (comments[post.id]?.length ?? 0) === 0 ? (
+                                            <p className={styles.threadNote}>No replies yet</p>
+                                        ) : (
+                                            comments[post.id].map((c) => (
+                                                <div key={c.id} className={styles.comment}>
+                                                    <div className={styles.commentHead}>
+                                                        <span className={styles.commentAuthor}>
                                                             {c.author.name}
-                                                        </span>{' '}
-                                                        <span className="text-[var(--text-secondary)]">
+                                                        </span>
+                                                        <span className={styles.commentStamp}>
                                                             {timeAgo(c.timestamp)}
                                                         </span>
-                                                    </p>
-                                                    <p className="text-sm text-[var(--text-primary)]">
+                                                    </div>
+                                                    <p className={styles.commentBody}>
                                                         {c.content}
                                                     </p>
                                                 </div>
-                                            </div>
-                                        ))
-                                    )}
+                                            ))
+                                        )}
 
-                                    {user && (
-                                        <div className="flex gap-2 pt-1">
-                                            <input
-                                                value={commentDraft}
-                                                onChange={(e) => setCommentDraft(e.target.value)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') handleComment(post.id);
-                                                }}
-                                                placeholder="Write a comment…"
-                                                maxLength={500}
-                                                className="flex-1 rounded-lg border border-[var(--border-color)] bg-[var(--background-color)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none"
-                                            />
-                                            <button
-                                                onClick={() => handleComment(post.id)}
-                                                disabled={isPending || !commentDraft.trim()}
-                                                className="rounded-lg bg-[var(--color-forest)] px-3 py-2 text-sm font-semibold text-[var(--color-cream)] disabled:opacity-40"
-                                            >
-                                                <Send size={14} />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                        {user && (
+                                            <div className={styles.reply}>
+                                                <input
+                                                    value={commentDraft}
+                                                    onChange={(e) =>
+                                                        setCommentDraft(e.target.value)
+                                                    }
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter')
+                                                            handleComment(post.id);
+                                                    }}
+                                                    placeholder="Write a reply"
+                                                    maxLength={500}
+                                                    className={styles.replyField}
+                                                    aria-label="Write a reply"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleComment(post.id)}
+                                                    disabled={isPending || !commentDraft.trim()}
+                                                    className={styles.replySend}
+                                                    aria-label="Send reply"
+                                                >
+                                                    <ArrowUp size={15} aria-hidden="true" />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </article>
                     ))}
                 </div>

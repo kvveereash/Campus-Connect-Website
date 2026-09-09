@@ -138,24 +138,18 @@ export default function TeamFinder({ eventId }: { eventId: string }) {
 
             <div className={styles.list}>
                 {requests.length > 0 ? (
-                    requests.map((req, index) => {
-                        // Generate a deterministic random rotation between -2 and 2 degrees
-                        const rotation = (index % 2 === 0 ? 1 : -1) * ((index * 3) % 2 + 0.5);
-
-                        return (
-                            <TeamRequestCard
-                                key={req.id}
-                                request={req}
-                                currentUserId={user?.id}
-                                onDelete={deleteRequest}
-                                onEdit={handleEdit}
-                                rotation={rotation}
-                            />
-                        );
-                    })
+                    requests.map((req) => (
+                        <TeamRequestCard
+                            key={req.id}
+                            request={req}
+                            currentUserId={user?.id}
+                            onDelete={deleteRequest}
+                            onEdit={handleEdit}
+                        />
+                    ))
                 ) : (
                     <div className={styles.empty}>
-                        <p>No teammate requests yet. Be the first to post!</p>
+                        <p>No teammate requests yet. Post the first one.</p>
                     </div>
                 )
                 }

@@ -1,0 +1,231 @@
+/* ============================================================
+   EVENT REVIEWS — a panel on the event page
+   Was built entirely from inline styles: tinted rounded panels,
+   semibold headings and amber stars, none of which exist anywhere
+   else on the site. Same ruled treatment as the rest of the page;
+   stars stay, because a rating without them is harder to read, but
+   they are set in ink rather than gold.
+   ============================================================ */
+
+.section {
+    margin: 0;
+}
+
+.head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
+    line-height: 1.19;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0;
+}
+
+.summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.summaryText {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+.note {
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-felt);
+    max-width: 48ch;
+}
+
+/* ---------- stars ---------- */
+.stars {
+    display: inline-flex;
+    gap: 3px;
+}
+
+.star {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--color-pewter);
+    cursor: pointer;
+    transition: color var(--duration-micro) var(--ease-glide);
+}
+
+.starOn {
+    color: var(--color-obsidian);
+}
+
+.star:disabled {
+    cursor: default;
+}
+
+.starsLarge .star {
+    font-size: 24px;
+}
+
+/* ---------- form ---------- */
+.form {
+    padding: 24px 0 28px;
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
+    margin-bottom: 32px;
+}
+
+.field {
+    margin-bottom: 22px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.textarea {
+    width: 100%;
+    min-height: 84px;
+    resize: vertical;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid var(--border-hairline);
+    background: transparent;
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--color-obsidian);
+    outline: none;
+    transition: border-color var(--duration-base) var(--ease-glide);
+}
+
+.textarea::placeholder {
+    color: var(--color-ash);
+}
+
+.textarea:focus {
+    border-bottom-color: var(--color-obsidian);
+}
+
+.formActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ---------- list ---------- */
+.list {
+    display: block;
+}
+
+.review {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: start;
+    padding: 22px 0;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.avatar {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.avatar img {
+    object-fit: cover;
+}
+
+.name {
+    font-size: 13px;
+    color: var(--color-obsidian);
+    margin-bottom: 7px;
+}
+
+.comment {
+    margin-top: 11px;
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-inkstone);
+    max-width: 56ch;
+}
+
+.stamp {
+    margin-top: 9px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.remove {
+    background: none;
+    border: 0;
+    padding: 4px;
+    color: var(--color-ash);
+    cursor: pointer;
+    font: inherit;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: color var(--duration-base) var(--ease-glide);
+}
+
+.remove:hover {
+    color: var(--color-obsidian);
+}
+
+.empty {
+    padding: clamp(40px, 6vw, 72px) 0;
+    text-align: center;
+    border-top: 1px solid var(--border-hairline);
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-felt);
+}
+
+@media (max-width: 620px) {
+    .review {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .avatar {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .star,
+    .textarea,
+    .remove {
+        transition: none;
+    }
+}

@@ -71,24 +71,3 @@ export async function getPostableClubs(userId: string) {
         return [];
     }
 }
-
-/**
- * Tags rendered beside the feed, derived from the categories clubs actually
- * use. Previously a hardcoded TRENDING_TAGS list that matched nothing.
- */
-export async function getBuzzTopics(limit = 6) {
-    try {
-        const grouped = await prisma.club.groupBy({
-            by: ['category'],
-            where: { verified: true, deletedAt: null },
-            _count: { category: true },
-            orderBy: { _count: { category: 'desc' } },
-            take: limit,
-        });
-
-        return grouped.map((g) => ({ name: g.category, count: g._count.category }));
-    } catch (error) {
-        console.error('Failed to load buzz topics:', error);
-        return [];
-    }
-}

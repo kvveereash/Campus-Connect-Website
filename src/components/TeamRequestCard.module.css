@@ -1,195 +1,170 @@
-/* Wanted Poster Style */
+/* ============================================================
+   TEAM REQUEST — one entry in the teammate list
+   Was a tilted sticky note with a push pin drawn in CSS. It is a
+   short classified ad, so it is set as one: ruled, upright, and
+   quiet enough that a column of them is readable.
+   ============================================================ */
+
 .card {
-    background: #FFFCF0;
-    /* Cream Paper */
-    border: 1px solid #E5E5E5;
-    padding: 2rem 1.5rem 1.5rem;
-    /* Extra top padding for Pin */
-    margin-bottom: 2rem;
-    position: relative;
-    box-shadow: none;
-    transition: all 0.3s var(--ease-glide);
-    transform-origin: top center;
+    padding: 22px 0;
+    border-top: 1px solid var(--border-hairline);
 }
 
-.card:hover {
-    transform: scale(1.02) rotate(0deg) !important;
-    /* Reset rotation on hover to lift up */
-    z-index: 10;
-    box-shadow: none;
-}
-
-/* The Push Pin */
-.pin {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #ff6b6b, #c92a2a);
-    /* Red Pin */
-    box-shadow: none;
-    z-index: 20;
-}
-
-.pin::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 6px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-    border-bottom: 2px dashed rgba(0, 0, 0, 0.1);
-    /* Tear line */
-    padding-bottom: 1rem;
-}
-
-.userInfo {
+.head {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.who {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
 }
 
 .avatar {
-    width: 2.5rem;
-    height: 2.5rem;
-    background: var(--color-forest);
-    color: white;
-    border-radius: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    font-family: var(--font-display);
-    border: 1.5px solid #000;
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: var(--radius-pill);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-size: 12px;
 }
 
 .userName {
     display: block;
-    font-weight: 600;
-    color: var(--color-forest);
-    font-family: var(--font-display);
-    font-size: 1.1rem;
+    font-size: 13px;
+    color: var(--color-obsidian);
 }
 
 .date {
     display: block;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    font-family: monospace;
-}
-
-/* Stamps/Badges */
-.badge {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.8rem;
-    font-weight: 700;
+    margin-top: 2px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transform: rotate(-2deg);
-    border: 2px solid currentColor;
+    color: var(--color-ash);
 }
 
-.badgeTeam {
-    color: #c92a2a;
-    /* Red Ink */
-    border-color: #c92a2a;
-    mask-image: url("data:image/svg+xml,%3Csvg width='200' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E");
-    /* Rough stamp effect simulation if supported, else just border */
-}
-
-.badgeMember {
-    color: #2b8a3e;
-    /* Green Ink */
-    border-color: #2b8a3e;
-    transform: rotate(2deg);
+/* One pill, one wording. The old pair of coloured badges said the same
+   thing twice — colour and text — in a palette with no colour left. */
+.badge {
+    flex: none;
+    padding: 5px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    white-space: nowrap;
 }
 
 .description {
-    color: #374151;
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
-    font-family: var(--font-sans);
-    font-size: 1rem;
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-inkstone);
+    max-width: 52ch;
 }
 
 .skills {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    gap: 6px;
+    margin-top: 14px;
 }
 
-/* Tape / Sticker Tags */
 .skillTag {
-    background: #fff;
-    color: #000;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    box-shadow: none;
-    transform: rotate(-1deg);
-    border: 1px solid #ddd;
-}
-
-.skillTag:nth-child(even) {
-    background: #fff9db;
-    /* Yellow note */
-    transform: rotate(1deg);
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--color-felt);
 }
 
 .actions {
     display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    margin-top: auto;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
 }
 
-/* Buttons */
-.connectBtn {
-    background: var(--color-forest);
-    color: white;
-    padding: 0.6rem 1.2rem;
-    font-weight: 600;
-    transition: all 0.2s;
-    border: none;
+.connect {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 22px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    background: transparent;
+    color: var(--color-obsidian);
+    font: inherit;
+    font-size: 13px;
     cursor: pointer;
-    font-family: var(--font-sans);
-    clip-path: polygon(0 0, 100% 0, 100% 85%, 90% 100%, 0 100%);
-    /* Cut corner */
+    transition: background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide),
+                opacity var(--duration-micro) var(--ease-glide);
 }
 
-.connectBtn:hover:not(:disabled) {
-    background: #000;
-    transform: translateY(-1px);
+.connect:hover:not(:disabled) {
+    background: var(--color-obsidian);
+    color: var(--color-paper);
 }
 
-.connectBtn:disabled {
-    background: #9ca3af;
+.connect:disabled {
+    opacity: 0.35;
     cursor: default;
 }
 
-.deleteBtn {
-    padding: 0.6rem 1rem;
-    color: #c92a2a;
-    font-weight: 600;
-    background: transparent;
-    border: none;
-    cursor: pointer;
+.yours {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    margin-right: 4px;
 }
 
-.deleteBtn:hover {
-    text-decoration: line-through;
+.action {
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: transparent;
+    color: var(--color-felt);
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: border-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
+}
+
+.action:hover {
+    border-color: var(--color-obsidian);
+    color: var(--color-obsidian);
+}
+
+/* Delete arms in place instead of opening a browser dialog. */
+.actionArmed {
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.actionArmed:hover {
+    color: var(--color-paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .connect,
+    .action {
+        transition: none;
+    }
 }

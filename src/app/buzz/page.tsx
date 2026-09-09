@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getSession } from '@/lib/auth';
-import { getBuzzFeed, getPostableClubs, getBuzzTopics } from '@/lib/actions/buzz';
+import { getBuzzFeed, getPostableClubs } from '@/lib/actions/buzz';
 import BuzzClient from './BuzzClient';
 
 export const metadata: Metadata = {
@@ -15,11 +15,15 @@ export const dynamic = 'force-dynamic';
 export default async function BuzzPage() {
     const session = await getSession();
 
-    const [posts, topics, myClubs] = await Promise.all([
+    // Topics used to be a third query that grouped *clubs* by category, then
+    // got rendered as filters over *posts* — so the numbers never matched what
+    // clicking one revealed. The client derives them from the feed it already
+    // has, which is both correct and one less round trip on a page that cannot
+    // be cached.
+    const [posts, myClubs] = await Promise.all([
         getBuzzFeed(),
-        getBuzzTopics(),
         session?.userId ? getPostableClubs(session.userId as string) : Promise.resolve([]),
     ]);
 
-    return <BuzzClient posts={posts} topics={topics} myClubs={myClubs} />;
+    return <BuzzClient posts={posts} myClubs={myClubs} />;
 }

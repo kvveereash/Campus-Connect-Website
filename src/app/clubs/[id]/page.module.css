@@ -1,360 +1,371 @@
-/* ═══════════════════════════════════════════════════════════════
-   CLUB DETAILS PAGE — Premium Editorial Layout
-   ═══════════════════════════════════════════════════════════════ */
+/* ============================================================
+   CLUB DETAIL
+   Was a 400px stock banner — the same photograph on every club —
+   with a blurred glass card overlapping it, a mint category chip
+   and section headings introduced by 24px icons. None of that
+   survives: the club's own logo is the only image, the sections
+   are ruled, and the page opens the way /clubs closes.
+   ============================================================ */
 
-.container {
-    min-height: 100vh;
-    padding-bottom: 6rem;
-    background-color: var(--background-color);
-}
-
-/* ─── Hero Banner Area ────────────────────────────────────── */
-.header {
-    position: relative;
-    height: 400px;
-    width: 100%;
-    margin-bottom: -120px;
-    /* Deep overlap for the glass card */
-    border-radius: 0 0 40px 40px;
-    overflow: hidden;
-}
-
-.banner {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-}
-
-/* Luxury dark gradient over the image */
-.banner::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(15, 31, 28, 0.1) 0%, rgba(15, 31, 28, 0.95) 100%);
-    z-index: 2;
-}
-
-.bannerImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.85);
-}
-
-/* ─── Floating Club Info Card ─────────────────────────────── */
-.clubInfoCard {
-    position: relative;
-    z-index: 10;
-    max-width: 1200px;
+.page {
+    max-width: 1078px;
     margin: 0 auto;
-    padding: 2.5rem 3rem;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: var(--radius-card);
-    display: flex;
-    align-items: center;
-    gap: 3.5rem;
-    box-shadow: none;
+    padding: clamp(28px, 5vw, 56px) 0 clamp(72px, 10vw, 152px);
 }
 
-.logoWrapper {
-    width: 200px;
-    height: 200px;
-    border-radius: 0px;
-    background: #ffffff;
-    padding: 12px;
-    border: 1px solid rgba(15, 31, 28, 0.08);
-    box-shadow: none;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.logoWrapper::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), transparent);
-    z-index: 10;
-    pointer-events: none;
-}
-
-.clubLogo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 0px;
-}
-
-.headerContent {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.categoryTag {
+.back {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1.25rem;
-    background: var(--color-mint);
-    color: var(--color-forest);
-    font-family: var(--font-sans);
-    font-weight: 700;
-    font-size: 0.75rem;
+    gap: 9px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    border-radius: 75px;
-    margin-bottom: 1.25rem;
-    box-shadow: none;
-    width: fit-content;
+    color: var(--color-felt);
+    transition: color var(--duration-base) var(--ease-glide),
+                gap var(--duration-base) var(--ease-glide);
+}
+
+.back:hover {
+    color: var(--color-obsidian);
+    gap: 14px;
+}
+
+/* ---------- masthead ---------- */
+.masthead {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: end;
+    padding: clamp(28px, 5vw, 52px) 0 clamp(32px, 5vw, 48px);
+}
+
+.eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 24px;
+}
+
+.eyebrowInk {
+    color: var(--color-obsidian);
+}
+
+.eyebrowRule {
+    color: var(--color-ash);
+}
+
+.unverified {
+    padding: 4px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    color: var(--color-obsidian);
+    letter-spacing: 0.14em;
 }
 
 .title {
-    font-family: var(--font-heading);
-    font-size: clamp(2.5rem, 4vw, 4rem);
-    font-weight: 800;
-    margin-bottom: 0.75rem;
-    color: var(--color-forest);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2.25rem, 6.4vw, 5.25rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    color: var(--color-obsidian);
+    margin: 0;
+    max-width: 15ch;
+    text-wrap: balance;
 }
 
-.collegeName {
+.college {
+    margin-top: 22px;
+    font-size: 15px;
+    color: var(--color-felt);
+}
+
+/* The club's own mark, square, in the same treatment as the grid on
+   /clubs: grey at rest, colour when you look at it. */
+.mark {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: var(--color-obsidian);
+}
+
+.mark img {
+    object-fit: cover;
+    filter: grayscale(1) brightness(1.16) contrast(0.94);
+    transition: filter var(--duration-slow) var(--ease-glide);
+}
+
+.masthead:hover .mark img {
+    filter: none;
+}
+
+/* No logo, no borrowed stock photo: the initial, set large. */
+.markLetter {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--text-secondary);
-    font-size: 1.15rem;
-    margin-bottom: 2rem;
-    font-weight: 500;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 5rem;
+    letter-spacing: -0.04em;
+    color: var(--color-paper);
 }
 
 .controls {
     display: flex;
-    gap: 1rem;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border-hairline);
 }
 
-/* ─── Two-Column Layout ────────────────────────────────────── */
-.grid {
-    max-width: 1200px;
-    margin: 5rem auto 0;
+/* ---------- body ---------- */
+.body {
     display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 4rem;
-    padding: 0 2rem;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: clamp(40px, 6vw, 88px);
+    align-items: start;
+    margin-top: clamp(36px, 5vw, 56px);
 }
 
-.mainContent {
-    display: flex;
-    flex-direction: column;
-    gap: 5rem;
-}
-
-.sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 3.5rem;
-    position: sticky;
-    top: 100px;
-    height: fit-content;
-}
-
-/* ─── Sections ────────────────────────────────────────────── */
 .section {
-    position: relative;
+    padding-bottom: clamp(36px, 5vw, 56px);
 }
 
-.sectionHeader {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(15, 31, 28, 0.1);
-    position: relative;
+.section + .section {
+    padding-top: clamp(36px, 5vw, 56px);
+    border-top: 1px solid var(--border-hairline);
 }
 
-.sectionHeader::after {
-    content: '';
-    position: absolute;
-    bottom: -1.5px;
-    left: 0;
-    width: 60px;
-    height: 3px;
-    background: var(--color-orange);
-    border-radius: 0px;
-}
-
-.sectionTitle {
-    font-family: var(--font-heading);
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--color-forest);
-    margin: 0;
-    display: flex;
-    align-items: center;
-}
-
-.card {
-    background: #ffffff;
-    border-radius: var(--radius-card);
-    padding: 2.5rem;
-    border: 1px solid rgba(15, 31, 28, 0.06);
-    box-shadow: none;
+.sectionLabel {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
 }
 
 .description {
-    font-family: var(--font-sans);
-    font-size: 1.15rem;
-    line-height: 1.8;
-    color: var(--text-secondary);
+    font-size: 18px;
+    line-height: 1.62;
+    color: var(--color-inkstone);
+    white-space: pre-wrap;
+    max-width: 64ch;
+}
+
+/* ---------- events ---------- */
+.events {
+    border-top: 1px solid var(--border-hairline);
+}
+
+.event {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    color: var(--color-obsidian);
+    transition: padding-left var(--duration-base) var(--ease-glide);
+}
+
+.event:hover {
+    padding-left: 12px;
+}
+
+.eventDate {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+.eventTitle {
+    font-size: clamp(1rem, 1.8vw, 1.125rem);
+    line-height: 1.24;
+    color: var(--color-obsidian);
+}
+
+/* Past events stay listed — a club with a history is worth more than a
+   club with an empty page — but they recede. */
+.eventPast .eventTitle,
+.eventPast .eventDate {
+    color: var(--color-ash);
+}
+
+.eventTag {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    white-space: nowrap;
+}
+
+/* ---------- members rail ---------- */
+.rail {
+    position: sticky;
+    top: 92px;
+}
+
+.railHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 16px;
+}
+
+.railTitle {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
     margin: 0;
 }
 
-/* ─── Sidebar Members List ────────────────────────────────── */
-.memberList {
-    display: grid;
-    gap: 1.25rem;
+.railCount {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    font-variant-numeric: tabular-nums;
 }
 
-.memberItem {
+.member {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    padding: 1.25rem;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 0px;
-    border: 1px solid rgba(15, 31, 28, 0.05);
-    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.memberItem:hover {
-    transform: translateX(6px);
-    background: #ffffff;
-    border-color: rgba(224, 192, 248, 0.5); /* Lilac subtle border */
-    box-shadow: none;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border-hairline);
 }
 
 .memberAvatar {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--color-cream);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-sans);
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: var(--color-orange);
-    border: 2px solid #ffffff;
-    box-shadow: none;
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: var(--radius-pill);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-size: 12px;
 }
 
 .memberName {
-    font-weight: 700;
-    font-size: 1.05rem;
-    color: var(--color-forest);
-    margin: 0 0 0.2rem 0;
+    font-size: 13px;
+    color: var(--color-obsidian);
+    margin: 0;
 }
 
 .memberSub {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin: 0;
-}   
-
-/* ─── Events Grid ─────────────────────────────────────────── */
-.eventsGrid {
-    display: grid;
-    gap: 1.5rem;
+    margin-top: 2px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ash);
 }
 
-.eventCard {
-    position: relative;
-    padding: 1.75rem;
-    background: #ffffff;
-    border-radius: 0px;
-    border: 1px solid rgba(15, 31, 28, 0.08);
-    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-    overflow: hidden;
+.more {
+    padding: 14px 0 0;
+    border-top: 1px solid var(--border-hairline);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ash);
 }
 
-.eventCard::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 6px;
-    background: var(--color-mint);
-    border-radius: 6px 0 0 6px;
+/* ---------- multi-college note ---------- */
+.network {
+    margin-top: 36px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border-hairline);
 }
 
-.eventCard:hover {
-    transform: translateY(-4px);
-    box-shadow: none;
-    border-color: rgba(15, 31, 28, 0.15);
+.networkText {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--color-felt);
+    margin-bottom: 14px;
 }
 
-.emptyState {
+.networkList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.networkChip {
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--color-felt);
+}
+
+/* ---------- empty ---------- */
+.empty {
+    padding: clamp(40px, 6vw, 72px) 0;
     text-align: center;
-    padding: 4rem 2rem;
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: var(--radius-card);
-    border: 2px dashed rgba(15, 31, 28, 0.15);
-    color: var(--text-secondary);
-    font-family: var(--font-sans);
-    font-size: 1.1rem;
+    border-top: 1px solid var(--border-hairline);
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-felt);
 }
 
-/* ─── Responsive ──────────────────────────────────────────── */
-@media (max-width: 1024px) {
-    .grid {
-        grid-template-columns: 1fr;
-        gap: 5rem;
+@media (max-width: 900px) {
+    .masthead,
+    .body {
+        grid-template-columns: minmax(0, 1fr);
     }
 
-    .clubInfoCard {
-        flex-direction: column;
-        text-align: center;
-        margin: 0 1.5rem;
-        gap: 2rem;
-        padding: 3rem 2rem 2.5rem;
+    .mark {
+        max-width: 160px;
     }
 
-    .logoWrapper {
-        margin-top: -100px;
-    }
-
-    .controls {
-        justify-content: center;
-        width: 100%;
-    }
-
-    .sidebar {
+    .rail {
         position: static;
     }
 }
 
-@media (max-width: 768px) {
-    .header {
-        height: 300px;
-    }
-    
-    .clubInfoCard {
-        margin: 0 1rem;
+@media (max-width: 620px) {
+    .event {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
     }
 
-    .title {
-        font-size: 2.2rem;
+    .eventDate {
+        grid-column: 1 / -1;
+    }
+
+    .description {
+        font-size: 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .back,
+    .event,
+    .mark img {
+        transition: none;
+    }
+
+    .back:hover {
+        gap: 9px;
+    }
+
+    .event:hover {
+        padding-left: 0;
     }
 }

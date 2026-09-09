@@ -1,0 +1,523 @@
+/* ============================================================
+   BUZZ — a column of dispatches
+   The feed was a stack of rounded cards on tinted panels, which
+   is how every social product looks and how nothing else on this
+   site looks. Here it is set as one ruled column: posts are
+   separated by hairlines rather than boxed, the club name carries
+   the identity, and the composer is an open field rather than a
+   widget.
+   ============================================================ */
+
+.page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: clamp(40px, 7vw, 88px) 0 clamp(72px, 10vw, 152px);
+}
+
+.masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-bottom: 28px;
+}
+
+.label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2.25rem, 6vw, 4.875rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    margin: 0;
+    max-width: 14ch;
+    text-wrap: balance;
+}
+
+.note {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    padding-bottom: 10px;
+    max-width: 20ch;
+    text-align: right;
+}
+
+/* ---------- composer ----------
+   No panel, no fill. A rule above and below, and the caret sitting
+   on the page the way it does in a text editor. */
+.composer {
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
+    padding: 24px 0;
+}
+
+.field {
+    width: 100%;
+    resize: none;
+    background: transparent;
+    border: 0;
+    outline: none;
+    font-family: inherit;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--color-obsidian);
+}
+
+.field::placeholder {
+    color: var(--color-ash);
+}
+
+.composerFoot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.destination {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+/* Counter and button travel together at the right end of the footer. */
+.sendGroup {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* The select keeps the native control for keyboard and mobile, but
+   loses the chrome — it reads as a word in the sentence. */
+.select {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--color-obsidian);
+    padding: 2px 2px 3px;
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
+    cursor: pointer;
+    max-width: 220px;
+}
+
+.send {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 24px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-size: 13px;
+    cursor: pointer;
+    transition: letter-spacing var(--duration-base) var(--ease-glide),
+                opacity var(--duration-micro) var(--ease-glide);
+}
+
+.send:hover:not(:disabled) {
+    letter-spacing: 0.05em;
+}
+
+.send:disabled {
+    opacity: 0.28;
+    cursor: default;
+}
+
+.charCount {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- gate (logged out / no clubs) ---------- */
+.gate {
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
+    padding: 36px 0;
+}
+
+.gateText {
+    font-size: 16px;
+    line-height: 1.58;
+    color: var(--color-felt);
+    max-width: 46ch;
+}
+
+.gateText a {
+    color: var(--color-obsidian);
+    border-bottom: 1px solid var(--color-obsidian);
+    padding-bottom: 1px;
+}
+
+/* ---------- topics ---------- */
+.topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.topic {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: transparent;
+    color: var(--color-inkstone);
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color var(--duration-base) var(--ease-glide),
+                background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
+}
+
+.topic:hover {
+    border-color: var(--color-obsidian);
+}
+
+.topic[aria-pressed='true'] {
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+/* The count is data the reader can use before clicking. */
+.topicCount {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+.topic[aria-pressed='true'] .topicCount {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- feed ---------- */
+.feed {
+    display: block;
+}
+
+/* Avatar hangs in its own column so every byline, body and reply below
+   it lines up on one left edge — the column reads as a column. */
+.post {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 18px;
+    padding: 34px 0;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.avatar {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.avatar img {
+    object-fit: cover;
+}
+
+/* Byline: club first. A post belongs to a club here, so the club is
+   the headline and the person who wrote it is the attribution. */
+.byline {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.club {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
+}
+
+.club:hover {
+    opacity: 0.55;
+}
+
+.bylineDot {
+    color: var(--color-ash);
+    font-size: 11px;
+}
+
+.author,
+.stamp {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+.author:hover {
+    color: var(--color-obsidian);
+}
+
+/* Set at reading size with a real measure — this is the only text on
+   the page written by a person. */
+.body {
+    font-size: 18px;
+    line-height: 1.58;
+    color: var(--color-inkstone);
+    white-space: pre-wrap;
+    max-width: 62ch;
+}
+
+.figure {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin-top: 20px;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+}
+
+.figure img {
+    object-fit: cover;
+    filter: grayscale(1) brightness(1.16) contrast(0.95);
+    transition: filter var(--duration-slow) var(--ease-glide);
+}
+
+.post:hover .figure img {
+    filter: none;
+}
+
+/* ---------- post footer ---------- */
+.meta {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-top: 18px;
+}
+
+.metric,
+.commentToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+.commentToggle {
+    cursor: pointer;
+    transition: color var(--duration-base) var(--ease-glide);
+}
+
+.commentToggle:hover,
+.commentToggle[aria-expanded='true'] {
+    color: var(--color-obsidian);
+}
+
+/* ---------- comments ---------- */
+.thread {
+    margin-top: 24px;
+    padding-left: 20px;
+    border-left: 1px solid var(--border-hairline);
+}
+
+.comment {
+    padding: 12px 0;
+}
+
+.commentHead {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    margin-bottom: 5px;
+}
+
+.commentAuthor {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
+}
+
+.commentStamp {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.commentBody {
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-inkstone);
+    max-width: 58ch;
+}
+
+.threadNote {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    padding: 8px 0;
+}
+
+.reply {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding-top: 14px;
+}
+
+/* A ruled line, not a boxed input — same move as the search field on
+   /colleges, so the two pages feel written by the same hand. */
+.replyField {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border-hairline);
+    padding: 7px 0;
+    font: inherit;
+    font-size: 14px;
+    color: var(--color-obsidian);
+    outline: none;
+    transition: border-color var(--duration-base) var(--ease-glide);
+}
+
+.replyField::placeholder {
+    color: var(--color-ash);
+}
+
+.replyField:focus {
+    border-bottom-color: var(--color-obsidian);
+}
+
+.replySend {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    background: transparent;
+    color: var(--color-obsidian);
+    cursor: pointer;
+    transition: background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide),
+                opacity var(--duration-micro) var(--ease-glide);
+}
+
+.replySend:hover:not(:disabled) {
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.replySend:disabled {
+    opacity: 0.28;
+    cursor: default;
+}
+
+/* ---------- empty ---------- */
+.empty {
+    padding: clamp(64px, 10vw, 120px) 0;
+    text-align: center;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.emptyTitle {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0 0 12px;
+}
+
+.emptyText {
+    font-size: 16px;
+    line-height: 1.58;
+    color: var(--color-felt);
+    max-width: 44ch;
+    margin: 0 auto;
+}
+
+@media (max-width: 620px) {
+    .note {
+        text-align: left;
+        max-width: none;
+        padding-bottom: 0;
+    }
+
+    /* The hanging column costs more than it gives at this width. */
+    .post {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+
+    .avatar {
+        display: none;
+    }
+
+    .body {
+        font-size: 16px;
+    }
+
+    .thread {
+        padding-left: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .send,
+    .topic,
+    .commentToggle,
+    .replyField,
+    .replySend,
+    .figure img {
+        transition: none;
+    }
+}

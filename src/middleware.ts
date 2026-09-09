@@ -32,6 +32,10 @@ export async function middleware(request: NextRequest) {
         '/api/health',   // Health check endpoint for monitoring
         '/forgot-password',
         '/reset-password',
+        // Reading the feed needs no account, the same as /events and /clubs.
+        // Writing to it still does: createClubPost checks membership on the
+        // server, and the composer is only rendered for a signed-in member.
+        '/buzz',
     ];
 
     // Check if current path is public (exact match or starts with for API routes)
@@ -49,7 +53,6 @@ export async function middleware(request: NextRequest) {
      */
     const isProtectedPath =
         pathname === '/profile' ||
-        pathname === '/buzz' ||
         pathname.startsWith('/messages') ||
         pathname.startsWith('/team-finder') ||
         pathname.startsWith('/admin') ||

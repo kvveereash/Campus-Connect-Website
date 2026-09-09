@@ -242,7 +242,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                         <textarea
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                            placeholder="Share something with the club..."
+                            placeholder="Share something with the club"
                             className={styles.postInput}
                             rows={3}
                             disabled={isPending}
@@ -254,13 +254,13 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                             className={styles.postButton}
                             disabled={!content.trim() || isPending}
                         >
-                            {isPending ? 'Posting...' : 'Post'}
+                            {isPending ? 'Posting' : 'Post'}
                         </button>
                     </div>
                 </form>
             ) : (
                 <div className={styles.joinPrompt}>
-                    Join the club to participate in discussions!
+                    Join the club to post here. Anyone can read.
                 </div>
             )}
 
@@ -293,7 +293,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                             <button
                                                 className={styles.actionButton}
                                                 onClick={() => toggleMenu(post.id)}
-                                                style={{ padding: '0.4rem', borderRadius: '50%' }}
+                                                aria-label="Post actions"
                                             >
                                                 •••
                                             </button>
@@ -301,7 +301,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                             {menuOpenId === post.id && (
                                                 <div className={styles.menuDropdown}>
                                                     <button onClick={() => startEdit(post)}>Edit</button>
-                                                    <button onClick={() => handleDelete(post.id)} style={{ color: '#ef4444' }}>Delete</button>
+                                                    <button onClick={() => handleDelete(post.id)}>Delete</button>
                                                 </div>
                                             )}
                                         </div>
@@ -314,11 +314,11 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                             value={editContent}
                                             onChange={(e) => setEditContent(e.target.value)}
                                             className={styles.postInput}
-                                            style={{ minHeight: '100px', marginBottom: '1rem', border: '1px solid rgba(255,255,255,0.1)' }}
+                                            style={{ minHeight: '100px', marginBottom: '1rem' }}
                                         />
                                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                             <button onClick={cancelEdit} className={styles.actionButton}>Cancel</button>
-                                            <button onClick={() => saveEdit(post.id)} className={styles.postButton} style={{ padding: '0.5rem 1rem' }}>Save</button>
+                                            <button onClick={() => saveEdit(post.id)} className={styles.postButton}>Save</button>
                                         </div>
                                     </div>
                                 ) : (
@@ -331,7 +331,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                                     alt="Post attachment"
                                                     width={500}
                                                     height={300}
-                                                    style={{ objectFit: 'cover', borderRadius: '8px', width: '100%', height: 'auto' }}
+                                                    style={{ objectFit: 'cover', width: '100%', height: 'auto' }}
                                                 />
                                             </div>
                                         )}
@@ -351,7 +351,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                             <div className={styles.commentsSection}>
                                                 <div className={styles.commentsList}>
                                                     {loadingComments && (!comments[post.id]) ? (
-                                                        <div className={styles.loading}>Loading comments...</div>
+                                                        <div className={styles.loading}>Loading</div>
                                                     ) : (
                                                         (comments[post.id] || []).map(comment => (
                                                             <div key={comment.id} className={styles.commentItem}>
@@ -395,7 +395,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                                         <input
                                                             type="text"
                                                             className={styles.commentInput}
-                                                            placeholder="Write a comment..."
+                                                            placeholder="Write a comment"
                                                             value={commentContent}
                                                             onChange={(e) => setCommentContent(e.target.value)}
                                                         />
@@ -413,7 +413,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                     })
                 ) : (
                     <div className={styles.emptyFeed}>
-                        <p>No posts yet. Be the first to start the conversation!</p>
+                        <p>No posts yet.</p>
                     </div>
                 )}
             </div>

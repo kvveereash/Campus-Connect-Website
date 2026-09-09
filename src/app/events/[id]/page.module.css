@@ -1,115 +1,281 @@
-.backLink {
-    display: inline-block;
-    margin-bottom: 1.5rem;
-    color: var(--text-secondary);
-    font-weight: 500;
+/* ============================================================
+   EVENT DETAIL — the destination of every card on /events
+   The listing sets an expectation: dates as anchors, hairlines,
+   whisper-weight display type. This page used to break it with a
+   floating white card, a coloured price badge and an "About Event"
+   h3. It now opens the way the listing closes.
+   ============================================================ */
+
+.page {
+    max-width: 1078px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) 0 clamp(72px, 10vw, 152px);
 }
 
-.backLink:hover {
-    color: var(--primary-color);
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
+.back {
+    display: inline-flex;
     align-items: center;
-    margin-bottom: 1rem;
+    gap: 9px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    transition: color var(--duration-base) var(--ease-glide),
+                gap var(--duration-base) var(--ease-glide);
 }
 
-.category {
-    background-color: #e0f2fe;
-    color: #0284c7;
-    padding: 0.5rem 1rem;
-    border-radius: 75px;
-    font-weight: 600;
+.back:hover {
+    color: var(--color-obsidian);
+    gap: 14px;
 }
 
-.date {
-    color: var(--text-secondary);
-    font-weight: 500;
+/* ---------- masthead ---------- */
+.masthead {
+    padding: clamp(28px, 5vw, 52px) 0 0;
 }
 
-.priceBadge {
-    background-color: var(--color-forest);
-    color: var(--color-mint);
-    padding: 0.5rem 1.25rem;
-    border-radius: 0px;
-    font-weight: 800;
-    box-shadow: none;
-    border: 1px solid var(--color-mint);
+/* Category and price sit on one rule above the title — the same
+   eyebrow the listing uses, so the row you clicked reappears here. */
+.eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 26px;
 }
 
-.freeBadge {
-    background-color: var(--color-mint);
-    color: var(--color-forest);
-    box-shadow: none;
-    border: 1px solid var(--color-forest);
+.eyebrowInk {
+    color: var(--color-obsidian);
+}
+
+.eyebrowRule {
+    color: var(--color-ash);
+}
+
+/* Pending events are visible to their creator before an admin approves
+   them. Saying so is more useful than hiding it. */
+.pending {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    color: var(--color-obsidian);
+    letter-spacing: 0.14em;
 }
 
 .title {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2.25rem, 6.4vw, 5.25rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    color: var(--color-obsidian);
+    margin: 0;
+    max-width: 17ch;
+    text-wrap: balance;
 }
 
-.hostInfo {
-    font-size: 1.125rem;
-    color: var(--text-secondary);
-    margin-bottom: 2rem;
+.host {
+    margin-top: 24px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-felt);
 }
 
 .hostLink {
-    color: var(--primary-color);
-    font-weight: 500;
+    color: var(--color-obsidian);
+    border-bottom: 1px solid var(--border-hairline);
+    padding-bottom: 2px;
+    transition: border-color var(--duration-base) var(--ease-glide);
 }
 
-.venue {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1.125rem;
-    margin-bottom: 2rem;
-    color: var(--text-primary);
+.hostLink:hover {
+    border-bottom-color: var(--color-obsidian);
 }
 
-.description {
-    margin-bottom: 3rem;
-    line-height: 1.8;
-    color: var(--text-secondary);
+/* ---------- hero ----------
+   The one photograph on the page, and the only place colour is allowed
+   to arrive at full strength. Square corners, like every other image
+   on the site. */
+.hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    margin-top: clamp(32px, 5vw, 56px);
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: var(--color-inkstone);
 }
 
-.description h3 {
-    color: var(--text-primary);
-    margin-bottom: 1rem;
+.hero img {
+    object-fit: cover;
 }
 
+/* ---------- body ---------- */
+.body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: clamp(40px, 6vw, 88px);
+    align-items: start;
+    margin-top: clamp(44px, 6vw, 80px);
+    padding-top: clamp(36px, 5vw, 56px);
+    border-top: 1px solid var(--border-hairline);
+}
+
+.sectionLabel {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
+}
+
+.prose {
+    font-size: 18px;
+    line-height: 1.62;
+    color: var(--color-inkstone);
+    white-space: pre-wrap;
+    max-width: 64ch;
+}
+
+/* ---------- facts rail ----------
+   A definition list, ruled. When, where, who, how much — the four
+   things a person actually came to find out, in that order. */
+.facts {
+    position: sticky;
+    top: 92px;
+    margin: 0;
+}
+
+.fact {
+    padding: 16px 0;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.fact:last-of-type {
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.factKey {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    margin-bottom: 7px;
+}
+
+.factValue {
+    font-size: 15px;
+    line-height: 1.42;
+    color: var(--color-obsidian);
+    margin: 0;
+}
+
+.factValue small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--color-felt);
+}
+
+/* ---------- actions ---------- */
 .actions {
-    border-top: 1px solid var(--border-color);
-    padding-top: 2rem;
+    margin-top: 28px;
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 10px;
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 640px) {
-    .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+.ownerActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.ownerLink,
+.ownerBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: transparent;
+    color: var(--color-felt);
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: border-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
+}
+
+.ownerLink:hover,
+.ownerBtn:hover {
+    border-color: var(--color-obsidian);
+    color: var(--color-obsidian);
+}
+
+/* Delete confirms in place rather than through window.confirm(), which
+   is the one piece of chrome on the page the design cannot reach — and
+   which reads as a browser error, not a decision. */
+.ownerBtnArmed {
+    border-color: var(--color-obsidian);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.ownerBtnArmed:hover {
+    border-color: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+/* ---------- panels below the fold ---------- */
+.panel {
+    margin-top: clamp(48px, 7vw, 88px);
+    padding-top: clamp(32px, 4vw, 48px);
+    border-top: 1px solid var(--border-hairline);
+}
+
+@media (max-width: 900px) {
+    .body {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 44px;
     }
 
-    .title {
-        font-size: 2rem;
+    .facts {
+        position: static;
+    }
+}
+
+@media (max-width: 620px) {
+    .hero {
+        aspect-ratio: 4 / 3;
     }
 
-    .venue {
-        font-size: 1rem;
+    .prose {
+        font-size: 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .back,
+    .hostLink,
+    .ownerLink,
+    .ownerBtn {
+        transition: none;
     }
 
-    .actions {
-        flex-direction: column-reverse;
-        align-items: stretch;
+    .back:hover {
+        gap: 9px;
     }
 }
