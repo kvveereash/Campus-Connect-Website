@@ -590,15 +590,29 @@
 }
 
 /* ---------- stats, as a quiet editorial row ---------- */
+/* The rule is its own element now rather than a border, because a border
+   cannot be drawn on. */
 .stats {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 28px;
-    border-top: 1px solid var(--border-hairline);
     padding-top: 28px;
 }
 
+.statsRule {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-hairline);
+    transform-origin: left;
+    grid-column: 1 / -1;
+}
+
 .statValue {
+    display: block;
     font-family: var(--font-display);
     font-weight: 300;
     font-size: clamp(2.5rem, 5vw, 3.375rem);

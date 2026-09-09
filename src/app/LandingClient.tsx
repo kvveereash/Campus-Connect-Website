@@ -9,6 +9,7 @@ import type { EventWithRelations } from '@/lib/actions';
 import type { LandingStats, CategoryBandItem, FeaturedClub } from '@/lib/actions/landing';
 import { dateParts } from './events/press';
 import Marquee, { type MarqueeItem } from '@/components/Marquee';
+import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import HeroSphere from '@/components/HeroSphere';
 import styles from './landing.module.css';
 
@@ -218,10 +219,21 @@ export default function LandingClient({
                 >
                     <p className={styles.sectionLabel}>Where it stands</p>
                     <div className={styles.stats}>
-                        <Stat value={stats.events} label="Events" />
-                        <Stat value={stats.clubs} label="Clubs" />
-                        <Stat value={stats.colleges} label="Colleges" />
-                        <Stat value={stats.students} label="Students" />
+                        {/* The rule draws itself in before the figures start,
+                            so the row is ruled first and then filled — the
+                            order a printed page is made in. */}
+                        <motion.span
+                            className={styles.statsRule}
+                            aria-hidden="true"
+                            initial={{ scaleX: 0 }}
+                            whileInView={{ scaleX: 1 }}
+                            viewport={inView}
+                            transition={{ duration: 1.1, ease: [0.19, 1, 0.22, 1] }}
+                        />
+                        <Stat value={stats.events} label="Events" index={0} />
+                        <Stat value={stats.clubs} label="Clubs" index={1} />
+                        <Stat value={stats.colleges} label="Colleges" index={2} />
+                        <Stat value={stats.students} label="Students" index={3} />
                     </div>
                 </motion.section>
 
@@ -411,12 +423,34 @@ export default function LandingClient({
     );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
+/**
+ * One figure. It counts up when the row is reached, staggered off its
+ * position so the four land in sequence rather than together — a row that
+ * arrives all at once reads as a page load, one that arrives in order reads
+ * as something being counted. The zero padding is kept: it is what holds the
+ * column's shape when a number is a single digit.
+ */
+function Stat({ value, label, index }: { value: number; label: string; index: number }) {
     return (
-        <div>
-            <div className={styles.statValue}>{String(value).padStart(2, '0')}</div>
+        <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={inView}
+            transition={{
+                duration: 0.9,
+                delay: 0.18 + index * 0.1,
+                ease: [0.19, 1, 0.22, 1],
+            }}
+        >
+            <AnimatedCounter
+                to={value}
+                pad={2}
+                duration={1.5}
+                delay={0.3 + index * 0.12}
+                className={styles.statValue}
+            />
             <div className={styles.statLabel}>{label}</div>
-        </div>
+        </motion.div>
     );
 }
 
