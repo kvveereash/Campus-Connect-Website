@@ -236,6 +236,31 @@ button {
   outline: none;
 }
 
+/* Focus.
+   The rule above removed the focus ring from every button on the site, and
+   twelve stylesheets do the same to their fields — so tabbing through the
+   site showed nothing at all, and a keyboard user could not tell where they
+   were. Pointer focus stays quiet, which is what those rules were reaching
+   for; keyboard focus gets a ring, in the system's own ink.
+
+   Scoped as `html :focus-visible` so it outranks the single-class
+   `.input:focus { outline: none }` rules in the modules, which match at the
+   same moment a keyboard focus does. */
+html :focus-visible {
+  outline: 2px solid var(--color-obsidian);
+  outline-offset: 3px;
+}
+
+/* On the black panels an ink ring is invisible; use paper there. */
+html [class*='aside'] :focus-visible,
+html [class*='idSidebar'] :focus-visible {
+  outline-color: var(--color-paper);
+}
+
+html :focus:not(:focus-visible) {
+  outline: none;
+}
+
 .container {
   width: 100%;
   max-width: 1200px;

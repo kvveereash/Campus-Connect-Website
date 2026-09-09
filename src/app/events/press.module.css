@@ -492,8 +492,14 @@
         font-size: 30px;
     }
 
+    /* The 260px min-height fought the aspect-ratio: at 327px of usable
+       width, 4/3 wants 245px of height, the floor pushed it to 260, and
+       aspect-ratio grew the box back to 347px wide — 20px past the screen.
+       The floor is what has to give on a phone. */
     .featured {
         aspect-ratio: 4 / 3;
+        min-height: 0;
+        max-width: 100%;
     }
 
     .rail,
