@@ -45,19 +45,25 @@ export default function HeroSphere() {
             try {
                 renderer = new THREE.WebGLRenderer({
                     alpha: true,
-                    antialias: false, // the shader's own falloff is smoother than MSAA here
+                    // The lit rim is a hard edge against black, and that is
+                    // exactly where stair-stepping shows. Worth it for one mesh.
+                    antialias: true,
                     powerPreference: 'low-power',
                 });
             } catch {
                 return; // no WebGL: the CSS sphere is already on screen
             }
 
-            const size = () => Math.min(el.clientWidth, el.clientHeight);
+            // Measure the canvas itself, not the holder. The holder spans the
+            // whole hero; the canvas is the square the stylesheet sizes.
+            const canvas = renderer.domElement;
+            const size = () => canvas.clientWidth || Math.min(el.clientWidth, el.clientHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-            renderer.setSize(size(), size(), false);
             renderer.setClearColor(0x000000, 0);
-            renderer.domElement.className = styles.canvas;
-            el.appendChild(renderer.domElement);
+            canvas.className = styles.canvas;
+            el.appendChild(canvas);
+            // Only once it is in the document does it have a measurable size.
+            renderer.setSize(size(), size(), false);
 
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 20);
@@ -165,22 +171,36 @@ export default function HeroSphere() {
 
                         // Grazing angles catch the light: the rim that makes a
                         // dark sphere read as a sphere rather than a hole.
-                        float fres = pow(1.0 - max(dot(n, normalize(vView)), 0.0), 2.6);
+                        float fres = pow(1.0 - max(dot(n, normalize(vView)), 0.0), 3.4);
 
-                        float lum = lambert * 0.5 + field * 0.14 + fres * 0.55;
+                        // The headline sits over the middle of this sphere, so
+                        // the middle has to stay dark. Broad lambert across the
+                        // face turned the hero into a grey wall and left white
+                        // type on mid-grey. The rim now carries almost all of
+                        // the light, lambert only tightens a soft key into the
+                        // upper left, and the noise is a sheen rather than a
+                        // haze.
+                        float key2 = pow(lambert, 3.2) * 0.30;
+                        float lum = key2 + field * 0.05 + fres * 0.92;
                         lum = clamp(lum, 0.0, 1.0);
 
                         // Monochrome, with the site's lilac allowed only into
                         // the rim — the one place colour appears on this page.
                         vec3 paper = vec3(1.0);
                         vec3 lilac = vec3(0.878, 0.753, 0.973);
-                        vec3 col = mix(vec3(0.02), paper, lum);
-                        col = mix(col, lilac, fres * 0.30);
+                        vec3 col = mix(vec3(0.015), paper, lum);
+                        col = mix(col, lilac, fres * 0.26);
 
-                        // Fade the silhouette so the sphere sits in the black
-                        // rather than being cut out of it.
-                        float alpha = smoothstep(0.0, 0.16, lum) * 0.95;
-                        gl_FragColor = vec4(col, alpha);
+                        // An ordered dither, a hundredth of a step. Long, dark
+                        // gradients band badly at 8 bits, which is the ribbing
+                        // that showed across the top of the sphere.
+                        float d = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+                        col += (d - 0.5) * 0.012;
+
+                        // Opaque: the body is near-black against a black hero,
+                        // so there is nothing to fade to, and the translucency
+                        // was what made it read as fog rather than an object.
+                        gl_FragColor = vec4(col, 1.0);
                     }
                 `,
             });

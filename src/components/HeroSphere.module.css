@@ -19,12 +19,18 @@
     opacity: 1;
 }
 
+/* The canvas must be SQUARE and the same size as the CSS sphere it covers.
+   It was width:100%/height:100% of a holder that spans the whole hero, which
+   stretched a square render buffer across a 1920x900 box — so the sphere was
+   drawn as an ellipse wider than the window, and what reached the screen was
+   the middle of it: a grey wall with a curved top edge, no silhouette, no
+   sphere. Same clamp as .orb in landing.module.css, deliberately. */
 .canvas {
     display: block;
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
+    width: clamp(420px, 96vmin, 1180px);
+    height: clamp(420px, 96vmin, 1180px);
+    max-width: none;
+    max-height: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
