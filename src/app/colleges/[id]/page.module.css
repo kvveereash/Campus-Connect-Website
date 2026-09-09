@@ -242,7 +242,9 @@
     bottom: 1rem;
     left: 1.5rem;
     background: var(--color-obsidian);
-    color: var(--color-forest);
+    /* Paper on ink. Was --color-forest, an alias of --color-obsidian, so
+       this rendered the same shade as its own background. */
+    color: var(--color-paper);
     padding: 0.4rem 1rem;
     font-size: 0.75rem;
     font-weight: 700;

@@ -167,7 +167,9 @@
     width: 36px;
     height: 36px;
     background: var(--color-obsidian);
-    color: var(--color-forest);
+    /* Paper on ink. Was --color-forest, an alias of --color-obsidian, so
+       this rendered the same shade as its own background. */
+    color: var(--color-paper);
     border-radius: 50%;
     display: flex;
     align-items: center;

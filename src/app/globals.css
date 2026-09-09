@@ -40,7 +40,12 @@
   --color-inkstone: #181818;   /* long-form body, softened black */
   --color-felt: #6d6d6d;       /* muted helper text, captions */
   --color-slate: #636363;      /* the one solid neutral button fill */
-  --color-ash: #9a9a9a;        /* disabled, low-contrast surfaces */
+  /* Was #9a9a9a, which measures 2.81:1 against paper — below the 3:1 floor
+     even for large text, and this token carries most of the small meta type
+     on the site: filter counts, timestamps, category tags, field labels.
+     #767676 is the lightest grey that clears 4.5:1 for text at those sizes
+     and still reads as clearly quieter than felt. */
+  --color-ash: #767676;        /* muted meta type: counts, stamps, labels */
   --color-pewter: #808080;     /* hover and muted state layers */
 
   /* The brand lilac survives in one place only: as a stop inside the

@@ -1,105 +1,113 @@
+/* ============================================================
+   BUTTON — the shared control
+   The primary variant was:
+
+     background-color: var(--color-obsidian);   black
+     color:            var(--color-forest);     also black
+
+   --color-forest is an alias of --color-obsidian, so every primary
+   button rendered as black text on a black fill: a solid black pill
+   with no readable label. It is used for "Copy profile link" on the
+   profile card and for the action in every empty state, so those
+   buttons were unreadable everywhere they appeared.
+
+   On hover it also turned lilac (#d1a8f0) and lifted two pixels —
+   the last of the previous palette's behaviour anywhere in the app.
+   ============================================================ */
+
 .button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 500;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+    font-weight: 400;
+    letter-spacing: 0;
     border-radius: var(--radius-pill);
-    /* Force Pill Shape */
-    cursor: pointer;
     border: 1px solid transparent;
-    font-family: var(--font-sans);
-    letter-spacing: 0.01em;
-    position: relative;
-    overflow: hidden;
+    cursor: pointer;
     white-space: nowrap;
+    transition: background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide),
+                letter-spacing var(--duration-base) var(--ease-glide),
+                opacity var(--duration-micro) var(--ease-glide);
 }
 
 .button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
+    opacity: 0.32;
+    cursor: default;
 }
 
-.button:active:not(:disabled) {
-    transform: scale(0.98);
-}
+/* ---------- variants ---------- */
 
-/* Variants */
+/* Filled ink. Paper label — this is the line that was black on black. */
 .primary {
     background-color: var(--color-obsidian);
-    color: var(--color-forest);
-    border-color: transparent;
-    box-shadow: none;
-    /* Softer shadow */
+    color: var(--color-paper);
+    border-color: var(--color-obsidian);
 }
 
 .primary:hover:not(:disabled) {
-    background-color: #d1a8f0;
-    /* Slightly darker lilac */
-    transform: translateY(-2px);
-    box-shadow: none;
+    letter-spacing: 0.05em;
 }
 
-.secondary {
-    background-color: var(--color-forest);
-    color: var(--color-cream);
-}
-
-.secondary:hover:not(:disabled) {
-    background-color: #1a2f2b;
-    /* Lighter forest */
-    transform: translateY(-1px);
-}
-
+/* Hollow ink, filling in on hover. */
+.secondary,
 .outline {
     background-color: transparent;
-    border-color: var(--border-color);
-    color: var(--text-primary);
+    border-color: var(--color-obsidian);
+    color: var(--color-obsidian);
 }
 
+.secondary:hover:not(:disabled),
 .outline:hover:not(:disabled) {
-    border-color: var(--text-primary);
-    background-color: rgba(15, 31, 28, 0.02);
+    background-color: var(--color-obsidian);
+    color: var(--color-paper);
 }
 
+/* No edge at all until you reach for it. */
 .ghost {
     background-color: transparent;
-    color: var(--text-secondary);
+    border-color: transparent;
+    color: var(--color-felt);
 }
 
 .ghost:hover:not(:disabled) {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: var(--text-primary);
+    color: var(--color-obsidian);
 }
 
+/* The one place colour still means something: this button destroys
+   something. A delete control that looks identical to a save control
+   is a worse design than a monochrome one. */
 .danger {
-    background-color: #ef4444;
-    color: white;
+    background-color: transparent;
+    border-color: #b3261e;
+    color: #b3261e;
 }
 
 .danger:hover:not(:disabled) {
-    background-color: #dc2626;
+    background-color: #b3261e;
+    color: var(--color-paper);
 }
 
-/* Sizes */
+/* ---------- sizes ---------- */
 .sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
+    padding: 0 18px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
     height: 32px;
 }
 
 .md {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.95rem;
-    height: 44px;
-    /* Taller tap target */
+    padding: 0 28px;
+    font-size: 14px;
+    height: 42px;
 }
 
 .lg {
-    padding: 1rem 2rem;
-    font-size: 1.125rem;
-    height: 56px;
+    padding: 0 34px;
+    font-size: 15px;
+    height: 52px;
 }
 
 .fullWidth {
@@ -107,27 +115,28 @@
     display: flex;
 }
 
+/* ---------- icons and loading ---------- */
 .icon {
     display: inline-flex;
     align-items: center;
 }
 
-.button>.icon:first-child {
-    margin-right: 0.5rem;
+.button > .icon:first-child {
+    margin-right: 9px;
 }
 
-.button>.icon:last-child {
-    margin-left: 0.5rem;
+.button > .icon:last-child {
+    margin-left: 9px;
 }
 
 .spinner {
     width: 1em;
     height: 1em;
-    border: 2px solid currentColor;
+    border: 1px solid currentColor;
     border-right-color: transparent;
     border-radius: 50%;
     animation: spin 0.75s linear infinite;
-    margin-right: 0.5rem;
+    margin-right: 9px;
 }
 
 @keyframes spin {
@@ -137,5 +146,15 @@
 
     to {
         transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .button {
+        transition: none;
+    }
+
+    .spinner {
+        animation: none;
     }
 }

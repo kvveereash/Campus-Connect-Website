@@ -148,7 +148,9 @@
     border-radius: 50%;
     background: var(--color-obsidian);
     /* Lilac background */
-    color: var(--color-forest);
+    /* Paper on ink. Was --color-forest, an alias of --color-obsidian, so
+       this rendered the same shade as its own background. */
+    color: var(--color-paper);
     /* Dark text */
     display: flex;
     align-items: center;
