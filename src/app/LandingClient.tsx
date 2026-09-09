@@ -109,6 +109,7 @@ export default function LandingClient({
                 </div>
                 <div className={styles.grain} aria-hidden="true" />
                 <div className={styles.heroScrim} aria-hidden="true" />
+                <div className={styles.heroFrame} aria-hidden="true" />
 
                 <motion.div
                     className={styles.heroInner}

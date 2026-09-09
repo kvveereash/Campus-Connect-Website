@@ -37,6 +37,47 @@
     isolation: isolate;
 }
 
+/* A hairline inset from the window edge.
+   The hero is one object and one phrase in a very large dark frame, and
+   without an edge that frame reads as unfinished rather than as space.
+   A ruled border makes the emptiness deliberate — the oldest trick in
+   editorial layout, and the cheapest. Inset further at the top to clear
+   the navbar rather than cutting across it. */
+.heroFrame {
+    position: absolute;
+    top: clamp(80px, 9vh, 108px);
+    right: clamp(16px, 2.2vw, 34px);
+    bottom: clamp(16px, 2.2vw, 34px);
+    left: clamp(16px, 2.2vw, 34px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Corner ticks, so the frame reads as drawn rather than as a box. */
+.heroFrame::before,
+.heroFrame::after {
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.heroFrame::before {
+    top: -1px;
+    left: -1px;
+    border-right: 0;
+    border-bottom: 0;
+}
+
+.heroFrame::after {
+    right: -1px;
+    bottom: -1px;
+    border-left: 0;
+    border-top: 0;
+}
+
 .orbWrap {
     position: absolute;
     inset: 0;
@@ -254,22 +295,27 @@
 .heroInner {
     position: relative;
     width: 100%;
-    max-width: 1078px;
+    max-width: min(1560px, 92vw);
     margin: 0 auto;
     padding: 0 clamp(20px, 5vw, 40px);
     text-align: center;
 }
 
-/* Modest, not monumental. The atmosphere carries the drama; the words
-   only have to be read. */
+/* Monumental, not modest — the opposite of what this said before.
+   That was written when a bright CSS orb filled the frame and the type
+   only had to be read. The sphere is dark now, and a 54px line centred
+   in a 1920px window left the hero reading as empty: one small cluster
+   with eight hundred pixels of black either side. The phrase is the
+   loudest thing on the page, so it is set that way. */
 .heroTitle {
     font-family: var(--font-display);
-    font-weight: 400;
-    font-size: clamp(1.75rem, 4.4vw, 3.375rem);
-    line-height: 1.15;
-    letter-spacing: -0.02em;
+    font-weight: 300;
+    font-size: clamp(2.5rem, 8.6vw, 8.25rem);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
     color: var(--color-paper);
     margin: 0;
+    text-wrap: balance;
 }
 
 /* The reference sets one letter apart inside the word. Here the italic

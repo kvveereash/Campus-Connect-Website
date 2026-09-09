@@ -188,11 +188,17 @@ export default function HeroSphere() {
                         // between a sphere and a circle.
                         float rim = fres * (0.06 + 0.94 * pow(facing, 0.6));
 
+                        // Lifted from where this started. Pulling the light
+                        // back to save the headline's contrast left the object
+                        // nearly invisible against the black — the form was
+                        // there and nobody could see it. The key spreads a
+                        // little further and the rim carries more, while the
+                        // centre still sits dark enough to read type over.
                         float sheen = snoise(vPos * 2.4 + vec3(0.0, uTime * 0.05, 0.0));
-                        float key2 = pow(facing, 5.0) * 0.20;
-                        float lum = clamp(key2 + sheen * 0.028 + rim, 0.0, 1.0);
+                        float key2 = pow(facing, 3.4) * 0.30;
+                        float lum = clamp(key2 + sheen * 0.035 + rim * 1.25, 0.0, 1.0);
 
-                        vec3 col = mix(vec3(0.015), vec3(1.0), lum);
+                        vec3 col = mix(vec3(0.028), vec3(1.0), lum);
 
                         // A thin-film shimmer, in the outermost part of the rim
                         // only. The site keeps one gradient — lilac into amber
