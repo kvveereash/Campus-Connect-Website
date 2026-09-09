@@ -27,8 +27,8 @@
    sphere. Same clamp as .orb in landing.module.css, deliberately. */
 .canvas {
     display: block;
-    width: clamp(420px, 96vmin, 1180px);
-    height: clamp(420px, 96vmin, 1180px);
+    width: clamp(300px, 68vmin, 760px);
+    height: clamp(300px, 68vmin, 760px);
     max-width: none;
     max-height: none;
 }

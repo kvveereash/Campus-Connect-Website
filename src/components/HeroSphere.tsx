@@ -167,21 +167,26 @@ export default function HeroSphere() {
                         vec3 key = normalize(vec3(-0.42 + uPointer.x * 0.28,
                                                    0.58 - uPointer.y * 0.28,
                                                    0.72));
-                        float lambert = max(dot(n, key), 0.0);
+                        float facing = max(dot(n, key), 0.0);
 
                         // Grazing angles catch the light: the rim that makes a
                         // dark sphere read as a sphere rather than a hole.
-                        float fres = pow(1.0 - max(dot(n, normalize(vView)), 0.0), 3.4);
+                        float fres = pow(1.0 - max(dot(n, normalize(vView)), 0.0), 4.2);
 
-                        // The headline sits over the middle of this sphere, so
-                        // the middle has to stay dark. Broad lambert across the
-                        // face turned the hero into a grey wall and left white
-                        // type on mid-grey. The rim now carries almost all of
-                        // the light, lambert only tightens a soft key into the
-                        // upper left, and the noise is a sheen rather than a
-                        // haze.
-                        float key2 = pow(lambert, 3.2) * 0.30;
-                        float lum = key2 + field * 0.05 + fres * 0.92;
+                        // The rim has to be DIRECTIONAL. Fresnel alone is equal
+                        // in every direction, which drew an even ring right
+                        // around the edge — the look of a CSS glow, not a lit
+                        // object. Gating it by how much each point faces the key
+                        // light turns that ring into a crescent: bright where
+                        // the light is, gone on the far side. This one term is
+                        // the difference between a sphere and a circle.
+                        float rim = fres * (0.06 + 0.94 * pow(facing, 0.6));
+
+                        // The headline sits over the middle, so the middle stays
+                        // dark: a tight specular key, and noise at a level you
+                        // read as sheen rather than as smudge.
+                        float key2 = pow(facing, 5.0) * 0.20;
+                        float lum = key2 + field * 0.028 + rim * 1.0;
                         lum = clamp(lum, 0.0, 1.0);
 
                         // Monochrome, with the site's lilac allowed only into
@@ -189,7 +194,7 @@ export default function HeroSphere() {
                         vec3 paper = vec3(1.0);
                         vec3 lilac = vec3(0.878, 0.753, 0.973);
                         vec3 col = mix(vec3(0.015), paper, lum);
-                        col = mix(col, lilac, fres * 0.26);
+                        col = mix(col, lilac, rim * 0.30);
 
                         // An ordered dither, a hundredth of a step. Long, dark
                         // gradients band badly at 8 bits, which is the ribbing
@@ -247,6 +252,12 @@ export default function HeroSphere() {
                 if (first) {
                     first = false;
                     setReady(true); // fade in only once there is a frame to show
+                    // Retire the CSS sphere underneath. Its warm blobs were
+                    // showing through this canvas's transparent edge as an
+                    // olive fringe down one side, and two spheres stacked at
+                    // slightly different sizes muddied the interior. It stays
+                    // in the DOM as the fallback; it just stops being drawn.
+                    el.parentElement?.setAttribute('data-webgl', 'on');
                 }
             };
             frame = requestAnimationFrame(tick);
@@ -256,6 +267,7 @@ export default function HeroSphere() {
                 io.disconnect();
                 window.removeEventListener('resize', onResize);
                 window.removeEventListener('pointermove', onPointer);
+                el.parentElement?.removeAttribute('data-webgl');
                 mesh.geometry.dispose();
                 material.dispose();
                 renderer.dispose();

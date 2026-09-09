@@ -48,6 +48,16 @@
     will-change: transform;
 }
 
+/* Once the WebGL sphere has drawn its first frame it sets this attribute, and
+   the CSS sphere stops being drawn. Both were visible at once: the warm blobs
+   underneath bled through the canvas's soft edge as an olive fringe, and the
+   two interiors overlapped into a smudge. The CSS one is still here, and is
+   what shows if WebGL never starts. */
+.orbWrap[data-webgl='on'] .orb {
+    opacity: 0;
+    transition: opacity 1.1s var(--ease-glide);
+}
+
 /* The sphere. A clipped circle holding several independently drifting
    layers — the churn between them is what reads as liquid, where a single
    rotating gradient only ever reads as a spinning disc. */
