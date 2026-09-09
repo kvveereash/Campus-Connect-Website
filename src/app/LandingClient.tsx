@@ -9,6 +9,7 @@ import type { EventWithRelations } from '@/lib/actions';
 import type { LandingStats, CategoryBandItem, FeaturedClub } from '@/lib/actions/landing';
 import { dateParts } from './events/press';
 import Marquee, { type MarqueeItem } from '@/components/Marquee';
+import HeroSphere from '@/components/HeroSphere';
 import styles from './landing.module.css';
 
 interface LandingClientProps {
@@ -100,6 +101,11 @@ export default function LandingClient({
                         <div className={styles.orbShade} />
                         <div className={styles.orbRim} />
                     </div>
+
+                    {/* Drawn over the CSS sphere above, which stays as the
+                        fallback for reduced motion, narrow screens and any
+                        device that cannot give a WebGL context. */}
+                    <HeroSphere />
                 </div>
                 <div className={styles.grain} aria-hidden="true" />
                 <div className={styles.heroScrim} aria-hidden="true" />
