@@ -241,6 +241,30 @@ button {
   outline: none;
 }
 
+/* Lenis smooth scrolling.
+   Lenis moves the page with a transform rather than the native scroll, so the
+   document must be free to be as tall as its content, and the browser's own
+   smooth-scroll has to be off or the two fight each other over the same
+   gesture. `.lenis-stopped` is what a modal freeze looks like. These rules are
+   the library's own; they live here rather than as a separate import so the
+   whole entrance-and-scroll behaviour of the site is readable in one file. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
 /* The page entrance, from app/template.tsx.
    `both` fill-mode means the first keyframe applies at first paint, so the
    fade starts immediately rather than waiting on hydration, and the last

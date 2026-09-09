@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChromeGate from "@/components/ChromeGate";
+import SmoothScroll from "@/components/SmoothScroll";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -79,6 +80,7 @@ export default function RootLayout({
           <ModalProvider>
             <AuthProvider>
               <CommandProvider>
+                <SmoothScroll />
                 <ChromeGate>
                   <Navbar />
                 </ChromeGate>
