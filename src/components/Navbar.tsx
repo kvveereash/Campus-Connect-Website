@@ -117,7 +117,7 @@ export default function Navbar() {
                                     Leaderboard
                                 </Link>
                                 <Link href="/map" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                                    Campus Map
+                                    Venues
                                 </Link>
                             </div>
                         </div>

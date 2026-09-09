@@ -22,11 +22,16 @@ export interface LeaderboardClub {
 }
 
 /**
- * Get top event attendees (most events registered)
+ * Get top event attendees (most events registered).
+ *
+ * Every query in this file ran without a deletedAt filter, and the club
+ * board without a verified filter — so a deleted account or an unapproved
+ * club would have appeared in the standings, linking to a page that 404s.
  */
 export async function getTopAttendees(limit = 10) {
     try {
         const users = await prisma.user.findMany({
+            where: { deletedAt: null },
             select: {
                 id: true,
                 name: true,
@@ -66,6 +71,10 @@ export async function getTopAttendees(limit = 10) {
 export async function getTopHosts(limit = 10) {
     try {
         const users = await prisma.user.findMany({
+            where: {
+                deletedAt: null,
+                createdEvents: { some: {} }
+            },
             select: {
                 id: true,
                 name: true,
@@ -78,10 +87,7 @@ export async function getTopHosts(limit = 10) {
             orderBy: {
                 createdEvents: { _count: 'desc' }
             },
-            take: limit,
-            where: {
-                createdEvents: { some: {} }
-            }
+            take: limit
         });
 
         return users.map((user, index) => ({
@@ -104,6 +110,7 @@ export async function getTopHosts(limit = 10) {
 export async function getTopClubs(limit = 10) {
     try {
         const clubs = await prisma.club.findMany({
+            where: { deletedAt: null, verified: true },
             select: {
                 id: true,
                 name: true,
@@ -144,6 +151,10 @@ export async function getTopClubs(limit = 10) {
 export async function getTopBadgeHolders(limit = 10) {
     try {
         const users = await prisma.user.findMany({
+            where: {
+                deletedAt: null,
+                badges: { some: {} }
+            },
             select: {
                 id: true,
                 name: true,
@@ -156,10 +167,7 @@ export async function getTopBadgeHolders(limit = 10) {
             orderBy: {
                 badges: { _count: 'desc' }
             },
-            take: limit,
-            where: {
-                badges: { some: {} }
-            }
+            take: limit
         });
 
         return users.map((user, index) => ({

@@ -38,7 +38,7 @@ export default function Footer() {
                     <h4 className={styles.heading}>Discover</h4>
                     <ul className={styles.links}>
                         <li><Link href="/team-finder">Find Teammates</Link></li>
-                        <li><Link href="/map">Campus Map</Link></li>
+                        <li><Link href="/map">Venues</Link></li>
                         <li><Link href="/buzz">Campus Buzz</Link></li>
                     </ul>
                 </div>

@@ -1,30 +1,58 @@
+import type { Metadata } from 'next';
 import prisma from '@/lib/db';
-import nextDynamic from 'next/dynamic';
+import MapClient from './MapClient';
 
-const MapClient = nextDynamic(() => import('./MapClient'), {
-    loading: () => <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>Loading Map...</div>
-});
+export const metadata: Metadata = {
+    title: 'Venues',
+    description: 'Every venue on campus with something coming up, and what is happening there.',
+};
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * This route used to render a drawn campus: five hardcoded zones ("Main
+ * Auditorium", "CS & Labs", "Sports Complex", "Cafeteria", "Library"), a "You
+ * Are Here" marker with no geolocation behind it, and the subtitle "Real-time
+ * event tracking system" over something that was neither real-time nor
+ * tracking anything.
+ *
+ * It also did not work. Pin positions came from a table of eleven venue
+ * strings, and everything that missed it fell back to one shared coordinate —
+ * fourteen of the twenty upcoming events landed on the same point, stacked on
+ * top of each other. The category filter offered "Tech", which matches no
+ * category in the database (the real one is "Technology"), so that filter
+ * emptied the map; four real categories had no filter at all.
+ *
+ * There is no latitude or longitude anywhere in the schema, so a spatial map
+ * cannot be built from real data. What the data does support is the question
+ * people actually bring here: where is anything happening, and what is on
+ * there. So the page groups real events under their real venues.
+ */
 export default async function MapPage() {
     const events = await prisma.event.findMany({
         where: {
-            date: {
-                gte: new Date(), // Only future events
-            },
+            date: { gte: new Date() },
+            verified: true,
+            deletedAt: null,
         },
-        orderBy: {
-            date: 'asc',
-        },
+        orderBy: { date: 'asc' },
         select: {
             id: true,
             title: true,
             venue: true,
             date: true,
             category: true,
-        }
+            hostCollege: { select: { name: true, location: true } },
+        },
     });
 
-    return <MapClient events={events} />;
+    return (
+        <MapClient
+            events={events.map((e) => ({
+                ...e,
+                date: e.date.toISOString(),
+                venue: e.venue?.trim() || 'Venue to be announced',
+            }))}
+        />
+    );
 }

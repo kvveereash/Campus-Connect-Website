@@ -523,7 +523,9 @@ export async function searchUsers(query: string) {
                             { email: { contains: query, mode: 'insensitive' } }
                         ]
                     },
-                    { id: { not: session.userId } }
+                    { id: { not: session.userId } },
+                    // Deleted accounts were offered as people to message.
+                    { deletedAt: null }
                 ]
             },
             select: { id: true, name: true, avatar: true },

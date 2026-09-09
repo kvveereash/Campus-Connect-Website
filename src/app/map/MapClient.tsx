@@ -1,118 +1,138 @@
 'use client';
-import { MapPin } from 'lucide-react';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import styles from './page.module.css';
 
-// Coordinate mapping (Percentage from Top/Left)
-const VENUE_COORDINATES: Record<string, { top: number; left: number }> = {
-    'Auditorium': { top: 25, left: 50 },
-    'Main Auditorium': { top: 25, left: 50 },
-    'Central Hall': { top: 25, left: 50 },
-    'Lab': { top: 70, left: 15 },
-    'Computer Center': { top: 70, left: 15 },
-    'CS Department': { top: 70, left: 15 },
-    'Ground': { top: 70, left: 80 },
-    'Sports Complex': { top: 70, left: 80 },
-    'Cafeteria': { top: 20, left: 80 },
-    'Canteen': { top: 20, left: 80 },
-    'Library': { top: 25, left: 15 },
-};
+interface MapEvent {
+    id: string;
+    title: string;
+    venue: string;
+    date: string;
+    category: string;
+    hostCollege: { name: string; location: string } | null;
+}
 
-// Fallback for unknown venues
-const DEFAULT_COORDINATE = { top: 50, left: 50 };
-
-export default function MapClient({ events }: { events: any[] }) {
-    const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+export default function MapClient({ events }: { events: MapEvent[] }) {
     const [activeCategory, setActiveCategory] = useState('All');
 
-    const categories = ['All', 'Tech', 'Cultural', 'Sports', 'Workshop'];
+    /* Categories are read off the events on screen. The old list was written
+       by hand and included "Tech", which matches nothing — the category in the
+       database is "Technology" — so that filter always emptied the page while
+       four real categories had no filter at all. */
+    const categories = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const e of events) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
+        return [...counts.entries()]
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    }, [events]);
 
-    const filteredEvents = activeCategory === 'All'
-        ? events
-        : events.filter(e => e.category === activeCategory);
+    const visible =
+        activeCategory === 'All'
+            ? events
+            : events.filter((e) => e.category === activeCategory);
+
+    /* Grouped by venue, venues ordered by whichever has something happening
+       soonest — the order someone reading this actually cares about. */
+    const venues = useMemo(() => {
+        const map = new Map<string, MapEvent[]>();
+        for (const e of visible) {
+            const list = map.get(e.venue);
+            if (list) list.push(e);
+            else map.set(e.venue, [e]);
+        }
+        return [...map.entries()]
+            .map(([venue, list]) => ({
+                venue,
+                events: list,
+                college: list[0].hostCollege,
+                next: new Date(list[0].date).getTime(),
+            }))
+            .sort((a, b) => a.next - b.next);
+    }, [visible]);
 
     return (
-        <div className={styles.container}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>Campus Map</h1>
-                <p style={{ color: '#94a3b8' }}>Real-time event tracking system</p>
+        <div className={styles.page}>
+            <header className={styles.masthead}>
+                <div>
+                    <p className={styles.label}>Venues</p>
+                    <h1 className={styles.title}>Where it happens.</h1>
+                </div>
+                <p className={styles.note}>
+                    {venues.length} {venues.length === 1 ? 'venue' : 'venues'} with something
+                    coming up
+                </p>
             </header>
 
-            {/* Filter Pills */}
-            <div className={styles.filterContainer}>
-                {categories.map(cat => (
+            <div className={styles.filters}>
+                <button
+                    type="button"
+                    className={styles.filter}
+                    aria-pressed={activeCategory === 'All'}
+                    onClick={() => setActiveCategory('All')}
+                >
+                    All
+                    <span className={styles.filterCount}>{events.length}</span>
+                </button>
+                {categories.map((c) => (
                     <button
-                        key={cat}
-                        className={`${styles.filterBtn} ${activeCategory === cat ? styles.active : ''}`}
-                        onClick={() => setActiveCategory(cat)}
+                        key={c.name}
+                        type="button"
+                        className={styles.filter}
+                        aria-pressed={activeCategory === c.name}
+                        onClick={() => setActiveCategory(c.name)}
                     >
-                        {cat}
+                        {c.name}
+                        <span className={styles.filterCount}>{c.count}</span>
                     </button>
                 ))}
             </div>
 
-            <div className={styles.mapWrapper}>
-                <div className={styles.mapBoard}>
-                    {/* SVG Cyber Paths */}
-                    <div className={styles.pathOverlay}>
-                        <svg width="100%" height="100%" style={{ overflow: 'visible' }}>
-                            {/* Paths from Entrance (50% 90%) to Zones */}
-                            <path d="M 50% 90% L 50% 35%" className={styles.cyberPath} /> {/* To Auditorium */}
-                            <path d="M 50% 90% L 20% 70%" className={styles.cyberPath} /> {/* To CS */}
-                            <path d="M 50% 90% L 80% 70%" className={styles.cyberPath} /> {/* To Sports */}
-                        </svg>
-                    </div>
-
-                    {/* Zones (Visual Reference) */}
-                    <div className={`${styles.zone} ${styles.auditorium}`}>Main Auditorium</div>
-                    <div className={`${styles.zone} ${styles.labs}`}>CS & Labs</div>
-                    <div className={`${styles.zone} ${styles.sports}`}>Sports Complex</div>
-                    <div className={`${styles.zone} ${styles.cafeteria}`}>Cafeteria</div>
-                    <div className={`${styles.zone} ${styles.library}`}>Library</div>
-
-                    {/* You Are Here Marker */}
-                    <div className={styles.userMarker}>
-                        <div className={styles.userDot}></div>
-                        <div className={styles.userLabel}>You Are Here</div>
-                    </div>
-
-                    {/* Event Pins */}
-                    {filteredEvents.map((event) => {
-                        // Find coordinate based on venue string match
-                        const venueKey = Object.keys(VENUE_COORDINATES).find(key =>
-                            event.venue.toLowerCase().includes(key.toLowerCase())
-                        );
-
-                        const coords = venueKey ? VENUE_COORDINATES[venueKey] : DEFAULT_COORDINATE;
-
-                        return (
-                            <div
-                                key={event.id}
-                                className={styles.pinContainer}
-                                style={{ top: `${coords.top}%`, left: `${coords.left}%` }}
-                                onMouseEnter={() => setSelectedEvent(event.id)}
-                                onMouseLeave={() => setSelectedEvent(null)}
-                            >
-                                <div className={styles.pin}>
-                                    <MapPin size={15} className={styles.pinIcon} aria-hidden="true" />
-                                </div>
-                                <div className={styles.pulse}></div>
-
-                                <div className={styles.tooltip}>
-                                    <div className={styles.tooltipTitle}>{event.title}</div>
-                                    <span className={styles.tooltipDate}>
-                                        {new Date(event.date).toLocaleDateString(undefined, {
-                                            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                                        })}
-                                    </span>
-                                    <div className={styles.tooltipCategory}>{event.category}</div>
-                                </div>
-                            </div>
-                        );
-                    })}
+            {venues.length === 0 ? (
+                <div className={styles.empty}>
+                    <h2 className={styles.emptyTitle}>Nothing scheduled.</h2>
+                    <p className={styles.emptyText}>
+                        No upcoming events in {activeCategory.toLowerCase()} yet.
+                    </p>
                 </div>
-            </div>
+            ) : (
+                <div className={styles.venues}>
+                    {venues.map((v) => (
+                        <section key={v.venue} className={styles.venue}>
+                            <div className={styles.venueHead}>
+                                <h2 className={styles.venueName}>{v.venue}</h2>
+                                <span className={styles.venueMeta}>
+                                    {v.college?.name}
+                                    {v.college?.location ? ` · ${v.college.location}` : ''}
+                                </span>
+                            </div>
+
+                            <div className={styles.venueEvents}>
+                                {v.events.map((e) => {
+                                    const when = new Date(e.date);
+                                    return (
+                                        <Link
+                                            key={e.id}
+                                            href={`/events/${e.id}`}
+                                            className={styles.row}
+                                        >
+                                            <span className={styles.rowDate}>
+                                                {when.toLocaleDateString('en-US', {
+                                                    day: '2-digit',
+                                                    month: 'short',
+                                                })}
+                                            </span>
+                                            <span className={styles.rowTitle}>{e.title}</span>
+                                            <span className={styles.rowTag}>{e.category}</span>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

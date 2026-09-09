@@ -60,8 +60,8 @@ export default function ExploreDropdown() {
                     <Link href="/map" className={styles.dropdownItem} onClick={() => setIsOpen(false)}>
                         <Map size={20} className={styles.dropdownIcon} />
                         <div className={styles.dropdownText}>
-                            <span className={styles.dropdownTitle}>Campus Map</span>
-                            <span className={styles.dropdownDesc}>Navigate your way around the campus events.</span>
+                            <span className={styles.dropdownTitle}>Venues</span>
+                            <span className={styles.dropdownDesc}>Every venue with something coming up.</span>
                         </div>
                     </Link>
                 </div>

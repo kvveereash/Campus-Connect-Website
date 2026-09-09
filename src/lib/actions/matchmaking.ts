@@ -25,9 +25,20 @@ export async function getRecommendedTeammates(userId: string) {
         const candidates = await prisma.user.findMany({
             where: {
                 id: { not: userId },
-                collegeId: currentUser.collegeId
+                collegeId: currentUser.collegeId,
+                // Deleted accounts were being recommended as teammates.
+                deletedAt: null
             },
-            include: {
+            // Named fields rather than a bare include, which returns every
+            // column on User — password hash included — for fifty people, to
+            // build a suggestion list that uses five of them.
+            select: {
+                id: true,
+                name: true,
+                department: true,
+                year: true,
+                bio: true,
+                collegeId: true,
                 skills: true,
                 interests: true,
                 badges: true

@@ -1,368 +1,237 @@
-/* Main Container */
-.container {
-    max-width: 1400px;
+/* ============================================================
+   VENUES — what the old "Campus Map" should have been
+   The previous sheet drew a slate-blue board with pastel zone
+   boxes, neon "cyber paths" and a pulsing marker, over a campus
+   that does not exist. This is an index of real venues.
+   ============================================================ */
+
+.page {
+    max-width: 1078px;
     margin: 0 auto;
-    padding: 2rem;
-    height: calc(100vh - 100px);
-    display: flex;
-    flex-direction: column;
+    padding: clamp(40px, 7vw, 88px) 0 clamp(72px, 10vw, 152px);
 }
 
-.header {
-    text-align: center;
-    margin-bottom: 2rem;
+.masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-bottom: 28px;
+}
+
+.label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
 }
 
 .title {
-    font-size: 3.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--color-forest);
     font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2.25rem, 6vw, 4.875rem);
+    line-height: 1.1;
     letter-spacing: -0.03em;
-}
-
-.title span {
     color: var(--color-obsidian);
+    margin: 0;
+    max-width: 14ch;
+    text-wrap: balance;
 }
 
-.subtitle {
-    font-family: var(--font-sans);
-    color: var(--text-secondary);
-}
-
-.mapWrapper {
-    flex: 1;
-    position: relative;
-    background: #f1f5f9;
-    /* Light Slate base */
-    border-radius: 0px;
-    border: 2px solid var(--color-forest);
-    overflow: hidden;
-    box-shadow: none;
-    /* Big sticker shadow */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    perspective: 1200px;
-}
-
-/* The Abstract Map - Blueprint Style */
-.mapBoard {
-    width: 90%;
-    height: 90%;
-    position: relative;
-    background-color: #ffffff;
-    background-image:
-        linear-gradient(rgba(15, 31, 28, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(15, 31, 28, 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-    border: 2px solid var(--color-forest);
-    border-radius: 0px;
-    transform: rotateX(25deg);
-    /* Slight isometric tilt */
-    transform-style: preserve-3d;
-    box-shadow: none;
-}
-
-/* Map Zones (Illustrated via CSS) */
-.zone {
-    position: absolute;
-    border: 2px dashed var(--color-forest);
-    border-radius: 0px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-forest);
-    font-weight: 600;
-    font-family: var(--font-display);
+.note {
+    font-size: 11px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    background: rgba(255, 255, 255, 0.5);
-    transition: all 0.3s var(--ease-glide);
+    color: var(--color-felt);
+    padding-bottom: 10px;
+    max-width: 20ch;
+    text-align: right;
 }
 
-.zone:hover {
-    background: var(--color-mint);
-    border-style: solid;
-    transform: translateZ(20px);
-    box-shadow: none;
+/* ---------- filters ---------- */
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
 }
 
-/* Specific Zones placements */
-.auditorium {
-    top: 10%;
-    left: 35%;
-    width: 30%;
-    height: 30%;
+.filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: transparent;
+    color: var(--color-inkstone);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color var(--duration-base) var(--ease-glide),
+                background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
+}
+
+.filter:hover {
     border-color: var(--color-obsidian);
-    background: rgba(224, 192, 248, 0.1);
 }
 
-.labs {
-    top: 50%;
-    left: 5%;
-    width: 25%;
-    height: 40%;
-    border-color: var(--color-mint);
-    background: rgba(209, 250, 229, 0.1);
-}
-
-.sports {
-    top: 50%;
-    right: 5%;
-    width: 30%;
-    height: 40%;
-    border-color: var(--color-orange);
-    background: rgba(255, 125, 93, 0.1);
-}
-
-.cafeteria {
-    top: 10%;
-    right: 10%;
-    width: 20%;
-    height: 25%;
-}
-
-.library {
-    top: 10%;
-    left: 5%;
-    width: 25%;
-    height: 35%;
-}
-
-/* Event Pin */
-.pinContainer {
-    position: absolute;
-    transform: translate(-50%, -100%);
-    cursor: pointer;
-    z-index: 10;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.pinContainer:hover {
-    transform: translate(-50%, -115%) scale(1.1);
-    z-index: 20;
-}
-
-.pin {
-    width: 3.5rem;
-    height: 3.5rem;
-    background: var(--color-orange);
-    border: 2px solid var(--color-forest);
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: none;
-    animation: bounce 2s infinite;
-}
-
-.pinIcon {
-    transform: rotate(45deg);
-    font-size: 1.5rem;
-    filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.1));
-}
-
-.pulse {
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%) rotate(0deg);
-    width: 20px;
-    height: 10px;
-    background: var(--color-forest);
-    border-radius: 50%;
-    opacity: 0.2;
-    filter: blur(4px);
-    animation: pulse 2s infinite;
-}
-
-/* Filter Controls */
-.filterContainer {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    z-index: 10;
-    position: relative;
-}
-
-.filterBtn {
-    background: #ffffff;
-    border: 1.5px solid var(--color-forest);
-    padding: 0.6rem 2rem;
-    border-radius: 75px;
-    color: var(--color-forest);
-    font-weight: 600;
-    font-family: var(--font-sans);
-    cursor: pointer;
-    transition: all 0.2s var(--ease-glide);
-    box-shadow: none;
-}
-
-.filterBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: none;
-    background: var(--color-mint);
-}
-
-.filterBtn.active {
-    background: var(--color-forest);
-    color: var(--color-cream);
-    box-shadow: none;
-}
-
-/* User Marker */
-.userMarker {
-    position: absolute;
-    bottom: 5%;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    z-index: 5;
-}
-
-.userDot {
-    width: 24px;
-    height: 24px;
+.filter[aria-pressed='true'] {
     background: var(--color-obsidian);
-    border: 3px solid #ffffff;
-    border-radius: 50%;
-    box-shadow: none;
-    animation: pulseUser 2s infinite;
+    border-color: var(--color-obsidian);
+    color: var(--color-paper);
 }
 
-.userLabel {
-    background: var(--color-forest);
-    padding: 4px 12px;
-    border-radius: 0px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: none;
+.filterCount {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
 }
 
-/* Cyber Paths Overlay - Now Sketch Lines */
-.pathOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1;
+.filter[aria-pressed='true'] .filterCount {
+    color: rgba(255, 255, 255, 0.55);
 }
 
-.cyberPath {
-    stroke: var(--color-forest);
-    stroke-width: 2;
-    fill: none;
-    stroke-dasharray: 8 4;
-    opacity: 0.3;
-}
-
-@keyframes pulseUser {
-    0% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.2);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-@keyframes dash {
-    to {
-        stroke-dashoffset: -100;
-    }
-}
-
-/* Tooltip Card */
-.tooltip {
-    position: absolute;
-    bottom: 120%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 280px;
-    background: #ffffff;
-    border: 2px solid var(--color-forest);
-    border-radius: 0px;
-    padding: 1.25rem;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    pointer-events: none;
-    box-shadow: none;
-    /* Distinctive shadow */
-    text-align: left;
-    z-index: 100;
-}
-
-.pinContainer:hover .tooltip {
-    opacity: 1;
-    visibility: visible;
-    bottom: 150%;
-    transform: translateX(-50%) rotate(-2deg);
-    /* Playful tilt */
-}
-
-.tooltipTitle {
-    font-weight: 600;
-    font-size: 1.25rem;
-    color: var(--color-forest);
-    margin-bottom: 0.25rem;
-    font-family: var(--font-display);
-}
-
-.tooltipDate {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.75rem;
+/* ---------- venues ---------- */
+.venues {
     display: block;
 }
 
-.tooltipCategory {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.75rem;
-    background: var(--color-cream);
-    color: var(--color-forest);
-    border: 1px solid var(--color-forest);
-    border-radius: 75px;
-    display: inline-block;
-    font-weight: 600;
+.venue {
+    padding: clamp(28px, 4vw, 40px) 0;
+    border-bottom: 1px solid var(--border-hairline);
 }
 
-@keyframes bounce {
+.venueHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
 
-    0%,
-    100% {
-        transform: translateY(0) rotate(-45deg);
+.venueName {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.375rem, 3vw, 2.0625rem);
+    line-height: 1.16;
+    letter-spacing: -0.025em;
+    color: var(--color-obsidian);
+    margin: 0;
+    max-width: 24ch;
+    text-wrap: balance;
+}
+
+.venueMeta {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    text-align: right;
+}
+
+.venueEvents {
+    border-top: 1px solid var(--border-hairline);
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 18px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    color: var(--color-obsidian);
+    transition: padding-left var(--duration-base) var(--ease-glide);
+}
+
+.row:last-child {
+    border-bottom: 0;
+}
+
+.row:hover {
+    padding-left: 12px;
+}
+
+.rowDate {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+.rowTitle {
+    font-size: clamp(0.9375rem, 1.6vw, 1.0625rem);
+    line-height: 1.24;
+    color: var(--color-obsidian);
+}
+
+.rowTag {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    white-space: nowrap;
+}
+
+/* ---------- empty ---------- */
+.empty {
+    padding: clamp(64px, 10vw, 120px) 0;
+    text-align: center;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.emptyTitle {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0 0 12px;
+}
+
+.emptyText {
+    font-size: 16px;
+    line-height: 1.58;
+    color: var(--color-felt);
+    max-width: 44ch;
+    margin: 0 auto;
+}
+
+@media (max-width: 620px) {
+    .note,
+    .venueMeta {
+        text-align: left;
+        max-width: none;
+        padding-bottom: 0;
     }
 
-    50% {
-        transform: translateY(-10px) rotate(-45deg);
+    .row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 14px;
+    }
+
+    .rowDate {
+        grid-column: 1 / -1;
     }
 }
 
-@keyframes pulse {
-    0% {
-        transform: translateX(-50%) scale(1);
-        opacity: 0.5;
+@media (prefers-reduced-motion: reduce) {
+    .filter,
+    .row {
+        transition: none;
     }
 
-    100% {
-        transform: translateX(-50%) scale(2);
-        opacity: 0;
+    .row:hover {
+        padding-left: 0;
     }
 }
