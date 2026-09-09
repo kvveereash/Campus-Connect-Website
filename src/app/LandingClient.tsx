@@ -8,6 +8,7 @@ import { ArrowRight } from 'lucide-react';
 import type { EventWithRelations } from '@/lib/actions';
 import type { LandingStats, CategoryBandItem, FeaturedClub } from '@/lib/actions/landing';
 import { dateParts } from './events/press';
+import Marquee, { type MarqueeItem } from '@/components/Marquee';
 import styles from './landing.module.css';
 
 interface LandingClientProps {
@@ -15,6 +16,8 @@ interface LandingClientProps {
     stats: LandingStats;
     categories: CategoryBandItem[];
     clubs: FeaturedClub[];
+    /** Rows for the running band. Real events, or nothing. */
+    marquee: MarqueeItem[];
 }
 
 /** Patient reveal on the system's curve — a slow camera move, not a snap. */
@@ -30,7 +33,13 @@ const rise = {
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.09 } } };
 const inView = { once: true, margin: '-80px' } as const;
 
-export default function LandingClient({ initialEvents, stats, categories, clubs }: LandingClientProps) {
+export default function LandingClient({
+    initialEvents,
+    stats,
+    categories,
+    clubs,
+    marquee,
+}: LandingClientProps) {
     const orbRef = useRef<HTMLDivElement>(null);
 
     /**
@@ -121,6 +130,15 @@ export default function LandingClient({ initialEvents, stats, categories, clubs 
 
                 <ScrollBadge />
             </section>
+
+            {/* The band runs straight out of the dark hero, so the black
+                carries on across the seam instead of stopping at it. */}
+            <Marquee
+                items={marquee}
+                duration={52}
+                tone="ink"
+                label="Upcoming events"
+            />
 
             <div className={styles.inner}>
 
