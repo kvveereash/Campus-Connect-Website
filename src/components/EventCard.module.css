@@ -1,192 +1,147 @@
-/* EventCard.module.css - Premium Solid Layout */
+/* ============================================================
+   EVENT CARD — used on the two profiles and the college page
+   The /events listing was rebuilt as ruled rows, but this card
+   was never touched, so a profile still showed the old design:
+   rounded corners, a coloured price pill, per-category chip
+   colours and a lift on hover. It is the same object as a row on
+   /events, so it is set the same way — a square photograph, a
+   hairline, and type.
+   ============================================================ */
 
 .card {
-    background: #ffffff;
-    border-radius: 0px;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    text-decoration: none;
-    color: inherit;
-    border: 1px solid rgba(15, 31, 28, 0.06);
-    box-shadow: none;
+    display: block;
+    color: var(--color-obsidian);
 }
 
-.card:hover {
-    transform: translateY(-6px);
-    box-shadow: none;
-    border-color: rgba(15, 31, 28, 0.12);
-}
-
-/* Image Container */
+/* ---------- image ---------- */
 .imageContainer {
     position: relative;
     width: 100%;
-    height: 200px;
+    aspect-ratio: 4 / 3;
     overflow: hidden;
-    background: var(--color-mint);
+    border-radius: var(--radius-card);
+    background: var(--color-inkstone);
 }
 
+/* Grey at rest, colour when you look at it — the same treatment as
+   the clubs grid, so the two indexes feel like one hand. */
 .image {
     object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    filter: grayscale(1) brightness(1.16) contrast(0.94);
+    transition: filter var(--duration-slow) var(--ease-glide),
+                transform var(--duration-slow) var(--ease-glide);
 }
 
 .card:hover .image {
-    transform: scale(1.08);
+    filter: none;
 }
 
-/* Gradient overlay on image bottom */
-.imageContainer::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60%;
-    background: linear-gradient(to top, rgba(15, 31, 28, 0.5), transparent);
-    z-index: 1;
-    pointer-events: none;
-}
-
-/* Category Chip on Image */
-.categoryChip {
-    position: absolute;
-    bottom: 1rem;
-    left: 1.5rem;
-    background: var(--color-mint);
-    color: var(--color-forest);
-    padding: 0.4rem 1rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    border-radius: 75px;
-    z-index: 2;
-    box-shadow: none;
-}
-
-.chipHackathon { background: #E0F2FE; color: #0369A1; }
-.chipFest      { background: #FEE2E2; color: #B91C1C; }
-.chipWorkshop  { background: #F0FDF4; color: #15803D; }
-.chipCultural  { background: #F5F3FF; color: #6D28D9; }
-.chipSocial    { background: #FEF3C7; color: #B45309; }
-.chipDefault   { background: var(--color-mint); color: var(--color-forest); }
-
-/* Pricing Tag (Top Right/Left) */
-.priceTag {
-    position: absolute;
-    top: 1rem;
-    left: 1.5rem;
-    background: var(--color-forest);
-    color: var(--color-cream);
-    padding: 0.3rem 0.8rem;
-    border-radius: 75px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    z-index: 2;
-}
-
+/* ---------- overlays ---------- */
+.priceTag,
 .freeTag {
-    background: var(--color-cream);
-    color: var(--color-forest);
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    z-index: 2;
+    padding: 5px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    color: var(--color-obsidian);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
 }
 
 .shareButton {
     position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(8px);
-    border: none;
-    display: flex;
+    right: 12px;
+    top: 12px;
+    z-index: 2;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-pill);
+    border: 0;
+    background: var(--color-paper);
+    color: var(--color-obsidian);
     cursor: pointer;
-    box-shadow: none;
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-glide);
+}
+
+.card:hover .shareButton,
+.shareButton:focus-visible {
+    opacity: 1;
+}
+
+/* One chip treatment. The six category colours were the last of the
+   old palette anywhere in the app, and the category is already
+   written out in words beside them. */
+.categoryChip,
+.chipHackathon,
+.chipFest,
+.chipWorkshop,
+.chipCultural,
+.chipSocial,
+.chipDefault {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
     z-index: 2;
-    transition: all 0.2s;
+    padding: 5px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
 }
 
-.shareButton:hover {
-    transform: scale(1.05);
-    background: white;
-}
-
-/* Card Content */
+/* ---------- text ---------- */
 .content {
-    padding: 1.5rem;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    background: #ffffff; /* Explicit white background */
+    padding-top: 16px;
 }
 
 .title {
-    font-family: var(--font-sans);
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--color-forest);
-    margin-bottom: 0.5rem;
-    line-height: 1.25;
+    font-size: clamp(1.0625rem, 1.8vw, 1.1875rem);
+    font-weight: 400;
+    line-height: 1.22;
     letter-spacing: -0.01em;
+    color: var(--color-obsidian);
+    margin: 0 0 8px;
+    text-wrap: balance;
 }
 
 .description {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    margin-bottom: 1rem;
+    font-size: 14px;
     line-height: 1.55;
-    flex: 1;
+    color: var(--color-felt);
+    margin: 0 0 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-/* Info Box */
-.infoBox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
-    margin-bottom: 1rem;
-    font-size: 0.85rem;
-    color: var(--color-forest);
-    font-weight: 500;
-    border-bottom: 1px solid rgba(15, 31, 28, 0.05);
-    padding-bottom: 1rem;
-}
-
-.infoIcon {
-    opacity: 0.5;
-    flex-shrink: 0;
-}
-
-.infoLabel {
-    opacity: 0.6;
-    margin-right: 0.25rem;
-}
-
-/* Host Row */
 .hostRow {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: 9px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-hairline);
 }
 
 .hostLogoWrapper {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    overflow: hidden;
-    flex-shrink: 0;
-    background: #f0f0f0;
     position: relative;
-    border: 1px solid rgba(15, 31, 28, 0.1);
+    width: 22px;
+    height: 22px;
+    flex: none;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-obsidian);
 }
 
 .hostLogo {
@@ -194,39 +149,75 @@
 }
 
 .hostText {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Footer */
+/* ---------- meta ---------- */
+.stats,
 .footer {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-top: auto;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 12px;
 }
 
-.stats {
-    display: flex;
+.infoBox {
+    display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--color-forest);
-    opacity: 0.65;
+    gap: 7px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+.infoIcon {
+    flex: none;
+    color: var(--color-ash);
+}
+
+.infoLabel {
+    color: var(--color-felt);
 }
 
 .joinBtn {
-    margin-top: auto;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    transition: color 0.2s var(--ease-glide);
+    padding: 7px 20px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    background: transparent;
+    color: var(--color-obsidian);
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
 }
 
-.card:hover .joinBtn {
-    color: var(--color-forest);
+.joinBtn:hover {
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .image,
+    .shareButton,
+    .joinBtn {
+        transition: none;
+    }
+
+    .shareButton {
+        opacity: 1;
+    }
 }

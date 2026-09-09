@@ -1,946 +1,829 @@
-/* ID Card Container */
-.idCardContainer {
-    display: flex;
-    background: #ffffff;
-    border: 1px solid #000;
-    border-radius: 0px;
-    overflow: hidden;
-    position: relative;
-    box-shadow: none;
-    margin-bottom: 3rem;
-    min-height: 380px;
-    background: linear-gradient(to bottom right, #ffffff, #f8fafc);
+/* ============================================================
+   PROFILE — and the shared sheet behind the forms
+   Thirteen files import this stylesheet: the profile and its tabs,
+   both create forms, the edit modal, map, team-finder, college and
+   event detail. It was the last of the old system still in service —
+   dotted backgrounds, a rotated "VERIFIED" rubber stamp, gradient
+   avatars, lifted cards.
+
+   The one idea worth keeping was the student ID card, because that is
+   genuinely what a campus profile is. It is set here as a printed
+   credential rather than a skeuomorphic one: a black stub, a square
+   photograph, hairline rules and letterspaced labels.
+   ============================================================ */
+
+.container {
+    max-width: 1078px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) 0 clamp(72px, 10vw, 152px);
 }
 
-/* Vertical Sidebar */
+/* ============================================================
+   THE CARD
+   ============================================================ */
+
+.idCardContainer {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    border: 1px solid var(--color-obsidian);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    background: var(--color-paper);
+}
+
+/* ---------- the black stub ---------- */
 .idSidebar {
-    width: 240px;
-    background: #0f1f1c;
-    /* Forest */
-    color: white;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2.5rem 1.5rem;
-    position: relative;
+    padding: 32px 24px 28px;
+    background: var(--color-obsidian);
+    color: var(--color-paper);
 }
 
+/* The punch a lanyard would go through. One detail of the object,
+   drawn once, rather than a whole imitation of plastic. */
 .sidebarTopClip {
-    position: absolute;
-    top: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 45px;
-    height: 35px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 0px;
     display: flex;
-    align-items: center;
     justify-content: center;
+    width: 100%;
+    margin-bottom: 26px;
 }
 
 .clipHole {
-    width: 6px;
-    height: 6px;
-    background: #0f1f1c;
-    border-radius: 50%;
+    width: 46px;
+    height: 8px;
+    border-radius: 75px;
+    background: var(--color-paper);
+    opacity: 0.32;
 }
 
 .idAvatarContainer {
-    margin-top: 2rem;
-    margin-bottom: 2.5rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
+/* Square, like every other image on the site. */
 .idAvatarBorder {
-    width: 140px;
-    height: 140px;
-    background: white;
-    padding: 6px;
-    border-radius: 0px;
-    box-shadow: none;
+    position: relative;
+    width: 132px;
+    height: 132px;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
 }
 
 .idAvatarImage {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border: 1px solid #eee;
+    display: block;
 }
 
 .idAvatarPlaceholder {
-    width: 100%;
-    height: 100%;
-    background: #f1f5f9;
-    color: #0f1f1c;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4rem;
+    width: 100%;
+    height: 100%;
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 300;
+    font-size: 3.25rem;
+    letter-spacing: -0.04em;
+    color: var(--color-obsidian);
 }
 
 .sidebarLabel {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    margin-bottom: auto;
+    gap: 6px;
+    margin-top: 26px;
+    text-align: center;
 }
 
 .labelSub {
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    opacity: 0.6;
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .labelMain {
-    font-size: 1.1rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-paper);
 }
 
 .verticalText {
-    position: absolute;
-    bottom: 2rem;
-    left: 1.5rem;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.3em;
-    opacity: 0.2;
+    margin-top: auto;
+    padding-top: 26px;
+    font-size: 9px;
+    letter-spacing: 0.24em;
     text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.32);
 }
 
-/* ID Main Content Area */
+/* ---------- the printed side ---------- */
 .idContent {
-    flex: 1;
-    padding: 3rem 4rem;
     position: relative;
-    display: flex;
-    flex-direction: column;
+    padding: clamp(28px, 4vw, 44px);
 }
 
+/* Was a dot-grid overlay. Nothing else on the site has a texture. */
 .idDottedBg {
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(#d1d5db 1px, transparent 1px);
-    background-size: 20px 20px;
-    opacity: 0.3;
-    pointer-events: none;
+    display: none;
+}
+
+/* Was a rotated red "VERIFIED" rubber stamp. Nothing verifies a user
+   account here, so the stamp asserted something untrue about every
+   person who loaded the page. Hidden rather than restyled. */
+.verifiedStamp {
+    display: none;
+}
+
+.idHeaderRow {
+    margin-bottom: 22px;
 }
 
 .idName {
-    font-size: 3.5rem;
-    /* Slightly smaller for students to allow metadata space */
     font-family: var(--font-display);
-    font-weight: 600;
-    color: #000;
+    font-weight: 300;
+    font-size: clamp(2rem, 5vw, 3.375rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    color: var(--color-obsidian);
     margin: 0;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    z-index: 2;
+    text-wrap: balance;
 }
 
 .idMetadata {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-    z-index: 2;
+    gap: 9px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border-hairline);
 }
 
 .idMetaLine {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 10px;
 }
 
 .metaIcon {
-    color: var(--color-forest);
-    opacity: 0.4;
+    flex: none;
+    color: var(--color-ash);
 }
 
-.idDeptYear {
-    font-size: 1rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    color: var(--color-forest);
-}
-
+.idDeptYear,
 .idCollege {
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: #666;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
 }
 
+/* ---------- bio ---------- */
 .idBioBlock {
-    margin-top: 2rem;
-    padding-left: 1.5rem;
-    position: relative;
-    max-width: 500px;
-    z-index: 2;
+    display: flex;
+    gap: 16px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--border-hairline);
 }
 
 .bioQuoteLine {
-    position: absolute;
-    left: 0;
-    top: 0.5rem;
-    bottom: 0.5rem;
-    width: 2px;
-    background: var(--color-mint);
+    flex: none;
+    width: 1px;
+    background: var(--color-obsidian);
 }
 
 .idBioText {
-    font-size: 1.25rem;
-    font-family: var(--font-display);
-    font-style: italic;
-    color: #333;
-    line-height: 1.4;
+    font-size: 16px;
+    line-height: 1.58;
+    color: var(--color-inkstone);
+    max-width: 58ch;
+    margin: 0;
 }
 
+/* ---------- actions ---------- */
 .idFooterActions {
-    margin-top: auto;
     display: flex;
     align-items: center;
-    gap: 2rem;
-    z-index: 2;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 22px 0;
 }
 
 .idFollowBtn {
-    background: var(--color-obsidian) !important;
-    border: 1px solid #000 !important;
-    color: #000 !important;
-    font-weight: 700 !important;
-    padding: 0.6rem 1.5rem !important;
-    border-radius: 99px !important;
-    box-shadow: none;
-    transition: all 0.2s !important;
-}
-
-.idFollowBtn:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: none;
+    white-space: nowrap;
 }
 
 .idUtilityActions {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 12px;
 }
 
-.utilLink {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #666;
+.utilLink,
+.utilLinkLogout {
     background: none;
-    border: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
     cursor: pointer;
+    transition: color var(--duration-base) var(--ease-glide);
 }
 
-.utilLink:hover {
-    color: #000;
-    text-decoration: underline;
+.utilLink:hover,
+.utilLinkLogout:hover {
+    color: var(--color-obsidian);
 }
 
 .utilDivider {
-    color: #ddd;
+    color: var(--color-ash);
+    font-size: 11px;
 }
 
-.utilLinkLogout {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #999;
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-.utilLinkLogout:hover {
-    color: #ef4444;
-}
-
-/* Extra Info (Skills/Badges) */
+/* ---------- skills and badges ---------- */
 .idExtraInfo {
-    margin-top: 2rem;
     display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px dashed #ddd;
-    z-index: 2;
+    flex-wrap: wrap;
+    gap: 32px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border-hairline);
 }
 
 .idExtraGroup {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 12px;
+    min-width: 0;
 }
 
 .idExtraLabel {
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    color: #999;
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-ash);
 }
 
-.idSkillTags {
+.idSkillTags,
+.idBadgesMini {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 6px;
 }
 
 .idSkillTag {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--color-forest);
-    background: #f1f5f9;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0px;
-    border: 1px solid #e2e8f0;
-}
-
-.idBadgesMini {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    padding: 4px 13px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--color-inkstone);
 }
 
 .idBadgeMini {
-    width: 32px;
-    height: 32px;
-    background: white;
-    border: 1px solid #eee;
-    border-radius: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
-    box-shadow: none;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    font-size: 13px;
 }
 
-/* Verified Stamp */
-.verifiedStamp {
-    position: absolute;
-    top: 2.5rem;
-    right: 3rem;
-    padding: 0.4rem 1rem;
-    border: 3px solid rgba(239, 68, 68, 0.4);
-    color: rgba(239, 68, 68, 0.6);
-    font-size: 0.8rem;
-    font-weight: 900;
-    letter-spacing: 0.2rem;
-    text-transform: uppercase;
-    border-radius: 0px;
-    transform: rotate(15deg);
-    font-family: var(--font-sans);
-    z-index: 3;
-}
-
-.verifiedStamp::after {
-    content: '';
-    position: absolute;
-    inset: -6px;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 0px;
-}
-
-@media (max-width: 950px) {
-    .idCardContainer {
-        flex-direction: column;
-    }
-
-    .idSidebar {
-        width: 100%;
-        padding: 2rem;
-    }
-
-    .verticalText {
-        display: none;
-    }
-
-    .idContent {
-        padding: 2.5rem;
-        text-align: center;
-        align-items: center;
-    }
-
-    .idName {
-        font-size: 3rem;
-    }
-
-    .idLocation {
-        justify-content: center;
-    }
-
-    .idBioBlock {
-        padding-left: 0;
-    }
-
-    .bioQuoteLine {
-        display: none;
-    }
-
-    .verifiedStamp {
-        top: 1rem;
-        right: 1rem;
-        font-size: 0.6rem;
-    }
-}
+/* ============================================================
+   TABS
+   ============================================================ */
 
 .tabs {
     display: flex;
-    gap: 2.5rem;
-    margin-bottom: 3rem;
-    position: relative;
-    border-bottom: 1px solid rgba(15, 31, 28, 0.05);
+    gap: 28px;
+    margin: clamp(32px, 5vw, 52px) 0 0;
+    padding-bottom: 0;
+    border-bottom: 1px solid var(--border-hairline);
 }
 
 .tab {
-    padding: 1.25rem 0.5rem;
-    background: transparent;
-    border: none;
+    position: relative;
+    background: none;
+    border: 0;
+    padding: 0 0 14px;
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ash);
     cursor: pointer;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: rgba(15, 31, 28, 0.4);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: color var(--duration-base) var(--ease-glide);
 }
 
 .tab:hover {
-    color: var(--color-forest);
+    color: var(--color-inkstone);
 }
 
 .activeTab {
-    color: var(--color-forest);
+    color: var(--color-obsidian);
 }
 
+/* framer-motion slides this rule between tabs. */
 .activeTabLine {
     position: absolute;
-    bottom: 0;
-    height: 3px;
-    background: var(--color-forest);
-    border-radius: 4px 4px 0 0;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: var(--color-obsidian);
 }
 
 .content {
-    min-height: 400px;
+    margin-top: clamp(32px, 5vw, 48px);
 }
 
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+
+/* Was a white panel with a border-radius and a shadow. A section on a
+   white page needs a rule and a label, not a container. */
 .card {
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(10px);
-    border-radius: 0px;
-    padding: 2rem;
-    border: 1px solid rgba(15, 31, 28, 0.05);
+    padding: 0 0 clamp(32px, 5vw, 48px);
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 18px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-hairline);
 }
 
 .cardTitle {
-    font-size: 1.5rem;
-    font-family: var(--font-display);
-    font-weight: 600;
-    color: var(--color-forest);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin: 0;
+    font-weight: 400;
 }
 
-
-.resumeContainer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem;
-    background-color: var(--surface-color);
-    border-radius: 0px;
-    border: 1px dashed var(--border-color);
-}
-
-.resumeInfo {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+.eventsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 32px;
 }
 
 .actionRow {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    padding: 1rem;
-    background-color: var(--surface-color);
-    border-radius: 0px;
-    border: 1px dashed var(--border-color);
-    margin-top: 1rem;
+    gap: 12px;
+    margin-top: 28px;
 }
 
-.pdfIcon {
-    width: 2.5rem;
-    height: 2.5rem;
-    background-color: #fee2e2;
-    color: #dc2626;
-    border-radius: 0.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.75rem;
-}
-
-.uploadButton {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.achievementList {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.achievementItem {
-    padding: 1rem;
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-    border-radius: 0px;
-    transition: box-shadow 0.2s;
-}
-
-.achievementItem:hover {
-    box-shadow: none;
-}
-
-.achievementHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.25rem;
-}
-
-.achievementDate {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    background-color: var(--surface-color);
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-}
-
-.addButton {
-    color: var(--primary-color);
-    background: transparent;
-    border: 1px solid var(--primary-color);
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-weight: 500;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.addButton:hover {
-    background-color: var(--primary-color);
-    color: white;
-    box-shadow: none;
-}
-
-/* Modal Styles */
-.modalOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-.modalContent {
-    background: #ffffff;
-    width: 95%;
-    max-width: 650px;
-    padding: 2.5rem;
-    border-radius: 0px;
-    box-shadow: none;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-/* Custom Scrollbar for Modal */
-.modalContent::-webkit-scrollbar {
-    width: 8px;
-}
-
-.modalContent::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.modalContent::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 0px;
-    border: 3px solid transparent;
-    background-clip: content-box;
-}
-
-.modalContent::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.2);
-}
-
-.modalHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.modalTitle {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--color-forest);
-    font-family: var(--font-display);
-}
-
-.formGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+.empty {
+    padding: clamp(40px, 6vw, 72px) 0;
+    text-align: center;
+    border-top: 1px solid var(--border-hairline);
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-felt);
 }
 
 .fullWidth {
     grid-column: 1 / -1;
 }
 
+/* ============================================================
+   FORMS
+   Shared by the create-event and create-club pages, the edit modal
+   and the professional tab. Fields are ruled lines, not boxes.
+   ============================================================ */
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 26px 32px;
+}
+
 .formGroup {
-    margin-bottom: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 8px;
+    min-width: 0;
 }
 
 .label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-left: 0.25rem;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ash);
 }
 
 .input,
-.textarea,
-.select {
+.select,
+.textarea {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0px;
-    background-color: #fafafa;
-    color: var(--text-primary);
-    font-family: var(--font-sans);
-    font-size: 0.95rem;
-    transition: all 0.2s var(--ease-glide);
+    padding: 9px 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border-hairline);
+    border-radius: 0;
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-obsidian);
+    outline: none;
+    transition: border-color var(--duration-base) var(--ease-glide);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+    color: var(--color-ash);
 }
 
 .input:focus,
-.textarea:focus,
-.select:focus {
-    outline: none;
-    border-color: var(--color-forest);
-    background-color: #ffffff;
-    box-shadow: none;
+.select:focus,
+.textarea:focus {
+    border-bottom-color: var(--color-obsidian);
 }
 
-/* Fix for Select dropdown styling */
 .select {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.75rem center;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 2px center;
     background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-right: 2.5rem;
+    background-size: 1.15em 1.15em;
+    padding-right: 30px;
 }
 
 .textarea {
+    min-height: 104px;
     resize: vertical;
-    min-height: 100px;
-    line-height: 1.5;
 }
 
 .helperText {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-top: 0.25rem;
-    margin-left: 0.25rem;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--color-ash);
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.modalContent {
+    width: 100%;
+    max-width: 640px;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: clamp(28px, 4vw, 44px);
+    background: var(--color-paper);
+    border: 1px solid var(--color-obsidian);
+    border-radius: var(--radius-card);
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.modalTitle {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0;
 }
 
 .modalActions {
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    padding-top: 26px;
+    margin-top: 30px;
+    border-top: 1px solid var(--border-hairline);
 }
 
-/* Skills Section */
+/* ============================================================
+   PROFESSIONAL TAB
+   ============================================================ */
+
 .skillsContainer {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 6px;
+    margin-bottom: 22px;
 }
 
 .skillTag {
-    background-color: var(--color-mint);
-    /* Mint tags */
-    color: var(--color-forest);
-    padding: 0.5rem 1rem;
-    border-radius: 75px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    border: none;
+    gap: 8px;
+    padding: 5px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--color-inkstone);
+}
+
+.deleteSkill {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1;
+    color: var(--color-ash);
+    cursor: pointer;
+    transition: color var(--duration-base) var(--ease-glide);
+}
+
+.deleteSkill:hover {
+    color: var(--color-obsidian);
 }
 
 .skillsForm {
     display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    width: 100%;
-    margin-top: 1rem;
+    align-items: center;
+    gap: 12px;
 }
 
 .addSkillBtn {
-    padding: 0 1rem;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    padding-bottom: 4px;
-    border: 1.5px solid var(--color-forest);
-    border-radius: 0px;
-    color: var(--color-forest);
-    transition: all 0.2s;
+    flex: none;
+    padding: 8px 20px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    background: transparent;
+    color: var(--color-obsidian);
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
 }
 
 .addSkillBtn:hover {
-    background: var(--color-forest);
-    color: var(--color-mint);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
 }
 
-.deleteSkill {
-    cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.2s;
+/* ---------- ruled lists ---------- */
+.achievementList,
+.projectList,
+.portfolioList {
+    border-top: 1px solid var(--border-hairline);
 }
 
-.deleteSkill:hover {
-    opacity: 1;
-    color: #ef4444;
+.achievementItem,
+.projectCard,
+.portfolioItem {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border-hairline);
 }
 
-.tagsSection {
-    margin-top: 1.5rem;
+.achievementHeader {
     display: flex;
-    gap: 3rem;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
     flex-wrap: wrap;
 }
 
-.subHeader {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.75rem;
+.achievementDate {
+    font-size: 10px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-}
-
-/* Projects Section */
-.projectList {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-}
-
-.projectCard {
-    background-color: white;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 0px;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    transition: all 0.3s;
-    box-shadow: none;
-}
-
-.projectCard:hover {
-    transform: translateY(-4px);
-    box-shadow: none;
+    color: var(--color-ash);
+    white-space: nowrap;
 }
 
 .projectTitle {
-    font-size: 1.2rem;
-    font-weight: 600;
-    font-family: var(--font-display);
-    color: var(--color-forest);
+    font-size: 1.0625rem;
+    font-weight: 400;
+    line-height: 1.24;
+    color: var(--color-obsidian);
+    margin: 0 0 7px;
 }
 
 .projectDesc {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    flex-grow: 1;
-    line-height: 1.5;
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-felt);
+    max-width: 60ch;
+    margin: 0;
 }
 
-.projectLink {
-    font-size: 0.9rem;
-    color: var(--color-forest);
-    text-decoration: none;
-    font-weight: 600;
-    display: flex;
+.projectLink,
+.externalLink,
+.linkUrl {
+    display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 7px;
+    margin-top: 10px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    transition: color var(--duration-base) var(--ease-glide);
 }
 
-.projectLink:hover {
-    text-decoration: underline;
+.projectLink:hover,
+.externalLink:hover,
+.linkUrl:hover {
     color: var(--color-obsidian);
-}
-
-/* Portfolio Links */
-.portfolioList {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
 }
 
 .portfolioItem {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem;
-    background-color: white;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 0px;
-    transition: all 0.2s;
-}
-
-.portfolioItem:hover {
-    border-color: var(--color-mint);
-    background-color: #fafafa;
+    gap: 16px;
 }
 
 .linkInfo {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    min-width: 0;
 }
 
 .platformName {
-    font-weight: 600;
-    color: var(--color-forest);
-    font-size: 1rem;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
 }
 
-.linkUrl {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.externalLink {
-    color: var(--text-secondary);
-    text-decoration: none;
-    padding: 0.5rem;
-    border-radius: 0px;
-    transition: all 0.2s;
-}
-
-.externalLink:hover {
-    background: var(--color-mint);
-    color: var(--color-forest);
-}
-
-/* ─── Events Grid ─── */
-.eventsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.cardHeader {
+/* ---------- resume ---------- */
+.resumeContainer {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    gap: 16px;
+    padding: 18px 0;
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
 }
 
-/* ─── Network Grid ─── */
+.pdfIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: var(--radius-card);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+}
+
+.resumeInfo {
+    min-width: 0;
+    font-size: 14px;
+    color: var(--color-inkstone);
+}
+
+/* ============================================================
+   NETWORK TAB
+   ============================================================ */
+
 .networkGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0 32px;
 }
 
 .networkCard {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-    background: white;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 0px;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    color: var(--color-obsidian);
+    transition: padding-left var(--duration-base) var(--ease-glide);
 }
 
 .networkCard:hover {
-    border-color: var(--color-mint);
-    transform: translateY(-2px);
-    box-shadow: none;
+    padding-left: 10px;
 }
 
 .miniLogo {
-    width: 48px;
-    height: 48px;
-    border-radius: 0px;
-    overflow: hidden;
-    flex-shrink: 0;
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    width: 36px;
+    height: 36px;
+    flex: none;
+    object-fit: cover;
+    border-radius: var(--radius-card);
+    filter: grayscale(1) brightness(1.14) contrast(0.95);
+    transition: filter var(--duration-slow) var(--ease-glide);
 }
 
-/* ─── Empty state ─── */
-.empty {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    padding: 1rem 0;
+.networkCard:hover .miniLogo {
+    filter: none;
 }
 
-/* ─── Responsive ─── */
-@media (max-width: 700px) {
-    .eventsGrid {
-        grid-template-columns: 1fr;
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 860px) {
+    .idCardContainer {
+        grid-template-columns: minmax(0, 1fr);
     }
 
-    .networkGrid {
-        grid-template-columns: 1fr;
+    .idSidebar {
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+        padding: 22px;
+    }
+
+    .sidebarTopClip {
+        display: none;
+    }
+
+    .idAvatarContainer {
+        width: auto;
+    }
+
+    .idAvatarBorder {
+        width: 76px;
+        height: 76px;
+    }
+
+    .idAvatarPlaceholder {
+        font-size: 2rem;
+    }
+
+    .sidebarLabel {
+        margin-top: 0;
+        text-align: left;
+    }
+
+    .verticalText {
+        display: none;
+    }
+}
+
+@media (max-width: 620px) {
+    .tabs {
+        gap: 20px;
+    }
+
+    .idExtraInfo {
+        gap: 22px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tab,
+    .utilLink,
+    .utilLinkLogout,
+    .deleteSkill,
+    .addSkillBtn,
+    .projectLink,
+    .externalLink,
+    .linkUrl,
+    .networkCard,
+    .miniLogo,
+    .input,
+    .select,
+    .textarea {
+        transition: none;
+    }
+
+    .networkCard:hover {
+        padding-left: 0;
     }
 }

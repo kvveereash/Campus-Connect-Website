@@ -70,9 +70,11 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
                 hidden: { opacity: 0, y: 20 },
                 visible: { opacity: 1, y: 0 }
             }}
-            whileHover={{ y: -5, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+            /* The 5px spring lift is gone: nothing else on the site moves
+               toward the cursor, and the image already answers the hover by
+               coming into colour. */
         >
-            <a href={`/events/${event.id}`} style={{ display: 'flex', flexDirection: 'column', flex: 1, textDecoration: 'none', color: 'inherit', height: '100%' }}>
+            <a href={`/events/${event.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                 {/* Image & Top Badges */}
                 <div
                     className={styles.imageContainer}

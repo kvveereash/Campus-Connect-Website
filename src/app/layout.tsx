@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ChromeGate from "@/components/ChromeGate";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -78,14 +79,18 @@ export default function RootLayout({
           <ModalProvider>
             <AuthProvider>
               <CommandProvider>
-                <Navbar />
+                <ChromeGate>
+                  <Navbar />
+                </ChromeGate>
                 <main className="container">
                   {children}
                 </main>
-                <FloatingChatButton />
+                <ChromeGate>
+                  <FloatingChatButton />
+                  <Footer />
+                </ChromeGate>
                 <GlobalNotificationListener />
                 <CommandPalette />
-                <Footer />
                 <ToastProvider />
                 <GlobalModal />
               </CommandProvider>

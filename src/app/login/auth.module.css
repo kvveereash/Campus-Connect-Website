@@ -1,0 +1,287 @@
+/* ============================================================
+   AUTH — the login and signup screens
+   Both were a 1200px rounded-3xl panel floating on a soft shadow,
+   with a four-second image slider on one half and a bold shadcn
+   form on the other. Nothing else on the site floats, rotates
+   images on a timer, or sets a heading in bold.
+
+   These are the two screens where a stranger decides whether the
+   project looks serious, so they get the strongest version of the
+   system: a full-height black chamber on the left carrying one
+   sentence, and nothing but ruled fields on the right.
+   ============================================================ */
+
+/* The root layout wraps every page in .container (max-width 1200, side
+   padding). These two screens are the exception: they bleed to the window
+   edge, so they step back out of it. */
+.screen {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* ---------- the black half ---------- */
+.aside {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(32px, 4vw, 56px);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    overflow: hidden;
+}
+
+/* The landing page's sphere, at rest. A single radial wash rather
+   than the animated version — this screen has a job to do, and the
+   glow is here to connect the two pages, not to perform. */
+.glow {
+    position: absolute;
+    left: 50%;
+    top: 52%;
+    width: 128%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.15) 0%, transparent 46%),
+        radial-gradient(circle at 62% 68%, rgba(224, 192, 248, 0.13) 0%, transparent 52%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 68%);
+    pointer-events: none;
+}
+
+.wordmark {
+    position: relative;
+    z-index: 1;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-paper);
+}
+
+.asideBody {
+    position: relative;
+    z-index: 1;
+    max-width: 22ch;
+}
+
+.asideLine {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.75rem, 3.2vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--color-paper);
+    margin: 0;
+    text-wrap: balance;
+}
+
+.asideNote {
+    position: relative;
+    z-index: 1;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+/* ---------- the form half ---------- */
+.panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(32px, 5vw, 64px);
+    background: var(--color-paper);
+}
+
+.form {
+    width: 100%;
+    max-width: 384px;
+}
+
+.label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    color: var(--color-obsidian);
+    margin: 0 0 14px;
+    text-wrap: balance;
+}
+
+.subtitle {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-felt);
+    margin: 0 0 40px;
+    max-width: 34ch;
+}
+
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.fieldHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.fieldLabel {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+/* A line to write on. Same field treatment as every form on the site. */
+.input {
+    width: 100%;
+    padding: 8px 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border-hairline);
+    border-radius: 0;
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-obsidian);
+    outline: none;
+    transition: border-color var(--duration-base) var(--ease-glide);
+}
+
+.input::placeholder {
+    color: var(--color-ash);
+}
+
+.input:focus {
+    border-bottom-color: var(--color-obsidian);
+}
+
+.quietLink {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    transition: color var(--duration-base) var(--ease-glide);
+}
+
+.quietLink:hover {
+    color: var(--color-obsidian);
+}
+
+.submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 36px;
+    padding: 13px 28px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: letter-spacing var(--duration-base) var(--ease-glide),
+                opacity var(--duration-micro) var(--ease-glide);
+}
+
+.submit:hover:not(:disabled) {
+    letter-spacing: 0.06em;
+}
+
+.submit:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.spin {
+    animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.foot {
+    margin-top: 32px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border-hairline);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--color-felt);
+}
+
+.foot a {
+    color: var(--color-obsidian);
+    border-bottom: 1px solid var(--border-hairline);
+    padding-bottom: 1px;
+    transition: border-color var(--duration-base) var(--ease-glide);
+}
+
+.foot a:hover {
+    border-bottom-color: var(--color-obsidian);
+}
+
+/* Below the fold on a phone the black half would push the form off
+   screen, so it collapses to a band across the top. */
+@media (max-width: 860px) {
+    .screen {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+    }
+
+    .aside {
+        min-height: 236px;
+        gap: 28px;
+    }
+
+    .asideNote {
+        display: none;
+    }
+
+    .panel {
+        padding: 44px 24px 72px;
+        align-items: flex-start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .input,
+    .submit,
+    .quietLink,
+    .foot a {
+        transition: none;
+    }
+
+    .spin {
+        animation: none;
+    }
+}

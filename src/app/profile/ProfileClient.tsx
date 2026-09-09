@@ -9,7 +9,6 @@ import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileHeader from '@/components/profile/ProfileHeader';
-import HolographicCard from '@/components/profile/HolographicCard';
 import ProfessionalTab from '@/components/profile/ProfessionalTab';
 import NetworkTab from '@/components/profile/NetworkTab';
 import EditProfileModal from '@/components/profile/EditProfileModal';
@@ -109,7 +108,12 @@ export default function ProfileClient() {
         }
     }, [user, isLoading, isInitialized, router]);
 
-    if (!isInitialized || isLoading || !user) return <div role="status" aria-busy="true">Loading...</div>;
+    if (!isInitialized || isLoading || !user)
+        return (
+            <div className={styles.container} role="status" aria-busy="true">
+                <p className={styles.cardTitle}>Loading</p>
+            </div>
+        );
 
     // Followed colleges come from DB now
     const followedColleges = dbFollowedColleges;
@@ -161,7 +165,7 @@ export default function ProfileClient() {
                         >
                             <div className={styles.card}>
                                 <div className={styles.cardHeader}>
-                                    <h3 className={styles.cardTitle}>Registered Events</h3>
+                                    <h3 className={styles.cardTitle}>Registered</h3>
                                 </div>
 
                                 {isEventsLoading ? (
@@ -213,7 +217,7 @@ export default function ProfileClient() {
 
                             <div className={styles.card} style={{ marginTop: '2rem' }}>
                                 <div className={styles.cardHeader}>
-                                    <h3 className={styles.cardTitle}>Hosted Events</h3>
+                                    <h3 className={styles.cardTitle}>Hosted</h3>
                                 </div>
 
                                 {isEventsLoading ? (

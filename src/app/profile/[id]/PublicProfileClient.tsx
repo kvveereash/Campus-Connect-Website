@@ -5,13 +5,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { GraduationCap, MapPin, CalendarDays, Trophy, Link2, MessageCircle } from 'lucide-react';
+import { GraduationCap, Building2 } from 'lucide-react';
 import EventCard from '@/components/EventCard';
 import ActivityHeatmap from '@/components/ActivityHeatmap';
 import { useAuth } from '@/context/AuthContext';
 import { startConversation } from '@/lib/actions/chat';
 import type { PublicProfile } from '@/lib/actions/profile';
 import type { EventWithRelations } from '@/lib/actions/events';
+import styles from '@/app/profile/page.module.css';
 
 interface Props {
     user: PublicProfile;
@@ -21,6 +22,13 @@ interface Props {
 
 type Tab = 'registered' | 'hosted' | 'professional';
 
+/**
+ * The profile a stranger sees — the one the "Copy profile link" button hands
+ * out. It used to be a second, unrelated implementation in inline Tailwind:
+ * rounded panels, bold headings, a separate stat block. It now uses the same
+ * ID-card sheet as the signed-in profile, so following a shared link does not
+ * land you on what looks like a different product.
+ */
 export default function PublicProfileClient({ user, registered, hosted }: Props) {
     const router = useRouter();
     const { user: currentUser } = useAuth();
@@ -28,7 +36,17 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
     const [startingChat, setStartingChat] = useState(false);
 
     const isMe = currentUser?.id === user.id;
-    const joined = new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const joined = new Date(user.createdAt).toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric',
+    });
+
+    // Nullable columns, so an untouched profile omits the line rather than
+    // printing "undefined · undefined".
+    const studyLine = [user.department, user.year]
+        .filter(Boolean)
+        .map((v) => String(v).toUpperCase())
+        .join(' · ');
 
     const handleMessage = async () => {
         setStartingChat(true);
@@ -49,247 +67,280 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
     const tabs: { key: Tab; label: string; count: number }[] = [
         { key: 'registered', label: 'Attending', count: registered.length },
         { key: 'hosted', label: 'Hosted', count: hosted.length },
-        { key: 'professional', label: 'Profile', count: user.projects.length + user.achievements.length },
+        {
+            key: 'professional',
+            label: 'Work',
+            count: user.projects.length + user.achievements.length,
+        },
     ];
 
     return (
-        <div className="mx-auto max-w-5xl px-4 py-8">
-            {/* ── Header ── */}
-            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--surface-color)] p-6 sm:p-8">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-                    {user.avatar ? (
-                        <Image
-                            src={user.avatar}
-                            alt={user.name}
-                            width={96}
-                            height={96}
-                            className="h-24 w-24 shrink-0 rounded-2xl object-cover"
-                        />
-                    ) : (
-                        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-forest)] text-3xl font-bold text-[var(--color-cream)]">
-                            {user.name.charAt(0).toUpperCase()}
+        <div className={styles.container}>
+            <div className={styles.idCardContainer}>
+                <div className={styles.idSidebar}>
+                    <div className={styles.sidebarTopClip}>
+                        <div className={styles.clipHole} />
+                    </div>
+
+                    <div className={styles.idAvatarContainer}>
+                        <div className={styles.idAvatarBorder}>
+                            {user.avatar ? (
+                                <Image
+                                    src={user.avatar}
+                                    alt=""
+                                    width={132}
+                                    height={132}
+                                    className={styles.idAvatarImage}
+                                />
+                            ) : (
+                                <div className={styles.idAvatarPlaceholder}>
+                                    {user.name.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className={styles.sidebarLabel}>
+                        <span className={styles.labelSub}>Student</span>
+                        <span className={styles.labelMain}>Campus Connect</span>
+                    </div>
+
+                    <div className={styles.verticalText}>Since {joined}</div>
+                </div>
+
+                <div className={styles.idContent}>
+                    <div className={styles.idHeaderRow}>
+                        <h1 className={styles.idName}>{user.name}</h1>
+                    </div>
+
+                    <div className={styles.idMetadata}>
+                        {studyLine && (
+                            <div className={styles.idMetaLine}>
+                                <GraduationCap size={16} className={styles.metaIcon} />
+                                <span className={styles.idDeptYear}>{studyLine}</span>
+                            </div>
+                        )}
+                        {user.college?.name && (
+                            <div className={styles.idMetaLine}>
+                                <Building2 size={16} className={styles.metaIcon} />
+                                <Link
+                                    href={`/colleges/${user.college.id}`}
+                                    className={styles.idCollege}
+                                >
+                                    {user.college.name.toUpperCase()}
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+
+                    {user.bio && (
+                        <div className={styles.idBioBlock}>
+                            <div className={styles.bioQuoteLine} />
+                            <p className={styles.idBioText}>{user.bio}</p>
                         </div>
                     )}
 
-                    <div className="min-w-0 flex-1">
-                        <h1 className="text-2xl font-bold text-[var(--text-primary)] sm:text-3xl">{user.name}</h1>
-
-                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--text-secondary)]">
-                            {(user.department || user.year) && (
-                                <span className="inline-flex items-center gap-1.5">
-                                    <GraduationCap size={15} />
-                                    {[user.year, user.department].filter(Boolean).join(' · ')}
-                                </span>
-                            )}
-                            {user.college && (
-                                <Link
-                                    href={`/colleges/${user.college.id}`}
-                                    className="inline-flex items-center gap-1.5 hover:text-[var(--text-primary)] hover:underline"
-                                >
-                                    <MapPin size={15} />
-                                    {user.college.name}
-                                </Link>
-                            )}
-                            <span className="inline-flex items-center gap-1.5">
-                                <CalendarDays size={15} />
-                                Joined {joined}
+                    <div className={styles.idFooterActions}>
+                        {/* Counts belong beside the name, not in a separate
+                            panel — they describe this person. */}
+                        <div className={styles.idUtilityActions}>
+                            <span className={styles.utilDivider}>
+                                {user._count.registrations} attending
+                            </span>
+                            <span className={styles.utilDivider}>·</span>
+                            <span className={styles.utilDivider}>
+                                {user._count.createdEvents} hosted
+                            </span>
+                            <span className={styles.utilDivider}>·</span>
+                            <span className={styles.utilDivider}>
+                                {user._count.clubMemberships} clubs
                             </span>
                         </div>
 
-                        {user.bio && (
-                            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[var(--text-secondary)]">
-                                {user.bio}
-                            </p>
-                        )}
-
-                        {user.skills.length > 0 && (
-                            <div className="mt-4 flex flex-wrap gap-2">
-                                {user.skills.map((s) => (
-                                    <span
-                                        key={s.id}
-                                        className="rounded-full border border-[var(--border-color)] px-3 py-1 text-xs font-medium text-[var(--text-secondary)]"
-                                    >
-                                        {s.name}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-
                         {!isMe && currentUser && (
                             <button
+                                type="button"
                                 onClick={handleMessage}
                                 disabled={startingChat}
-                                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[var(--color-forest)] px-4 py-2 text-sm font-semibold text-[var(--color-cream)] transition hover:opacity-90 disabled:opacity-50"
+                                className={styles.addSkillBtn}
                             >
-                                <MessageCircle size={16} />
-                                {startingChat ? 'Opening…' : 'Message'}
+                                {startingChat ? 'Opening' : 'Message'}
                             </button>
                         )}
                     </div>
 
-                    <div className="flex gap-6 sm:flex-col sm:gap-3 sm:border-l sm:border-[var(--border-color)] sm:pl-6">
-                        <Stat label="Attending" value={user._count.registrations} />
-                        <Stat label="Hosted" value={user._count.createdEvents} />
-                        <Stat label="Clubs" value={user._count.clubMemberships} />
-                    </div>
+                    {(user.skills.length > 0 || user.badges.length > 0) && (
+                        <div className={styles.idExtraInfo}>
+                            {user.skills.length > 0 && (
+                                <div className={styles.idExtraGroup}>
+                                    <span className={styles.idExtraLabel}>Skills</span>
+                                    <div className={styles.idSkillTags}>
+                                        {/* Skills are rows here, not the plain
+                                            strings the signed-in profile keeps. */}
+                                        {user.skills.map((skill) => (
+                                            <span key={skill.id} className={styles.idSkillTag}>
+                                                {skill.name}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {user.badges.length > 0 && (
+                                <div className={styles.idExtraGroup}>
+                                    <span className={styles.idExtraLabel}>Badges</span>
+                                    <div className={styles.idBadgesMini}>
+                                        {user.badges.map((b) => (
+                                            <div
+                                                key={b.id}
+                                                className={styles.idBadgeMini}
+                                                title={`${b.name} — ${b.description}`}
+                                            >
+                                                {b.icon}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* ── Badges ── */}
-            {user.badges.length > 0 && (
-                <div className="mt-6 flex flex-wrap gap-3">
-                    {user.badges.map((b) => (
-                        <div
-                            key={b.id}
-                            title={b.description}
-                            className="inline-flex items-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--surface-color)] px-3 py-2"
-                        >
-                            <span className="text-lg leading-none">{b.icon}</span>
-                            <span className="text-sm font-medium text-[var(--text-primary)]">{b.name}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* ── Activity ── */}
             {(registered.length > 0 || hosted.length > 0) && (
-                <div className="mt-6">
-                    <ActivityHeatmap dates={[...registered, ...hosted].map((e) => new Date(e.date).toISOString())} />
+                <div style={{ marginTop: 40 }}>
+                    <ActivityHeatmap
+                        dates={[...registered, ...hosted].map((e) =>
+                            new Date(e.date).toISOString()
+                        )}
+                    />
                 </div>
             )}
 
-            {/* ── Tabs ── */}
-            <div className="mt-8 flex gap-6 border-b border-[var(--border-color)]">
+            <div className={styles.tabs} role="tablist" aria-label="Profile sections">
                 {tabs.map((t) => (
                     <button
                         key={t.key}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeTab === t.key}
                         onClick={() => setActiveTab(t.key)}
-                        className={`-mb-px border-b-2 pb-3 text-sm font-semibold transition ${
-                            activeTab === t.key
-                                ? 'border-[var(--color-forest)] text-[var(--text-primary)]'
-                                : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                        }`}
+                        className={`${styles.tab} ${activeTab === t.key ? styles.activeTab : ''}`}
                     >
-                        {t.label}
-                        <span className="ml-1.5 text-xs opacity-60">{t.count}</span>
+                        {t.label} {t.count}
+                        {activeTab === t.key && <span className={styles.activeTabLine} />}
                     </button>
                 ))}
             </div>
 
-            <div className="mt-6 min-h-[240px]">
-                {activeTab === 'registered' && <EventGrid events={registered} empty="Not attending any events yet." />}
-                {activeTab === 'hosted' && <EventGrid events={hosted} empty="Hasn't hosted an event yet." />}
+            <div className={styles.content}>
+                {activeTab === 'registered' && (
+                    <EventGrid events={registered} empty="Not attending anything yet." />
+                )}
+                {activeTab === 'hosted' && (
+                    <EventGrid events={hosted} empty="Has not hosted an event yet." />
+                )}
 
                 {activeTab === 'professional' && (
-                    <div className="space-y-6">
-                        <Section title="Projects" icon={<Link2 size={17} />}>
+                    <>
+                        <section className={styles.card}>
+                            <div className={styles.cardHeader}>
+                                <h2 className={styles.cardTitle}>Projects</h2>
+                            </div>
                             {user.projects.length > 0 ? (
-                                <div className="grid gap-3 sm:grid-cols-2">
+                                <div className={styles.projectList}>
                                     {user.projects.map((p: any, i: number) => (
-                                        <div
-                                            key={p.id ?? i}
-                                            className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-color)] p-4"
-                                        >
-                                            <h4 className="font-semibold text-[var(--text-primary)]">{p.title}</h4>
+                                        <div key={p.id ?? i} className={styles.projectCard}>
+                                            <h3 className={styles.projectTitle}>{p.title}</h3>
                                             {p.description && (
-                                                <p className="mt-1 text-sm text-[var(--text-secondary)]">{p.description}</p>
+                                                <p className={styles.projectDesc}>
+                                                    {p.description}
+                                                </p>
                                             )}
                                             {p.link && (
                                                 <a
                                                     href={p.link}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="mt-2 inline-block text-sm font-medium underline"
+                                                    className={styles.projectLink}
                                                 >
-                                                    View project →
+                                                    View project
                                                 </a>
                                             )}
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <Empty>No projects shared yet.</Empty>
+                                <p className={styles.empty}>Nothing shared yet.</p>
                             )}
-                        </Section>
+                        </section>
 
-                        <Section title="Achievements" icon={<Trophy size={17} />}>
+                        <section className={styles.card}>
+                            <div className={styles.cardHeader}>
+                                <h2 className={styles.cardTitle}>Achievements</h2>
+                            </div>
                             {user.achievements.length > 0 ? (
-                                <div className="space-y-3">
+                                <div className={styles.achievementList}>
                                     {user.achievements.map((a: any, i: number) => (
-                                        <div
-                                            key={a.id ?? i}
-                                            className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-color)] p-4"
-                                        >
-                                            <div className="flex items-start justify-between gap-3">
-                                                <h4 className="font-semibold text-[var(--text-primary)]">{a.title}</h4>
+                                        <div key={a.id ?? i} className={styles.achievementItem}>
+                                            <div className={styles.achievementHeader}>
+                                                <h3 className={styles.projectTitle}>{a.title}</h3>
                                                 {a.date && (
-                                                    <span className="shrink-0 text-xs text-[var(--text-secondary)]">{a.date}</span>
+                                                    <span className={styles.achievementDate}>
+                                                        {a.date}
+                                                    </span>
                                                 )}
                                             </div>
                                             {a.description && (
-                                                <p className="mt-1 text-sm text-[var(--text-secondary)]">{a.description}</p>
+                                                <p className={styles.projectDesc}>
+                                                    {a.description}
+                                                </p>
                                             )}
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <Empty>No achievements shared yet.</Empty>
+                                <p className={styles.empty}>Nothing shared yet.</p>
                             )}
-                        </Section>
+                        </section>
 
                         {user.portfolioLinks.length > 0 && (
-                            <Section title="Links" icon={<Link2 size={17} />}>
-                                <div className="flex flex-wrap gap-2">
+                            <section className={styles.card}>
+                                <div className={styles.cardHeader}>
+                                    <h2 className={styles.cardTitle}>Links</h2>
+                                </div>
+                                <div className={styles.portfolioList}>
                                     {user.portfolioLinks.map((l: any, i: number) => (
-                                        <a
-                                            key={l.id ?? i}
-                                            href={l.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="rounded-lg border border-[var(--border-color)] px-3 py-2 text-sm font-medium hover:bg-[var(--surface-color)]"
-                                        >
-                                            {l.platform || l.url}
-                                        </a>
+                                        <div key={l.id ?? i} className={styles.portfolioItem}>
+                                            <div className={styles.linkInfo}>
+                                                <span className={styles.platformName}>
+                                                    {l.platform || 'Link'}
+                                                </span>
+                                            </div>
+                                            <a
+                                                href={l.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={styles.externalLink}
+                                            >
+                                                Open
+                                            </a>
+                                        </div>
                                     ))}
                                 </div>
-                            </Section>
+                            </section>
                         )}
-                    </div>
+                    </>
                 )}
             </div>
         </div>
     );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
-    return (
-        <div className="text-center sm:text-left">
-            <div className="text-xl font-bold text-[var(--text-primary)]">{value}</div>
-            <div className="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{label}</div>
-        </div>
-    );
-}
-
-function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
-    return (
-        <section>
-            <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[var(--text-primary)]">
-                {icon}
-                {title}
-            </h3>
-            {children}
-        </section>
-    );
-}
-
-function Empty({ children }: { children: React.ReactNode }) {
-    return <p className="py-8 text-center text-sm text-[var(--text-secondary)]">{children}</p>;
-}
-
 function EventGrid({ events, empty }: { events: EventWithRelations[]; empty: string }) {
-    if (events.length === 0) return <Empty>{empty}</Empty>;
+    if (events.length === 0) return <p className={styles.empty}>{empty}</p>;
     return (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={styles.eventsGrid}>
             {events.map((e, i) => (
                 <EventCard key={e.id} event={e} index={i} />
             ))}
