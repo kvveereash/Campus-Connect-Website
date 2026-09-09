@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { revalidatePath, unstable_cache } from 'next/cache';
+import { revalidatePath, updateTag, unstable_cache } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
 import { sanitizeRichText } from '@/lib/sanitize';
@@ -17,6 +17,16 @@ import { clubSchema, joinClubSchema, leaveClubSchema, deleteClubSchema, clubPost
 // Protected Actions (using unified pattern)
 // ─────────────────────────────────────────────────
 
+/**
+ * Note on the pair of invalidations below every write.
+ *
+ * revalidatePath clears the rendered route; it does not reach an
+ * unstable_cache entry, and most of the reads in this file are wrapped in
+ * one. Without the tag call a member who joins a club, or posts to it, waits
+ * out the TTL before seeing their own change — the worst possible moment for
+ * a cache to be doing its job. updateTag is the Server Action form that gives
+ * read-your-own-writes, so both are needed and neither is redundant.
+ */
 export const createClubAction = createProtectedAction(clubSchema, async (data, session) => {
     const user = await prisma.user.findUnique({ where: { id: session.userId } });
     if (!user) throw new Error('User not found');
@@ -70,6 +80,7 @@ export const createClubAction = createProtectedAction(clubSchema, async (data, s
 
     revalidatePath('/clubs');
     revalidatePath('/colleges');
+    updateTag(CACHE_TAGS.CLUBS);
     return club;
 }, {
     audit: { action: 'CREATE', entityType: 'Club', getEntityId: () => 'new' },
@@ -91,6 +102,8 @@ export const joinClubAction = createProtectedAction(joinClubSchema, async ({ clu
     });
 
     revalidatePath(`/clubs/${clubId}`);
+    updateTag(`club-${clubId}`);
+    updateTag(CACHE_TAGS.CLUBS);
     revalidatePath('/clubs');
     revalidatePath('/profile');
 
@@ -121,6 +134,8 @@ export const leaveClubAction = createProtectedAction(leaveClubSchema, async ({ c
     });
 
     revalidatePath(`/clubs/${clubId}`);
+    updateTag(`club-${clubId}`);
+    updateTag(CACHE_TAGS.CLUBS);
     revalidatePath('/clubs');
     revalidatePath('/profile');
 
@@ -180,6 +195,8 @@ export const createClubPostAction = createProtectedAction(clubPostSchema, async 
     });
 
     revalidatePath(`/clubs/${clubId}`);
+    updateTag(`club-${clubId}`);
+    updateTag(CACHE_TAGS.CLUBS);
 
     return { message: 'Post created', post };
 }, {
@@ -378,7 +395,7 @@ export async function getClubDetails(clubId: string) {
     }
 }
 
-export async function getClubPosts(clubId: string) {
+async function _clubPosts(clubId: string) {
     try {
         const posts = await prisma.post.findMany({
             where: { clubId },
@@ -398,6 +415,18 @@ export async function getClubPosts(clubId: string) {
         console.error('Failed to get club posts:', error);
         return [];
     }
+}
+
+/**
+ * A club's feed. The club page already caches its details, so this was the
+ * only query still running on every view of it. Tagged per club, so posting
+ * to one club does not invalidate every other club's feed.
+ */
+export async function getClubPosts(clubId: string) {
+    return unstable_cache(() => _clubPosts(clubId), [`club-posts-${clubId}`], {
+        tags: [CACHE_TAGS.CLUBS, `club-${clubId}`],
+        revalidate: CACHE_TTL.CLUBS_DETAIL,
+    })();
 }
 
 // ─────────────────────────────────────────────────
@@ -430,6 +459,8 @@ export async function deleteClubPost(postId: string, clubId: string): Promise<Ac
         await prisma.post.delete({ where: { id: postId } });
 
         revalidatePath(`/clubs/${clubId}`);
+        updateTag(`club-${clubId}`);
+        updateTag(CACHE_TAGS.CLUBS);
         return { success: true, message: 'Post deleted' };
     } catch (error) {
         console.error('Failed to delete post:', error);
@@ -459,6 +490,8 @@ export async function editClubPost(postId: string, clubId: string, newContent: s
         });
 
         revalidatePath(`/clubs/${clubId}`);
+        updateTag(`club-${clubId}`);
+        updateTag(CACHE_TAGS.CLUBS);
         return { success: true, message: 'Post updated' };
     } catch (error) {
         console.error('Failed to edit post:', error);
@@ -521,6 +554,8 @@ export async function createPostComment(postId: string, content: string): Promis
         }
 
         revalidatePath(`/clubs/${post.clubId}`);
+        updateTag(`club-${post.clubId}`);
+        updateTag(CACHE_TAGS.CLUBS);
         return { success: true, message: 'Comment added' };
     } catch (error) {
         console.error('[createPostComment] ERROR:', error);
@@ -572,6 +607,8 @@ export async function deletePostComment(commentId: string, postId: string): Prom
         });
 
         revalidatePath(`/clubs/${comment.post.clubId}`);
+        updateTag(`club-${comment.post.clubId}`);
+        updateTag(CACHE_TAGS.CLUBS);
         return { success: true, message: 'Comment deleted' };
     } catch (error) {
         console.error('Failed to delete comment:', error);

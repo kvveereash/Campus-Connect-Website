@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/db';
 import { Event as PrismaEvent, Badge } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { unstable_cache } from 'next/cache';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
@@ -94,6 +94,16 @@ export async function checkAndAwardBadges(userId: string, eventCategory: string)
 // Protected Actions (unified pattern)
 // ─────────────────────────────────────────────────
 
+/**
+ * Note on the pair of invalidations below every write.
+ *
+ * revalidatePath clears the rendered route; it does not reach an
+ * unstable_cache entry, and most of the reads in this file are wrapped in
+ * one. Without the tag call a member who joins a club, or posts to it, waits
+ * out the TTL before seeing their own change — the worst possible moment for
+ * a cache to be doing its job. updateTag is the Server Action form that gives
+ * read-your-own-writes, so both are needed and neither is redundant.
+ */
 export const createEventAction = createProtectedAction(eventSchema, async (data, session) => {
     let collegeId = data.hostCollegeId;
 
@@ -138,6 +148,7 @@ export const createEventAction = createProtectedAction(eventSchema, async (data,
 
     revalidatePath('/events');
     revalidatePath('/');
+    updateTag(CACHE_TAGS.EVENTS);
 
     return { event };
 }, {
@@ -190,6 +201,8 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
     revalidatePath('/events');
     revalidatePath(`/events/${eventId}`);
     revalidatePath('/profile');
+    updateTag(`event-${eventId}`);
+    updateTag(CACHE_TAGS.EVENTS);
 
     return { earnedBadges, registrationId: registration.id };
 }, {
@@ -217,6 +230,8 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
 
     revalidatePath(`/events/${id}`);
     revalidatePath('/events');
+    updateTag(`event-${id}`);
+    updateTag(CACHE_TAGS.EVENTS);
     return { event: updatedEvent };
 }, {
     audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.id },
@@ -245,6 +260,8 @@ export const completePaymentAction = createProtectedAction(
         revalidatePath('/events');
         revalidatePath(`/events/${registration.eventId}`);
         revalidatePath('/profile');
+        updateTag(`event-${registration.eventId}`);
+        updateTag(CACHE_TAGS.EVENTS);
 
         return { success: true };
     }
@@ -343,7 +360,7 @@ export async function getUpcomingEvents(limit: number = 3): Promise<EventWithRel
     }
 }
 
-export async function getAllEvents(filters?: { search?: string; category?: string }) {
+async function _allEvents(filters?: { search?: string; category?: string }) {
     try {
         const { search, category } = filters || {};
         const where: any = { date: { gte: new Date() }, verified: true, deletedAt: null };
@@ -377,6 +394,30 @@ export async function getAllEvents(filters?: { search?: string; category?: strin
         console.error('Failed to fetch events:', error);
         return [];
     }
+}
+
+/**
+ * The events listing. This is the busiest page on the site and it had no
+ * cache at all, so every visit cost a full query — and the database URL pins
+ * the pooler to one connection, so those queries queue behind each other.
+ *
+ * Only the unfiltered listing is cached. Caching by search term would put a
+ * separate entry in the cache for every string anyone ever typed, which is a
+ * slow way to fill a cache with things nobody will ask for twice; a search is
+ * also the one case where a visitor is watching for their own words to appear.
+ * The listing refreshes within the minute either way, and publishing an event
+ * revalidates the EVENTS tag immediately.
+ */
+export async function getAllEvents(filters?: { search?: string; category?: string }) {
+    const { search, category } = filters || {};
+
+    if (search) return _allEvents(filters);
+
+    const key = `events-list-${category ?? 'all'}`;
+    return unstable_cache(() => _allEvents(filters), [key], {
+        tags: [CACHE_TAGS.EVENTS],
+        revalidate: CACHE_TTL.EVENTS_LIST,
+    })();
 }
 
 /**

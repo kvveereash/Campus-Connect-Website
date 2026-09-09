@@ -1,6 +1,8 @@
 'use server';
 
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
 
 /**
  * Campus Buzz — the cross-club feed.
@@ -11,7 +13,7 @@ import prisma from '@/lib/db';
  * inventing a parallel feed: a post made on a club page shows up here, and vice
  * versa.
  */
-export async function getBuzzFeed(limit = 30) {
+async function _buzzFeed(limit: number) {
     try {
         const posts = await prisma.post.findMany({
             where: {
@@ -49,7 +51,23 @@ export async function getBuzzFeed(limit = 30) {
     }
 }
 
-export type BuzzPost = Awaited<ReturnType<typeof getBuzzFeed>>[number];
+/**
+ * The feed was the slowest page left on the site, at roughly 240ms a view,
+ * because the page is force-dynamic and this query ran on every request.
+ *
+ * It is cached now, tagged to clubs. Posts belong to clubs, and createClubPost
+ * calls updateTag on that tag, so someone who posts sees their own post at
+ * once; everyone else sees it within the minute. The page stays dynamic for
+ * the session read that decides whether the composer appears at all.
+ */
+export async function getBuzzFeed(limit = 30) {
+    return unstable_cache(() => _buzzFeed(limit), [`buzz-feed-${limit}`], {
+        tags: [CACHE_TAGS.CLUBS, CACHE_TAGS.EVENTS],
+        revalidate: CACHE_TTL.EVENTS_LIST,
+    })();
+}
+
+export type BuzzPost = Awaited<ReturnType<typeof _buzzFeed>>[number];
 
 /**
  * Clubs the signed-in user may post to.
