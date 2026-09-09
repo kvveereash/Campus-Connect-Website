@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { createClubPost, getPostComments, createPostComment } from '@/lib/actions/clubs';
 import type { BuzzPost } from '@/lib/actions/buzz';
 import styles from './buzz.module.css';
+import Reveal from '@/components/Reveal';
 
 interface Props {
     posts: BuzzPost[];
@@ -227,8 +228,9 @@ export default function BuzzClient({ posts, myClubs }: Props) {
                 </div>
             ) : (
                 <div className={styles.feed}>
-                    {visible.map((post) => (
-                        <article key={post.id} className={styles.post}>
+                    {visible.map((post, i) => (
+                        <Reveal key={post.id} delay={Math.min(i, 6) * 0.05}>
+                        <article className={styles.post}>
                             <span className={styles.avatar} aria-hidden="true">
                                 {post.author.avatar ? (
                                     <Image src={post.author.avatar} alt="" fill sizes="40px" />
@@ -342,6 +344,7 @@ export default function BuzzClient({ posts, myClubs }: Props) {
                                 )}
                             </div>
                         </article>
+                        </Reveal>
                     ))}
                 </div>
             )}

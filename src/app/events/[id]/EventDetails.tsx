@@ -13,6 +13,7 @@ import { TeamProvider } from '@/context/TeamContext';
 import EventReviews from '@/components/EventReviews';
 import { deleteEvent, type EventDetail } from '@/lib/actions/events';
 import styles from './page.module.css';
+import Reveal from '@/components/Reveal';
 
 export default function EventDetails({ event }: { event: EventDetail }) {
     const router = useRouter();
@@ -85,6 +86,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                 </div>
             )}
 
+            <Reveal>
             <div className={styles.body}>
                 <div>
                     <p className={styles.sectionLabel}>About</p>
@@ -171,6 +173,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                     </dl>
                 </aside>
             </div>
+            </Reveal>
 
             {/* TeamProvider was mounted globally, so every page paid for its
                 state. Only this component consumes it. */}

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
+import Reveal from '@/components/Reveal';
 
 interface MapEvent {
     id: string;
@@ -98,8 +99,9 @@ export default function MapClient({ events }: { events: MapEvent[] }) {
                 </div>
             ) : (
                 <div className={styles.venues}>
-                    {venues.map((v) => (
-                        <section key={v.venue} className={styles.venue}>
+                    {venues.map((v, i) => (
+                        <Reveal key={v.venue} delay={Math.min(i, 6) * 0.05}>
+                        <section className={styles.venue}>
                             <div className={styles.venueHead}>
                                 <h2 className={styles.venueName}>{v.venue}</h2>
                                 <span className={styles.venueMeta}>
@@ -130,6 +132,7 @@ export default function MapClient({ events }: { events: MapEvent[] }) {
                                 })}
                             </div>
                         </section>
+                        </Reveal>
                     ))}
                 </div>
             )}

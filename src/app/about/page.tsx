@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { getLandingStats } from '@/lib/actions/landing';
 import styles from './about.module.css';
+import Reveal from '@/components/Reveal';
 
 export const metadata: Metadata = {
     title: 'About',
@@ -62,6 +63,7 @@ export default async function AboutPage() {
 
             {/* Real counts. There is no point writing about a platform on a page
                 that cannot say how big it is. */}
+            <Reveal>
             <section className={styles.section}>
                 <p className={styles.label}>Where it stands</p>
                 <div className={styles.figures}>
@@ -83,7 +85,9 @@ export default async function AboutPage() {
                     </div>
                 </div>
             </section>
+            </Reveal>
 
+            <Reveal>
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>What it does</h2>
                 <div className={styles.steps}>
@@ -98,11 +102,13 @@ export default async function AboutPage() {
                     ))}
                 </div>
             </section>
+            </Reveal>
 
             {/* The page previously credited "Engineering" and "Community" as though
                 they were people. This is a student project with one author, and
                 saying so plainly is both true and more interesting than a team grid
                 of gradient circles. */}
+            <Reveal>
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Who built it</h2>
                 <div className={styles.prose}>
@@ -125,7 +131,9 @@ export default async function AboutPage() {
                     ))}
                 </div>
             </section>
+            </Reveal>
 
+            <Reveal>
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Have a look around.</h2>
                 <div className={styles.actions}>
@@ -138,6 +146,7 @@ export default async function AboutPage() {
                     </Link>
                 </div>
             </section>
+            </Reveal>
         </div>
     );
 }
