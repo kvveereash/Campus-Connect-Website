@@ -43,6 +43,10 @@ export default function LandingClient({
 }: LandingClientProps) {
     const orbRef = useRef<HTMLDivElement>(null);
 
+    // Already sorted soonest first by the query.
+    const next = initialEvents[0];
+    const nextDate = dateParts(next?.date ?? new Date());
+
     /**
      * Pointer parallax. The sphere leans away from the cursor by a few pixels,
      * which is enough to make it feel like an object in space rather than a
@@ -111,6 +115,65 @@ export default function LandingClient({
                 <div className={styles.heroScrim} aria-hidden="true" />
                 <div className={styles.heroFrame} aria-hidden="true" />
 
+                {/* Corner content. The hero was one cluster adrift in a very
+                    large frame; ruling the edge helped, but an edge with
+                    nothing on it is still an edge with nothing on it. Both
+                    blocks carry real rows from the database — the counts that
+                    used to sit under the headline, and whichever event is
+                    actually soonest. */}
+                <motion.div
+                    className={styles.heroIndex}
+                    initial="hidden"
+                    animate="visible"
+                    variants={stagger}
+                >
+                    <motion.p className={styles.cornerLabel} variants={rise}>
+                        Right now
+                    </motion.p>
+                    <motion.dl className={styles.indexList} variants={rise}>
+                        <div>
+                            <dt>{String(stats.events).padStart(2, '0')}</dt>
+                            <dd>Events</dd>
+                        </div>
+                        <div>
+                            <dt>{String(stats.clubs).padStart(2, '0')}</dt>
+                            <dd>Clubs</dd>
+                        </div>
+                        <div>
+                            <dt>{String(stats.colleges).padStart(2, '0')}</dt>
+                            <dd>Colleges</dd>
+                        </div>
+                    </motion.dl>
+                </motion.div>
+
+                {next && (
+                    <motion.div
+                        className={styles.heroNext}
+                        initial="hidden"
+                        animate="visible"
+                        variants={stagger}
+                    >
+                        <motion.p className={styles.cornerLabel} variants={rise}>
+                            Next up
+                        </motion.p>
+                        <motion.div variants={rise}>
+                            <Link href={`/events/${next.id}`} className={styles.nextLink}>
+                                <span className={styles.nextDate}>
+                                    <b>{nextDate.day}</b>
+                                    <i>{nextDate.month}</i>
+                                </span>
+                                <span className={styles.nextBody}>
+                                    <span className={styles.nextTitle}>{next.title}</span>
+                                    <span className={styles.nextMeta}>
+                                        {nextDate.weekday}
+                                        {next.venue ? ` · ${next.venue}` : ''}
+                                    </span>
+                                </span>
+                            </Link>
+                        </motion.div>
+                    </motion.div>
+                )}
+
                 <motion.div
                     className={styles.heroInner}
                     initial="hidden"
@@ -122,10 +185,6 @@ export default function LandingClient({
                     </motion.h1>
 
                     <motion.div className={styles.heroDot} variants={rise} aria-hidden="true" />
-
-                    <motion.p className={styles.heroMeta} variants={rise}>
-                        {stats.events} events &middot; {stats.clubs} clubs &middot; {stats.colleges} colleges
-                    </motion.p>
 
                     <motion.div className={styles.heroActions} variants={rise}>
                         <Link href="/events" className={styles.pillOnDark}>
