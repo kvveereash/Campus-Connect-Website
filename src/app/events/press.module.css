@@ -423,19 +423,22 @@
     position: relative;
     width: 132px;
     aspect-ratio: 16 / 9;
-    border-radius: var(--radius-tag);
+    /* Was --radius-tag, the 75px pill token, on a 132x74 box — so every
+       event thumbnail rendered as a grey lozenge. Images are square-cornered
+       here; pills are for buttons and tags. It also sat at opacity 0.34,
+       which is what made those lozenges read as empty placeholders rather
+       than photographs. Grey at rest and colour on hover is the treatment
+       the clubs grid and the event card already use. */
+    border-radius: var(--radius-card);
     overflow: hidden;
     border: 1px solid var(--press-rule);
     background: var(--press-paper-2);
-    opacity: 0.34;
-    filter: saturate(0.55);
-    transition: opacity 0.28s ease, filter 0.28s ease, transform 0.28s var(--ease-glide);
+    filter: grayscale(1) brightness(1.16) contrast(0.94);
+    transition: filter var(--duration-slow) var(--ease-glide);
 }
 
 .row:hover .cover {
-    opacity: 1;
-    filter: saturate(1);
-    transform: translateY(-2px);
+    filter: none;
 }
 
 .coverStub {
