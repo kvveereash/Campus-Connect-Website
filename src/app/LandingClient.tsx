@@ -122,6 +122,7 @@ export default function LandingClient({
                     blocks carry real rows from the database — the counts that
                     used to sit under the headline, and whichever event is
                     actually soonest. */}
+                {stats.available && (
                 <motion.div
                     className={styles.heroIndex}
                     initial="hidden"
@@ -146,6 +147,7 @@ export default function LandingClient({
                         </div>
                     </motion.dl>
                 </motion.div>
+                )}
 
                 {next && (
                     <motion.div
@@ -209,7 +211,11 @@ export default function LandingClient({
 
             <div className={styles.inner}>
 
-                {/* ── Stats ───────────────────────────────────────────── */}
+                {/* ── Stats ─────────────────────────────────────────────
+                    Hidden outright when the counts could not be taken. A
+                    row of zeros is worse than no row: it reads as a real
+                    measurement of an empty site. */}
+                {stats.available && (
                 <motion.section
                     className={styles.section}
                     initial="hidden"
@@ -236,6 +242,7 @@ export default function LandingClient({
                         <Stat value={stats.students} label="Students" index={3} />
                     </div>
                 </motion.section>
+                )}
 
                 {/* ── Events, as full-width editorial rows ─────────────
                     Single column rather than a grid: each event gets the

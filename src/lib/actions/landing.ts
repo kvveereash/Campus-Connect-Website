@@ -22,10 +22,22 @@ async function _landingStats() {
             prisma.college.count(),
             prisma.event.count({ where: { deletedAt: null, verified: true } }),
         ]);
-        return { students, clubs, colleges, events };
+        return { students, clubs, colleges, events, available: true };
     } catch (error) {
+        /* `available: false`, not four zeros.
+         *
+         * This used to return { students: 0, clubs: 0, colleges: 0, events: 0 }
+         * on failure, and the page printed them as facts. The deployed site is
+         * doing exactly that right now — it cannot reach its database, so it
+         * greets every visitor with "00 EVENTS · 00 CLUBS · 00 COLLEGES".
+         *
+         * Zero is a real number and a claim about the world. A count that
+         * could not be taken is not zero, and a page whose whole argument is
+         * that its figures are real cannot afford to guess. Callers render
+         * nothing rather than a number nobody measured.
+         */
         console.error('Failed to load landing stats:', error);
-        return { students: 0, clubs: 0, colleges: 0, events: 0 };
+        return { students: 0, clubs: 0, colleges: 0, events: 0, available: false };
     }
 }
 

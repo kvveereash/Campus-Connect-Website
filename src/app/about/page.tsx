@@ -61,8 +61,9 @@ export default async function AboutPage() {
                 </p>
             </div>
 
-            {/* Real counts. There is no point writing about a platform on a page
-                that cannot say how big it is. */}
+            {/* Real counts, or none. The same rule as the landing page: a
+                figure that could not be measured is not zero. */}
+            {stats.available && (
             <Reveal>
             <section className={styles.section}>
                 <p className={styles.label}>Where it stands</p>
@@ -86,6 +87,7 @@ export default async function AboutPage() {
                 </div>
             </section>
             </Reveal>
+            )}
 
             <Reveal>
             <section className={styles.section}>
