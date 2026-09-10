@@ -4,7 +4,16 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // The app's connection: Supabase's transaction-mode pooler, pinned to one
+  // connection. Right for serverless request handling, and unusable for
+  // migrations — the schema engine needs advisory locks and session state a
+  // transaction-mode pooler does not carry, which is why `prisma migrate`
+  // against this URL fails with a bare "Schema engine error".
+  url       = env("DATABASE_URL")
+  // Migrations and introspection go direct instead: the same host on 5432,
+  // session mode, no pgbouncer flag. Only the CLI reads this; PrismaClient
+  // never touches it, so leaving it unset breaks nothing at runtime.
+  directUrl = env("DIRECT_URL")
 }
 
 // ── Enums ──
