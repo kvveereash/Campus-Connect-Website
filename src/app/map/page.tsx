@@ -29,22 +29,44 @@ export const dynamic = 'force-dynamic';
  * there. So the page groups real events under their real venues.
  */
 export default async function MapPage() {
-    const events = await prisma.event.findMany({
-        where: {
-            date: { gte: new Date() },
-            verified: true,
-            deletedAt: null,
-        },
-        orderBy: { date: 'asc' },
-        select: {
-            id: true,
-            title: true,
-            venue: true,
-            date: true,
-            category: true,
-            hostCollege: { select: { name: true, location: true } },
-        },
-    });
+    /* Guarded, unlike the version I first shipped.
+     *
+     * This was the only page in the app with a bare top-level query, and it
+     * was the only route returning 500 on the deployed site — every other
+     * page catches and degrades. A database the server cannot reach is not
+     * this page's fault and not the reader's problem: it renders its own
+     * "nothing scheduled" state instead of an error screen. */
+    // The shape of the select below, not the whole Event model.
+    type VenueRow = {
+        id: string;
+        title: string;
+        venue: string;
+        date: Date;
+        category: string;
+        hostCollege: { name: string; location: string } | null;
+    };
+
+    let events: VenueRow[] = [];
+    try {
+        events = await prisma.event.findMany({
+            where: {
+                date: { gte: new Date() },
+                verified: true,
+                deletedAt: null,
+            },
+            orderBy: { date: 'asc' },
+            select: {
+                id: true,
+                title: true,
+                venue: true,
+                date: true,
+                category: true,
+                hostCollege: { select: { name: true, location: true } },
+            },
+        });
+    } catch (error) {
+        console.error('Failed to load venues:', error);
+    }
 
     return (
         <MapClient
