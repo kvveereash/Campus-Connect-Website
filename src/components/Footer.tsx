@@ -47,6 +47,14 @@ export default function Footer() {
             <div className={styles.bottomBar}>
                 <div className={`container ${styles.bottomBarContent}`}>
                     <p suppressHydrationWarning>&copy; {new Date().getFullYear()} Campus Connect. All rights reserved.</p>
+                    {/* The policies live in the bottom bar, which is where
+                        anyone looking for them will look first. */}
+                    <nav className={styles.legalLinks} aria-label="Policies">
+                        <Link href="/legal/privacy">Privacy</Link>
+                        <Link href="/legal/terms">Terms</Link>
+                        <Link href="/legal/guidelines">Guidelines</Link>
+                        <Link href="/legal/refunds">Refunds</Link>
+                    </nav>
                 </div>
             </div>
         </footer>

@@ -1,0 +1,119 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
+import { verifyPaymentStatus } from '@/lib/actions/verify-payment';
+import styles from './PaymentReturn.module.css';
+
+/**
+ * What happens when Stripe sends someone back.
+ *
+ * Checkout was already sending them to `/events/<id>?payment=success` or
+ * `?payment=cancelled` — and nothing on the page read that parameter. After
+ * paying, you landed on the event page exactly as you had left it, with no
+ * confirmation of any kind; the only way to find out whether the money had
+ * gone through was to notice a "Verify payment" button and press it yourself.
+ *
+ * This reads the parameter, states the outcome, and gets the registration
+ * confirmed without being asked.
+ *
+ * On success it still verifies against Stripe rather than trusting the URL.
+ * `?payment=success` is just a string in the address bar — anyone can type it,
+ * and the webhook may not have landed yet. Stripe is the only thing that knows
+ * whether a payment happened, so it is asked.
+ */
+export default function PaymentReturn({
+    eventId,
+    registrationId,
+}: {
+    eventId: string;
+    registrationId?: string;
+}) {
+    const params = useSearchParams();
+    const router = useRouter();
+    const outcome = params.get('payment');
+    const handled = useRef(false);
+    const [state, setState] = useState<'idle' | 'checking' | 'paid' | 'pending' | 'cancelled'>(
+        'idle'
+    );
+
+    useEffect(() => {
+        if (!outcome || handled.current) return;
+        handled.current = true;
+
+        // Take the parameter out of the address bar either way, so a refresh
+        // or a shared link does not replay a payment result.
+        const clean = () => router.replace(`/events/${eventId}`, { scroll: false });
+
+        if (outcome === 'cancelled') {
+            setState('cancelled');
+            toast('Payment cancelled. Nothing was charged.');
+            clean();
+            return;
+        }
+
+        if (outcome !== 'success') {
+            clean();
+            return;
+        }
+
+        if (!registrationId) {
+            setState('pending');
+            clean();
+            return;
+        }
+
+        setState('checking');
+        verifyPaymentStatus(registrationId)
+            .then((result) => {
+                if (result.success) {
+                    setState('paid');
+                    toast.success('Payment confirmed. You are registered.');
+                    router.refresh();
+                } else {
+                    // Paid at Stripe but not yet reconciled here. Say so
+                    // plainly rather than implying the payment failed.
+                    setState('pending');
+                    toast('Payment received. Confirming your place — this can take a moment.');
+                }
+            })
+            .catch(() => {
+                setState('pending');
+                toast('Payment received. We could not confirm it just yet.');
+            })
+            .finally(clean);
+    }, [outcome, registrationId, eventId, router]);
+
+    if (state === 'idle') return null;
+
+    const copy = {
+        checking: {
+            label: 'Confirming',
+            text: 'Checking your payment with Stripe.',
+        },
+        paid: {
+            label: 'Registered',
+            text: 'Payment confirmed. Your place is booked and you are on the attendee list.',
+        },
+        pending: {
+            label: 'Payment received',
+            text: 'Stripe has your payment. Your registration will confirm shortly — refresh this page if it has not by then.',
+        },
+        cancelled: {
+            label: 'Cancelled',
+            text: 'You left the payment before it completed. Nothing was charged, and you can register again whenever you like.',
+        },
+    }[state];
+
+    return (
+        <div
+            className={`${styles.notice} ${state === 'cancelled' ? styles.quiet : ''}`}
+            role="status"
+            aria-live="polite"
+        >
+            <p className={styles.label}>{copy.label}</p>
+            <p className={styles.text}>{copy.text}</p>
+        </div>
+    );
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -11,6 +11,7 @@ import RegisterButton from '@/components/RegisterButton';
 import TeamFinder from '@/components/TeamFinder';
 import { TeamProvider } from '@/context/TeamContext';
 import EventReviews from '@/components/EventReviews';
+import PaymentReturn from '@/components/PaymentReturn';
 import { deleteEvent, type EventDetail } from '@/lib/actions/events';
 import styles from './page.module.css';
 import Reveal from '@/components/Reveal';
@@ -22,6 +23,9 @@ export default function EventDetails({ event }: { event: EventDetail }) {
     const [deleting, setDeleting] = useState(false);
 
     const isOwner = Boolean(user && event.creatorId === user.id);
+    // Stripe sends people back here; PaymentReturn needs the registration it
+    // should verify against.
+    const myRegistration = user?.registrations?.find((r) => r.eventId === event.id);
     const when = new Date(event.date);
     const isPast = when < new Date();
     const host = event.club ?? event.hostCollege;
@@ -48,6 +52,13 @@ export default function EventDetails({ event }: { event: EventDetail }) {
 
     return (
         <div className={styles.page}>
+            {/* useSearchParams opts a page out of static rendering unless it
+                sits behind a Suspense boundary — the production build fails
+                otherwise, as it did on /login earlier in this project. */}
+            <Suspense fallback={null}>
+                <PaymentReturn eventId={event.id} registrationId={myRegistration?.id} />
+            </Suspense>
+
             <Link href="/events" className={styles.back}>
                 <ArrowLeft size={13} aria-hidden="true" />
                 All events

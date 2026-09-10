@@ -1,0 +1,197 @@
+/* ============================================================
+   LEGAL — the policy pages
+   One long measure, ruled sections, no boxes. These are the only
+   pages on the site meant to be read top to bottom, so they get
+   the widest leading and the narrowest column.
+   ============================================================ */
+
+.page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: clamp(40px, 7vw, 88px) 0 clamp(72px, 10vw, 152px);
+}
+
+.label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2rem, 5.4vw, 3.75rem);
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    color: var(--color-obsidian);
+    margin: 0 0 24px;
+    max-width: 20ch;
+    text-wrap: balance;
+}
+
+/* What a reader of a policy checks first: when it last changed. */
+.stamp {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.lede {
+    font-size: 18px;
+    line-height: 1.62;
+    color: var(--color-inkstone);
+    padding: 32px 0 0;
+    max-width: 64ch;
+}
+
+.section {
+    padding: clamp(32px, 5vw, 48px) 0 0;
+}
+
+.sectionTitle {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    margin: 0 0 16px;
+}
+
+.section p {
+    font-size: 16px;
+    line-height: 1.68;
+    color: var(--color-inkstone);
+    max-width: 66ch;
+    margin-bottom: 16px;
+}
+
+.section p:last-child {
+    margin-bottom: 0;
+}
+
+.section strong {
+    font-weight: 500;
+    color: var(--color-obsidian);
+}
+
+.section a {
+    color: var(--color-obsidian);
+    border-bottom: 1px solid var(--border-hairline);
+    padding-bottom: 1px;
+    transition: border-color var(--duration-base) var(--ease-glide);
+}
+
+.section a:hover {
+    border-bottom-color: var(--color-obsidian);
+}
+
+/* Ruled lists — the shape most of a policy takes. */
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.list li {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-inkstone);
+    max-width: 66ch;
+}
+
+.list li b {
+    font-weight: 400;
+    color: var(--color-obsidian);
+}
+
+/* A short definition row: what a third party is, and why it is here. */
+.term {
+    display: grid;
+    grid-template-columns: 168px minmax(0, 1fr);
+    gap: 20px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.terms {
+    border-top: 1px solid var(--border-hairline);
+    margin-bottom: 16px;
+}
+
+.term dt {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
+    padding-top: 3px;
+}
+
+.term dd {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-felt);
+}
+
+/* Closing note — where to write if any of this is wrong. */
+.foot {
+    margin-top: clamp(40px, 6vw, 64px);
+    padding-top: 28px;
+    border-top: 1px solid var(--border-hairline);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-felt);
+    max-width: 62ch;
+}
+
+.foot a {
+    color: var(--color-obsidian);
+    border-bottom: 1px solid var(--color-obsidian);
+}
+
+/* Sibling policies, so each page is a way into the others. */
+.related {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.relatedLink {
+    padding: 7px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--color-inkstone);
+    transition: border-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
+}
+
+.relatedLink:hover {
+    border-color: var(--color-obsidian);
+    color: var(--color-obsidian);
+}
+
+@media (max-width: 620px) {
+    .term {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .section a,
+    .relatedLink {
+        transition: none;
+    }
+}

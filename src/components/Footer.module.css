@@ -93,6 +93,28 @@
     color: var(--color-paper);
 }
 
+/* The policy row. Small, quiet, and the same paper-on-ink treatment as the
+   links above — these are for the person who came looking, not for anyone
+   browsing. */
+.legalLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.legalLinks a {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    transition: color var(--duration-base) var(--ease-glide);
+}
+
+.legalLinks a:hover {
+    color: var(--color-paper);
+}
+
 .bottomBar {
     border-top: 1px solid rgba(255, 255, 255, 0.14);
 }
@@ -133,7 +155,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .links a {
+    .links a,
+    .legalLinks a {
         transition: none;
     }
 }
