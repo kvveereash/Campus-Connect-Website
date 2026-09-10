@@ -1,0 +1,130 @@
+/* ============================================================
+   SETTINGS — ruled sections, one job each
+   ============================================================ */
+
+.page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: clamp(40px, 7vw, 88px) 0 clamp(72px, 10vw, 152px);
+}
+
+.label {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 20px;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(2rem, 5.4vw, 3.375rem);
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    color: var(--color-obsidian);
+    margin: 0;
+}
+
+.section {
+    margin-top: clamp(36px, 5vw, 56px);
+    padding-top: clamp(28px, 4vw, 40px);
+    border-top: 1px solid var(--border-hairline);
+}
+
+.sectionLabel {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    margin-bottom: 18px;
+}
+
+.value {
+    font-size: 17px;
+    color: var(--color-obsidian);
+    margin-bottom: 10px;
+}
+
+.note {
+    font-size: 14px;
+    line-height: 1.62;
+    color: var(--color-felt);
+    max-width: 58ch;
+    margin-bottom: 20px;
+}
+
+.note a {
+    color: var(--color-obsidian);
+    border-bottom: 1px solid var(--border-hairline);
+    padding-bottom: 1px;
+}
+
+.note a:hover {
+    border-bottom-color: var(--color-obsidian);
+}
+
+/* ---------- form ---------- */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 360px;
+}
+
+.fieldLabel {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.input {
+    width: 100%;
+    padding: 9px 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border-hairline);
+    border-radius: 0;
+    font: inherit;
+    font-size: 16px;
+    color: var(--color-obsidian);
+    outline: none;
+    transition: border-color var(--duration-base) var(--ease-glide);
+}
+
+.input:focus {
+    border-bottom-color: var(--color-obsidian);
+}
+
+.hint {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--color-ash);
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* The destructive section is separated by weight of rule rather than by
+   colour — the page has none to spend, and the button carries the warning. */
+.danger {
+    border-top-color: var(--color-obsidian);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .input {
+        transition: none;
+    }
+}

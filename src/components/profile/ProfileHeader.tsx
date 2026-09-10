@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { User } from '@/types';
 import styles from '@/app/profile/page.module.css';
 import { toast } from 'sonner';
@@ -116,6 +117,8 @@ export default function ProfileHeader({ user, badges = [], onEdit, onLogout }: P
 
                     <div className={styles.idUtilityActions}>
                         <button onClick={onEdit} className={styles.utilLink}>Edit profile</button>
+                        <span className={styles.utilDivider}>|</span>
+                        <Link href="/settings" className={styles.utilLink}>Settings</Link>
                         <span className={styles.utilDivider}>|</span>
                         <button onClick={onLogout} className={styles.utilLinkLogout}>Sign out</button>
                     </div>

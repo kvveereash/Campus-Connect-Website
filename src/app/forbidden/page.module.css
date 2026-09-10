@@ -1,0 +1,88 @@
+/* ============================================================
+   403 — and the shape every "something is wrong" page takes
+   Set like a page rather than an error box: the code as a
+   figure, one whisper-weight line, then what to do about it.
+   ============================================================ */
+
+.page {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: clamp(72px, 14vh, 176px) 0 clamp(72px, 10vw, 152px);
+}
+
+/* The status as a numeral, in the same treatment the leaderboard
+   ranks use — large, light, tabular. */
+.code {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(3.5rem, 9vw, 6.5rem);
+    line-height: 1;
+    letter-spacing: -0.045em;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 24px;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.75rem, 4.6vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+    margin: 0 0 28px;
+    max-width: 20ch;
+    text-wrap: balance;
+}
+
+.text {
+    font-size: 17px;
+    line-height: 1.62;
+    color: var(--color-inkstone);
+    max-width: 58ch;
+    margin-bottom: 18px;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 36px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.pill,
+.pillQuiet {
+    display: inline-flex;
+    align-items: center;
+    padding: 11px 28px;
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    transition: background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide);
+}
+
+.pill {
+    border: 1px solid var(--color-obsidian);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.pillQuiet {
+    border: 1px solid var(--border-hairline);
+    color: var(--color-inkstone);
+}
+
+.pillQuiet:hover {
+    border-color: var(--color-obsidian);
+    color: var(--color-obsidian);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pill,
+    .pillQuiet {
+        transition: none;
+    }
+}

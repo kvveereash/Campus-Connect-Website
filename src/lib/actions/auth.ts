@@ -66,6 +66,21 @@ export async function signup(prevState: ActionState | null, formData: FormData):
 
         logger.auth('signup', newUser.id, { email, department, year, collegeId: defaultCollege.id });
 
+        /* Send the confirmation link, but do not let it decide whether signup
+           succeeded. The account exists and the session is already set; if the
+           mail provider is down or unconfigured, the right outcome is a
+           working account with an unconfirmed address — not a failed signup
+           and a user with no idea whether to try again. The address can be
+           confirmed later from settings. */
+        try {
+            const { sendVerificationEmail } = await import('@/lib/actions/email-verification');
+            await sendVerificationEmail(newUser.id);
+        } catch (error) {
+            logger.error('Signup succeeded but verification email failed', error as Error, {
+                userId: newUser.id,
+            });
+        }
+
         return { success: true, message: 'Account created successfully' };
 
     } catch (error) {
@@ -101,7 +116,11 @@ export async function login(prevState: ActionState | null, formData: FormData): 
         }
 
         console.log('[LOGIN] Finding user...');
-        const user = await prisma.user.findUnique({ where: { email } });
+        /* deletedAt: null is load-bearing.
+           This was findUnique({ where: { email } }) with no such check, so a
+           soft-deleted account could still sign in — which would have made the
+           new "delete my account" button a no-op dressed as a deletion. */
+        const user = await prisma.user.findFirst({ where: { email, deletedAt: null } });
         if (!user || !user.password) {
             console.log('[LOGIN] User not found or no password');
             return { success: false, error: 'Invalid credentials' };

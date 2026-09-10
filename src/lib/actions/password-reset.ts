@@ -26,8 +26,10 @@ function generateToken(): string {
 export async function requestPasswordReset(email: string) {
     try {
         // 1. Find user by email
-        const user = await prisma.user.findUnique({
-            where: { email: email.toLowerCase() }
+        //    deletedAt: null for the same reason login checks it — a deleted
+        //    account must not be recoverable through the reset flow.
+        const user = await prisma.user.findFirst({
+            where: { email: email.toLowerCase(), deletedAt: null }
         });
 
         // Always return success to prevent email enumeration attacks

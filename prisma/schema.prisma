@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ── Enums ──
@@ -74,6 +74,10 @@ model User {
   projects                   String?
   portfolioLinks             String?
   lockedUntil                DateTime?
+  // Null until the address is confirmed. Nullable on purpose: every account
+  // that existed before this column did is unverified rather than broken,
+  // and nothing about signing in depends on it.
+  emailVerified              DateTime?
   auditLogs                  AuditLog[]                @relation("AuditActor")
   messages                   ChatMessage[]
   clubMemberships            ClubMember[]
@@ -86,6 +90,7 @@ model User {
   triggeredNotifications     Notification[]            @relation("NotificationActor")
   notifications              Notification[]            @relation("UserNotifications")
   passwordResetTokens        PasswordResetToken[]
+  emailVerificationTokens    EmailVerificationToken[]
   posts                      Post[]
   reactions                  Reaction[]
   RefreshToken               RefreshToken[]
@@ -96,12 +101,28 @@ model User {
   interests                  Interest[]                @relation("InterestToUser")
   skills                     Skill[]                   @relation("SkillToUser")
 
-  deletedAt                  DateTime?
+  deletedAt DateTime?
 
   @@index([email])
   @@index([collegeId])
   @@index([createdAt])
   @@index([deletedAt])
+}
+
+/// Single-use, time-limited email confirmation links. Same shape as
+/// PasswordResetToken deliberately — the two have identical needs, and a
+/// second pattern for the same job is a second thing to get wrong.
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
 }
 
 model PasswordResetToken {
@@ -140,7 +161,7 @@ model College {
   clubs       Club[]
   events      Event[]
   students    User[]
-  followers   User[]  @relation("FollowedColleges")
+  followers   User[]   @relation("FollowedColleges")
 }
 
 model Event {
@@ -167,7 +188,7 @@ model Event {
   reviews           EventReview[]
   teamRequests      TeamRequest[]
 
-  deletedAt         DateTime?
+  deletedAt DateTime?
 
   @@index([hostCollegeId])
   @@index([date])
@@ -193,16 +214,16 @@ model EventReview {
 }
 
 model EventRegistration {
-  id         String   @id @default(cuid())
+  id         String             @id @default(cuid())
   userId     String
   eventId    String
   status     RegistrationStatus @default(PENDING)
   paymentId  String?
   amountPaid Float?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  event      Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       User               @relation(fields: [userId], references: [id])
 
   @@unique([userId, eventId])
   @@index([userId])
@@ -254,17 +275,17 @@ model Club {
 }
 
 model ClubMember {
-  id       String   @id @default(cuid())
+  id       String         @id @default(cuid())
   role     ClubMemberRole
-  joinedAt DateTime @default(now())
+  joinedAt DateTime       @default(now())
   userId   String
   clubId   String
-  club     Club     @relation(fields: [clubId], references: [id])
-  user     User     @relation(fields: [userId], references: [id])
+  club     Club           @relation(fields: [clubId], references: [id])
+  user     User           @relation(fields: [userId], references: [id])
 
   @@unique([userId, clubId])
-  @@index([clubId])  // For getClubMembers()
-  @@index([userId])  // For getUserMemberships()
+  @@index([clubId]) // For getClubMembers()
+  @@index([userId]) // For getUserMemberships()
 }
 
 model ChatRoom {
@@ -287,8 +308,8 @@ model ChatMessage {
   room      ChatRoom @relation(fields: [roomId], references: [id])
   sender    User     @relation(fields: [senderId], references: [id])
 
-  @@index([roomId, timestamp])  // For getMessageHistory()
-  @@index([senderId])           // For getUserMessages()
+  @@index([roomId, timestamp]) // For getMessageHistory()
+  @@index([senderId]) // For getUserMessages()
 }
 
 model Post {
@@ -304,8 +325,8 @@ model Post {
   author    User      @relation(fields: [authorId], references: [id])
   club      Club      @relation(fields: [clubId], references: [id])
 
-  @@index([clubId, timestamp])  // For getClubPosts() sorted by date
-  @@index([authorId])           // For getUserPosts()
+  @@index([clubId, timestamp]) // For getClubPosts() sorted by date
+  @@index([authorId]) // For getUserPosts()
 }
 
 model Comment {
@@ -317,25 +338,25 @@ model Comment {
   author    User     @relation(fields: [authorId], references: [id])
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  @@index([postId])     // For getPostComments()
-  @@index([authorId])   // For getUserComments()
+  @@index([postId]) // For getPostComments()
+  @@index([authorId]) // For getUserComments()
 }
 
 model Notification {
-  id          String   @id @default(cuid())
+  id          String           @id @default(cuid())
   message     String
   link        String?
   type        NotificationType
-  read        Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   recipientId String
   actorId     String?
-  actor       User?    @relation("NotificationActor", fields: [actorId], references: [id])
-  recipient   User     @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor       User?            @relation("NotificationActor", fields: [actorId], references: [id])
+  recipient   User             @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
 
-  @@index([recipientId, createdAt])  // For getUserNotifications() sorted by date
-  @@index([recipientId, read])       // For unread notification counts
+  @@index([recipientId, createdAt]) // For getUserNotifications() sorted by date
+  @@index([recipientId, read]) // For unread notification counts
 }
 
 model Conversation {
@@ -350,13 +371,13 @@ model Conversation {
 }
 
 model ConversationParticipant {
-  id             String       @id @default(cuid())
+  id             String           @id @default(cuid())
   userId         String
   conversationId String
-  lastReadAt     DateTime     @default(now())
+  lastReadAt     DateTime         @default(now())
   role           ConversationRole @default(MEMBER)
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id])
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id])
 
   @@unique([userId, conversationId])
   @@index([userId])
@@ -405,8 +426,8 @@ model TeamRequest {
   creator     User            @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   event       Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  @@index([eventId])    // For event team requests
-  @@index([creatorId])  // For user's team requests
+  @@index([eventId]) // For event team requests
+  @@index([creatorId]) // For user's team requests
 }
 
 model AuditLog {
@@ -419,9 +440,9 @@ model AuditLog {
   createdAt  DateTime @default(now())
   actor      User     @relation("AuditActor", fields: [actorId], references: [id])
 
-  @@index([createdAt])   // For admin dashboard queries
-  @@index([actorId])     // For user audit trail
-  @@index([entityType, entityId])  // For entity history
+  @@index([createdAt]) // For admin dashboard queries
+  @@index([actorId]) // For user audit trail
+  @@index([entityType, entityId]) // For entity history
 }
 
 model LoginAttempt {

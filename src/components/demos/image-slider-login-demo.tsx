@@ -13,6 +13,11 @@ export function ImageSliderLoginDemo() {
   const searchParams = useSearchParams();
   const [state, formAction, isPending] = useActionState(login, null);
 
+  /* Set by the middleware when a session cookie was present but no longer
+     validates. Being asked to sign in again mid-session is confusing enough
+     without the page pretending you had just arrived. */
+  const expired = searchParams.get('reason') === 'expired';
+
   useEffect(() => {
     if (state?.success) {
       toast.success(state.message || "Logged in successfully");
@@ -63,10 +68,14 @@ export function ImageSliderLoginDemo() {
 
       <main className={styles.panel}>
         <div className={styles.form}>
-          <p className={styles.label}>Sign in</p>
-          <h1 className={styles.title}>Welcome back.</h1>
+          <p className={styles.label}>{expired ? 'Session ended' : 'Sign in'}</p>
+          <h1 className={styles.title}>
+            {expired ? 'That took a while.' : 'Welcome back.'}
+          </h1>
           <p className={styles.subtitle}>
-            Your events, your clubs and everything you have registered for.
+            {expired
+              ? 'Your session expired, so we need your password again. Nothing was lost — you will land back where you were.'
+              : 'Your events, your clubs and everything you have registered for.'}
           </p>
 
           {/* Google/Apple buttons were here. They had no handler — the app

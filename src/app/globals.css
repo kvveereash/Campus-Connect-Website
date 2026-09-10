@@ -398,6 +398,22 @@ html :focus:not(:focus-visible) {
   letter-spacing: 0.05em;
 }
 
+/* Danger: the one place colour still carries meaning. A control that
+   destroys something should not look identical to one that saves. Matches
+   the danger variant in components/ui/Button.module.css — this class was
+   used on the settings page before it existed anywhere global, which
+   rendered a borderless, fill-less pill. */
+.btn-danger {
+  background-color: transparent;
+  border: 1px solid #b3261e;
+  color: #b3261e;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #b3261e;
+  color: var(--color-paper);
+}
+
 /* Outline: the same pill, hollow, filling in on hover. */
 .btn-outline {
   background: transparent;

@@ -172,8 +172,28 @@ class Logger {
     /**
      * Log authentication event
      */
-    auth(event: 'login' | 'logout' | 'signup' | 'failed' | 'login_blocked' | 'account_locked', userId?: string, context?: LogContext) {
-        const level = (event === 'failed' || event === 'login_blocked' || event === 'account_locked')
+    auth(
+        event:
+            | 'login'
+            | 'logout'
+            | 'signup'
+            | 'failed'
+            | 'login_blocked'
+            | 'account_locked'
+            // Account management, from the settings page.
+            | 'password_changed'
+            | 'password_change_rejected'
+            | 'account_deleted'
+            | 'email_verified',
+        userId?: string,
+        context?: LogContext
+    ) {
+        const level = (
+            event === 'failed' ||
+            event === 'login_blocked' ||
+            event === 'account_locked' ||
+            event === 'password_change_rejected'
+        )
             ? LogLevel.WARN
             : LogLevel.INFO;
         this.log(level, `Auth: ${event}`, {

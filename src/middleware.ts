@@ -32,6 +32,8 @@ export async function middleware(request: NextRequest) {
         '/api/health',   // Health check endpoint for monitoring
         '/forgot-password',
         '/reset-password',
+        '/forbidden',   // explains a permission problem; needs no permission
+        '/verify-email', // opened from an email client, often with no session
         // Reading the feed needs no account, the same as /events and /clubs.
         // Writing to it still does: createClubPost checks membership on the
         // server, and the composer is only rendered for a signed-in member.
@@ -53,6 +55,7 @@ export async function middleware(request: NextRequest) {
      */
     const isProtectedPath =
         pathname === '/profile' ||
+        pathname === '/settings' ||
         pathname.startsWith('/messages') ||
         pathname.startsWith('/team-finder') ||
         pathname.startsWith('/admin') ||
@@ -67,6 +70,16 @@ export async function middleware(request: NextRequest) {
         if (isProtectedPath && !session) {
             const loginUrl = new URL('/login', request.url);
             loginUrl.searchParams.set('redirect', pathname);
+
+            /* A session cookie that no longer validates is a different event
+               from never having signed in, and it is the more confusing one:
+               you were using the site, and now it is asking who you are. The
+               login page says so when this is set, rather than presenting a
+               bare form as though you had arrived cold. */
+            if (request.cookies.get('session')?.value) {
+                loginUrl.searchParams.set('reason', 'expired');
+            }
+
             return NextResponse.redirect(loginUrl);
         }
 
@@ -77,7 +90,9 @@ export async function middleware(request: NextRequest) {
                 userId: session?.userId,
                 path: pathname,
             });
-            return NextResponse.redirect(new URL('/events', request.url));
+            /* Was a silent redirect to /events: nothing explained, and it read
+               as a broken link rather than a permission you do not have. */
+            return NextResponse.redirect(new URL('/forbidden', request.url));
         }
 
         if (session) {
