@@ -2,6 +2,13 @@
   command = "npx prisma generate && npm run build"
   publish = ".next"
 
+# Pinned rather than left to Netlify's default, which changes over time and is
+# not tied to this project. Next 16 needs a modern Node, and a build that
+# passes locally on one major version and fails on the host months later —
+# for no reason anyone changed — is a bad afternoon.
+[build.environment]
+  NODE_VERSION = "22"
+
 
 [functions]
   included_files = ["node_modules/.prisma/**", "node_modules/@prisma/client/**", "prisma/**"]

@@ -102,6 +102,34 @@ export async function POST(request: NextRequest) {
             message: 'File uploaded successfully',
         });
     } catch (error) {
+        const code = (error as NodeJS.ErrnoException)?.code;
+
+        /* On Netlify — and on any serverless host — the function filesystem is
+         * read-only apart from /tmp, so this write does not fail occasionally,
+         * it fails every time. That deserves a different answer from a genuine
+         * fault: 503 rather than 500, because the request was fine and the
+         * server is not configured for it, and a message that names the
+         * problem instead of "Upload failed", which tells the person nothing
+         * they can act on and tells whoever reads the logs nothing either.
+         *
+         * The fix is durable object storage. Supabase is already in this stack
+         * and has a Storage bucket, so that is the short path when someone
+         * gets to it. */
+        if (code === 'EROFS' || code === 'EACCES' || code === 'EPERM') {
+            logger.error('Upload rejected: no writable filesystem', error as Error, {
+                userId: session.userId as string,
+                code,
+            });
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        'Image uploads are not available on this deployment: the server has no durable file storage configured. Paste an image URL instead.',
+                },
+                { status: 503 }
+            );
+        }
+
         logger.error('Upload failed', error as Error, { userId: session.userId as string });
         return NextResponse.json({ success: false, error: 'Upload failed' }, { status: 500 });
     }
