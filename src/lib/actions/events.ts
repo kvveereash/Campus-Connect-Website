@@ -377,11 +377,16 @@ async function _getEventByIdUncached(id: string) {
 }
 
 export async function getUserCreatedEvents(userId: string) {
+    // Creators see their own events whether or not an admin has approved them
+    // yet, so a pending event does not simply vanish. Anyone else sees only the
+    // approved ones: this is callable with any id, and used to hand out every
+    // pending and rejected event (with its rejection reason) to whoever asked.
+    const session = await getSession();
+    const isOwner = session?.userId === userId;
+
     try {
         const events = await prisma.event.findMany({
-            // Creators see their own events whether or not an admin has approved
-            // them yet, so a pending event does not simply vanish.
-            where: { creatorId: userId, deletedAt: null },
+            where: { creatorId: userId, deletedAt: null, ...(isOwner ? {} : { verified: true }) },
             include: {
                 hostCollege: { select: { id: true, name: true, logo: true } },
                 club: { select: { id: true, name: true, logo: true } },
