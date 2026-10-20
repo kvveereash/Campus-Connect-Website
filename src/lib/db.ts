@@ -125,8 +125,10 @@ export async function diagnoseDatabase(): Promise<
 
         let reason: DatabaseFailure = 'other'
         if (/Query Engine|query-engine|libquery_engine|binaryTargets/i.test(message)) reason = 'engine-missing'
-        else if (code === 'P1000') reason = 'auth-failed'
-        else if (code === 'P1001' || code === 'P1017') reason = 'unreachable'
+        // Through Supabase's pooler, Prisma 5 raises these without an error
+        // code, so the message is matched as well.
+        else if (code === 'P1000' || /Authentication failed|password authentication failed/i.test(message)) reason = 'auth-failed'
+        else if (code === 'P1001' || code === 'P1017' || /Can't reach database server|ENOTFOUND|ECONNREFUSED/i.test(message)) reason = 'unreachable'
         else if (code === 'P1003') reason = 'database-missing'
         else if (code === 'P1013') reason = 'invalid-url'
         else if (code === 'P1002' || code === 'P1008' || code === 'P2024') reason = 'timeout'
