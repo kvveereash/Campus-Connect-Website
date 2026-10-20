@@ -4,15 +4,18 @@ import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
+/**
+ * Example accounts must not share a guessable password: this script may be
+ * run against a database real people use, and "password123" on eight known
+ * emails is eight open accounts. Set SEED_PASSWORD to sign in as them
+ * locally; otherwise each gets a random password nobody knows.
+ */
+const SEED_PASSWORD = process.env.SEED_PASSWORD;
+
 async function main() {
     console.log('🌱 Seeding dummy data...');
 
-    // Same rule as seed.ts: no shared, committed password.
-    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PRODUCTION_SEED !== '1') {
-        throw new Error('Refusing to seed with NODE_ENV=production. Set ALLOW_PRODUCTION_SEED=1 if you really mean it.');
-    }
-    const plainPassword = process.env.SEED_PASSWORD || randomBytes(12).toString('base64url');
-    const password = await bcrypt.hash(plainPassword, 12);
+    const password = await bcrypt.hash(SEED_PASSWORD || randomBytes(24).toString('base64url'), 10);
 
     // ─── Colleges ───
     const colleges = [
@@ -192,6 +195,12 @@ async function main() {
 
     for (const et of eventTemplates) {
         const existing = await prisma.event.findFirst({ where: { title: et.title } });
+        // Dates are relative to the day the seed first ran. On a database
+        // seeded months ago every example is in the past and the board
+        // looks empty, so move stale ones back to their intended distance.
+        if (existing && existing.date < now) {
+            await prisma.event.update({ where: { id: existing.id }, data: { date: et.date } });
+        }
         if (!existing && createdClubs[et.clubIdx]) {
             await prisma.event.create({
                 data: {
@@ -230,9 +239,11 @@ async function main() {
 
     console.log('\n🎉 Dummy data seeded successfully!');
     console.log('────────────────────────────────');
-    console.log(process.env.SEED_PASSWORD
-        ? 'All dummy users have the password in SEED_PASSWORD'
-        : `All dummy users have this password (generated for this run, shown once): ${plainPassword}`);
+    console.log(
+        SEED_PASSWORD
+            ? 'Dummy users can sign in with SEED_PASSWORD.'
+            : 'Dummy users have random passwords. Set SEED_PASSWORD before seeding to sign in as them.'
+    );
     console.log('Emails: rahul@iitmumbai.edu, priya@nid.edu, arjun@du.edu, etc.');
     console.log('────────────────────────────────');
 }

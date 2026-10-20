@@ -1,92 +1,107 @@
 /* ============================================================
    AUTH — the login and signup screens
-   Both were a 1200px rounded-3xl panel floating on a soft shadow,
-   with a four-second image slider on one half and a bold shadcn
-   form on the other. Nothing else on the site floats, rotates
-   images on a timer, or sets a heading in bold.
-
-   These are the two screens where a stranger decides whether the
-   project looks serious, so they get the strongest version of the
-   system: a full-height black chamber on the left carrying one
-   sentence, and nothing but ruled fields on the right.
+   Left: a campus-blue panel, dot-screened like the hero frame,
+   carrying one sentence. Right: the form as a single white card
+   on the canvas. Where a stranger decides whether the project
+   looks serious, so it uses the system at full strength.
    ============================================================ */
 
-/* The root layout wraps every page in .container (max-width 1200, side
-   padding). These two screens are the exception: they bleed to the window
-   edge, so they step back out of it. */
+/* The root layout wraps every page in .container; these two screens bleed
+   to the window edge, so they step back out of it. */
 .screen {
     width: 100vw;
     max-width: 100vw;
     margin-left: calc(50% - 50vw);
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
     min-height: 100vh;
     min-height: 100dvh;
+    padding: 12px;
 }
 
-/* ---------- the black half ---------- */
+/* ---------- the blue half ---------- */
 .aside {
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: clamp(32px, 4vw, 56px);
-    background: var(--color-obsidian);
+    padding: clamp(28px, 4vw, 52px);
+    border-radius: 24px;
     color: var(--color-paper);
     overflow: hidden;
+    background:
+        radial-gradient(rgba(255, 255, 255, 0.42) 1.1px, transparent 1.5px) 0 0 / 7px 7px,
+        radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1.4px) 3.5px 3.5px / 7px 7px,
+        var(--color-accent);
 }
 
-/* The landing page's sphere, at rest. A single radial wash rather
-   than the animated version — this screen has a job to do, and the
-   glow is here to connect the two pages, not to perform. */
+/* A softer core so the sentence sits on calmer ground than the screen. */
 .glow {
     position: absolute;
-    left: 50%;
-    top: 52%;
-    width: 128%;
-    aspect-ratio: 1;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.15) 0%, transparent 46%),
-        radial-gradient(circle at 62% 68%, rgba(224, 192, 248, 0.13) 0%, transparent 52%),
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 68%);
+    inset: 18% 10% 22%;
+    border-radius: 32px;
+    background: var(--color-accent);
+    -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent);
+    mask-image: radial-gradient(closest-side, #000 55%, transparent);
     pointer-events: none;
 }
 
 .wordmark {
     position: relative;
     z-index: 1;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
     color: var(--color-paper);
+}
+
+.wordmark::before {
+    content: '';
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background:
+        radial-gradient(circle at 30% 32%, var(--color-marker) 0 3px, transparent 3.5px),
+        radial-gradient(circle at 70% 68%, var(--color-marker) 0 3px, transparent 3.5px),
+        var(--color-obsidian);
 }
 
 .asideBody {
     position: relative;
     z-index: 1;
-    max-width: 22ch;
 }
 
 .asideLine {
     font-family: var(--font-display);
-    font-weight: 300;
-    font-size: clamp(1.75rem, 3.2vw, 3rem);
-    line-height: 1.08;
-    letter-spacing: -0.03em;
+    font-weight: 700;
+    font-size: clamp(2.25rem, 4.4vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
     color: var(--color-paper);
     margin: 0;
+    max-width: 9.5em;
     text-wrap: balance;
 }
 
 .asideNote {
     position: relative;
     z-index: 1;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.45);
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.14);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--color-paper);
 }
 
 /* ---------- the form half ---------- */
@@ -94,46 +109,43 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(32px, 5vw, 64px);
-    background: var(--color-paper);
+    padding: clamp(24px, 5vw, 64px) 16px;
 }
 
 .form {
     width: 100%;
-    max-width: 384px;
+    max-width: 420px;
 }
 
 .label {
-    font-size: 11px;
-    letter-spacing: 0.16em;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: var(--color-felt);
-    margin-bottom: 20px;
+    color: var(--color-ash);
 }
 
 .title {
-    font-family: var(--font-display);
-    font-weight: 300;
-    font-size: clamp(2rem, 4vw, 3rem);
-    line-height: 1.06;
-    letter-spacing: -0.035em;
-    color: var(--color-obsidian);
-    margin: 0 0 14px;
-    text-wrap: balance;
+    margin: 10px 0 10px;
+    font-size: clamp(2.25rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
 }
 
 .subtitle {
-    font-size: 15px;
-    line-height: 1.55;
+    font-size: 16px;
+    line-height: 1.5;
     color: var(--color-felt);
-    margin: 0 0 40px;
-    max-width: 34ch;
+    max-width: 36ch;
 }
 
 .fields {
     display: flex;
     flex-direction: column;
-    gap: 26px;
+    gap: 16px;
+    margin: 32px 0 20px;
 }
 
 .field {
@@ -144,48 +156,46 @@
 
 .fieldHead {
     display: flex;
-    align-items: baseline;
     justify-content: space-between;
-    gap: 12px;
+    align-items: baseline;
 }
 
 .fieldLabel {
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-ash);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-obsidian);
 }
 
-/* A line to write on. Same field treatment as every form on the site. */
 .input {
     width: 100%;
-    padding: 8px 0;
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid var(--border-hairline);
-    border-radius: 0;
-    font: inherit;
-    font-size: 16px;
-    line-height: 1.5;
+    height: 46px;
+    padding: 0 14px;
+    border-radius: var(--radius-input);
+    border: 1px solid var(--border-strong);
+    background: var(--color-paper);
     color: var(--color-obsidian);
-    outline: none;
-    transition: border-color var(--duration-base) var(--ease-glide);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    transition: border-color var(--duration-micro) var(--ease-glide),
+                box-shadow var(--duration-micro) var(--ease-glide);
 }
 
 .input::placeholder {
-    color: var(--color-ash);
+    color: var(--color-pewter);
 }
 
 .input:focus {
-    border-bottom-color: var(--color-obsidian);
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-accent-soft);
 }
 
 .quietLink {
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-ash);
-    transition: color var(--duration-base) var(--ease-glide);
+    font-size: 13px;
+    color: var(--color-felt);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--border-strong);
 }
 
 .quietLink:hover {
@@ -196,27 +206,25 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
-    margin-top: 36px;
-    padding: 13px 28px;
+    height: 48px;
     border-radius: var(--radius-pill);
-    border: 1px solid var(--color-obsidian);
-    background: var(--color-obsidian);
+    background: var(--color-accent);
     color: var(--color-paper);
-    font: inherit;
-    font-size: 14px;
-    cursor: pointer;
-    transition: letter-spacing var(--duration-base) var(--ease-glide),
-                opacity var(--duration-micro) var(--ease-glide);
+    font-size: 15px;
+    font-weight: 600;
+    transition: background-color var(--duration-micro) var(--ease-glide),
+                transform var(--duration-micro) var(--ease-glide);
 }
 
 .submit:hover:not(:disabled) {
-    letter-spacing: 0.06em;
+    background: var(--color-accent-hover);
+    transform: translateY(-1px);
 }
 
 .submit:disabled {
-    opacity: 0.4;
+    opacity: 0.55;
     cursor: default;
 }
 
@@ -231,36 +239,35 @@
 }
 
 .foot {
-    margin-top: 32px;
-    padding-top: 22px;
+    margin-top: 24px;
+    padding-top: 20px;
     border-top: 1px solid var(--border-hairline);
-    font-size: 12px;
-    letter-spacing: 0.06em;
+    font-size: 14px;
     color: var(--color-felt);
 }
 
 .foot a {
     color: var(--color-obsidian);
-    border-bottom: 1px solid var(--border-hairline);
-    padding-bottom: 1px;
-    transition: border-color var(--duration-base) var(--ease-glide);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-marker);
+    text-decoration-thickness: 3px;
 }
 
 .foot a:hover {
-    border-bottom-color: var(--color-obsidian);
+    text-decoration-color: var(--color-accent);
 }
 
-/* Below the fold on a phone the black half would push the form off
-   screen, so it collapses to a band across the top. */
 @media (max-width: 860px) {
     .screen {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 1fr;
         min-height: 0;
     }
 
     .aside {
-        min-height: 236px;
-        gap: 28px;
+        min-height: 220px;
+        gap: 32px;
     }
 
     .asideNote {
@@ -268,20 +275,17 @@
     }
 
     .panel {
-        padding: 44px 24px 72px;
-        align-items: flex-start;
+        padding: 24px 8px 48px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .input,
-    .submit,
-    .quietLink,
-    .foot a {
-        transition: none;
+    .spin {
+        animation-duration: 2s;
     }
 
-    .spin {
-        animation: none;
+    .submit,
+    .input {
+        transition: none;
     }
 }

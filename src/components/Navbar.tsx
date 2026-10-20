@@ -4,13 +4,29 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NotificationBell } from './notifications/NotificationBell';
 import UserNav from './UserNav';
-import ThemeToggle from './ThemeToggle';
 import ExploreDropdown from './ExploreDropdown';
 import { Search, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Navbar.module.css';
 import { useCommand } from '@/context/CommandContext';
+
+/**
+ * The three places people actually go. Each carries its category square,
+ * the same mark the events board uses, so the nav reads as the index of
+ * the board rather than a row of words.
+ */
+const PRIMARY = [
+    { href: '/events', label: 'Events', mark: 'var(--press-technology)' },
+    { href: '/buzz', label: 'Buzz', mark: 'var(--press-cultural)' },
+    { href: '/clubs', label: 'Clubs', mark: 'var(--press-sports)' },
+] as const;
+
+const EXPLORE = [
+    { href: '/colleges', label: 'Colleges' },
+    { href: '/team-finder', label: 'Team finder' },
+    { href: '/leaderboards', label: 'Leaderboard' },
+    { href: '/map', label: 'Venues' },
+] as const;
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -18,112 +34,108 @@ export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
-    // The landing hero is a full-viewport dark chamber. A white pill sitting on
-    // top of it reads as a sticker stuck to a photograph, so while the nav is
-    // still over that hero it goes transparent with light type — the way the
-    // reference keeps its header invisible until content scrolls behind it.
-    const isLanding = pathname === '/';
-    const [overHero, setOverHero] = useState(isLanding);
-
     useEffect(() => {
-        const handleScroll = () => {
-            const y = window.scrollY;
-            setScrolled(y > 50);
-            setOverHero(isLanding && y < window.innerHeight - 120);
-        };
+        const handleScroll = () => setScrolled(window.scrollY > 8);
         handleScroll();
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [isLanding]);
+    }, []);
+
+    // A route change is the end of whatever the menu was open for.
+    useEffect(() => {
+        setIsMobileMenuOpen(false); // eslint-disable-line react-hooks/set-state-in-effect
+    }, [pathname]);
+
+    useEffect(() => {
+        if (!isMobileMenuOpen) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setIsMobileMenuOpen(false);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [isMobileMenuOpen]);
+
+    const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
     return (
-        <nav className={`${styles.navbar} ${isLanding ? styles.navbarFloating : ''}`}>
-            <div
-                className={`container ${styles.navContainer} ${scrolled ? styles.navContainerScrolled : ''} ${overHero ? styles.navOverHero : ''}`}
-            >
-                <Link href="/" className={styles.logo}>
-                    Campus Connect
+        <nav className={`${styles.navbar} ${scrolled ? styles.navbarScrolled : ''}`} aria-label="Main">
+            <div className={`container ${styles.navContainer}`}>
+                <Link href="/" className={styles.logo} aria-label="Campus Connect, home">
+                    <span className={styles.logoMark} aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="16" height="16">
+                            <circle cx="6" cy="7" r="3" fill="currentColor" />
+                            <circle cx="18" cy="17" r="3" fill="currentColor" />
+                            <path d="M8.5 8.5 C 13 9, 11 15, 15.5 15.5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+                        </svg>
+                    </span>
+                    <span className={styles.logoText}>Campus Connect</span>
                 </Link>
 
-                {/* Desktop Nav Items */}
                 <div className={styles.navLinks}>
-                    <Link href="/events" className={styles.navLink}>
-                        Events
-                    </Link>
-                    <Link
-                        href="/buzz"
-                        className={`${styles.navLink} ${pathname === '/buzz' ? styles.active : ''}`}
-                    >
-                        Buzz
-                    </Link>
-                    <Link
-                        href="/clubs"
-                        className={`${styles.navLink} ${pathname.startsWith('/clubs') ? styles.active : ''}`}
-                    >
-                        Clubs
-                    </Link>
-
+                    {PRIMARY.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`${styles.navLink} ${isActive(item.href) ? styles.active : ''}`}
+                            aria-current={isActive(item.href) ? 'page' : undefined}
+                        >
+                            <span className={styles.navMark} style={{ background: item.mark }} aria-hidden="true" />
+                            {item.label}
+                        </Link>
+                    ))}
                     <ExploreDropdown />
                 </div>
 
-                {/* Right Actions */}
                 <div className={styles.navActions}>
                     <button
+                        type="button"
                         onClick={() => setIsOpen(true)}
                         className={styles.searchButton}
+                        aria-label="Search events, clubs and people"
                     >
-                        <Search size={22} />
+                        <Search size={16} aria-hidden="true" />
+                        <span className={styles.searchText}>Search</span>
+                        <kbd className={styles.kbd}>⌘K</kbd>
                     </button>
                     <NotificationBell />
                     <UserNav />
 
-                    {/* Mobile Toggle */}
                     <button
+                        type="button"
                         className={styles.mobileToggle}
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        onClick={() => setIsMobileMenuOpen((o) => !o)}
+                        aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                        aria-expanded={isMobileMenuOpen}
+                        aria-controls="mobile-menu"
                     >
-                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Dropdown Menu — Animated */}
-            <AnimatePresence>
-                {isMobileMenuOpen && (
-                    <motion.div
-                        className={styles.mobileMenu}
-                        initial={{ opacity: 0, y: -10, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.97 }}
-                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                        <Link href="/events" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                            Events
-                        </Link>
-                        <Link href="/buzz" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                            Buzz
-                        </Link>
-                        <Link href="/clubs" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                            Clubs
-                        </Link>
+            <div
+                id="mobile-menu"
+                className={`${styles.mobileMenu} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''}`}
+                hidden={!isMobileMenuOpen}
+            >
+                {PRIMARY.map((item) => (
+                    <Link key={item.href} href={item.href} className={styles.mobileMenuLink}>
+                        <span className={styles.navMark} style={{ background: item.mark }} aria-hidden="true" />
+                        {item.label}
+                    </Link>
+                ))}
 
-                        <div className={styles.exploreSection}>
-                            <p className={styles.exploreTitle}>Explore</p>
-                            <div className={styles.exploreLinks}>
-                                <Link href="/colleges" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                                    Colleges
-                                </Link>
-                                <Link href="/leaderboards" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                                    Leaderboard
-                                </Link>
-                                <Link href="/map" className={styles.mobileMenuLink} onClick={() => setIsMobileMenuOpen(false)}>
-                                    Venues
-                                </Link>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                <div className={styles.exploreSection}>
+                    <p className={styles.exploreTitle}>Explore</p>
+                    <div className={styles.exploreLinks}>
+                        {EXPLORE.map((item) => (
+                            <Link key={item.href} href={item.href} className={styles.mobileMenuLink}>
+                                {item.label}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </div>
         </nav>
     );
 }

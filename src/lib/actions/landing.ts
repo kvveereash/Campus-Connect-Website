@@ -21,7 +21,9 @@ async function _landingStats() {
             prisma.user.count({ where: { deletedAt: null } }),
             prisma.club.count({ where: { deletedAt: null, verified: true } }),
             prisma.college.count(),
-            prisma.event.count({ where: { deletedAt: null, verified: true } }),
+            // Upcoming only: the page labels this "upcoming events", and the
+            // events board it links to lists nothing in the past.
+            prisma.event.count({ where: { deletedAt: null, verified: true, date: { gte: new Date() } } }),
         ]);
         return { students, clubs, colleges, events, available: true };
     } catch (error) {

@@ -1,27 +1,32 @@
-/* Service worker: caches the app icon and manifest, nothing else.
+/*
+ * Campus Connect service worker.
  *
- * v1 pre-cached '/' and answered every request cache-first under a name that
- * never changed, so a returning visitor got the home page as it was on the day
- * the worker installed, frozen stats and events included. After a deploy that
- * stale HTML pointed at _next/static chunks that no longer existed, and the
- * page failed to hydrate. Pages are never cached now. The new name, plus the
- * activate step below, clear v1's cache from browsers that already have it. */
-const CACHE_NAME = 'campus-connect-v2';
-const PRECACHE = ['/icon.svg', '/manifest.json'];
+ * The first version precached "/" and answered every request cache-first,
+ * forever. After a deploy, returning visitors were served the old landing
+ * page, pointing at script chunks that no longer existed. This version:
+ *
+ *  - never caches pages: navigations always go to the network, so a deploy
+ *    is visible on the next load;
+ *  - caches only Next's hashed static assets, which never change under the
+ *    same URL, so cache-first is safe for them;
+ *  - deletes every cache from an older version when it activates, which is
+ *    also what clears the stale "/" left behind by v1.
+ */
+const CACHE = 'campus-connect-v2';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => cache.addAll(PRECACHE))
-            // Replace a v1 worker straight away rather than on the next visit.
-            .then(() => self.skipWaiting())
+        caches.open(CACHE).then((cache) => cache.addAll(['/icon.svg', '/manifest.json']))
     );
+    // Take over from v1 straight away instead of waiting for every tab to close.
+    self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys()
-            .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+        caches
+            .keys()
+            .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
             .then(() => self.clients.claim())
     );
 });
@@ -31,9 +36,23 @@ self.addEventListener('fetch', (event) => {
     if (request.method !== 'GET') return;
 
     const url = new URL(request.url);
-    if (url.origin !== self.location.origin || !PRECACHE.includes(url.pathname)) return;
+    if (url.origin !== self.location.origin) return;
 
-    event.respondWith(
-        caches.match(request).then((cached) => cached || fetch(request))
-    );
+    // Hashed build output: immutable, so serve from cache and fill on miss.
+    if (url.pathname.startsWith('/_next/static/')) {
+        event.respondWith(
+            caches.match(request).then(
+                (hit) =>
+                    hit ||
+                    fetch(request).then((res) => {
+                        if (res.ok) {
+                            const copy = res.clone();
+                            caches.open(CACHE).then((cache) => cache.put(request, copy));
+                        }
+                        return res;
+                    })
+            )
+        );
+    }
+    // Everything else, pages included, goes straight to the network.
 });

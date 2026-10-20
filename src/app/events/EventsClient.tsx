@@ -92,8 +92,11 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
         <div className={styles.screen}>
             <div className={styles.inner}>
                 <header className={styles.masthead}>
+                    <p className="mono-label">The board</p>
                     <div className={styles.mastheadRow}>
-                        <h1 className={styles.wordmark}>Events</h1>
+                        <h1 className={styles.wordmark}>
+                            What&rsquo;s <mark>on</mark>
+                        </h1>
                         <span className={styles.count}>{visible.length} upcoming</span>
                     </div>
                     <p className={styles.strap}>
@@ -277,7 +280,7 @@ function EventRow({ event }: { event: EventWithRelations }) {
                         {event.category}
                     </span>
                     <span className={`${styles.price} ${event.price > 0 ? '' : styles.priceFree}`}>
-                        {event.price > 0 ? `$${event.price}` : 'Free'}
+                        {event.price > 0 ? `₹${event.price.toLocaleString('en-IN')}` : 'Free'}
                     </span>
                     {/* Zero is not shown — the old card advertised "0 Reg." */}
                     {going > 0 && <span className={styles.going}>{going} going</span>}

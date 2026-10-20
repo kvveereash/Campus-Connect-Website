@@ -28,35 +28,37 @@
 }
 
 :root {
-  /* --- Modern Editorial Theme --- */
-
-  /* ── Palette ──────────────────────────────────────────────────
-     Radical monochrome. Black, white and grays carry the entire
-     interface; no chromatic colour appears in UI at all. The one
-     exception is the hero gradient, which is media, not chrome.
+  /* ── Campus Connect · "Noticeboard" ───────────────────────────
+     A warm paper canvas, white cards pinned to it, one electric
+     campus blue for the thing you should press, and a marker-yellow
+     highlight for the one phrase that matters on a page. Category
+     colours are back as small square marks: on a busy board they
+     are how you find "the hackathon one" before you read a word.
+     References: Vessa (paper + one accent, honest copy), Teak
+     (highlighter, mono labels, hairline bento), Melius (node
+     canvas, literally "connected"), Taito (product UI as hero).
      ------------------------------------------------------------- */
-  --color-obsidian: #000000;   /* all foreground: text, strokes, fills */
-  --color-paper: #ffffff;      /* canvas, and text on dark surfaces */
-  --color-inkstone: #181818;   /* long-form body, softened black */
-  --color-felt: #6d6d6d;       /* muted helper text, captions */
-  --color-slate: #636363;      /* the one solid neutral button fill */
-  /* Was #9a9a9a, which measures 2.81:1 against paper — below the 3:1 floor
-     even for large text, and this token carries most of the small meta type
-     on the site: filter counts, timestamps, category tags, field labels.
-     #767676 is the lightest grey that clears 4.5:1 for text at those sizes
-     and still reads as clearly quieter than felt. */
-  --color-ash: #767676;        /* muted meta type: counts, stamps, labels */
-  --color-pewter: #808080;     /* hover and muted state layers */
+  --color-canvas: #f5f4f0;     /* the board itself */
+  --color-paper: #ffffff;      /* cards, sheets, and text on dark */
+  --color-obsidian: #111114;   /* ink: text, strokes, dark fills */
+  --color-inkstone: #2b2b31;   /* long-form body, softened ink */
+  --color-felt: #5f5f68;       /* helper text, 5.9:1 on canvas */
+  --color-ash: #6c6c75;        /* meta: counts, stamps, labels, 4.9:1 on canvas */
+  --color-pewter: #9a9aa3;     /* disabled, placeholder */
+  --color-slate: #e9e8e3;      /* sunken wells, hover fills */
 
-  /* The brand lilac survives in one place only: as a stop inside the
-     hero's iridescent wash. The system forbids chromatic UI colour,
-     so a badge or button tint would break it — but the gradient is
-     media, and that is where colour is allowed to live. */
-  --color-lilac: #E0C0F8;
+  --color-accent: #2f3bff;     /* campus blue: primary actions only */
+  --color-accent-hover: #1f29d9;
+  --color-accent-soft: #e6e8ff;
+  --color-marker: #ffe45c;     /* highlighter: one phrase per page */
+  --color-success: #12a150;
+  --color-danger: #d92d20;
+
+  --color-lilac: #c9b8ff;
   --gradient-iridescent:
-      linear-gradient(90deg, #E0C0F8 0%, #FFAC2E 50%, #A52D25 100%);
+      linear-gradient(90deg, #c9b8ff 0%, #ffe45c 50%, #ff7a1a 100%);
 
-  /* Legacy aliases — consumed across ~33 files, repointed rather than
+  /* Legacy aliases, consumed across ~33 files, repointed rather than
      edited in place. */
   --color-cream: var(--color-paper);
   --color-forest: var(--color-obsidian);
@@ -71,7 +73,7 @@
   --color-lilac-deep: var(--color-obsidian);
 
   /* ── Functional mappings ── */
-  --background-color: var(--color-paper);
+  --background-color: var(--color-canvas);
   --surface-color: var(--color-paper);
   --surface-dark: var(--color-obsidian);
 
@@ -80,79 +82,55 @@
   --text-muted: var(--color-ash);
   --text-on-dark: var(--color-paper);
 
-  --primary-color: var(--color-obsidian);
+  --primary-color: var(--color-accent);
   --secondary-color: var(--color-obsidian);
 
-  /* Dividers and card edges. Pure black is right for a ghost button's
-     outline, but ~29 files use this token for rules and surfaces, and a
-     solid black hairline on every one of them reads as harsh rather than
-     precise. Buttons that want full ink ask for --color-obsidian. */
-  --border-hairline: rgba(0, 0, 0, 0.14);
+  --border-hairline: rgba(17, 17, 20, 0.1);
+  --border-strong: rgba(17, 17, 20, 0.18);
   --border-color: var(--border-hairline);
-  --border-on-dark: rgba(255, 255, 255, 0.3);
+  --border-on-dark: rgba(255, 255, 255, 0.22);
 
-  /* ── Typography ──
-     One geometric-humanist sans across every role, from 11px labels to
-     the hero. Inter stands in for Roobert. */
-  --font-serif: var(--font-fraunces), serif;
+  /* ── Typography ── */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-serif: var(--font-display);
 
   --font-heading: var(--font-display);
   --font-body: var(--font-sans);
 
   /* ── Geometry ──
-     The system jumps from sharp to fully round with nothing between.
-     Cards, images and inputs sit at 0. Buttons and tags are pills.
-     Never use a radius between 1px and 74px. */
-  --radius-card: 0px;
-  --radius-image: 0px;
-  --radius-input: 0px;
-  --radius-tag: 75px;
-  --radius-button: 75px;
-  --radius-pill: 75px;
+     Cards are softly rounded: pinned paper, not tiles. Controls are
+     pills. Inputs sit between the two. */
+  --radius-card: 16px;
+  --radius-image: 12px;
+  --radius-input: 10px;
+  --radius-tag: 999px;
+  --radius-button: 999px;
+  --radius-pill: 999px;
 
   /* ── Elevation ──
-     There is none. Surfaces separate by inversion and hairline rules. */
-  --shadow-card: none;
-  --shadow-soft: none;
+     Mostly hairlines. A card earns a shadow only when it floats over
+     something: a menu, a modal, a card on the hero canvas. */
+  --shadow-card: 0 1px 0 rgba(17, 17, 20, 0.04);
+  --shadow-soft: 0 1px 2px rgba(17, 17, 20, 0.06), 0 8px 24px -12px rgba(17, 17, 20, 0.18);
+  --shadow-float: 0 1px 2px rgba(17, 17, 20, 0.06), 0 18px 40px -18px rgba(17, 17, 20, 0.28);
   --shadow-button: none;
 
-  /* ── Motion ──
-     Slow camera moves rather than UI snaps. */
-  --ease-glide: cubic-bezier(0.19, 1, 0.22, 1);
-  --duration-slow: 1.25s;
-  --duration-base: 0.8s;
-  --duration-micro: 0.4s;
+  /* ── Texture: the dot grid the hero and empty states sit on. ── */
+  --dot-grid: radial-gradient(rgba(17, 17, 20, 0.13) 1px, transparent 1.2px);
+  --dot-grid-size: 18px 18px;
 
-  --transition-speed: 0.3s;
+  /* ── Motion ──
+     Quick and settled. A noticeboard does not drift. */
+  --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-slow: 0.7s;
+  --duration-base: 0.35s;
+  --duration-micro: 0.18s;
+
+  --transition-speed: 0.2s;
 }
 
-/* 
-   Dark mode support:
-   For this specific aesthetic, "Dark Mode" might just be an inversion 
-   where Forest becomes background and Cream becomes text. 
-*/
-/* 
-   Dark mode support:
-   For this specific aesthetic, "Dark Mode" might just be an inversion 
-   where Forest becomes background and Cream becomes text. 
-   
-   DISABLED: User requested to remove dark theme for every page.
-*/
-/* 
-[data-theme='dark'] {
-  --background-color: var(--color-forest);
-  --surface-color: rgba(255, 255, 255, 0.05);
-  --surface-dark: #000000;
-
-  --text-primary: var(--color-cream);
-  --text-secondary: rgba(251, 249, 240, 0.7);
-  --text-on-dark: var(--color-cream);
-
-  --border-color: rgba(251, 249, 240, 0.1);
-} 
-*/
 
 * {
   box-sizing: border-box;
@@ -165,7 +143,8 @@ body {
   background-color: var(--background-color);
   color: var(--text-primary);
   line-height: 1.6;
-  transition: background-color var(--transition-speed), color var(--transition-speed);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   padding-top: 0;
   overflow-x: hidden;
   /* Prevent side scroll from full-width elements */
@@ -180,6 +159,11 @@ a {
   transition: opacity var(--transition-speed);
 }
 
+::selection {
+  background: var(--color-marker);
+  color: var(--color-obsidian);
+}
+
 h1,
 h2,
 h3,
@@ -187,51 +171,66 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  /* Large type whispers rather than shouts. Weight never goes above 400
-     at display sizes — the restraint is what gives the editorial voice
-     its authority. Line-height tightens as size grows so lines lock
-     together into a typographic block. */
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  /* The display face is set at 600 and tracked in. Bricolage carries its
+     personality in the shapes, so it can be bold without shouting. */
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
   margin-bottom: 0.75rem;
   text-wrap: balance;
   color: var(--text-primary);
 }
 
 h1 {
-  font-size: clamp(3rem, 8vw, 5.875rem);
-  font-weight: 400;
-  line-height: 0.76;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 0.98;
   letter-spacing: -0.035em;
 }
 
 h2 {
-  font-size: clamp(2rem, 5vw, 4.875rem);
-  font-weight: 300;
-  line-height: 1.1;
+  font-size: clamp(2rem, 4vw, 3.25rem);
   letter-spacing: -0.03em;
 }
 
 h3 {
-  font-size: clamp(1.5rem, 3vw, 2.4375rem);
-  font-weight: 300;
-  line-height: 1.19;
+  font-size: clamp(1.25rem, 2vw, 1.625rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 h4 {
-  font-size: 1.5rem;
-  font-weight: 400;
+  font-size: 1.25rem;
   line-height: 1.25;
 }
 
 h5,
 h6 {
-  font-size: 1.125rem;
-  font-weight: 400;
-  line-height: 1.21;
-  letter-spacing: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
+
+/* The highlighter. Wrap the phrase that matters in <mark>. */
+mark {
+  background: linear-gradient(transparent 14%, var(--color-marker) 14%, var(--color-marker) 90%, transparent 90%);
+  color: inherit;
+  padding: 0 0.14em;
+  margin: 0 -0.04em;
+  border-radius: 4px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Mono small print: dates, counts, section eyebrows. */
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 
 button {
   cursor: pointer;
@@ -302,11 +301,11 @@ html.lenis body {
    `.input:focus { outline: none }` rules in the modules, which match at the
    same moment a keyboard focus does. */
 html :focus-visible {
-  outline: 2px solid var(--color-obsidian);
+  outline: 2px solid var(--color-accent);
   outline-offset: 3px;
 }
 
-/* On the black panels an ink ring is invisible; use paper there. */
+/* On dark panels the blue ring loses contrast; use paper there. */
 html [class*='aside'] :focus-visible,
 html [class*='idSidebar'] :focus-visible {
   outline-color: var(--color-paper);
@@ -355,93 +354,144 @@ html :focus:not(:focus-visible) {
 
 /* --- Component Utilities --- */
 
-/* 1. Buttons */
-/* 1. Buttons */
 /* Buttons.
-   These were left over from the previous palette: 1.5px borders, a lift on
-   hover and a 4px offset "retro pop" shadow. Nothing else on the site moves
-   on hover or casts a shadow any more, so every screen that had not been
-   redesigned yet was betrayed by its buttons. They now do what every other
-   control does — a black pill that either fills or inverts, and letter-spacing
-   as the only motion. */
+   Primary is campus blue: one per view, for the thing you came to do.
+   Outline is ink, for everything else. Hover is a colour change and a
+   one-pixel lift, enough to say "this is live" and no more. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 11px 28px;
+  gap: 8px;
+  padding: 11px 22px;
   border-radius: var(--radius-button);
-  font-weight: 400;
+  font-weight: 500;
   font-size: 14px;
-  letter-spacing: 0;
+  letter-spacing: -0.005em;
   cursor: pointer;
-  transition: background-color var(--duration-base) var(--ease-glide),
-              color var(--duration-base) var(--ease-glide),
-              border-color var(--duration-base) var(--ease-glide),
-              letter-spacing var(--duration-base) var(--ease-glide),
+  transition: background-color var(--duration-micro) var(--ease-glide),
+              color var(--duration-micro) var(--ease-glide),
+              border-color var(--duration-micro) var(--ease-glide),
+              transform var(--duration-micro) var(--ease-glide),
               opacity var(--duration-micro) var(--ease-glide);
 }
 
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
 .btn:disabled {
-  opacity: 0.28;
+  opacity: 0.4;
   cursor: default;
 }
 
-/* Primary: filled ink. */
 .btn-primary {
-  background-color: var(--color-obsidian);
+  background-color: var(--color-accent);
   color: var(--color-paper);
-  border: 1px solid var(--color-obsidian);
+  border: 1px solid var(--color-accent);
 }
 
 .btn-primary:hover:not(:disabled) {
-  letter-spacing: 0.05em;
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }
 
-/* Danger: the one place colour still carries meaning. A control that
-   destroys something should not look identical to one that saves. Matches
-   the danger variant in components/ui/Button.module.css — this class was
-   used on the settings page before it existed anywhere global, which
-   rendered a borderless, fill-less pill. */
+/* Danger: a control that destroys something should not look identical
+   to one that saves. */
 .btn-danger {
   background-color: transparent;
-  border: 1px solid #b3261e;
-  color: #b3261e;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: #b3261e;
+  background-color: var(--color-danger);
   color: var(--color-paper);
 }
 
-/* Outline: the same pill, hollow, filling in on hover. */
 .btn-outline {
-  background: transparent;
-  border: 1px solid var(--color-obsidian);
+  background: var(--color-paper);
+  border: 1px solid var(--border-strong);
   color: var(--color-obsidian);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background: var(--color-obsidian);
-  color: var(--color-paper);
+  border-color: var(--color-obsidian);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .btn {
     transition: none;
   }
+
+  .btn:hover:not(:disabled) {
+    transform: none;
+  }
 }
 
-/* Cards.
-   The lift-and-shadow on hover was the last of the old system still in the
-   global sheet. Redesigned pages don't use .card at all; the ones that still
-   do now get a plain ruled surface instead of a floating panel. */
+/* The floating messages button, bottom right on every page. */
+.floating-chat {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-obsidian);
+  color: var(--color-paper);
+  box-shadow: var(--shadow-float);
+  animation: floatIn 0.4s var(--ease-glide) both;
+  transition: background-color var(--duration-micro) var(--ease-glide),
+              transform var(--duration-micro) var(--ease-glide);
+}
+
+.floating-chat:hover {
+  background: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .floating-chat {
+    right: 16px;
+    bottom: 16px;
+    width: 52px;
+    height: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-chat {
+    animation: none;
+  }
+}
+
+/* Cards: a white sheet pinned to the board. */
 .card {
   background: var(--surface-color);
   border-radius: var(--radius-card);
   padding: 2rem;
   border: 1px solid var(--border-hairline);
+  box-shadow: var(--shadow-card);
 }
+
 
 /* 3. Text & Layout Utils */
 .text-forest {
@@ -465,40 +515,11 @@ html :focus:not(:focus-visible) {
 }
 
 
-/* 4. Brand Add-ons */
-/* Noise Texture Overlay */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
-}
-
-/* Custom Scrollbar - COMPLETELY HIDDEN */
+/* Scrollbar: thin and quiet, but present. Hiding it outright left
+   keyboard and trackpad users with no sense of how long a page was. */
 html {
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE/Edge */
-}
-
-::-webkit-scrollbar {
-  display: none;
-  /* Chrome/Safari/Webkit */
-  width: 0;
-  height: 0;
-}
-
-::-webkit-scrollbar-track,
-::-webkit-scrollbar-thumb {
-  display: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(17, 17, 20, 0.25) transparent;
 }
 
 /* Animation Utils (Preserved) */
@@ -697,20 +718,17 @@ html {
   --press-rule-strong: var(--color-mist, #d4d4d8);
 
   /* CATEGORY MARKS
-     These were eight saturated inks doing wayfinding. The system this
-     page now follows admits no chromatic colour in the interface at
-     all, so they resolve to ink. The category name sits beside every
-     mark, which is what actually names it — the colour was saying a
-     second time what the label already said. */
-  --press-technology: var(--color-obsidian);
-  --press-cultural: var(--color-obsidian);
-  --press-social: var(--color-obsidian);
-  --press-sports: var(--color-obsidian);
-  --press-workshop: var(--color-obsidian);
-  --press-hackathon: var(--color-obsidian);
-  --press-business: var(--color-obsidian);
-  --press-art: var(--color-obsidian);
-  --press-lilac: var(--color-obsidian);
+     Colour is wayfinding again, as small squares beside the category
+     name. Never the only signal: the label always sits next to it. */
+  --press-technology: #2f3bff;
+  --press-cultural: #e8457e;
+  --press-social: #c2410c;
+  --press-sports: #12a150;
+  --press-workshop: #f06a00;
+  --press-hackathon: #7a3cff;
+  --press-business: #0e8a96;
+  --press-art: #c98a00;
+  --press-lilac: #7a3cff;
 
   /* type */
   --press-display: var(--font-display);

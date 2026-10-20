@@ -27,16 +27,26 @@ export function inkFor(category?: string | null): string {
     return (category && CATEGORY_INK[category]) || 'var(--press-ink)';
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+/**
+ * Events are read on Indian time. getDate() and friends use the runtime's
+ * zone, which is UTC on the server and IST in the browser, so the same event
+ * rendered a different day on each side of hydration. Pinning the zone makes
+ * both agree, and agree with the poster.
+ */
+const IST = 'Asia/Kolkata';
+const fmt = (opts: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat('en-IN', { timeZone: IST, ...opts });
+const MONTH = fmt({ month: 'short' });
+const DAY = fmt({ day: '2-digit' });
+const WEEKDAY = fmt({ weekday: 'short' });
 
 export function dateParts(value: Date | string) {
     const d = new Date(value);
     if (isNaN(d.getTime())) return { month: '—', day: '--', weekday: '—' };
     return {
-        month: MONTHS[d.getMonth()],
-        day: String(d.getDate()).padStart(2, '0'),
-        weekday: DAYS[d.getDay()],
+        month: MONTH.format(d),
+        day: DAY.format(d),
+        weekday: WEEKDAY.format(d),
     };
 }
 

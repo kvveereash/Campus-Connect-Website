@@ -1,35 +1,29 @@
 /* ============================================================
-   EVENTS LISTING
-   Structure (date-anchored rows, category inks, cover-on-hover)
-   carried over from the earlier poster pass; the skin now follows
-   the app-wide zinc system — white cards on the canvas, hairline
-   borders, 36px card / 14px control geometry.
+   EVENTS LISTING — the board itself
+   Date-anchored rows grouped by proximity, a sticky filter rail,
+   and category squares as wayfinding. Each row is a white card
+   pinned to the canvas; the featured event is the poster at the
+   top of the board.
    ============================================================ */
 
 .screen {
-    background: var(--press-paper);
     color: var(--press-ink);
-    /* Bleed past the layout container so the surface owns the page. */
-    margin: -2rem calc(50% - 50vw) 0;
-    padding: 0 calc(50vw - 50%);
-    min-height: 100vh;
+    padding-top: 24px;
 }
 
 .inner {
-    max-width: 1140px;
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 0 clamp(20px, 5vw, 64px);
 }
 
 /* ---------- masthead ---------- */
 .masthead {
-    border-bottom: 1px solid var(--color-cloud);
-    padding: 32px 0 16px;
+    padding: 24px 0 8px;
 }
 
 .mastheadRow {
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
@@ -37,28 +31,43 @@
 
 .wordmark {
     font-family: var(--press-display);
-    font-weight: 600;
-    font-size: clamp(40px, 6vw, 64px);
-    line-height: 1.12;
-    letter-spacing: -0.03em;
-    margin: 0;
+    font-weight: 700;
+    font-size: clamp(44px, 7vw, 76px);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    margin: 10px 0 0;
     color: var(--press-ink);
 }
 
 .count {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    font-family: var(--font-mono);
     font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--press-ink-45);
+    letter-spacing: 0.03em;
+    color: var(--color-inkstone);
     font-variant-numeric: tabular-nums;
-    padding-bottom: 8px;
+}
+
+.count::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-success);
 }
 
 .strap {
-    font-size: 15px;
-    color: var(--press-ink-70);
-    margin-top: 12px;
+    font-size: 17px;
+    color: var(--color-felt);
+    margin-top: 14px;
     max-width: 52ch;
     text-wrap: pretty;
 }
@@ -67,37 +76,46 @@
 .featured {
     position: relative;
     display: block;
-    margin: 32px 0 40px;
-    border: 1px solid var(--color-cloud);
-    border-radius: var(--radius-card);
+    margin: 32px 0 28px;
+    border-radius: 22px;
     overflow: hidden;
-    background: var(--color-graphite);
+    background: var(--color-obsidian);
     aspect-ratio: 21 / 9;
-    min-height: 260px;
-    color: inherit;
+    min-height: 300px;
+    color: var(--color-paper);
     text-decoration: none;
+    isolation: isolate;
+}
+
+.featured::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10, 10, 14, 0.82) 0%, rgba(10, 10, 14, 0.25) 55%, transparent 100%);
+    z-index: 0;
+    pointer-events: none;
 }
 
 .featuredImage {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.62;
-    transition: transform 0.6s cubic-bezier(0.2, 0.6, 0.2, 1), opacity 0.4s var(--ease-glide);
+    transition: transform 0.6s var(--ease-glide);
 }
 
 .featured:hover .featuredImage {
     transform: scale(1.03);
-    opacity: 0.7;
 }
 
-/* Type-set stand-in when an event has no cover. Screen-print posters are
-   frequently type-only, so this keeps the media slot load-bearing rather
-   than faking a photograph. */
+/* Type-set stand-in when an event has no cover: the category, stacked
+   at poster scale on its own colour, drifting slowly upward. */
 .typePoster {
+    position: relative;
     width: 100%;
     height: 100%;
-    background: var(--cat);
+    background-color: var(--cat);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1.4px);
+    background-size: 8px 8px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -105,424 +123,410 @@
     padding: 32px 24px;
 }
 
-/* The word drifts.
-   A stack of the category repeated at poster scale is a strong idea sitting
-   completely still, which makes it read as a background image rather than as
-   part of the page. Moving it by exactly one line height and looping means
-   the stack slides continuously with no visible restart — the same trick the
-   marquee uses horizontally. Only transform animates, on its own layer. */
-.typePoster {
-    position: relative;
-}
-
 .typePosterTrack {
     display: flex;
     flex-direction: column;
-    animation: posterDrift 26s linear infinite;
+    animation: posterDrift 22s linear infinite;
     will-change: transform;
+}
+
+.typePosterTrack span {
+    display: block;
+    font-family: var(--press-display);
+    font-weight: 700;
+    font-size: clamp(64px, 12vw, 150px);
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+    color: rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
 }
 
 @keyframes posterDrift {
     from {
-        transform: translate3d(0, 0, 0);
+        transform: translateY(0);
     }
-
     to {
-        transform: translate3d(0, -25%, 0);
+        transform: translateY(-25%);
     }
-}
-
-.featured:hover .typePosterTrack {
-    animation-play-state: paused;
-}
-
-.typePoster span {
-    display: block;
-    font-family: var(--press-display);
-    font-weight: 600;
-    font-size: clamp(44px, 11vw, 150px);
-    line-height: 0.78;
-    letter-spacing: -0.06em;
-    text-transform: uppercase;
-    color: var(--press-paper);
-    opacity: 0.2;
-    white-space: nowrap;
-}
-
-.typePoster span:nth-child(even) {
-    opacity: 0.13;
-    transform: translateX(-6%);
 }
 
 .featuredBody {
     position: absolute;
-    inset: auto 0 0 0;
-    padding: 32px 24px;
-    background: linear-gradient(to top, rgba(15, 31, 28, 0.94) 35%, rgba(15, 31, 28, 0));
-    color: var(--press-paper);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    padding: clamp(20px, 3.5vw, 36px);
 }
 
 .featuredKicker {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    height: 28px;
+    padding: 0 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    color: var(--color-obsidian);
+    font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
+    font-weight: 500;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    margin-bottom: 12px;
 }
 
 .featuredKicker i {
-    width: 22px;
-    height: 3px;
-    border-radius: 1px;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
     background: var(--cat);
 }
 
 .featuredTitle {
-    font-family: var(--press-display);
-    font-weight: 600;
-    font-size: clamp(28px, 4vw, 48px);
-    line-height: 1.12;
-    letter-spacing: -0.025em;
-    text-wrap: balance;
-    max-width: 18ch;
-    margin: 0;
-    color: var(--press-paper);
+    margin: 14px 0 10px;
+    max-width: 22ch;
+    font-size: clamp(28px, 4.4vw, 52px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-paper);
 }
 
 .featuredMeta {
-    margin-top: 12px;
-    font-size: 14px;
-    font-weight: 500;
-    color: rgba(250, 250, 248, 0.82);
     display: flex;
-    gap: 12px;
     flex-wrap: wrap;
     align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.sep {
+    opacity: 0.4;
 }
 
 /* ---------- filter rail ---------- */
 .rail {
     position: sticky;
-    /* Parks below the navbar, not underneath it.
-       At top:0 this stuck to the very top of the viewport — the same 66px the
-       header occupies once scrolling makes it fixed. The header's fill is
-       rgba(255,255,255,0.86), so the filter chips did not disappear behind it,
-       they showed through it: two rows of controls printed over each other. */
-    position: sticky;
-    top: 66px;
-    z-index: 30;
-    background: var(--press-paper);
-    border-bottom: 1px solid var(--press-rule);
-    padding: 16px 0;
+    /* Clears the sticky navbar. */
+    top: 64px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 -12px 8px;
+    padding: 12px;
+    border-radius: 18px;
+    background: rgba(245, 244, 240, 0.86);
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    backdrop-filter: saturate(160%) blur(14px);
 }
 
 .railRow {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
     align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 1px;
 }
 
-.railRow + .railRow {
-    margin-top: 12px;
+.railRow::-webkit-scrollbar {
+    display: none;
 }
 
 .railLabel {
+    flex-shrink: 0;
+    width: 76px;
+    font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--press-ink-45);
-    margin-right: 8px;
+    letter-spacing: 0.05em;
+    color: var(--color-ash);
 }
 
 .chip {
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 12px;
-    border: 1px solid var(--press-rule-strong);
-    border-radius: var(--press-radius);
-    font-size: 13px;
-    font-weight: 600;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    color: var(--color-obsidian);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
     white-space: nowrap;
-    color: var(--press-ink);
-    background: none;
-    cursor: pointer;
-    transition: background 0.12s linear, color 0.12s linear, border-color 0.12s linear;
+    transition: border-color var(--duration-micro) var(--ease-glide),
+                background-color var(--duration-micro) var(--ease-glide),
+                color var(--duration-micro) var(--ease-glide);
 }
 
 .chip:hover {
-    border-color: var(--press-ink);
-}
-
-.chipCount {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--press-ink-45);
-    font-variant-numeric: tabular-nums;
+    border-color: var(--border-strong);
 }
 
 .chip[aria-pressed='true'] {
-    background: var(--press-ink);
-    color: var(--press-paper);
-    border-color: var(--press-ink);
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.chipCount {
+    min-width: 22px;
+    padding: 1px 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-canvas);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: center;
+    color: var(--color-felt);
 }
 
 .chip[aria-pressed='true'] .chipCount {
-    color: rgba(250, 250, 248, 0.6);
-}
-
-/* The one place the pure brand lilac works: light enough to carry forest ink. */
-.chip[aria-pressed='true'][data-cat='Art'] {
-    background: var(--press-lilac);
-    color: var(--press-ink);
-    border-color: var(--press-ink);
-}
-
-.chip[aria-pressed='true'][data-cat='Art'] .chipCount {
-    color: var(--press-ink-70);
+    background: rgba(255, 255, 255, 0.16);
+    color: var(--color-paper);
 }
 
 .swatch {
     width: 8px;
     height: 8px;
-    border-radius: 1px;
-    flex: none;
+    border-radius: 2px;
     background: var(--cat);
 }
 
-/* ---------- date group ---------- */
+/* ---------- groups ---------- */
 .groupHead {
     position: sticky;
-    /* Below the rail, which is itself below the header. */
-    top: calc(66px + var(--rail-h, 112px));
-    z-index: 20;
-    background: var(--press-paper);
+    top: calc(64px + var(--rail-h, 112px));
+    z-index: 10;
     display: flex;
-    align-items: baseline;
-    gap: 12px;
-    padding: 32px 0 12px;
-    border-bottom: 1px solid var(--color-cloud);
+    align-items: center;
+    gap: 10px;
+    padding: 28px 0 12px;
+    background: linear-gradient(var(--color-canvas) 75%, transparent);
 }
 
 .groupHead h2 {
-    font-family: var(--press-display);
-    font-weight: 600;
-    font-size: 15px;
-    letter-spacing: 0.02em;
     margin: 0;
-    color: var(--press-ink);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-inkstone);
 }
 
 .groupCount {
-    margin-left: auto;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--press-ink-45);
-    font-variant-numeric: tabular-nums;
+    padding: 1px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-felt);
 }
 
-/* ---------- row ---------- */
+/* ---------- rows ---------- */
 .row {
     display: grid;
-    grid-template-columns: 88px 1fr 132px;
-    gap: 24px;
+    grid-template-columns: 72px minmax(0, 1fr) 148px;
+    gap: 20px;
     align-items: center;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--press-rule);
-    text-decoration: none;
+    margin-bottom: 10px;
+    padding: 14px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
     color: inherit;
-    position: relative;
-    transition: background 0.15s linear;
+    text-decoration: none;
+    transition: transform var(--duration-base) var(--ease-glide),
+                box-shadow var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide);
 }
 
 .row:hover {
-    background: var(--press-paper-2);
-}
-
-/* Category marker. It names the category, so it carries meaning rather
-   than acting as decoration. */
-.row::before {
-    content: '';
-    position: absolute;
-    left: -12px;
-    top: 20px;
-    bottom: 20px;
-    width: 3px;
-    border-radius: 1px;
-    background: var(--cat);
-    opacity: 0;
-    transition: opacity 0.15s linear;
-}
-
-.row:hover::before {
-    opacity: 1;
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-soft);
 }
 
 .date {
-    font-family: var(--press-display);
-    line-height: 1;
-    border-right: 1px solid var(--press-rule);
-    padding-right: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    padding: 10px 0;
+    border-radius: 12px;
+    background: var(--color-canvas);
+    border-top: 3px solid var(--cat);
+    line-height: 1.1;
 }
 
 .dateMonth,
 .dateWeekday {
+    font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.13em;
     text-transform: uppercase;
-    color: var(--press-ink-45);
+    letter-spacing: 0.04em;
+    color: var(--color-ash);
 }
 
 .dateDay {
-    font-size: 40px;
-    font-weight: 600;
+    font-family: var(--press-display);
+    font-size: 30px;
+    font-weight: 700;
     letter-spacing: -0.04em;
-    margin: 2px 0 3px;
-    font-variant-numeric: tabular-nums;
+    color: var(--color-obsidian);
+    margin: 2px 0;
 }
 
 .rowTitle {
-    font-family: var(--press-display);
-    font-weight: 600;
-    font-size: clamp(19px, 2vw, 22px);
-    line-height: 1.28;
-    letter-spacing: -0.02em;
-    text-wrap: balance;
-    margin: 0;
-    color: var(--press-ink);
+    margin: 0 0 6px;
+    font-size: clamp(18px, 2vw, 22px);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
 }
 
 .rowMeta {
-    margin-top: 6px;
-    font-size: 14px;
-    color: var(--press-ink-70);
     display: flex;
-    gap: 8px;
     flex-wrap: wrap;
-    align-items: center;
-}
-
-.sep {
-    opacity: 0.45;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--color-felt);
 }
 
 .rowTags {
-    margin-top: 12px;
     display: flex;
-    gap: 12px;
-    align-items: center;
     flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
 }
 
 .cat {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-canvas);
+    font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.11em;
+    font-weight: 500;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: var(--cat);
+    color: var(--color-inkstone);
 }
 
 .cat i {
-    width: 14px;
-    height: 3px;
-    border-radius: 1px;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
     background: var(--cat);
 }
 
 .price {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-family: var(--font-mono);
     font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: 600;
 }
 
 .priceFree {
-    color: var(--press-ink-45);
+    background: #e3f6ea;
+    color: #0b6b35;
 }
 
 .going {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--press-ink-70);
-    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: var(--color-felt);
 }
 
-/* Cover wakes on approach. */
 .cover {
     position: relative;
-    width: 132px;
-    aspect-ratio: 16 / 9;
-    /* Was --radius-tag, the 75px pill token, on a 132x74 box — so every
-       event thumbnail rendered as a grey lozenge. Images are square-cornered
-       here; pills are for buttons and tags. It also sat at opacity 0.34,
-       which is what made those lozenges read as empty placeholders rather
-       than photographs. Grey at rest and colour on hover is the treatment
-       the clubs grid and the event card already use. */
-    border-radius: var(--radius-card);
+    width: 148px;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
     overflow: hidden;
-    border: 1px solid var(--press-rule);
-    background: var(--press-paper-2);
-    filter: grayscale(1) brightness(1.16) contrast(0.94);
-    transition: filter var(--duration-slow) var(--ease-glide);
-}
-
-.row:hover .cover {
-    filter: none;
+    background: var(--color-slate);
 }
 
 .coverStub {
-    width: 100%;
-    height: 100%;
-    background: var(--cat);
-    display: flex;
-    align-items: flex-end;
-    padding: 8px;
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background-color: var(--cat);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1.4px);
+    background-size: 7px 7px;
 }
 
 .coverStub span {
     font-family: var(--press-display);
-    font-weight: 600;
-    font-size: 26px;
-    line-height: 0.82;
-    letter-spacing: -0.06em;
-    color: var(--press-paper);
-    text-transform: uppercase;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: rgba(255, 255, 255, 0.92);
 }
 
+/* ---------- empty + foot ---------- */
 .empty {
-    padding: 80px 0;
+    margin-top: 24px;
+    padding: 64px 24px;
+    border-radius: 20px;
+    border: 1px dashed var(--border-strong);
+    background-color: var(--color-paper);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
     text-align: center;
-    color: var(--press-ink-45);
-    font-size: 15px;
+    font-size: 16px;
+    color: var(--color-felt);
 }
 
 .footRule {
-    margin-top: 80px;
-    border-top: 2px solid var(--press-ink);
-    padding: 24px 0 80px;
-    font-size: 12px;
-    color: var(--press-ink-45);
     display: flex;
     justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
+    margin-top: 56px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-hairline);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-ash);
 }
 
-/* ---------- responsive ---------- */
 @media (max-width: 720px) {
+    .featured {
+        aspect-ratio: 4 / 5;
+        min-height: 0;
+    }
+
+    .rail {
+        margin: 0 -16px 8px;
+        padding: 10px 16px;
+        border-radius: 0;
+    }
+
+    .railLabel {
+        display: none;
+    }
+
     .row {
-        grid-template-columns: 60px 1fr;
-        gap: 16px;
-        padding: 16px 0;
+        grid-template-columns: 60px minmax(0, 1fr);
+        gap: 14px;
+        padding: 12px;
     }
 
     .cover {
@@ -530,22 +534,7 @@
     }
 
     .dateDay {
-        font-size: 30px;
-    }
-
-    /* The 260px min-height fought the aspect-ratio: at 327px of usable
-       width, 4/3 wants 245px of height, the floor pushed it to 260, and
-       aspect-ratio grew the box back to 347px wide — 20px past the screen.
-       The floor is what has to give on a phone. */
-    .featured {
-        aspect-ratio: 4 / 3;
-        min-height: 0;
-        max-width: 100%;
-    }
-
-    .rail,
-    .groupHead {
-        position: static;
+        font-size: 24px;
     }
 }
 
@@ -554,23 +543,8 @@
         animation: none;
     }
 
-    .featuredImage,
-    .cover,
     .row,
-    .chip,
-    .row::before {
+    .featuredImage {
         transition: none;
     }
-
-    .cover {
-        opacity: 1;
-        filter: none;
-    }
-}
-
-.row:focus-visible,
-.featured:focus-visible,
-.chip:focus-visible {
-    outline: 2px solid var(--press-ink);
-    outline-offset: 3px;
 }

@@ -4,18 +4,7 @@ import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
-/* The sample accounts used to share the password 'password123', printed
-   below and committed here, and one of them is an ADMIN. Seeding any database
-   anyone else can reach handed out an admin login. The password now comes
-   from SEED_PASSWORD or is generated per run, and production is refused
-   unless asked for explicitly. */
-const SEED_PASSWORD = process.env.SEED_PASSWORD || randomBytes(12).toString('base64url');
-
 async function main() {
-    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PRODUCTION_SEED !== '1') {
-        throw new Error('Refusing to seed with NODE_ENV=production. Set ALLOW_PRODUCTION_SEED=1 if you really mean it.');
-    }
-
     console.log('🌱 Seeding database...');
 
     // 1. Create Default College
@@ -72,7 +61,9 @@ async function main() {
     console.log('✅ Badges created');
 
     // 3. Create Sample Users
-    const password = await bcrypt.hash(SEED_PASSWORD, 12);
+    // Never a fixed password: this creates an ADMIN, and the seed can be run
+    // against a live database. Set SEED_PASSWORD to sign in locally.
+    const password = await bcrypt.hash(process.env.SEED_PASSWORD || randomBytes(24).toString('base64url'), 10);
 
     // Helper to create skills/interests relations
     const connectTags = (tags: string[]) => {
@@ -289,10 +280,7 @@ async function main() {
     console.log('--------------------------------');
     console.log('Admin User: admin@campus.edu');
     console.log('Tech User: tech@campus.edu');
-    console.log(process.env.SEED_PASSWORD
-        ? 'Password: the value of SEED_PASSWORD'
-        : `Password (generated for this run, shown once): ${SEED_PASSWORD}`);
-    console.log('Accounts that already existed keep the password they had.');
+    console.log(process.env.SEED_PASSWORD ? 'Password: SEED_PASSWORD' : 'Passwords are random. Set SEED_PASSWORD before seeding to sign in.');
     console.log('--------------------------------');
 }
 

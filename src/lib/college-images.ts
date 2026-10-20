@@ -62,21 +62,92 @@ const LOGO_PLACEHOLDERS = [
 ] as const;
 
 
+export interface PhotoCredit {
+    author: string;
+    license: string;
+    /** The file's page on Wikimedia Commons, which carries the full licence. */
+    source: string;
+}
+
 /**
- * Named mapping for seeded/known colleges.
+ * Real photographs of the real campuses, from Wikimedia Commons, stored
+ * under public/images/colleges. Every one is under a licence that allows
+ * reuse with credit (or is public domain), so the credit travels with the
+ * photo and is shown wherever the photo is. A generic stock building
+ * standing in for a named college read as wrong to anyone from it.
+ */
+const CAMPUS_PHOTOS: { match: string[]; label: string; src: string; credit: PhotoCredit }[] = [
+    {
+        match: ['indian institute of technology, mumbai', 'iit bombay', 'iit mumbai'],
+        label: 'IIT Bombay',
+        src: '/images/colleges/iit-bombay.jpg',
+        credit: { author: 'Shishirdasika', license: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Main_building_in_IIT_Bombay.jpg' },
+    },
+    {
+        match: ['national institute of design'],
+        label: 'National Institute of Design, Ahmedabad',
+        src: '/images/colleges/nid-ahmedabad.jpg',
+        credit: { author: 'Saad Akhtar', license: 'CC BY 2.0', source: 'https://commons.wikimedia.org/wiki/File:A_building_within_NID_campus,_Ahmedabad.jpg' },
+    },
+    {
+        match: ['delhi university', 'university of delhi'],
+        label: 'University of Delhi (Hindu College, North Campus)',
+        src: '/images/colleges/delhi-university.jpg',
+        credit: { author: 'Itsgaurav8', license: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Hindu_College,_University_of_Delhi.jpg' },
+    },
+    {
+        match: ['bits pilani — goa', 'bits pilani - goa', 'bits goa', 'bits pilani'],
+        label: 'BITS Pilani, Goa Campus',
+        src: '/images/colleges/bits-goa.jpg',
+        credit: { author: 'Saravananb', license: 'Public domain', source: 'https://commons.wikimedia.org/wiki/File:BITS_GOA_Panorama_1-1-.JPG' },
+    },
+    {
+        match: ['christ university'],
+        label: 'Christ University, Bengaluru',
+        src: '/images/colleges/christ-university.jpg',
+        credit: { author: 'Rameshng', license: 'CC BY-SA 3.0', source: 'https://commons.wikimedia.org/wiki/File:Christ_University_Hosur_road_Bangalore_4819.JPG' },
+    },
+    {
+        match: ['symbiosis'],
+        label: 'Symbiosis International University, Pune',
+        src: '/images/colleges/symbiosis-pune.jpg',
+        credit: { author: 'DesiBoy101', license: 'CC BY 4.0', source: 'https://commons.wikimedia.org/wiki/File:Symbiosis_International_University,_S._B._Road_campus.jpg' },
+    },
+    {
+        match: ['vit university', 'vellore institute of technology', 'vit vellore'],
+        label: 'VIT Vellore',
+        src: '/images/colleges/vit-vellore.jpg',
+        credit: { author: 'Jishnu12684', license: 'CC BY 4.0', source: 'https://commons.wikimedia.org/wiki/File:Vellore_Institue_of_Technology.jpg' },
+    },
+    {
+        match: ['manipal'],
+        label: 'Manipal Institute of Technology',
+        src: '/images/colleges/manipal.jpg',
+        credit: { author: 'Ank Kumar', license: 'CC BY-SA 4.0', source: 'https://commons.wikimedia.org/wiki/File:Manipal_Institute_of_Technology_Academic_Building,_Manipal_University,_Manipal_Campus,_India_(Ank_Kumar,_Infosys_Limited_)_02.jpg' },
+    },
+];
+
+function campusPhoto(collegeName: string) {
+    const lower = collegeName.toLowerCase();
+    return CAMPUS_PHOTOS.find((p) => p.match.some((m) => lower.includes(m)));
+}
+
+/** The credit for a college's photo, when it is one of the real campus photos. */
+export function getCollegePhotoCredit(collegeName: string): PhotoCredit | null {
+    return campusPhoto(collegeName)?.credit ?? null;
+}
+
+/** Every credited campus photo, for the credits page. */
+export function allCampusPhotoCredits() {
+    return CAMPUS_PHOTOS.map((p) => ({ college: p.label, src: p.src, ...p.credit }));
+}
+
+/**
+ * Stock stand-ins for colleges without a real photo yet.
  */
 const COLLEGE_IMAGE_MAP: Record<string, string> = {
     'apex university':                          CAMPUS_IMAGES[0],  // pillars
-    'bits pilani':                              CAMPUS_IMAGES[4],  // main building
-    'christ university':                        CAMPUS_IMAGES[1],  // modern facade
-    'delhi university':                         CAMPUS_IMAGES[6],  // clocktower
-    'indian institute of technology':           CAMPUS_IMAGES[5],  // heritage dome
-    'iit ':                                     CAMPUS_IMAGES[5],  // heritage dome
     'kgisl':                                    CAMPUS_IMAGES[2],  // ivy tower
-    'manipal academy':                          CAMPUS_IMAGES[9],  // modern arch
-    'national institute of design':             CAMPUS_IMAGES[10], // library exterior
-    'symbiosis international':                  CAMPUS_IMAGES[3],  // aerial quad
-    'vit university':                           CAMPUS_IMAGES[7],  // autumn path
 };
 
 /**
@@ -97,6 +168,9 @@ function stableHash(str: string): number {
  */
 export function getCollegeImage(collegeName: string, _collegeId?: string): string {
     const lower = collegeName.toLowerCase();
+
+    const real = campusPhoto(collegeName);
+    if (real) return real.src;
 
     // Check named mapping (substring match)
     for (const [key, url] of Object.entries(COLLEGE_IMAGE_MAP)) {

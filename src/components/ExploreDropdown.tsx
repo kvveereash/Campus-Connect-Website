@@ -3,27 +3,59 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, Trophy, Map, Building2 } from 'lucide-react';
+import { ChevronDown, Trophy, Map, Building2, Users } from 'lucide-react';
 import styles from './Navbar.module.css';
+
+const ITEMS = [
+    {
+        href: '/colleges',
+        title: 'Colleges',
+        desc: 'Every campus on the board, with its clubs and events.',
+        Icon: Building2,
+    },
+    {
+        href: '/team-finder',
+        title: 'Team finder',
+        desc: 'Post what you need for the next hackathon. Get matched.',
+        Icon: Users,
+    },
+    {
+        href: '/leaderboards',
+        title: 'Leaderboard',
+        desc: 'The most active students and clubs this term.',
+        Icon: Trophy,
+    },
+    {
+        href: '/map',
+        title: 'Venues',
+        desc: 'Every venue with something coming up.',
+        Icon: Map,
+    },
+] as const;
 
 export default function ExploreDropdown() {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
 
-    // Close on click outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         }
+        function handleKey(event: KeyboardEvent) {
+            if (event.key === 'Escape') setIsOpen(false);
+        }
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleKey);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleKey);
+        };
     }, []);
 
-    // Check if any child link is active
-    const isActive = ['/colleges', '/leaderboards', '/map'].some(path => pathname.startsWith(path));
+    const isActive = ITEMS.some((i) => pathname.startsWith(i.href));
 
     return (
         <div
@@ -33,37 +65,30 @@ export default function ExploreDropdown() {
             onMouseLeave={() => setIsOpen(false)}
         >
             <button
+                type="button"
                 className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ''} ${isActive ? styles.active : ''}`}
                 onClick={() => setIsOpen(!isOpen)}
+                aria-expanded={isOpen}
+                aria-haspopup="true"
             >
-                Explore <ChevronDown size={14} style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+                <span className={styles.navMark} style={{ background: 'var(--press-workshop)' }} aria-hidden="true" />
+                Explore
+                <ChevronDown size={13} aria-hidden="true" className={styles.chevron} />
             </button>
 
             {isOpen && (
                 <div className={styles.dropdownMenu}>
-                    <Link href="/colleges" className={styles.dropdownItem} onClick={() => setIsOpen(false)}>
-                        <Building2 size={20} className={styles.dropdownIcon} />
-                        <div className={styles.dropdownText}>
-                            <span className={styles.dropdownTitle}>Colleges</span>
-                            <span className={styles.dropdownDesc}>Browse campuses, reviews, and community insights.</span>
-                        </div>
-                    </Link>
-
-                    <Link href="/leaderboards" className={styles.dropdownItem} onClick={() => setIsOpen(false)}>
-                        <Trophy size={20} className={styles.dropdownIcon} />
-                        <div className={styles.dropdownText}>
-                            <span className={styles.dropdownTitle}>Leaderboard</span>
-                            <span className={styles.dropdownDesc}>See the top performers and club rankings.</span>
-                        </div>
-                    </Link>
-
-                    <Link href="/map" className={styles.dropdownItem} onClick={() => setIsOpen(false)}>
-                        <Map size={20} className={styles.dropdownIcon} />
-                        <div className={styles.dropdownText}>
-                            <span className={styles.dropdownTitle}>Venues</span>
-                            <span className={styles.dropdownDesc}>Every venue with something coming up.</span>
-                        </div>
-                    </Link>
+                    {ITEMS.map(({ href, title, desc, Icon }) => (
+                        <Link key={href} href={href} className={styles.dropdownItem} onClick={() => setIsOpen(false)}>
+                            <span className={styles.dropdownIcon} aria-hidden="true">
+                                <Icon size={16} />
+                            </span>
+                            <span className={styles.dropdownText}>
+                                <span className={styles.dropdownTitle}>{title}</span>
+                                <span className={styles.dropdownDesc}>{desc}</span>
+                            </span>
+                        </Link>
+                    ))}
                 </div>
             )}
         </div>
