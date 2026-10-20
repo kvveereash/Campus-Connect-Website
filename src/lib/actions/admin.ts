@@ -3,7 +3,8 @@
 import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
+import { CACHE_TAGS } from '@/lib/cache';
 import { AuditAction, AuditEntityType } from '@/lib/audit';
 
 // Middleware-like check
@@ -83,6 +84,15 @@ export const verifyEntityAction = createProtectedAction(verifyEntitySchema, asyn
 
     revalidatePath('/admin');
     revalidatePath('/admin/verification');
+    // The public listings are unstable_cache reads: without these an approved
+    // event or club stayed off them (and a rejected one on them) until the TTL.
+    if (data.type === 'CLUB') {
+        updateTag(CACHE_TAGS.CLUBS);
+        updateTag(`club-${data.id}`);
+    } else {
+        updateTag(CACHE_TAGS.EVENTS);
+        updateTag(`event-${data.id}`);
+    }
     return { success: true };
 }, {
     requiredRoles: ['ADMIN'],
