@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -60,7 +61,9 @@ async function main() {
     console.log('✅ Badges created');
 
     // 3. Create Sample Users
-    const password = await bcrypt.hash('password123', 10);
+    // Never a fixed password: this creates an ADMIN, and the seed can be run
+    // against a live database. Set SEED_PASSWORD to sign in locally.
+    const password = await bcrypt.hash(process.env.SEED_PASSWORD || randomBytes(24).toString('base64url'), 10);
 
     // Helper to create skills/interests relations
     const connectTags = (tags: string[]) => {
@@ -275,8 +278,9 @@ async function main() {
 
     console.log('🎉 Seeding complete!');
     console.log('--------------------------------');
-    console.log('Admin User: admin@campus.edu / password123');
-    console.log('Tech User: tech@campus.edu / password123');
+    console.log('Admin User: admin@campus.edu');
+    console.log('Tech User: tech@campus.edu');
+    console.log(process.env.SEED_PASSWORD ? 'Password: SEED_PASSWORD' : 'Passwords are random. Set SEED_PASSWORD before seeding to sign in.');
     console.log('--------------------------------');
 }
 
