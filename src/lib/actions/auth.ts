@@ -318,6 +318,7 @@ export async function getSessionUser() {
                 },
                 registrations: {
                     select: {
+                        id: true,
                         eventId: true,
                         status: true,
                         createdAt: true,

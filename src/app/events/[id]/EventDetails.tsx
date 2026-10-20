@@ -69,7 +69,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                 <div className={styles.eyebrow}>
                     <span className={styles.eyebrowInk}>{event.category}</span>
                     <span className={styles.eyebrowRule}>/</span>
-                    <span>{event.price === 0 ? 'Free' : `$${event.price}`}</span>
+                    <span>{event.price === 0 ? 'Free' : `₹${event.price.toLocaleString('en-IN')}`}</span>
                     <span className={styles.eyebrowRule}>/</span>
                     <span>{isPast ? 'Past' : 'Upcoming'}</span>
                     {/* Only the creator ever sees an unverified event. */}
@@ -136,12 +136,21 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                         <div className={styles.fact}>
                             <dt className={styles.factKey}>Entry</dt>
                             <dd className={styles.factValue}>
-                                {event.price === 0 ? 'Free to attend' : `$${event.price}`}
+                                {event.price === 0 ? 'Free to attend' : `₹${event.price.toLocaleString('en-IN')}`}
                             </dd>
                         </div>
 
                         <div className={styles.actions}>
-                            <RegisterButton eventId={event.id} price={event.price || 0} />
+                            {/* The server refuses registration for past and
+                                unapproved events; say so instead of offering a
+                                button that can only fail. */}
+                            {isPast ? (
+                                <button className="btn btn-outline" disabled>Registration closed</button>
+                            ) : !event.verified ? (
+                                <button className="btn btn-outline" disabled>Awaiting approval</button>
+                            ) : (
+                                <RegisterButton eventId={event.id} price={event.price || 0} />
+                            )}
                         </div>
 
                         {isOwner && (
