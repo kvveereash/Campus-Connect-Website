@@ -1865,7 +1865,7 @@
     }
 
     .bento {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .tile {
@@ -1878,7 +1878,7 @@
     }
 
     .organisers {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .organisersCard {
@@ -1920,7 +1920,7 @@
 
     .eventGrid,
     .clubGrid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .tile {
