@@ -13,6 +13,19 @@ import { isOk } from '@/lib/api-response';
 import { messageLimiter } from '@/lib/rate-limit'; // Need to export this from rate-limit if not already
 import { sanitizePlainText } from '@/lib/sanitize';
 
+/**
+ * Throws unless the user is in the conversation. Every write that names a
+ * conversation (or a message in one) goes through this; without it any
+ * signed-in user could post into, type into or react in any chat by id.
+ */
+async function assertParticipant(userId: string, conversationId: string) {
+    const participant = await prisma.conversationParticipant.findUnique({
+        where: { userId_conversationId: { userId, conversationId } },
+        select: { id: true },
+    });
+    if (!participant) throw new Error('Not a member');
+}
+
 // ─────────────────────────────────────────────────
 // Protected Actions
 // ─────────────────────────────────────────────────
@@ -82,6 +95,8 @@ export const sendMessageAction = createProtectedAction(sendMessageSchema, async 
     if (!data.content.trim() && !data.attachmentUrl) {
         throw new Error('Empty message');
     }
+
+    await assertParticipant(session.userId, data.conversationId);
 
     // Sanitize message content
     const sanitizedContent = data.content ? sanitizePlainText(data.content) : (data.attachmentType === 'image' ? 'Sent an image' : 'Sent a file');
@@ -385,6 +400,8 @@ const triggerTypingSchema = z.object({
 });
 
 export const triggerTypingAction = createProtectedAction(triggerTypingSchema, async (data, session) => {
+    await assertParticipant(session.userId, data.conversationId);
+
     await pusherServer.trigger(`chat-${data.conversationId}`, 'typing', {
         userId: session.userId
     });
@@ -398,6 +415,10 @@ const toggleReactionSchema = z.object({
 });
 
 export const toggleReactionAction = createProtectedAction(toggleReactionSchema, async (data, session) => {
+    const message = await prisma.message.findUnique({ where: { id: data.messageId }, select: { conversationId: true } });
+    if (!message) throw new Error('Message not found');
+    await assertParticipant(session.userId, message.conversationId);
+
     const existing = await prisma.reaction.findUnique({
         where: { messageId_userId_emoji: { messageId: data.messageId, userId: session.userId, emoji: data.emoji } }
     });
@@ -416,14 +437,10 @@ export const toggleReactionAction = createProtectedAction(toggleReactionSchema, 
         include: { user: { select: { id: true, name: true } } }
     });
 
-    // Get conversationId to broadcast
-    const message = await prisma.message.findUnique({ where: { id: data.messageId }, select: { conversationId: true } });
-    if (message) {
-        await pusherServer.trigger(`chat-${message.conversationId}`, 'reaction-update', {
-            messageId: data.messageId,
-            reactions
-        });
-    }
+    await pusherServer.trigger(`chat-${message.conversationId}`, 'reaction-update', {
+        messageId: data.messageId,
+        reactions
+    });
 
     return { success: true };
 });
