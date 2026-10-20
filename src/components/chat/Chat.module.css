@@ -75,7 +75,8 @@
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  font-weight: 300;
+  font-family: var(--font-display);
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s var(--ease-glide);
 }

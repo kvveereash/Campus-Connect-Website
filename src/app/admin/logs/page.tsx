@@ -1,5 +1,6 @@
 import { getAuditLogs } from '@/lib/data/admin';
 import { ScrollText, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { formatIST } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +46,7 @@ export default async function AuditLogsPage() {
                                     {log.details || 'No details provided'}
                                 </p>
                                 <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#71717a' }}>
-                                    By <span style={{ color: '#a1a1aa' }}>{log.actor.name}</span> • {new Date(log.createdAt).toLocaleString()}
+                                    By <span style={{ color: '#a1a1aa' }}>{log.actor.name}</span> • {formatIST(log.createdAt, { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                                 </div>
                             </div>
                         </div>

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { requestPasswordReset } from '@/lib/actions/password-reset';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import AuthLayout from '@/components/auth/AuthLayout';
-import styles from '../login/page.module.css'; // Reuse ticket styles
+import { Loader2 } from 'lucide-react';
+import { requestPasswordReset } from '@/lib/actions/password-reset';
+import AuthShell, { AuthMessage } from '@/components/auth/AuthShell';
+import styles from '@/app/login/auth.module.css';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
@@ -20,100 +20,57 @@ export default function ForgotPasswordPage() {
         try {
             const result = await requestPasswordReset(email);
             if (result.success) {
-                setMessage({ type: 'success', text: result.message || 'Check your email for reset instructions.' });
+                setMessage({ type: 'success', text: result.message || 'Check your email for a reset link.' });
                 setEmail('');
             } else {
                 setMessage({ type: 'error', text: result.error || 'Something went wrong.' });
             }
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Failed to send reset email. Please try again.' });
+        } catch {
+            setMessage({ type: 'error', text: 'Could not send the reset email. Please try again.' });
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <AuthLayout
-            title="Recover Access"
-            subtitle="Don't worry, even the best of us lose our ticket."
-        >
-            <motion.div
-                className={styles.ticketWrapper}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                {/* Main Ticket Body */}
-                <div className={styles.ticketBody}>
-                    <div className={styles.header}>
-                        <h2 className={styles.title}>Lost Ticket</h2>
-                        <p className={styles.subtitle}>Enter your email to verify your identity</p>
-                    </div>
+        <AuthShell line="Locked out? It happens to everyone.">
+            <p className={styles.label}>Password reset</p>
+            <h1 className={styles.title}>Forgot your password?</h1>
+            <p className={styles.subtitle}>
+                Enter the email you signed up with and we&rsquo;ll send you a link to choose a new one.
+            </p>
 
-                    <form onSubmit={handleSubmit} className={styles.form}>
-                        <div className={styles.formGroup}>
-                            <label htmlFor="email" className={styles.label}>
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={styles.input}
-                                placeholder="student@university.edu"
-                                required
-                                disabled={isLoading}
-                            />
-                        </div>
-
-                        {message && (
-                            <div
-                                style={{
-                                    padding: '0.75rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.9rem',
-                                    fontWeight: 500,
-                                    backgroundColor: message.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                    color: message.type === 'success' ? '#047857' : '#b91c1c',
-                                    marginBottom: '1rem',
-                                    border: `1px solid ${message.type === 'success' ? '#047857' : '#b91c1c'}`
-                                }}
-                            >
-                                {message.text}
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            className={styles.submitButton}
-                            disabled={isLoading || !email}
-                        >
-                            {isLoading ? 'Verifying...' : 'SEND RESET LINK'}
-                        </button>
-                    </form>
-
-                    <div style={{ marginTop: '2rem', fontSize: '0.85rem', fontFamily: 'var(--font-sans)', color: 'var(--text-secondary)' }}>
-                        remembered it? <Link href="/login" className={styles.link}>Return to Login</Link>
+            <form onSubmit={handleSubmit}>
+                <div className={styles.fields}>
+                    <div className={styles.field}>
+                        <label className={styles.fieldLabel} htmlFor="email">
+                            Email
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            autoComplete="email"
+                            className={styles.input}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="you@college.edu"
+                            required
+                            disabled={isLoading}
+                        />
                     </div>
                 </div>
 
-                {/* The Stub (Tears away) */}
-                <motion.div
-                    className={styles.ticketStub}
-                    initial={{ opacity: 0.8 }}
-                    animate={isLoading ? { x: 50, rotate: 5, opacity: 0.5 } : { x: 0, rotate: 0, opacity: 1 }}
-                >
-                    <div className={styles.stubContent}>RESET</div>
-                    <div className={styles.barcode} />
-                    <div
-                        style={{ marginTop: '1rem', fontFamily: 'monospace', fontSize: '0.7rem', color: 'rgba(15, 31, 28, 0.2)' }}
-                        suppressHydrationWarning
-                    >
-                        HEL-P: {new Date().getFullYear()}
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AuthLayout>
+                {message && <AuthMessage type={message.type}>{message.text}</AuthMessage>}
+
+                <button type="submit" className={styles.submit} disabled={isLoading || !email}>
+                    {isLoading && <Loader2 size={15} className={styles.spin} aria-hidden="true" />}
+                    {isLoading ? 'Sending…' : 'Send reset link'}
+                </button>
+            </form>
+
+            <p className={styles.foot}>
+                Remembered it? <Link href="/login">Back to sign in</Link>
+            </p>
+        </AuthShell>
     );
 }

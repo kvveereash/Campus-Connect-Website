@@ -1,162 +1,87 @@
-import { useState, useEffect } from 'react';
+'use client';
+
+import { useState } from 'react';
 import Image from 'next/image';
-import { Share2, CalendarDays, Users } from 'lucide-react';
-import { resolveEventImage, resolveClubLogo } from '@/lib/college-images';
+import Link from 'next/link';
+import { Share2 } from 'lucide-react';
+import { resolveEventImage } from '@/lib/college-images';
 import { EventWithRelations } from '@/lib/actions';
-import styles from './EventCard.module.css';
-import { motion } from 'framer-motion';
+import { dateParts, inkFor } from '@/app/events/press';
+import { formatIST } from '@/lib/format';
 import { useModal } from '@/context/ModalContext';
+import styles from './EventCard.module.css';
 
 interface EventCardProps {
     event: EventWithRelations;
+    /** Kept for callers that pass it; the card no longer staggers itself. */
     index?: number;
 }
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=800';
 
-export default function EventCard({ event, index = 0 }: EventCardProps) {
+/**
+ * An event as a card: the same card the landing page and events board use,
+ * so an event looks like itself wherever it turns up (profiles, colleges).
+ */
+export default function EventCard({ event }: EventCardProps) {
     const { openModal } = useModal();
-    const [mounted, setMounted] = useState(false);
     const [imgSrc, setImgSrc] = useState(resolveEventImage(event.category, event.thumbnail, event.title));
-    const [logoSrc, setLogoSrc] = useState(
-        resolveClubLogo(event.club ?? { name: event.hostCollege?.name || 'Unknown' })
-    );
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    const formatDate = (dateStr: string | Date) => {
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return { month: '---', day: '--', weekday: '---' };
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        return {
-            month: months[d.getMonth()],
-            day: d.getDate(),
-            weekday: days[d.getDay()]
-        };
-    };
-
-    const dateInfo = formatDate(event.date);
-    const hostName = event.club?.name || event.hostCollege?.name || 'Unknown';
-
-    // Helper for category badge styles
-    const getChipClass = (cat: string) => {
-        switch (cat) {
-            case 'Hackathon': return styles.chipHackathon;
-            case 'Fest': return styles.chipFest;
-            case 'Workshop': return styles.chipWorkshop;
-            case 'Cultural': return styles.chipCultural;
-            case 'Social': return styles.chipSocial;
-            default: return styles.chipDefault;
-        }
-    };
+    const d = dateParts(event.date);
+    const time = formatIST(event.date, { hour: 'numeric', minute: '2-digit' });
+    const host = event.club?.name || event.hostCollege?.name;
+    const going = event.registrationCount ?? 0;
+    const price = event.price > 0 ? `₹${event.price.toLocaleString('en-IN')}` : 'Free';
 
     const handleShare = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        const eventUrl = mounted ? `${window.location.origin}/events/${event.id}` : `/events/${event.id}`;
         openModal('SHARE', {
-            eventUrl,
-            eventName: event.title
+            eventUrl: `${window.location.origin}/events/${event.id}`,
+            eventName: event.title,
         });
     };
 
     return (
-        <motion.div
-            className={styles.card}
-            variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 }
-            }}
-            /* The 5px spring lift is gone: nothing else on the site moves
-               toward the cursor, and the image already answers the hover by
-               coming into colour. */
-        >
-            <a href={`/events/${event.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
-                {/* Image & Top Badges */}
-                <div
-                    className={styles.imageContainer}
-                    style={{ flexShrink: 0, position: 'relative', width: '100%', height: '200px', overflow: 'hidden' }}
+        <Link href={`/events/${event.id}`} className={styles.card}>
+            <div className={styles.media}>
+                <Image
+                    src={imgSrc}
+                    alt=""
+                    fill
+                    sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
+                    onError={() => setImgSrc(FALLBACK_IMAGE)}
+                />
+                <span className={styles.dateTab}>
+                    <b>{d.day}</b>
+                    <i>{d.month}</i>
+                </span>
+                <button
+                    type="button"
+                    onClick={handleShare}
+                    className={styles.share}
+                    aria-label={`Share ${event.title}`}
                 >
-                    <Image
-                        src={imgSrc}
-                        alt={event.title || 'Event image'}
-                        fill
-                        className={styles.image}
-                        style={{ objectFit: 'cover' }}
-                        onError={() => setImgSrc(FALLBACK_IMAGE)}
-                    />
+                    <Share2 size={14} aria-hidden="true" />
+                </button>
+            </div>
 
-                    {/* Price Tag (Top Left) */}
-                    {mounted && (
-                        <div className={`${styles.priceTag} ${(event.price === 0 || event.price === undefined) ? styles.freeTag : ''}`}>
-                            {(event.price === 0 || event.price === undefined) ? 'FREE' : `$${event.price}`}
-                        </div>
-                    )}
-
-                    {/* Share Button (Top Right) */}
-                    <button
-                        onClick={handleShare}
-                        className={styles.shareButton}
-                        title="Share Event"
-                        aria-label={`Share ${event.title}`}
-                    >
-                        <Share2 size={14} aria-hidden="true" />
-                    </button>
-
-                    {/* Category Chip (Bottom Left) */}
-                    <span className={`${styles.categoryChip} ${getChipClass(event.category)}`}>
-                        {event.category || 'General'}
-                    </span>
-                </div>
-
-                {/* Content */}
-                <div className={styles.content}>
-                    <h2 className={styles.title}>{event.title || 'Untitled Event'}</h2>
-                    <p className={styles.description}>
-                        {mounted ? `From ${dateInfo.month} ${dateInfo.day}, ${dateInfo.weekday} • ${event.venue || 'TBA'}` : 'Loading details...'}
-                    </p>
-
-                    {/* Next Event / Date Info Box */}
-                    {mounted && (
-                        <div className={styles.infoBox}>
-                            <CalendarDays size={14} className={styles.infoIcon} aria-hidden="true" />
-                            <span className={styles.infoLabel}>Date:</span>
-                            {dateInfo.month} {dateInfo.day} — {dateInfo.weekday}
-                        </div>
-                    )}
-
-                    {/* Host Info */}
-                    <div className={styles.hostRow}>
-                        <div className={styles.hostLogoWrapper}>
-                            <Image
-                                src={logoSrc}
-                                alt={hostName}
-                                fill
-                                style={{ objectFit: 'cover' }}
-                                className={styles.hostLogo}
-                                onError={() => setLogoSrc(`https://ui-avatars.com/api/?name=${encodeURIComponent(hostName)}&background=0F1F1C&color=EBF3F1`)}
-                            />
-                        </div>
-                        <span className={styles.hostText}>
-                            Hosted by <strong>{hostName}</strong>
-                        </span>
-                    </div>
-
-                    {/* Footer */}
-                    <div className={styles.footer} onClick={(e) => e.stopPropagation()}>
-                        <span className={styles.stats}>
-                            <Users size={14} aria-hidden="true" />
-                            {event.registrationCount || 0} Reg.
-                        </span>
-                        <span className={styles.joinBtn}>
-                            View Details
-                        </span>
-                    </div>
-                </div>
-            </a>
-        </motion.div>
+            <div className={styles.body}>
+                <span className={styles.cat}>
+                    <span className={styles.square} style={{ background: inkFor(event.category) }} aria-hidden="true" />
+                    {event.category || 'Event'}
+                </span>
+                <h3 className={styles.title}>{event.title || 'Untitled event'}</h3>
+                <span className={styles.meta}>
+                    {d.weekday}, {time}
+                    {event.venue ? ` · ${event.venue}` : ''}
+                </span>
+                {host && <span className={styles.host}>Hosted by {host}</span>}
+                <span className={styles.foot}>
+                    <span className={`${styles.price} ${event.price > 0 ? '' : styles.free}`}>{price}</span>
+                    {going > 0 && <span className={styles.going}>{going} going</span>}
+                </span>
+            </div>
+        </Link>
     );
 }

@@ -49,11 +49,11 @@
 .tickerContent {
     display: inline-block;
     animation: ticker 20s linear infinite;
-    font-family: var(--font-display);
+    font-family: var(--font-mono);
     font-size: 2rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
 }
 
 .tickerItem {

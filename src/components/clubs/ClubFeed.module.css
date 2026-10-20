@@ -148,14 +148,16 @@
 
 .authorName {
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-obsidian);
 }
 
 .timestamp {
     font-size: 10px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }
@@ -191,7 +193,8 @@
     border: 0;
     font: inherit;
     font-size: 11px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     font-variant-numeric: tabular-nums;
@@ -285,14 +288,16 @@
 
 .commentAuthor {
     font-size: 11px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-obsidian);
 }
 
 .commentTime {
     font-size: 10px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }
@@ -386,7 +391,8 @@
 .emptyComments {
     padding: 10px 0;
     font-size: 11px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }

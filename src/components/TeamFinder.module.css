@@ -21,10 +21,10 @@
 
 .title {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 700;
     font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
     line-height: 1.19;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     color: var(--color-obsidian);
     margin: 0;
 }
@@ -40,9 +40,9 @@
 
 .formTitle {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 600;
     font-size: 1.25rem;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.03em;
     color: var(--color-obsidian);
     margin: 0 0 24px;
 }
@@ -62,7 +62,8 @@
 .label {
     font-size: 10px;
     font-weight: 400;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }

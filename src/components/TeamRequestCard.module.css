@@ -48,7 +48,8 @@
     display: block;
     margin-top: 2px;
     font-size: 10px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }
@@ -61,7 +62,8 @@
     border-radius: var(--radius-pill);
     border: 1px solid var(--border-hairline);
     font-size: 10px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     white-space: nowrap;
@@ -126,7 +128,8 @@
 
 .yours {
     font-size: 10px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
     margin-right: 4px;

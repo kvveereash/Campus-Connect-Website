@@ -122,11 +122,11 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: var(--font-sans);
+    font-family: var(--font-mono);
     font-size: 0.85rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.04em;
     color: var(--color-forest);
     margin-bottom: 2rem;
     background: rgba(255, 255, 255, 0.7);
@@ -265,10 +265,10 @@
 }
 
 .scrollText {
-    font-family: var(--font-sans);
+    font-family: var(--font-mono);
     font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.04em;
     color: var(--text-secondary);
     font-weight: 600;
     opacity: 0.6;
@@ -470,11 +470,11 @@
 }
 
 .statLabel {
-    font-family: var(--font-sans);
+    font-family: var(--font-mono);
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.45);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
     font-weight: 500;
 }
 
@@ -644,10 +644,10 @@
 }
 
 .bentoTileLabel {
-    font-family: var(--font-sans);
+    font-family: var(--font-mono);
     font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
     color: var(--text-secondary);
     margin-bottom: 1rem;
     font-weight: 600;

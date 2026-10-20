@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { getConversations } from '@/lib/actions/chat';
 import Image from 'next/image';
 import styles from './Chat.module.css';
+import { formatIST } from '@/lib/format';
 
 interface ConversationListProps {
     activeId: string | null;
@@ -53,7 +54,7 @@ export function ConversationList({ activeId, onSelect }: ConversationListProps) 
                     <div className={styles.info}>
                         <div className={styles.topRow}>
                             <span className={styles.name}>{c.name}</span>
-                            <span className={styles.time}>{new Date(c.lastMessageAt).toLocaleDateString()}</span>
+                            <span className={styles.time}>{formatIST(c.lastMessageAt, { day: 'numeric', month: 'short' })}</span>
                         </div>
                         <p className={styles.preview}>{c.lastMessage}</p>
                     </div>

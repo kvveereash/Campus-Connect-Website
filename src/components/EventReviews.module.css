@@ -22,10 +22,10 @@
 
 .title {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 700;
     font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
     line-height: 1.19;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     color: var(--color-obsidian);
     margin: 0;
 }
@@ -39,7 +39,8 @@
 
 .summaryText {
     font-size: 11px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     font-variant-numeric: tabular-nums;
@@ -97,7 +98,8 @@
     display: block;
     margin-bottom: 10px;
     font-size: 10px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }
@@ -181,7 +183,8 @@
 .stamp {
     margin-top: 9px;
     font-size: 10px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }
@@ -194,7 +197,8 @@
     cursor: pointer;
     font: inherit;
     font-size: 10px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     transition: color var(--duration-base) var(--ease-glide);
 }

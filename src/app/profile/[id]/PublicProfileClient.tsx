@@ -13,6 +13,7 @@ import { startConversation } from '@/lib/actions/chat';
 import type { PublicProfile } from '@/lib/actions/profile';
 import type { EventWithRelations } from '@/lib/actions/events';
 import styles from '@/app/profile/page.module.css';
+import { formatIST } from '@/lib/format';
 
 interface Props {
     user: PublicProfile;
@@ -36,7 +37,7 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
     const [startingChat, setStartingChat] = useState(false);
 
     const isMe = currentUser?.id === user.id;
-    const joined = new Date(user.createdAt).toLocaleDateString('en-US', {
+    const joined = formatIST(user.createdAt, {
         month: 'long',
         year: 'numeric',
     });

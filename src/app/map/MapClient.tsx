@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
 import Reveal from '@/components/Reveal';
+import { formatIST } from '@/lib/format';
 
 interface MapEvent {
     id: string;
@@ -120,7 +121,7 @@ export default function MapClient({ events }: { events: MapEvent[] }) {
                                             className={styles.row}
                                         >
                                             <span className={styles.rowDate}>
-                                                {when.toLocaleDateString('en-US', {
+                                                {formatIST(when, {
                                                     day: '2-digit',
                                                     month: 'short',
                                                 })}

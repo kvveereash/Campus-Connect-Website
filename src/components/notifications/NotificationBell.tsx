@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from './Notifications.module.css';
+import { formatIST } from '@/lib/format';
 
 type Notification = {
     id: string;
@@ -174,7 +175,7 @@ export function NotificationBell() {
                                                 {notification.message}
                                             </p>
                                             <span className={styles.time}>
-                                                {notification.createdAt.toLocaleDateString()}
+                                                {formatIST(notification.createdAt, { day: 'numeric', month: 'short' })}
                                             </span>
                                         </div>
                                         {!notification.read && <div className={styles.dot} />}

@@ -70,7 +70,7 @@ export default function AnimatedCounter({
 
     const text = pad
         ? String(displayValue).padStart(pad, '0')
-        : displayValue.toLocaleString();
+        : displayValue.toLocaleString('en-IN');
 
     /* A plain span, not a motion one.
        It used to fade itself in from opacity 0, which shipped that zero in the

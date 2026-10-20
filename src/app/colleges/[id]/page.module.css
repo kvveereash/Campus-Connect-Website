@@ -170,7 +170,7 @@
 }
 
 .itemCount {
-    font-family: var(--font-sans);
+    font-family: var(--font-mono);
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--color-forest);
@@ -178,13 +178,13 @@
     padding: 0.4rem 1rem;
     border-radius: 75px;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
 }
 
 /* ─── Grid & Cards ────────────────────────────────────────── */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
     gap: 2.5rem;
 }
 
@@ -248,8 +248,9 @@
     padding: 0.4rem 1rem;
     font-size: 0.75rem;
     font-weight: 700;
+    font-family: var(--font-mono);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
     border-radius: 75px;
     z-index: 2;
     box-shadow: none;

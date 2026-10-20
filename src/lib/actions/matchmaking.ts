@@ -100,20 +100,27 @@ export async function getRecommendedTeammates() {
             }
 
             return {
-                user: {
-                    id: candidate.id,
-                    name: candidate.name,
-                    department: candidate.department,
-                    year: candidate.year,
-                    bio: candidate.bio
-                },
+                id: candidate.id,
+                name: candidate.name,
+                department: candidate.department,
+                year: candidate.year,
+                bio: candidate.bio,
+                avatar: candidate.name.charAt(0).toUpperCase(),
+                skills: theirSkills.map((s) => s.name),
                 score,
-                reasons
+                matchReasons: reasons,
             };
         });
 
-        // Sort by score
-        return scoredCandidates.sort((a, b) => b.score - a.score);
+        /* The page renders a flat card per match: name, skills, a percentage
+           and the reasons. This used to return { user, score, reasons }, so
+           the page read `match.skills` as undefined and crashed the moment
+           anyone had a college-mate to suggest. The percentage is relative
+           to the strongest match, which is the only scale the score has. */
+        const best = Math.max(1, ...scoredCandidates.map((c) => c.score));
+        return scoredCandidates
+            .sort((a, b) => b.score - a.score)
+            .map(({ score, ...c }) => ({ ...c, matchScore: Math.round((score / best) * 100) }));
 
     } catch (error) {
         console.error('Matchmaking failed:', error);

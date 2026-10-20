@@ -3,6 +3,7 @@
 import React from 'react';
 import styles from './Badge.module.css';
 import { motion } from 'framer-motion';
+import { formatIST } from '@/lib/format';
 
 interface BadgeProps {
     name: string;
@@ -14,7 +15,7 @@ interface BadgeProps {
 
 export default function Badge({ name, icon, description, earnedDate, className }: BadgeProps) {
     const formattedDate = earnedDate
-        ? new Date(earnedDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        ? formatIST(earnedDate, { month: 'short', year: 'numeric' })
         : null;
 
     return (

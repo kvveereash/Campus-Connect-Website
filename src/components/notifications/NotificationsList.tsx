@@ -6,6 +6,7 @@ import { getNotifications, markNotificationAsRead as markAsRead, markAllNotifica
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from './Notifications.module.css';
+import { formatIST } from '@/lib/format';
 
 interface NotificationListProps {
     onMarkedRead: () => void;
@@ -88,7 +89,7 @@ function Content({ n }: { n: any }) {
                 <p>
                     <span className={styles.actorName}>{n.actor?.name || 'System'}</span> {n.message}
                 </p>
-                <span className={styles.time}>{new Date(n.createdAt).toLocaleDateString()}</span>
+                <span className={styles.time}>{formatIST(n.createdAt, { day: 'numeric', month: 'short' })}</span>
             </div>
             {!n.read && <div className={styles.dot} />}
         </>

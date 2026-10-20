@@ -20,7 +20,8 @@
 
 .label {
     font-size: 10px;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-obsidian);
     margin-bottom: 8px;

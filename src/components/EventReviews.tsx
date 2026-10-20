@@ -6,6 +6,7 @@ import { addEventReview, getEventReviews, getUserEventReview, deleteEventReview 
 import { toast } from 'sonner';
 import Image from 'next/image';
 import styles from './EventReviews.module.css';
+import { formatIST } from '@/lib/format';
 
 interface Review {
     id: string;
@@ -229,7 +230,7 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
                                     <p className={styles.comment}>{review.comment}</p>
                                 )}
                                 <p className={styles.stamp}>
-                                    {new Date(review.createdAt).toLocaleDateString('en-US', {
+                                    {formatIST(review.createdAt, {
                                         day: 'numeric',
                                         month: 'short',
                                         year: 'numeric',

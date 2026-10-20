@@ -78,15 +78,16 @@
 
 .label {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 600;
     font-size: clamp(1.25rem, 2.6vw, 1.9375rem);
     line-height: 1.1;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
 }
 
 .meta {
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     opacity: 0.6;
 }

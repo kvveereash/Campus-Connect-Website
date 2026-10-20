@@ -8,6 +8,7 @@ import { getClubDetails, getClubPosts } from '@/lib/actions';
 import ClubAdminControls from '@/components/clubs/ClubAdminControls';
 import JoinClubButton from '@/components/JoinClubButton';
 import ClubFeed from '@/components/clubs/ClubFeed';
+import { formatIST } from '@/lib/format';
 
 const MEMBERS_SHOWN = 12;
 
@@ -130,7 +131,7 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                                             className={`${styles.event} ${past ? styles.eventPast : ''}`}
                                         >
                                             <span className={styles.eventDate}>
-                                                {date.toLocaleDateString('en-US', {
+                                                {formatIST(date, {
                                                     day: '2-digit',
                                                     month: 'short',
                                                     year: '2-digit',

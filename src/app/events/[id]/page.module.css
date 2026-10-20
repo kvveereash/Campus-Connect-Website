@@ -17,7 +17,8 @@
     align-items: center;
     gap: 9px;
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     transition: color var(--duration-base) var(--ease-glide),
@@ -42,7 +43,8 @@
     align-items: center;
     gap: 14px;
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     margin-bottom: 26px;
@@ -70,7 +72,7 @@
 
 .title {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 700;
     font-size: clamp(2.25rem, 6.4vw, 5.25rem);
     line-height: 1.04;
     letter-spacing: -0.035em;
@@ -129,7 +131,8 @@
 
 .sectionLabel {
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     margin-bottom: 20px;
@@ -163,7 +166,8 @@
 
 .factKey {
     font-size: 10px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
     margin-bottom: 7px;

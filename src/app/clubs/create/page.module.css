@@ -53,8 +53,12 @@
 .sidePanel {
     position: sticky;
     top: 2rem;
-    background: var(--color-forest);
-    border-radius: 0px;
+    /* The same campus-blue dot screen as the sign-in panel. */
+    background:
+        radial-gradient(rgba(255, 255, 255, 0.42) 1.1px, transparent 1.5px) 0 0 / 7px 7px,
+        radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1.4px) 3.5px 3.5px / 7px 7px,
+        var(--color-accent);
+    border-radius: 24px;
     padding: 3rem 2.5rem;
     color: var(--color-cream);
     overflow: hidden;
@@ -99,8 +103,10 @@
     color: var(--color-cream);
 }
 
+/* Was ink on the ink panel, so the highlighted word vanished and the
+   heading read "Build Your". */
 .sideHighlight {
-    color: var(--color-obsidian);
+    color: var(--color-marker);
 }
 
 .sideDesc {
@@ -131,7 +137,7 @@
 .featureIcon {
     width: 36px;
     height: 36px;
-    border-radius: 0px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
@@ -162,6 +168,7 @@
 .formPanel {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .formHeader {
@@ -464,7 +471,7 @@
 /* ═══ Mobile ═══ */
 @media (max-width: 900px) {
     .splitLayout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .sidePanel {

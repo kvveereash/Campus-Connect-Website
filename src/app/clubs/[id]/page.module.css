@@ -18,7 +18,8 @@
     align-items: center;
     gap: 9px;
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     transition: color var(--duration-base) var(--ease-glide),
@@ -45,7 +46,8 @@
     align-items: center;
     gap: 12px;
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     margin-bottom: 24px;
@@ -69,7 +71,7 @@
 
 .title {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 700;
     font-size: clamp(2.25rem, 6.4vw, 5.25rem);
     line-height: 1.04;
     letter-spacing: -0.035em;
@@ -112,7 +114,7 @@
     align-items: center;
     justify-content: center;
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 600;
     font-size: 5rem;
     letter-spacing: -0.04em;
     color: var(--color-paper);
@@ -146,7 +148,8 @@
 
 .sectionLabel {
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     margin-bottom: 20px;
@@ -182,7 +185,8 @@
 
 .eventDate {
     font-size: 11px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     font-variant-numeric: tabular-nums;
@@ -203,7 +207,8 @@
 
 .eventTag {
     font-size: 10px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
     white-space: nowrap;
@@ -225,7 +230,8 @@
 
 .railTitle {
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     margin: 0;
@@ -233,7 +239,7 @@
 
 .railCount {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 600;
     font-size: 1.5rem;
     line-height: 1;
     letter-spacing: -0.03em;
@@ -271,7 +277,8 @@
 .memberSub {
     margin-top: 2px;
     font-size: 10px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }
@@ -280,7 +287,8 @@
     padding: 14px 0 0;
     border-top: 1px solid var(--border-hairline);
     font-size: 11px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }

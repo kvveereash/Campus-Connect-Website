@@ -11,6 +11,7 @@ import { createClubPost, getPostComments, createPostComment } from '@/lib/action
 import type { BuzzPost } from '@/lib/actions/buzz';
 import styles from './buzz.module.css';
 import Reveal from '@/components/Reveal';
+import { formatIST } from '@/lib/format';
 
 interface Props {
     posts: BuzzPost[];
@@ -361,5 +362,5 @@ function timeAgo(value: Date | string): string {
     if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
     if (days < 7) return `${days}d ago`;
-    return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return formatIST(value, { month: 'short', day: 'numeric' });
 }

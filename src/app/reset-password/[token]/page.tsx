@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { verifyResetToken, resetPassword } from '@/lib/actions/password-reset';
 import Link from 'next/link';
-import styles from '../../login/page.module.css';
+import { Loader2 } from 'lucide-react';
+import { verifyResetToken, resetPassword } from '@/lib/actions/password-reset';
+import AuthShell, { AuthMessage } from '@/components/auth/AuthShell';
+import styles from '@/app/login/auth.module.css';
 
 export default function ResetPasswordPage() {
     const params = useParams();
@@ -18,7 +20,7 @@ export default function ResetPasswordPage() {
     const [tokenValid, setTokenValid] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    // Verify token on mount
+    // Check the link before showing a form it could never submit.
     useEffect(() => {
         async function verify() {
             const result = await verifyResetToken(token);
@@ -35,12 +37,12 @@ export default function ResetPasswordPage() {
         e.preventDefault();
 
         if (password !== confirmPassword) {
-            setMessage({ type: 'error', text: 'Passwords do not match' });
+            setMessage({ type: 'error', text: 'The two passwords do not match.' });
             return;
         }
 
         if (password.length < 8) {
-            setMessage({ type: 'error', text: 'Password must be at least 8 characters' });
+            setMessage({ type: 'error', text: 'Use at least 8 characters.' });
             return;
         }
 
@@ -50,12 +52,12 @@ export default function ResetPasswordPage() {
         try {
             const result = await resetPassword(token, password);
             if (result.success) {
-                setMessage({ type: 'success', text: 'Password reset successful! Redirecting to login...' });
+                setMessage({ type: 'success', text: 'Password changed. Taking you to sign in…' });
                 setTimeout(() => router.push('/login'), 2000);
             } else {
-                setMessage({ type: 'error', text: result.error || 'Failed to reset password' });
+                setMessage({ type: 'error', text: result.error || 'Could not reset the password.' });
             }
-        } catch (error) {
+        } catch {
             setMessage({ type: 'error', text: 'Something went wrong. Please try again.' });
         } finally {
             setIsLoading(false);
@@ -64,103 +66,86 @@ export default function ResetPasswordPage() {
 
     if (isVerifying) {
         return (
-            <div className={styles.container}>
-                <div className={styles.card}>
-                    <p>Verifying reset link...</p>
-                </div>
-            </div>
+            <AuthShell line="Locked out? It happens to everyone.">
+                <p className={styles.label}>Password reset</p>
+                <h1 className={styles.title}>Checking your link…</h1>
+            </AuthShell>
         );
     }
 
     if (!tokenValid) {
         return (
-            <div className={styles.container}>
-                <div className={styles.card}>
-                    <div className={styles.header}>
-                        <h1 className={styles.title}>Invalid Link</h1>
-                        <p className={styles.subtitle}>
-                            {message?.text || 'This password reset link is invalid or has expired.'}
-                        </p>
-                    </div>
-                    <div className={styles.footer}>
-                        <Link href="/forgot-password" className={styles.link}>
-                            Request a new reset link
-                        </Link>
-                    </div>
-                </div>
-            </div>
+            <AuthShell line="Locked out? It happens to everyone.">
+                <p className={styles.label}>Password reset</p>
+                <h1 className={styles.title}>This link has expired.</h1>
+                <p className={styles.subtitle}>
+                    {(message?.text || 'Reset links work once and expire after a while').replace(/\.?$/, '.')} Ask
+                    for a fresh one and use it straight away.
+                </p>
+                <p className={styles.foot}>
+                    <Link href="/forgot-password">Send a new reset link</Link>
+                </p>
+            </AuthShell>
         );
     }
 
     return (
-        <div className={styles.container}>
-            <div className={styles.card}>
-                <div className={styles.header}>
-                    <h1 className={styles.title}>Reset Password</h1>
-                    <p className={styles.subtitle}>
-                        Enter your new password below.
-                    </p>
-                </div>
+        <AuthShell line="Almost back in.">
+            <p className={styles.label}>Password reset</p>
+            <h1 className={styles.title}>Choose a new password.</h1>
+            <p className={styles.subtitle}>At least 8 characters. You&rsquo;ll sign in with it straight after.</p>
 
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="password" className={styles.label}>
-                            New Password
+            <form onSubmit={handleSubmit}>
+                <div className={styles.fields}>
+                    <div className={styles.field}>
+                        <label className={styles.fieldLabel} htmlFor="password">
+                            New password
                         </label>
                         <input
-                            type="password"
                             id="password"
+                            type="password"
+                            autoComplete="new-password"
+                            className={styles.input}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className={styles.input}
-                            placeholder="At least 8 characters"
                             required
                             minLength={8}
                             disabled={isLoading}
                         />
                     </div>
-
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="confirmPassword" className={styles.label}>
-                            Confirm Password
+                    <div className={styles.field}>
+                        <label className={styles.fieldLabel} htmlFor="confirmPassword">
+                            Confirm password
                         </label>
                         <input
-                            type="password"
                             id="confirmPassword"
+                            type="password"
+                            autoComplete="new-password"
+                            className={styles.input}
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className={styles.input}
-                            placeholder="Confirm your password"
                             required
                             minLength={8}
                             disabled={isLoading}
                         />
                     </div>
-
-                    {message && (
-                        <div
-                            className={`${styles.message} ${message.type === 'success' ? styles.success : styles.error
-                                }`}
-                        >
-                            {message.text}
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        className={styles.submitButton}
-                        disabled={isLoading || !password || !confirmPassword}
-                    >
-                        {isLoading ? 'Resetting...' : 'Reset Password'}
-                    </button>
-                </form>
-
-                <div className={styles.footer}>
-                    <Link href="/login" className={styles.link}>
-                        Back to Login
-                    </Link>
                 </div>
-            </div>
-        </div>
+
+                {message && <AuthMessage type={message.type}>{message.text}</AuthMessage>}
+
+                <button
+                    type="submit"
+                    className={styles.submit}
+                    disabled={isLoading || !password || !confirmPassword}
+                >
+                    {isLoading && <Loader2 size={15} className={styles.spin} aria-hidden="true" />}
+                    {isLoading ? 'Saving…' : 'Set new password'}
+                </button>
+            </form>
+
+            <p className={styles.foot}>
+                <Link href="/login">Back to sign in</Link>
+            </p>
+        </AuthShell>
     );
 }

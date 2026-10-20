@@ -18,11 +18,36 @@ export function getPusherServer(): PusherServer {
     return _pusherServer;
 }
 
+/**
+ * Stands in for the client when no Pusher key is configured. pusher-js throws
+ * on construction without one, and the subscribers run inside components on
+ * every signed-in page, so one missing environment variable took the whole
+ * app down. Without a key, realtime updates are simply off.
+ */
+function offlineClient(): PusherClient {
+    const channel = {
+        bind: () => channel,
+        unbind: () => channel,
+        unbind_all: () => channel,
+        trigger: () => false,
+    };
+    return {
+        subscribe: () => channel,
+        unsubscribe: () => {},
+        channel: () => channel,
+        bind: () => {},
+        unbind: () => {},
+        disconnect: () => {},
+        connection: { bind: () => {}, unbind: () => {}, state: 'unavailable' },
+    } as unknown as PusherClient;
+}
+
 export function getPusherClient(): PusherClient {
     if (!_pusherClient) {
-        _pusherClient = new PusherClient(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-            cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-        });
+        const key = process.env.NEXT_PUBLIC_PUSHER_KEY;
+        _pusherClient = key
+            ? new PusherClient(key, { cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER! })
+            : offlineClient();
     }
     return _pusherClient;
 }

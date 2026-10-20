@@ -10,6 +10,7 @@ import { Send, Paperclip, FileText, X, Image as ImageIcon, Smile, CheckCheck, Ch
 import { toast } from 'sonner';
 
 import { GroupDetailsModal } from './GroupDetailsModal';
+import { formatIST } from '@/lib/format';
 
 interface ChatWindowProps {
     conversationId: string;
@@ -187,7 +188,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                     const other = details.participants.find((p: any) => p.userId !== user?.id)?.user;
                                     if (!other?.lastSeenAt) return 'Offline';
                                     const diff = new Date().getTime() - new Date(other.lastSeenAt).getTime();
-                                    return diff < 2 * 60 * 1000 ? 'Online' : `Last seen ${new Date(other.lastSeenAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                                    return diff < 2 * 60 * 1000 ? 'Online' : `Last seen ${formatIST(other.lastSeenAt, { hour: '2-digit', minute: '2-digit' })}`;
                                 })()
                             )
                         ) : 'Click for Info'}
@@ -230,7 +231,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
                                     <div className={styles.msgFooter}>
                                         <span className={styles.msgTime}>
-                                            {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {formatIST(m.createdAt, { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                         {isMe && (
                                             <div className={styles.readStatus}>

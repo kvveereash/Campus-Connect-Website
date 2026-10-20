@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { TeamRequest } from '@/types';
 import styles from './TeamRequestCard.module.css';
+import { formatIST } from '@/lib/format';
 
 interface TeamRequestCardProps {
     request: TeamRequest;
@@ -51,7 +52,7 @@ export default function TeamRequestCard({
                     <span>
                         <span className={styles.userName}>{request.creatorName}</span>
                         <span className={styles.date}>
-                            {new Date(request.createdAt).toLocaleDateString('en-US', {
+                            {formatIST(request.createdAt, {
                                 day: 'numeric',
                                 month: 'short',
                             })}

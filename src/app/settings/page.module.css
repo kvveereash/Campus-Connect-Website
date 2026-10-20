@@ -10,7 +10,8 @@
 
 .label {
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     margin-bottom: 20px;
@@ -18,7 +19,7 @@
 
 .title {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 700;
     font-size: clamp(2rem, 5.4vw, 3.375rem);
     line-height: 1.06;
     letter-spacing: -0.035em;
@@ -34,7 +35,8 @@
 
 .sectionLabel {
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     margin-bottom: 18px;
@@ -82,7 +84,8 @@
 
 .fieldLabel {
     font-size: 10px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }

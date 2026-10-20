@@ -7,6 +7,7 @@ import { createClubPost, deleteClubPost, editClubPost, createPostComment, getPos
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import styles from './ClubFeed.module.css';
+import { formatIST } from '@/lib/format';
 
 interface Post {
     id: string;
@@ -282,7 +283,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                     <div className={styles.postMeta}>
                                         <span className={styles.authorName}>{post.author.name}</span>
                                         <span className={styles.timestamp}>
-                                            {new Date(post.timestamp).toLocaleDateString(undefined, {
+                                            {formatIST(post.timestamp, {
                                                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                                             })}
                                         </span>
@@ -366,7 +367,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                                                     <div className={styles.commentHeader}>
                                                                         <span className={styles.commentAuthor}>{comment.author.name}</span>
                                                                         <span className={styles.commentTime}>
-                                                                            {new Date(comment.timestamp).toLocaleDateString(undefined, {
+                                                                            {formatIST(comment.timestamp, {
                                                                                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                                                                             })}
                                                                         </span>

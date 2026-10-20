@@ -25,7 +25,8 @@
 
 .label {
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     margin-bottom: 20px;
@@ -33,7 +34,7 @@
 
 .title {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 700;
     font-size: clamp(2.25rem, 6vw, 4.875rem);
     line-height: 1.1;
     letter-spacing: -0.03em;
@@ -45,12 +46,13 @@
 
 .note {
     font-size: 11px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     padding-bottom: 10px;
-    max-width: 20ch;
-    text-align: right;
+    max-width: 36ch;
+    text-align: left;
 }
 
 /* ---------- composer ----------
@@ -92,7 +94,8 @@
     align-items: center;
     gap: 8px;
     font-size: 11px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
 }
@@ -266,7 +269,8 @@
 
 .club {
     font-size: 11px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-obsidian);
 }
@@ -283,7 +287,8 @@
 .author,
 .stamp {
     font-size: 11px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
 }
@@ -340,7 +345,8 @@
     padding: 0;
     font: inherit;
     font-size: 11px;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-felt);
     font-variant-numeric: tabular-nums;
@@ -376,14 +382,16 @@
 
 .commentAuthor {
     font-size: 11px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-obsidian);
 }
 
 .commentStamp {
     font-size: 10px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
 }
@@ -397,7 +405,8 @@
 
 .threadNote {
     font-size: 12px;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
     text-transform: uppercase;
     color: var(--color-ash);
     padding: 8px 0;
@@ -470,9 +479,9 @@
 
 .emptyTitle {
     font-family: var(--font-display);
-    font-weight: 300;
+    font-weight: 600;
     font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     color: var(--color-obsidian);
     margin: 0 0 12px;
 }

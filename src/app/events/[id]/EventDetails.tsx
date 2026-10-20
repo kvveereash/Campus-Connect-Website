@@ -15,6 +15,7 @@ import PaymentReturn from '@/components/PaymentReturn';
 import { deleteEvent, type EventDetail } from '@/lib/actions/events';
 import styles from './page.module.css';
 import Reveal from '@/components/Reveal';
+import { formatIST } from '@/lib/format';
 
 export default function EventDetails({ event }: { event: EventDetail }) {
     const router = useRouter();
@@ -109,14 +110,14 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                         <div className={styles.fact}>
                             <dt className={styles.factKey}>When</dt>
                             <dd className={styles.factValue}>
-                                {when.toLocaleDateString('en-US', {
+                                {formatIST(when, {
                                     weekday: 'long',
                                     day: 'numeric',
                                     month: 'long',
                                     year: 'numeric',
                                 })}
                                 <small>
-                                    {when.toLocaleTimeString('en-US', {
+                                    {formatIST(when, {
                                         hour: 'numeric',
                                         minute: '2-digit',
                                     })}
