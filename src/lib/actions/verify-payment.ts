@@ -3,6 +3,7 @@
 import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { markRegistrationPaid } from '@/lib/payments';
 
 /**
  * Verify payment status with Stripe and update registration
@@ -50,16 +51,13 @@ export const verifyPaymentStatusAction = createProtectedAction(z.object({ regist
     }
 
     if (stripeSession.payment_status === 'paid') {
-        // Update registration to PAID
-        await prisma.eventRegistration.update({
-            where: { id: data.registrationId },
-            data: {
-                status: 'PAID',
-                amountPaid: (stripeSession.amount_total || 0) / 100
-            }
-        });
+        // Same conditional PENDING -> PAID transition the webhook uses.
+        await markRegistrationPaid(
+            registration.id,
+            stripeSession.id,
+            (stripeSession.amount_total || 0) / 100
+        );
 
-        revalidatePath('/profile');
         revalidatePath(`/events`);
 
         return {

@@ -12,12 +12,17 @@ interface AuthContextType {
     registerForEvent: (eventId: string) => void;
     toggleFollow: (collegeId: string) => void;
     toggleFollowUser: (userId: string) => void;
-    updateProfile: (updates: Partial<User>) => void;
+    updateProfile: (updates: Partial<User> & { customCollegeName?: string }) => void;
     refreshUser: () => Promise<void>;
     isAuthenticated: boolean;
     isLoading: boolean;
     isInitialized: boolean;
 }
+
+const PROFILE_FIELDS = [
+    'name', 'bio', 'department', 'year', 'avatar', 'resumeUrl', 'skills', 'interests',
+    'achievements', 'projects', 'portfolioLinks', 'collegeId', 'customCollegeName',
+] as const;
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -170,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Server action
         try {
-            await toggleCollegeFollow(user.id, collegeId);
+            await toggleCollegeFollow(collegeId);
         } catch (err) {
             // Revert on error
             setUser({ ...user, followedColleges: currentFollowed });
@@ -188,12 +193,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({ ...user, following: newFollowing });
     };
 
-    const updateProfile = async (updates: Partial<User>) => {
+    const updateProfile = async (updates: Partial<User> & { customCollegeName?: string }) => {
         if (user) {
             setUser({ ...user, ...updates });
             try {
                 const { updateUserProfile } = await import('@/lib/actions');
-                await updateUserProfile(updates);
+                // The server rejects any key it does not know, so send only the
+                // fields a user may edit rather than the whole local User.
+                const payload: Record<string, unknown> = {};
+                for (const key of PROFILE_FIELDS) {
+                    if (updates[key] !== undefined) payload[key] = updates[key];
+                }
+                const result = await updateUserProfile(payload);
+                if (!result.success) throw new Error(result.error);
             } catch (error) {
                 console.error("Failed to sync profile update", error);
                 toast.error("Failed to save changes");

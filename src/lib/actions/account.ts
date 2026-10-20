@@ -36,7 +36,7 @@ export async function changePassword(
 
     // Same limiter as sign-in: this endpoint verifies a password, so it can be
     // used to guess one just as effectively.
-    const limit = await checkRateLimit(authLimiter, await getRateLimitIdentifier());
+    const limit = await checkRateLimit(authLimiter, getRateLimitIdentifier(session.userId as string));
     if (!limit.success) {
         return { success: false, error: 'Too many attempts. Try again in a minute.' };
     }
@@ -75,7 +75,7 @@ export async function deleteAccount(password: string): Promise<ActionState> {
     const session = await getSession();
     if (!session?.userId) return { success: false, error: 'Not signed in' };
 
-    const limit = await checkRateLimit(authLimiter, await getRateLimitIdentifier());
+    const limit = await checkRateLimit(authLimiter, getRateLimitIdentifier(session.userId as string));
     if (!limit.success) {
         return { success: false, error: 'Too many attempts. Try again in a minute.' };
     }
@@ -104,23 +104,41 @@ export async function deleteAccount(password: string): Promise<ActionState> {
      * replaced with a hash of a random string so the row cannot be signed into
      * even if some future query forgets to check deletedAt.
      */
-    await prisma.user.update({
-        where: { id: user.id },
-        data: {
-            deletedAt: new Date(),
-            name: 'Deleted account',
-            email: `deleted+${user.id}@campus-connect.invalid`,
-            password: await bcrypt.hash(crypto.randomUUID(), 12),
-            avatar: null,
-            bio: null,
-            department: null,
-            year: null,
-            resumeUrl: null,
-            achievements: null,
-            projects: null,
-            portfolioLinks: null,
-        },
-    });
+    await prisma.$transaction([
+        // The name is copied onto team requests, which are listed publicly.
+        prisma.teamRequest.updateMany({
+            where: { creatorId: user.id },
+            data: { creatorName: 'Deleted account' },
+        }),
+        // Outstanding links must not outlive the account.
+        prisma.passwordResetToken.updateMany({
+            where: { userId: user.id, used: false },
+            data: { used: true },
+        }),
+        prisma.emailVerificationToken.updateMany({
+            where: { userId: user.id, used: false },
+            data: { used: true },
+        }),
+        prisma.user.update({
+            where: { id: user.id },
+            data: {
+                deletedAt: new Date(),
+                name: 'Deleted account',
+                email: `deleted+${user.id}@campus-connect.invalid`,
+                password: await bcrypt.hash(crypto.randomUUID(), 12),
+                avatar: null,
+                bio: null,
+                department: null,
+                year: null,
+                resumeUrl: null,
+                achievements: null,
+                projects: null,
+                portfolioLinks: null,
+                skills: { set: [] },
+                interests: { set: [] },
+            },
+        }),
+    ]);
 
     logger.auth('account_deleted', user.id, {});
 

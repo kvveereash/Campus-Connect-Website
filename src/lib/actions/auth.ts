@@ -7,10 +7,14 @@ import { createSession, deleteSession, getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
 import { authLimiter, signupLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
+import { Prisma } from '@prisma/client';
+import { updateUserProfileSchema, type UpdateUserProfileInput } from '@/lib/schemas';
 
 export async function signup(prevState: ActionState | null, formData: FormData): Promise<ActionState> {
     const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
+    // Stored lower-cased so the same inbox cannot hold two accounts, and so
+    // password reset (which looks addresses up lower-cased) can find it.
+    const email = ((formData.get('email') as string) || '').trim().toLowerCase();
     const password = formData.get('password') as string;
     const department = (formData.get('department') as string) || 'General';
     const year = (formData.get('year') as string) || '1st Year';
@@ -32,7 +36,12 @@ export async function signup(prevState: ActionState | null, formData: FormData):
             };
         }
 
-        const existingUser = await prisma.user.findUnique({ where: { email } });
+        // Case-insensitive: accounts created before emails were normalised
+        // may still be stored with capitals.
+        const existingUser = await prisma.user.findFirst({
+            where: { email: { equals: email, mode: 'insensitive' } },
+            select: { id: true },
+        });
         if (existingUser) {
             return { success: false, error: 'User already exists' };
         }
@@ -73,8 +82,8 @@ export async function signup(prevState: ActionState | null, formData: FormData):
            and a user with no idea whether to try again. The address can be
            confirmed later from settings. */
         try {
-            const { sendVerificationEmail } = await import('@/lib/actions/email-verification');
-            await sendVerificationEmail(newUser.id);
+            const { issueVerificationEmail } = await import('@/lib/email-verification');
+            await issueVerificationEmail(newUser.id);
         } catch (error) {
             logger.error('Signup succeeded but verification email failed', error as Error, {
                 userId: newUser.id,
@@ -91,7 +100,7 @@ export async function signup(prevState: ActionState | null, formData: FormData):
 }
 
 export async function login(prevState: ActionState | null, formData: FormData): Promise<ActionState> {
-    const email = formData.get('email') as string;
+    const email = ((formData.get('email') as string) || '').trim().toLowerCase();
     const password = formData.get('password') as string;
 
     console.log('[LOGIN] Starting login for:', email);
@@ -120,7 +129,9 @@ export async function login(prevState: ActionState | null, formData: FormData): 
            This was findUnique({ where: { email } }) with no such check, so a
            soft-deleted account could still sign in — which would have made the
            new "delete my account" button a no-op dressed as a deletion. */
-        const user = await prisma.user.findFirst({ where: { email, deletedAt: null } });
+        const user = await prisma.user.findFirst({
+            where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null }
+        });
         if (!user || !user.password) {
             console.log('[LOGIN] User not found or no password');
             return { success: false, error: 'Invalid credentials' };
@@ -128,11 +139,12 @@ export async function login(prevState: ActionState | null, formData: FormData): 
 
         // Check if account is locked
         if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-            const lockRemaining = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 60000);
             logger.auth('login_blocked', user.id, { email, reason: 'account_locked' });
+            // Worded like the rate limiter's reply, which every address gets,
+            // so the response does not reveal that this account exists.
             return {
                 success: false,
-                error: `Account locked. Please try again in ${lockRemaining} minute(s).`
+                error: `Too many login attempts. Please try again at ${new Date(user.lockedUntil).toLocaleTimeString()}.`
             };
         }
 
@@ -176,10 +188,9 @@ export async function login(prevState: ActionState | null, formData: FormData): 
                     }
                 });
                 logger.auth('account_locked', user.id, { email, failedAttempts: recentFailures + 1 });
-                return {
-                    success: false,
-                    error: `Too many failed attempts. Account locked for ${LOCKOUT_DURATION_MINUTES} minutes.`
-                };
+                // Same answer as any wrong password: announcing the lock here
+                // told a caller the address belonged to a real account.
+                return { success: false, error: 'Invalid credentials' };
             }
 
             logger.auth('failed', user.id, { email, reason: 'invalid_password', failedAttempts: recentFailures + 1 });
@@ -354,27 +365,28 @@ export async function getSessionUser() {
     }
 }
 
-export async function updateUserProfile(data: {
-    name?: string;
-    department?: string;
-    year?: string;
-    bio?: string;
-    avatar?: string;
-    resumeUrl?: string;
-    skills?: string[];
-    interests?: string[];
-    achievements?: any[];
-    projects?: any[];
-    portfolioLinks?: any[];
-    collegeId?: string;
-    customCollegeName?: string;
-}) {
+export async function updateUserProfile(input: UpdateUserProfileInput) {
     const session = await getSession();
     if (!session || !session.userId) {
         return { success: false, error: 'Unauthorized' };
     }
 
     const userId = session.userId as string;
+
+    const parsed = updateUserProfileSchema.safeParse(input);
+    if (!parsed.success) {
+        return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid profile data' };
+    }
+    const data = parsed.data;
+
+    /* A college admin's authority over a college page comes from their
+       collegeId (see updateCollegeAction), so letting them change it here
+       would let them adopt, and then edit, any college on the site. */
+    const changesCollege = (data.collegeId !== undefined || data.customCollegeName !== undefined)
+        && data.collegeId !== session.user?.collegeId;
+    if (changesCollege && session.user?.role === 'COLLEGE_ADMIN') {
+        return { success: false, error: 'College admins cannot change their college. Ask a site admin.' };
+    }
 
     try {
         // OPTIMIZATION: Use a single transaction for all updates
@@ -404,14 +416,23 @@ export async function updateUserProfile(data: {
             }
 
             // 1. Separate scalar updates and relation updates
-            const { skills, interests, achievements, projects, portfolioLinks, collegeId, customCollegeName, ...scalarData } = data;
+            const { skills, interests, achievements, projects, portfolioLinks } = data;
 
-            // 2. Build the complete update object
-            const updateData: any = { ...scalarData };
+            // 2. Build the update field by field. Never spread the input here:
+            //    that is how role, email and password used to get through.
+            const updateData: Prisma.UserUpdateInput = {};
+            if (data.name !== undefined) updateData.name = data.name;
+            if (data.bio !== undefined) updateData.bio = data.bio;
+            if (data.department !== undefined) updateData.department = data.department;
+            if (data.year !== undefined) updateData.year = data.year;
+            if (data.avatar !== undefined) updateData.avatar = data.avatar;
+            if (data.resumeUrl !== undefined) updateData.resumeUrl = data.resumeUrl;
             if (achievements) updateData.achievements = JSON.stringify(achievements);
             if (projects) updateData.projects = JSON.stringify(projects);
             if (portfolioLinks) updateData.portfolioLinks = JSON.stringify(portfolioLinks);
-            if (finalCollegeId) updateData.collegeId = finalCollegeId;
+            if (finalCollegeId && finalCollegeId !== 'other') {
+                updateData.college = { connect: { id: finalCollegeId } };
+            }
 
             // 3. Handle skills - clear and set in one update
             if (skills !== undefined) {
@@ -436,7 +457,7 @@ export async function updateUserProfile(data: {
             }
 
             // Second update: Connect skills and interests (if provided)
-            const connectData: any = {};
+            const connectData: Prisma.UserUpdateInput = {};
 
             if (skills && skills.length > 0) {
                 connectData.skills = {
@@ -474,7 +495,15 @@ export async function updateUserProfile(data: {
 }
 
 // Moving this here as it updates user relations
-export async function toggleCollegeFollow(userId: string, collegeId: string) {
+export async function toggleCollegeFollow(collegeId: string) {
+    // The follower is always the signed-in user. This used to take a userId
+    // argument and trust it, so anyone could change anyone's follows.
+    const session = await getSession();
+    if (!session || !session.userId) {
+        throw new Error('Unauthorized');
+    }
+    const userId = session.userId as string;
+
     try {
         const existingFollow = await prisma.user.findFirst({
             where: {

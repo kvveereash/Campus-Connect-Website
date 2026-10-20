@@ -22,7 +22,7 @@ export default async function BuzzPage() {
     // be cached.
     const [posts, myClubs] = await Promise.all([
         getBuzzFeed(),
-        session?.userId ? getPostableClubs(session.userId as string) : Promise.resolve([]),
+        session?.userId ? getPostableClubs() : Promise.resolve([]),
     ]);
 
     return <BuzzClient posts={posts} myClubs={myClubs} />;

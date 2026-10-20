@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { joinEvent, completePayment } from '@/lib/actions/events';
+import { joinEvent } from '@/lib/actions/events';
 import { createEventPaymentSession } from '@/lib/actions/payments';
 import { verifyPaymentStatus } from '@/lib/actions/verify-payment';
 import { toast } from 'sonner';
@@ -84,14 +84,8 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
         setStatus('processing_payment');
 
         try {
-            const successUrl = `${window.location.origin}/events/${eventId}?payment=success`;
-            const cancelUrl = `${window.location.origin}/events/${eventId}?payment=cancelled`;
-
-            const result = await createEventPaymentSession(
-                registrationId,
-                successUrl,
-                cancelUrl
-            );
+            // The server decides where Stripe returns to.
+            const result = await createEventPaymentSession(registrationId);
 
             if (result.success) {
                 // Redirect to Stripe Checkout page

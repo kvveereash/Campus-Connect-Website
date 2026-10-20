@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/lib/stripe';
-import { markRegistrationPaid } from '@/lib/actions/payments';
+import { markRegistrationPaid } from '@/lib/payments';
 import Stripe from 'stripe';
 
 /**
@@ -42,29 +42,37 @@ export async function POST(request: NextRequest) {
 
         // Handle the event
         switch (event.type) {
-            case 'checkout.session.completed': {
+            case 'checkout.session.completed':
+            case 'checkout.session.async_payment_succeeded': {
                 const session = event.data.object as Stripe.Checkout.Session;
 
                 // Extract metadata
-                const { registrationId, eventId, userId } = session.metadata || {};
+                const { registrationId } = session.metadata || {};
 
                 if (!registrationId) {
                     console.error('Missing registrationId in metadata');
                     break;
                 }
 
-                // Mark registration as paid
-                const result = await markRegistrationPaid(
+                // "completed" means the customer finished Checkout, not that the
+                // money arrived: delayed methods complete as 'unpaid' and send
+                // async_payment_succeeded later.
+                if (session.payment_status !== 'paid') {
+                    console.log(`Checkout ${session.id} completed with payment_status=${session.payment_status}; waiting`);
+                    break;
+                }
+
+                // Throws on a database error, which falls through to the 500
+                // below so that Stripe retries the event.
+                const { updated } = await markRegistrationPaid(
                     registrationId,
                     session.id,
                     (session.amount_total || 0) / 100 // Convert paise to rupees
                 );
 
-                if (!result.success) {
-                    console.error('Failed to update registration:', result.error);
-                }
-
-                console.log(`✅ Payment completed for registration ${registrationId}`);
+                console.log(updated
+                    ? `✅ Payment completed for registration ${registrationId}`
+                    : `Registration ${registrationId} was not awaiting payment; nothing to update`);
                 break;
             }
 

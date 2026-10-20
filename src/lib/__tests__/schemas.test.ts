@@ -1,5 +1,6 @@
 import {
     eventSchema,
+    updateEventSchema,
     clubSchema,
     joinClubSchema,
     teamRequestSchema,
@@ -219,6 +220,30 @@ describe('Zod validation schemas', () => {
             expect(LIMITS.TITLE_MAX).toBe(200);
             expect(LIMITS.DESCRIPTION_MIN).toBe(10);
             expect(LIMITS.CONTENT_MAX).toBe(10000);
+        });
+    });
+
+    // ── updateEventSchema ──
+
+    describe('updateEventSchema', () => {
+        it('does not default price, so an edit cannot make a paid event free', () => {
+            const result = updateEventSchema.safeParse({ id: 'evt', data: { title: 'New title' } });
+            expect(result.success).toBe(true);
+            if (result.success) expect('price' in result.data.data).toBe(false);
+        });
+
+        it('keeps an explicit price', () => {
+            const result = updateEventSchema.safeParse({ id: 'evt', data: { price: 25 } });
+            expect(result.success && result.data.data.price).toBe(25);
+        });
+
+        it('strips the host club and college', () => {
+            const result = updateEventSchema.safeParse({
+                id: 'evt',
+                data: { clubId: 'someone-elses-club', hostCollegeId: 'c1', verified: true },
+            });
+            expect(result.success).toBe(true);
+            if (result.success) expect(result.data.data).toEqual({});
         });
     });
 });

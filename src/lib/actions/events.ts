@@ -1,17 +1,18 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { Event as PrismaEvent, Badge } from '@prisma/client';
+import { Event as PrismaEvent, Prisma } from '@prisma/client';
 import { revalidatePath, updateTag } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { unstable_cache } from 'next/cache';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
-import { z } from 'zod';
+import { clampLimit } from '@/lib/pagination';
 import { isOk } from '@/lib/api-response';
 import { createProtectedAction } from '@/lib/protected-action';
 import { eventSchema, updateEventSchema, joinEventSchema } from '@/lib/schemas';
 import { createNotification } from '@/lib/notification-helper';
 import { audit } from '@/lib/audit';
+import { checkAndAwardBadges } from '@/lib/badges';
 import { eventLimiter } from '@/lib/rate-limit';
 
 export type EventWithRelations = PrismaEvent & {
@@ -26,69 +27,6 @@ export type EventWithRelations = PrismaEvent & {
         logo: string | null;
     } | null;
 };
-
-// ─────────────────────────────────────────────────
-// Badge Helper (internal, no auth needed)
-// ─────────────────────────────────────────────────
-
-export async function checkAndAwardBadges(userId: string, eventCategory: string) {
-    const badgesEarned: Badge[] = [];
-
-    try {
-        const [
-            registrationCount,
-            hostedEventCount,
-            existingUserBadges,
-            allBadges
-        ] = await Promise.all([
-            prisma.eventRegistration.count({ where: { userId } }),
-            eventCategory === 'HOST_EVENT'
-                ? prisma.event.count({ where: { creatorId: userId } })
-                : Promise.resolve(0),
-            prisma.userBadge.findMany({
-                where: { userId },
-                select: { badge: { select: { name: true, id: true } } }
-            }),
-            prisma.badge.findMany({
-                where: {
-                    name: { in: ['Social Butterfly', 'Code Ninja', 'Event Planner'] }
-                }
-            })
-        ]);
-
-        const earnedBadgeNames = new Set(existingUserBadges.map(ub => ub.badge.name));
-        const badgeMap = new Map(allBadges.map(b => [b.name, b]));
-        const badgesToAward: { userId: string; badgeId: string }[] = [];
-
-        if (registrationCount >= 5 && !earnedBadgeNames.has('Social Butterfly')) {
-            const badge = badgeMap.get('Social Butterfly');
-            if (badge) { badgesToAward.push({ userId, badgeId: badge.id }); badgesEarned.push(badge); }
-        }
-
-        if (eventCategory === 'Hackathon' && !earnedBadgeNames.has('Code Ninja')) {
-            const badge = badgeMap.get('Code Ninja');
-            if (badge) { badgesToAward.push({ userId, badgeId: badge.id }); badgesEarned.push(badge); }
-        }
-
-        if (eventCategory === 'HOST_EVENT' && hostedEventCount >= 1 && !earnedBadgeNames.has('Event Planner')) {
-            const badge = badgeMap.get('Event Planner');
-            if (badge) { badgesToAward.push({ userId, badgeId: badge.id }); badgesEarned.push(badge); }
-        }
-
-        if (badgesToAward.length > 0) {
-            await prisma.userBadge.createMany({
-                data: badgesToAward,
-                skipDuplicates: true
-            });
-        }
-
-        return badgesEarned;
-
-    } catch (error) {
-        console.error('Error awarding badges:', error);
-        return [];
-    }
-}
 
 // ─────────────────────────────────────────────────
 // Protected Actions (unified pattern)
@@ -159,8 +97,14 @@ export const createEventAction = createProtectedAction(eventSchema, async (data,
 export const joinEventAction = createProtectedAction(joinEventSchema, async ({ eventId }, session) => {
     const userId = session.userId;
 
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
-    if (!event) throw new Error('Event not found');
+    // Only live, approved, upcoming events take registrations. Without this,
+    // deleted, rejected, unapproved and past events could all be joined, and
+    // each join counted towards badges (create your own unapproved
+    // "Hackathon", join it, collect Code Ninja).
+    const event = await prisma.event.findFirst({
+        where: { id: eventId, deletedAt: null, verified: true, date: { gte: new Date() } }
+    });
+    if (!event) throw new Error('Event not found or not open for registration');
 
     const existingRegistration = await prisma.eventRegistration.findUnique({
         where: { userId_eventId: { userId, eventId } }
@@ -209,6 +153,15 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
     audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.eventId },
 });
 
+function contentChanged(event: PrismaEvent, update: Prisma.EventUpdateInput) {
+    return (Object.keys(update) as (keyof PrismaEvent & keyof Prisma.EventUpdateInput)[]).some((key) => {
+        const before = event[key];
+        const after = update[key];
+        if (before instanceof Date && after instanceof Date) return before.getTime() !== after.getTime();
+        return before !== after;
+    });
+}
+
 export const updateEventAction = createProtectedAction(updateEventSchema, async ({ id, data }, session) => {
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) throw new Error('Event not found');
@@ -217,10 +170,23 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
         throw new Error('Unauthorized');
     }
 
-    const { date, ...otherData } = data;
-    const updateData: any = { ...otherData };
-    if (date) {
-        updateData.date = new Date(date);
+    // Field by field, never a spread: the schema strips unknown keys, but this
+    // is the line that decides what reaches the database.
+    const updateData: Prisma.EventUpdateInput = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.date !== undefined) updateData.date = new Date(data.date);
+    if (data.venue !== undefined) updateData.venue = data.venue;
+    if (data.category !== undefined) updateData.category = data.category;
+    if (data.thumbnail !== undefined) updateData.thumbnail = data.thumbnail;
+    if (data.price !== undefined) updateData.price = data.price;
+
+    // An approved event that changes goes back to the admin queue, or approval
+    // would be a one-time check that any later edit walks around.
+    if (event.verified && contentChanged(event, updateData)) {
+        updateData.verified = false;
+        updateData.verifiedBy = null;
+        updateData.verifiedAt = null;
     }
 
     const updatedEvent = await prisma.event.update({
@@ -236,36 +202,6 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
 }, {
     audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.id },
 });
-
-export const completePaymentAction = createProtectedAction(
-    z.object({ registrationId: z.string() }),
-    async ({ registrationId }, session) => {
-        const registration = await prisma.eventRegistration.findUnique({
-            where: { id: registrationId }
-        });
-
-        if (!registration || registration.userId !== session.userId) {
-            throw new Error('Registration not found');
-        }
-
-        await prisma.eventRegistration.update({
-            where: { id: registrationId },
-            data: {
-                status: 'PAID',
-                amountPaid: 0,
-                paymentId: `sim_${Math.random().toString(36).substr(2, 9)}`
-            }
-        });
-
-        revalidatePath('/events');
-        revalidatePath(`/events/${registration.eventId}`);
-        revalidatePath('/profile');
-        updateTag(`event-${registration.eventId}`);
-        updateTag(CACHE_TAGS.EVENTS);
-
-        return { success: true };
-    }
-);
 
 // ─────────────────────────────────────────────────
 // Legacy Wrappers (backward compatible)
@@ -316,13 +252,6 @@ export async function updateEvent(eventId: string, data: Partial<PrismaEvent>) {
     return { success: true, event: result.data.event };
 }
 
-/** @deprecated Use completePaymentAction directly */
-export async function completePayment(registrationId: string) {
-    const result = await completePaymentAction({ registrationId });
-    if (!isOk(result)) return { success: false, error: result.error };
-    return { success: true };
-}
-
 // ─────────────────────────────────────────────────
 // Data Queries (no auth, cached)
 // ─────────────────────────────────────────────────
@@ -344,6 +273,7 @@ async function _getUpcomingEventsUncached(limit: number = 3): Promise<EventWithR
 }
 
 export async function getUpcomingEvents(limit: number = 3): Promise<EventWithRelations[]> {
+    limit = clampLimit(limit, 24, 3);
     try {
         // The helper was already named "uncached" but nothing ever wrapped it,
         // so every request hit the database. The landing page calls this on
@@ -410,6 +340,8 @@ async function _allEvents(filters?: { search?: string; category?: string }) {
  */
 export async function getAllEvents(filters?: { search?: string; category?: string }) {
     const { search, category } = filters || {};
+    if (search && search.length > 100) return [];
+    if (category && category.length > 50) return [];
 
     if (search) return _allEvents(filters);
 
@@ -443,6 +375,7 @@ async function _getEventByIdUncached(id: string) {
             price: true,
             thumbnail: true,
             verified: true,
+            deletedAt: true,
             creatorId: true,
             clubId: true,
             hostCollegeId: true,
@@ -455,11 +388,16 @@ async function _getEventByIdUncached(id: string) {
 }
 
 export async function getUserCreatedEvents(userId: string) {
+    // Creators see their own events whether or not an admin has approved them
+    // yet, so a pending event does not simply vanish. Anyone else sees only the
+    // approved ones: this is callable with any id, and used to hand out every
+    // pending and rejected event (with its rejection reason) to whoever asked.
+    const session = await getSession();
+    const isOwner = session?.userId === userId;
+
     try {
         const events = await prisma.event.findMany({
-            // Creators see their own events whether or not an admin has approved
-            // them yet, so a pending event does not simply vanish.
-            where: { creatorId: userId, deletedAt: null },
+            where: { creatorId: userId, deletedAt: null, ...(isOwner ? {} : { verified: true }) },
             include: {
                 hostCollege: { select: { id: true, name: true, logo: true } },
                 club: { select: { id: true, name: true, logo: true } },
@@ -474,7 +412,12 @@ export async function getUserCreatedEvents(userId: string) {
     }
 }
 
-export async function getUserRegisteredEvents(userId: string) {
+/** The signed-in user's registrations. Takes no id, so it cannot list anyone else's. */
+export async function getUserRegisteredEvents() {
+    const session = await getSession();
+    if (!session?.userId) return [];
+    const userId = session.userId as string;
+
     try {
         const registrations = await prisma.eventRegistration.findMany({
             where: { userId },
@@ -506,7 +449,20 @@ export async function getEventById(id: string) {
             [`event-detail-${id}`],
             { tags: [CACHE_TAGS.EVENTS, `event-${id}`], revalidate: CACHE_TTL.EVENTS_DETAIL }
         );
-        return await cached();
+        const event = await cached();
+        if (!event || event.deletedAt) return null;
+
+        // An event awaiting (or refused) approval is visible to its creator and
+        // to admins only. This check sits outside the cache because the cache
+        // entry is shared by every viewer; it used to be missing altogether, so
+        // any pending or rejected event could be opened by URL.
+        if (!event.verified) {
+            const session = await getSession();
+            const viewerId = session?.userId as string | undefined;
+            if (viewerId !== event.creatorId && session?.user?.role !== 'ADMIN') return null;
+        }
+
+        return event;
     } catch (error) {
         console.error(`Failed to fetch event ${id}:`, error);
         return null;
@@ -557,7 +513,7 @@ export async function getUserBadges(userId: string) {
 }
 
 /**
- * Delete an event (creator or admin only)
+ * Delete an event (creator, club admin or site admin)
  */
 export async function deleteEvent(eventId: string) {
     const session = await getSession();
@@ -587,10 +543,15 @@ export async function deleteEvent(eventId: string) {
             return { success: false, error: 'Event not found' };
         }
 
+        if (event.deletedAt) {
+            return { success: false, error: 'Event not found' };
+        }
+
         const isCreator = event.creatorId === session.userId;
         const isClubAdmin = event.club?.members?.[0]?.role === 'ADMIN';
+        const isSiteAdmin = session.user?.role === 'ADMIN';
 
-        if (!isCreator && !isClubAdmin) {
+        if (!isCreator && !isClubAdmin && !isSiteAdmin) {
             await audit(
                 session.userId as string,
                 'PERMISSION_DENIED',
@@ -601,11 +562,14 @@ export async function deleteEvent(eventId: string) {
             return { success: false, error: 'Not authorized to delete this event' };
         }
 
-        await prisma.$transaction(async (tx) => {
-            await tx.eventReview.deleteMany({ where: { eventId } });
-            await tx.eventRegistration.deleteMany({ where: { eventId } });
-            await tx.teamRequest.deleteMany({ where: { eventId } });
-            await tx.event.delete({ where: { id: eventId } });
+        /* A soft delete, like the rest of the site. This was a hard delete
+           that also removed every registration, including PAID ones: the only
+           record tying a Stripe payment to an attendee went with it, so
+           nobody could be refunded, and a later webhook found nothing. Every
+           listing already filters on deletedAt. */
+        await prisma.event.update({
+            where: { id: eventId },
+            data: { deletedAt: new Date() },
         });
 
         await audit(
@@ -615,14 +579,16 @@ export async function deleteEvent(eventId: string) {
             eventId,
             {
                 eventTitle: event.title,
-                deletedRegistrations: event._count.registrations,
-                deletedTeamRequests: event._count.teamRequests,
-                deletedReviews: event._count.reviews,
+                registrationsKept: event._count.registrations,
+                teamRequests: event._count.teamRequests,
+                reviews: event._count.reviews,
             }
         );
 
         revalidatePath('/events');
         revalidatePath('/profile');
+        updateTag(`event-${eventId}`);
+        updateTag(CACHE_TAGS.EVENTS);
 
         return { success: true, message: 'Event deleted successfully' };
     } catch (error) {

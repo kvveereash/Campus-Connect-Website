@@ -40,6 +40,26 @@ export function sanitizePlainText(input: string): string {
     });
 }
 
+const ENTITIES: Record<string, string> = {
+    '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&#039;': "'", '&nbsp;': ' ',
+};
+
+/**
+ * User-written text that the app renders as React text (posts, comments,
+ * chat): markup stripped, then entities decoded back to characters.
+ *
+ * sanitize-html returns HTML, so "Q&A" came back as "Q&amp;A", and React,
+ * which escapes text itself, showed the entity literally. Editing a post fed
+ * that back in and it compounded to &amp;amp;. Nothing here is ever rendered
+ * as HTML (there is no dangerouslySetInnerHTML), so decoding is safe: a
+ * literal "<" is displayed as a character, not parsed.
+ */
+export function cleanUserText(input: string): string {
+    return sanitizePlainText(input)
+        .replace(/&(amp|lt|gt|quot|#39|#039|nbsp);/g, (entity) => ENTITIES[entity] ?? entity)
+        .trim();
+}
+
 /**
  * Sanitize URL
  * Ensures URL is safe and doesn't contain javascript: or data: schemes

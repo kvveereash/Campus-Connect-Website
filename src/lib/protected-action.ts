@@ -5,7 +5,7 @@ import { getSession } from '@/lib/auth';
 import { AuthenticationError, AuthorizationError, ErrorHandler } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { Ratelimit } from '@upstash/ratelimit';
-import { checkRateLimit, getRateLimitIdentifier } from '@/lib/rate-limit';
+import { checkRateLimit, getClientIp, getRateLimitIdentifier } from '@/lib/rate-limit';
 import { audit, AuditAction, AuditEntityType } from '@/lib/audit';
 import { ApiResult, ok, fail, ApiErrorCode } from '@/lib/api-response';
 import { validateCsrfSafe } from '@/lib/csrf';
@@ -244,7 +244,7 @@ export function createPublicAction<TInput, TOutput>(
         try {
             // 1. Rate Limiting
             if (options.rateLimiter) {
-                const identifier = getRateLimitIdentifier(undefined, 'public');
+                const identifier = getRateLimitIdentifier(undefined, await getClientIp());
                 const rateLimitResult = await checkRateLimit(options.rateLimiter, identifier);
 
                 if (!rateLimitResult.success) {

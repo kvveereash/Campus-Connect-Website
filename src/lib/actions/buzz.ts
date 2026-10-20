@@ -2,6 +2,8 @@
 
 import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { clampLimit } from '@/lib/pagination';
+import { getSession } from '@/lib/auth';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
 
 /**
@@ -61,6 +63,7 @@ async function _buzzFeed(limit: number) {
  * the session read that decides whether the composer appears at all.
  */
 export async function getBuzzFeed(limit = 30) {
+    limit = clampLimit(limit, 50, 30);
     return unstable_cache(() => _buzzFeed(limit), [`buzz-feed-${limit}`], {
         tags: [CACHE_TAGS.CLUBS, CACHE_TAGS.EVENTS],
         revalidate: CACHE_TTL.EVENTS_LIST,
@@ -75,7 +78,12 @@ export type BuzzPost = Awaited<ReturnType<typeof _buzzFeed>>[number];
  * createClubPost rejects non-members, so the composer has to offer only the
  * user's own clubs — otherwise every post attempt would fail authorization.
  */
-export async function getPostableClubs(userId: string) {
+export async function getPostableClubs() {
+    // The session's own clubs; this used to list any user's memberships by id.
+    const session = await getSession();
+    if (!session?.userId) return [];
+    const userId = session.userId as string;
+
     try {
         const memberships = await prisma.clubMember.findMany({
             where: { userId, club: { verified: true, deletedAt: null } },

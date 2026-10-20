@@ -3,7 +3,6 @@
 import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { createCheckoutSession, isStripeConfigured } from '@/lib/stripe';
-import { revalidatePath } from 'next/cache';
 import { createProtectedAction } from '@/lib/protected-action';
 import { z } from 'zod';
 import { isOk } from '@/lib/api-response';
@@ -21,42 +20,55 @@ type PaymentSessionResult =
 // ─────────────────────────────────────────────────
 
 const createPaymentSessionSchema = z.object({
-    registrationId: z.string(),
-    successUrl: z.string().url(),
-    cancelUrl: z.string().url()
+    registrationId: z.string()
 });
+
+/* Where Stripe sends the payer back. Built here, never taken from the client:
+   a caller-supplied successUrl turned Checkout into an open redirect. */
+function checkoutReturnUrls(eventId: string) {
+    const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const page = `${base}/events/${encodeURIComponent(eventId)}`;
+    return {
+        successUrl: `${page}?payment=success`,
+        cancelUrl: `${page}?payment=cancelled`,
+    };
+}
 
 export const createEventPaymentSessionAction = createProtectedAction(createPaymentSessionSchema, async (data, session) => {
     if (!isStripeConfigured()) {
         throw new Error('Payment system not configured');
     }
 
+    // Ownership is checked before, not inside, the idempotency wrapper. Inside
+    // it, a cached result was returned without running the check, so anyone
+    // holding a registration id got its owner's checkout session back.
+    const registration = await prisma.eventRegistration.findUnique({
+        where: { id: data.registrationId },
+        include: {
+            event: true,
+            user: {
+                select: { email: true }
+            }
+        }
+    });
+
+    if (!registration) {
+        throw new Error('Registration not found');
+    }
+
+    if (registration.userId !== session.userId) {
+        throw new AuthorizationError('Unauthorized');
+    }
+
+    if (registration.status === 'PAID' || registration.status === 'COMPLETED') {
+        throw new Error('Already paid');
+    }
+
     // Use idempotency to prevent creating multiple sessions for the same click
     return withIdempotency(
-        `create_payment_session:${data.registrationId}`,
+        `create_payment_session:${registration.id}`,
         async () => {
-            // Get registration with event and user details
-            const registration = await prisma.eventRegistration.findUnique({
-                where: { id: data.registrationId },
-                include: {
-                    event: true,
-                    user: {
-                        select: { email: true }
-                    }
-                }
-            });
-
-            if (!registration) {
-                throw new Error('Registration not found');
-            }
-
-            if (registration.userId !== session.userId) {
-                throw new AuthorizationError('Unauthorized');
-            }
-
-            if (registration.status === 'PAID' || registration.status === 'COMPLETED') {
-                throw new Error('Already paid');
-            }
+            const { successUrl, cancelUrl } = checkoutReturnUrls(registration.eventId);
 
             // Create Stripe checkout session
             const checkoutSession = await createCheckoutSession({
@@ -66,8 +78,8 @@ export const createEventPaymentSessionAction = createProtectedAction(createPayme
                 userEmail: registration.user.email,
                 userId: registration.userId,
                 registrationId: registration.id,
-                successUrl: data.successUrl,
-                cancelUrl: data.cancelUrl,
+                successUrl,
+                cancelUrl,
             });
 
             if (!checkoutSession.url) {
@@ -76,7 +88,7 @@ export const createEventPaymentSessionAction = createProtectedAction(createPayme
 
             // Update registration with payment session ID
             await prisma.eventRegistration.update({
-                where: { id: data.registrationId },
+                where: { id: registration.id },
                 data: {
                     paymentId: checkoutSession.id,
                     status: 'PENDING_PAYMENT'
@@ -100,59 +112,13 @@ export const createEventPaymentSessionAction = createProtectedAction(createPayme
 
 /** @deprecated Use createEventPaymentSessionAction */
 export async function createEventPaymentSession(
-    registrationId: string,
-    successUrl: string,
-    cancelUrl: string
+    registrationId: string
 ): Promise<PaymentSessionResult> {
-    const result = await createEventPaymentSessionAction({ registrationId, successUrl, cancelUrl });
+    const result = await createEventPaymentSessionAction({ registrationId });
     if (isOk(result)) {
         return { success: true, ...result.data };
     }
     return { success: false, error: result.error };
-}
-
-/**
- * Mark a registration as paid
- * 
- * ⚠️ INTERNAL USE ONLY - Called exclusively from Stripe webhook handler
- * This function intentionally has no auth check since it's called from
- * the webhook which verifies the signature instead.
- * 
- * DO NOT EXPORT THIS FUNCTION TO CLIENT COMPONENTS
- */
-export async function markRegistrationPaid(
-    registrationId: string,
-    paymentId: string,
-    amountPaid: number,
-    _internalCallerToken?: string // Optional: Add webhook verification token
-) {
-    // Guard: Ensure this is only called server-side
-    // 'use server' at top of file already prevents direct client calls,
-    // but this adds defense-in-depth for any internal misuse
-    if (typeof window !== 'undefined') {
-        console.error('[SECURITY] markRegistrationPaid called from client context');
-        return { success: false, error: 'Invalid call context' };
-    }
-
-    try {
-        const registration = await prisma.eventRegistration.update({
-            where: { id: registrationId },
-            data: {
-                status: 'PAID',
-                paymentId,
-                amountPaid,
-                updatedAt: new Date()
-            }
-        });
-
-        revalidatePath('/profile');
-        revalidatePath(`/events/${registration.eventId}`);
-
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to mark registration as paid:', error);
-        return { success: false, error: 'Failed to update registration' };
-    }
 }
 
 /**

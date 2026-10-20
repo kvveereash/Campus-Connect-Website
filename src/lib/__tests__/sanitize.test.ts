@@ -190,3 +190,20 @@ describe('sanitize utilities', () => {
         });
     });
 });
+
+import { cleanUserText } from '../sanitize';
+
+describe('cleanUserText()', () => {
+    it('keeps ampersands and angle brackets as characters', () => {
+        expect(cleanUserText('Q&A: is a < b && b > c?')).toBe('Q&A: is a < b && b > c?');
+    });
+
+    it('strips markup and scripts', () => {
+        expect(cleanUserText('<b>Hi</b><script>alert(1)</script>')).toBe('Hi');
+    });
+
+    it('is stable when its own output is cleaned again (editing a post)', () => {
+        const once = cleanUserText('Tom & "Jerry"');
+        expect(cleanUserText(once)).toBe(once);
+    });
+});

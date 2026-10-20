@@ -80,3 +80,15 @@ export function getPrismaPagination(params?: PaginationParams): { skip: number; 
         take: limit,
     };
 }
+
+/**
+ * A caller-supplied list size, forced into [1, max].
+ *
+ * Several public server actions take a `limit`, and any number used to go
+ * straight into `take` (and into a cache key), so one call could ask for a
+ * whole table, and a run of distinct values filled the cache with entries.
+ */
+export function clampLimit(value: unknown, max: number, fallback: number): number {
+    const n = typeof value === 'number' && Number.isFinite(value) ? Math.floor(value) : fallback;
+    return Math.min(Math.max(n, 1), max);
+}

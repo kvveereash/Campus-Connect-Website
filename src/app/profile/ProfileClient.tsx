@@ -82,7 +82,7 @@ export default function ProfileClient() {
             // Fetch events directly from DB
             setIsEventsLoading(true);
             Promise.all([
-                getUserRegisteredEvents(user.id),
+                getUserRegisteredEvents(),
                 getUserCreatedEvents(user.id),
             ]).then(([registered, created]) => {
                 setRegisteredEvents(registered.map((e: any) => ({

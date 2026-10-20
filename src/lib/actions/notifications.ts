@@ -17,8 +17,10 @@ import { isOk } from '@/lib/api-response';
 // ─────────────────────────────────────────────────
 
 export const markNotificationAsReadAction = createProtectedAction(z.object({ notificationId: z.string() }), async (data, session) => {
-    await prisma.notification.update({
-        where: { id: data.notificationId },
+    // updateMany so recipientId can sit in the filter: a notification id on
+    // its own let anyone mark anyone's notifications as read.
+    await prisma.notification.updateMany({
+        where: { id: data.notificationId, recipientId: session.userId },
         data: { read: true }
     });
     return { success: true };
@@ -47,19 +49,19 @@ export async function markNotificationAsRead(notificationId: string) {
     return { success: false, error: result.error };
 }
 
-export async function markAllNotificationsAsRead(userId?: string) {
-    // Legacy allowed passing userId but checked strictly against session. 
-    // New action uses session directly.
+export async function markAllNotificationsAsRead() {
     const result = await markAllNotificationsAsReadAction({});
     if (isOk(result)) return { success: true };
     return { success: false, error: result.error };
 }
 
-export async function getNotifications(userId?: string) {
-    if (!userId) {
-        const session = await getSession();
-        userId = session?.userId as string;
-    }
+/**
+ * The signed-in user's notifications. Takes no id: it used to accept one and
+ * return that user's notifications to whoever asked.
+ */
+export async function getNotifications() {
+    const session = await getSession();
+    const userId = session?.userId as string | undefined;
     if (!userId) return [];
 
     try {

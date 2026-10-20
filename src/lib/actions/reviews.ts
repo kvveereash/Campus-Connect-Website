@@ -3,6 +3,8 @@
 import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { reviewSchema } from '@/lib/schemas';
+import { cleanUserText } from '@/lib/sanitize';
 
 /**
  * Add or update a review for an event
@@ -18,10 +20,13 @@ export async function addEventReview(
         return { success: false, error: 'Unauthorized' };
     }
 
-    // Validate rating
-    if (rating < 1 || rating > 5) {
-        return { success: false, error: 'Rating must be between 1 and 5' };
+    // The schema, not a range check: NaN and 3.5 both passed `rating < 1 ||
+    // rating > 5`, and the comment had no length limit at all.
+    const parsed = reviewSchema.safeParse({ eventId, rating, comment });
+    if (!parsed.success) {
+        return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid review' };
     }
+    comment = parsed.data.comment ? cleanUserText(parsed.data.comment) || undefined : undefined;
 
     try {
         // Check if user attended this event

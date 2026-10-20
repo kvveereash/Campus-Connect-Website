@@ -51,9 +51,22 @@ export const eventSchema = z.object({
     maxAttendees: z.number().int().positive().max(100000).optional(),
 });
 
+/* Not eventSchema.partial(). Under zod 4 .partial() keeps price's .default(0),
+   so every edit that left price out quietly made a paid event free. The host
+   club and college are not editable here either: moving an event to a club
+   would need the same club-admin check that createEventAction does. Keys not
+   listed are stripped. */
 export const updateEventSchema = z.object({
     id: z.string().max(50),
-    data: eventSchema.partial()
+    data: eventSchema
+        .omit({ price: true, clubId: true, hostCollegeId: true })
+        .partial()
+        .extend({
+            price: z.number()
+                .nonnegative("Price cannot be negative")
+                .max(100000, "Price seems too high")
+                .optional(),
+        }),
 });
 
 export const joinEventSchema = z.object({
@@ -152,6 +165,60 @@ export const userProfileSchema = z.object({
     skills: z.array(z.string().max(50)).max(50).optional(),
     interests: z.array(z.string().max(50)).max(50).optional(),
 });
+
+/* Links a profile renders as href. z.string().url() alone would accept
+   javascript: URLs, so the scheme is pinned to http(s). */
+const httpUrl = z.string()
+    .max(LIMITS.URL_MAX)
+    .refine((value) => /^https?:\/\//i.test(value), { message: "Must be an http(s) URL" });
+
+/**
+ * What a user may change about themselves through updateUserProfile.
+ *
+ * .strict() is the point: the action used to spread whatever the browser sent
+ * into prisma.user.update, so a caller could set their own role to ADMIN, mark
+ * their email verified, or write a raw password. Unknown keys are now an error.
+ */
+export const updateUserProfileSchema = z.object({
+    name: z.string().trim()
+        .min(LIMITS.NAME_MIN, "Name must be at least 2 characters")
+        .max(LIMITS.NAME_MAX, "Name cannot exceed 100 characters")
+        .optional(),
+    bio: z.string().max(500, "Bio cannot exceed 500 characters").optional(),
+    department: z.string().max(100).optional(),
+    year: z.string().max(20).optional(),
+    // Empty clears it; a leading slash is one of the site's own images.
+    avatar: z.union([httpUrl, z.literal(''), z.string().max(LIMITS.URL_MAX).regex(/^\/(?!\/)/)]).optional(),
+    // The resume "upload" stores a file name for now, so this is plain text.
+    resumeUrl: z.string().max(LIMITS.URL_MAX).optional(),
+    skills: z.array(z.string().trim().min(1).max(50)).max(50).optional(),
+    interests: z.array(z.string().trim().min(1).max(50)).max(50).optional(),
+    achievements: z.array(z.object({
+        id: z.string().max(50),
+        title: z.string().max(LIMITS.TITLE_MAX),
+        date: z.string().max(50),
+        description: z.string().max(LIMITS.DESCRIPTION_MAX),
+    })).max(50).optional(),
+    projects: z.array(z.object({
+        id: z.string().max(50),
+        title: z.string().max(LIMITS.TITLE_MAX),
+        description: z.string().max(LIMITS.DESCRIPTION_MAX),
+        link: z.union([httpUrl, z.literal('')]).optional(),
+        technologies: z.array(z.string().max(50)).max(30).optional(),
+    })).max(50).optional(),
+    portfolioLinks: z.array(z.object({
+        id: z.string().max(50),
+        platform: z.string().max(LIMITS.NAME_MAX),
+        url: httpUrl,
+    })).max(30).optional(),
+    collegeId: z.string().max(50).optional(),
+    customCollegeName: z.string().trim()
+        .min(3, "College name must be at least 3 characters")
+        .max(LIMITS.NAME_MAX, "College name cannot exceed 100 characters")
+        .optional(),
+}).strict();
+
+export type UpdateUserProfileInput = z.infer<typeof updateUserProfileSchema>;
 
 // --- Comments ---
 export const commentSchema = z.object({
