@@ -1,169 +1,356 @@
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
+/* ============================================================
+   TEAM FINDER — same board as clubs and events: mono eyebrow, a
+   big plain headline, white cards on the canvas.
+   ============================================================ */
+
+.page {
+    padding: 48px 0 96px;
 }
 
-.header {
-    margin-bottom: 3rem;
-    text-align: center;
+/* ---------- masthead ---------- */
+.masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+.label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--color-ash);
 }
 
 .title {
-    font-family: var(--font-display);
-    font-size: clamp(2.25rem, 5vw, 3.25rem);
+    margin: 10px 0 0;
+    max-width: 17ch;
+    font-size: clamp(40px, 6vw, 68px);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
     font-weight: 700;
-    letter-spacing: -0.035em;
-    margin-bottom: 0.5rem;
-    /* Was white-to-grey gradient text, near invisible on the light canvas. */
     color: var(--color-obsidian);
 }
 
-.subtitle {
-    font-size: 1.125rem;
-    color: var(--text-secondary);
+.lede {
+    margin-top: 16px;
+    max-width: 52ch;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--color-felt);
 }
 
-.section {
-    margin-bottom: 4rem;
+.count {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-inkstone);
+    white-space: nowrap;
 }
 
-.sectionTitle {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
+/* ---------- profile notice ---------- */
+.notice {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--text-primary);
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+    padding: 18px 20px 18px 22px;
+    border-radius: 18px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    box-shadow: inset 4px 0 0 var(--color-marker);
 }
 
+.noticeTitle {
+    font-weight: 600;
+    color: var(--color-obsidian);
+}
+
+.noticeText {
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-felt);
+}
+
+/* ---------- buttons ---------- */
+.primary,
+.secondary {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color var(--duration-micro) var(--ease-glide),
+                border-color var(--duration-micro) var(--ease-glide);
+}
+
+.primary {
+    background: var(--color-accent);
+    color: var(--color-paper);
+}
+
+.primary:hover {
+    background: var(--color-accent-hover);
+}
+
+.secondary {
+    background: var(--color-paper);
+    color: var(--color-obsidian);
+    border: 1px solid var(--border-strong);
+}
+
+.secondary:hover {
+    border-color: var(--color-obsidian);
+}
+
+/* ---------- grid ---------- */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-/* Match Card */
-.matchCard {
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: 0px;
-    padding: 1.5rem;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s var(--ease-glide);
+.grid > li {
+    display: flex;
 }
 
-.matchCard:hover {
-    transform: translateY(-5px);
-    border-color: var(--border-highlight);
-    box-shadow: none;
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    padding: 20px;
+    border-radius: 20px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    transition: transform var(--duration-base) var(--ease-glide),
+                box-shadow var(--duration-base) var(--ease-glide);
 }
 
-.matchScore {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    padding: 0.25rem 0.75rem;
-    border-radius: 0px;
-    font-size: 0.875rem;
-    font-weight: 600;
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-soft);
+}
+
+.cardHead {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 14px;
+    min-width: 0;
 }
 
 .avatar {
-    width: 64px;
-    height: 64px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-family: var(--font-display);
+    font-size: 20px;
     font-weight: 700;
-    color: white;
-    margin-bottom: 1rem;
-    box-shadow: none;
 }
 
-.userInfo {
-    margin-bottom: 1.25rem;
+.who {
+    min-width: 0;
 }
 
-.userName {
-    font-size: 1.25rem;
+.name {
+    font-size: 18px;
     font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    color: var(--color-obsidian);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.userDept {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+.meta {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--color-ash);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.skillsContainer {
+/* ---------- match meter ---------- */
+.scoreRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+
+.scoreLabel {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-ash);
+}
+
+.scoreValue {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-obsidian);
+}
+
+.meter {
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-slate);
+    overflow: hidden;
+}
+
+.meterFill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-accent);
+}
+
+/* ---------- body ---------- */
+.bio {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-inkstone);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.skills {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.25rem;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-.skillTag {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.75rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0px;
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.reasonsList {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 0px;
-    padding: 0.75rem;
-    margin-bottom: 1.25rem;
-}
-
-.reasonItem {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    display: flex;
+.skill,
+.skillMore {
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 500;
 }
 
-.reasonItem:last-child {
-    margin-bottom: 0;
+.skill {
+    background: var(--color-canvas);
+    border: 1px solid var(--border-hairline);
+    color: var(--color-inkstone);
 }
 
-.connectBtn {
-    width: 100%;
-    padding: 0.75rem;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 0px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
+.skillMore {
+    color: var(--color-ash);
 }
 
-.connectBtn:hover {
-    opacity: 0.9;
+.reasons {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.6;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-felt);
 }
 
-.emptyState {
+.cardAction {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color var(--duration-micro) var(--ease-glide);
+}
+
+.cardAction:hover {
+    background: var(--color-accent);
+}
+
+/* ---------- empty ---------- */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 72px 24px;
+    border-radius: 20px;
+    background: var(--color-paper);
+    border: 1px dashed var(--border-strong);
     text-align: center;
-    padding: 4rem 2rem;
-    background: var(--surface-color);
-    border-radius: 0px;
-    border: 1px dashed var(--border-color);
+}
+
+.emptyTitle {
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+}
+
+.emptyText {
+    max-width: 46ch;
+    margin-bottom: 8px;
+    line-height: 1.55;
+    color: var(--color-felt);
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 1000px) {
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .page {
+        padding-top: 32px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .notice {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

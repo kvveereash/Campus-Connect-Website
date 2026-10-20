@@ -1,138 +1,144 @@
 import { Metadata } from 'next';
-import { getSessionUser, getRecommendedTeammates } from '@/lib/actions'; // These will fail if prisma fetch failed, but we handle it
-import styles from './page.module.css';
 import Link from 'next/link';
-import { AlertTriangle, Sparkles, Flame, Bot } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+import { getSessionUser, getRecommendedTeammates } from '@/lib/actions';
+import styles from './page.module.css';
 
 export const metadata: Metadata = {
     title: 'Find Teammates',
-    description: 'Find the perfect teammates for your next hackathon or project using AI matchmaking.',
+    description: 'People at your college who share your skills and interests.',
 };
+
+type Match = Awaited<ReturnType<typeof getRecommendedTeammates>>[number];
+
+const SKILLS_SHOWN = 5;
 
 export default async function TeamFinderPage() {
     const user = await getSessionUser();
 
+    // The middleware sends signed-out visitors to /login first; this is the
+    // fallback if a session expires between the two.
     if (!user) {
         return (
-            <div className={styles.container}>
-                <div className={styles.emptyState}>
-                    <h2>Please Login first</h2>
-                    <p style={{ margin: '1rem 0' }}>You need to be logged in to find teammates.</p>
-                    <Link href="/login" className="btn btn-primary">Login Now</Link>
+            <div className={styles.page}>
+                <div className={styles.empty}>
+                    <h1 className={styles.emptyTitle}>Sign in to find teammates</h1>
+                    <p className={styles.emptyText}>Matches come from your profile, so we need to know who you are.</p>
+                    <Link href="/login?redirect=/team-finder" className={styles.primary}>Sign in</Link>
                 </div>
             </div>
         );
     }
 
-    // Fetch Matches
-    // Note: If prisma client is outdated, this functions might throw, we should catch inside actions ideally, 
-    // but here we can try-catch too just in case.
-    let matches: any[] = [];
+    let matches: Match[] = [];
     try {
         matches = await getRecommendedTeammates();
     } catch (e) {
-        console.error("Match fetch error", e);
+        console.error('Match fetch error', e);
     }
 
-    const hasSkills = user.skills && user.skills.length > 0;
+    const profileIsThin = (user.skills?.length ?? 0) === 0 && (user.interests?.length ?? 0) === 0;
 
     return (
-        <div className={styles.container}>
-            <header className={styles.header}>
-                <h1 className={styles.title}>Team Matchmaker</h1>
-                <p className={styles.subtitle}>
-                    We analyzed your skills and interests to find these perfect teammates for your next project.
-                </p>
+        <div className={styles.page}>
+            <header className={styles.masthead}>
+                <div>
+                    <p className={styles.label}>Team finder</p>
+                    <h1 className={styles.title}>
+                        Find your people for the <mark>next build.</mark>
+                    </h1>
+                    <p className={styles.lede}>
+                        Students at {user.college?.name ?? 'your college'}, ranked by the skills and
+                        interests you have in common.
+                    </p>
+                </div>
+                <span className={styles.count}>
+                    {matches.length} {matches.length === 1 ? 'match' : 'matches'}
+                </span>
             </header>
 
-            {!hasSkills && (
-                <div style={{
-                    background: 'rgba(234, 179, 8, 0.1)',
-                    border: '1px solid rgba(234, 179, 8, 0.3)',
-                    padding: '1rem',
-                    borderRadius: '0.5rem',
-                    marginBottom: '2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <AlertTriangle size={22} aria-hidden="true" />
-                        <div>
-                            <h4 style={{ color: '#facc15', margin: 0 }}>Improve your matches!</h4>
-                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                                You haven't added any skills to your profile yet. Add them to get better recommendations.
-                            </p>
-                        </div>
+            {profileIsThin && (
+                <aside className={styles.notice}>
+                    <div>
+                        <p className={styles.noticeTitle}>Your matches are guesses for now</p>
+                        <p className={styles.noticeText}>
+                            Add a few skills and interests to your profile and this list starts ranking
+                            people by what you actually share.
+                        </p>
                     </div>
-                    <Link href="/profile" className="btn btn-outline" style={{ fontSize: '0.9rem' }}>
-                        Update Profile
-                    </Link>
-                </div>
+                    <Link href="/profile" className={styles.secondary}>Add skills</Link>
+                </aside>
             )}
 
-            <section className={styles.section}>
-                <div className={styles.sectionTitle}>
-                    <Sparkles size={16} aria-hidden="true" /> Recommended for you
+            {matches.length > 0 ? (
+                <ul className={styles.grid}>
+                    {matches.map((match) => (
+                        <li key={match.id}>
+                            <MatchCard match={match} />
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <div className={styles.empty}>
+                    <h2 className={styles.emptyTitle}>No one to suggest yet</h2>
+                    <p className={styles.emptyText}>
+                        Nobody else from your college is on Campus Connect yet, or none of their profiles
+                        overlap with yours. Filling in your skills and interests helps either way.
+                    </p>
+                    <Link href="/profile" className={styles.primary}>Update my profile</Link>
                 </div>
-
-                {matches.length > 0 ? (
-                    <div className={styles.grid}>
-                        {matches.map((match) => (
-                            <div key={match.id} className={styles.matchCard}>
-                                <div className={styles.matchScore}>
-                                    <Flame size={14} aria-hidden="true" /> {Math.min(match.matchScore, 100)}% match
-                                </div>
-
-                                <div className={styles.avatar}>
-                                    {match.avatar}
-                                </div>
-
-                                <div className={styles.userInfo}>
-                                    <h3 className={styles.userName}>{match.name}</h3>
-                                    <p className={styles.userDept}>{match.department} • {match.year}</p>
-                                </div>
-
-                                <div className={styles.skillsContainer}>
-                                    {match.skills.slice(0, 4).map((skill: string) => (
-                                        <span key={skill} className={styles.skillTag}>
-                                            {skill}
-                                        </span>
-                                    ))}
-                                    {match.skills.length > 4 && (
-                                        <span className={styles.skillTag}>+{match.skills.length - 4}</span>
-                                    )}
-                                </div>
-
-                                {match.matchReasons.length > 0 && (
-                                    <div className={styles.reasonsList}>
-                                        {match.matchReasons.map((reason: string, idx: number) => (
-                                            <div key={idx} className={styles.reasonItem}>
-                                                <span>✓</span> {reason}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <button className={styles.connectBtn}>
-                                    Connect
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className={styles.emptyState}>
-                        <Bot size={40} strokeWidth={1.5} aria-hidden="true" style={{ marginBottom: '1rem' }} />
-                        <h3>No matches found yet</h3>
-                        <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 1.5rem' }}>
-                            We couldn't find any strong matches. Try adding more interests or skills to your profile to help our AI find your tribe.
-                        </p>
-                        <Link href="/profile" className="btn btn-primary">
-                            Update My Profile
-                        </Link>
-                    </div>
-                )}
-            </section>
+            )}
         </div>
+    );
+}
+
+function MatchCard({ match }: { match: Match }) {
+    const score = Math.max(0, Math.min(match.matchScore ?? 0, 100));
+    const extraSkills = match.skills.length - SKILLS_SHOWN;
+    const meta = [match.department, match.year].filter(Boolean).join(' · ');
+
+    return (
+        <article className={styles.card}>
+            <div className={styles.cardHead}>
+                <span className={styles.avatar} aria-hidden="true">{match.avatar}</span>
+                <div className={styles.who}>
+                    <h2 className={styles.name}>{match.name}</h2>
+                    {meta && <p className={styles.meta}>{meta}</p>}
+                </div>
+            </div>
+
+            <div className={styles.score}>
+                <div className={styles.scoreRow}>
+                    <span className={styles.scoreLabel}>Match</span>
+                    <span className={styles.scoreValue}>{score}%</span>
+                </div>
+                {/* Relative to your strongest match, the only scale the score has. */}
+                <div className={styles.meter} role="presentation">
+                    <span className={styles.meterFill} style={{ width: `${score}%` }} />
+                </div>
+            </div>
+
+            {match.bio && <p className={styles.bio}>{match.bio}</p>}
+
+            {match.skills.length > 0 && (
+                <ul className={styles.skills} aria-label="Skills">
+                    {match.skills.slice(0, SKILLS_SHOWN).map((skill) => (
+                        <li key={skill} className={styles.skill}>{skill}</li>
+                    ))}
+                    {extraSkills > 0 && <li className={styles.skillMore}>+{extraSkills}</li>}
+                </ul>
+            )}
+
+            {match.matchReasons.length > 0 && (
+                <p className={styles.reasons}>{match.matchReasons.join(' · ')}</p>
+            )}
+
+            {/* This button used to say "Connect" and do nothing. The profile
+                is where you can see more of them and send a message. */}
+            <Link href={`/profile/${match.id}`} className={styles.cardAction}>
+                View profile
+                <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+        </article>
     );
 }

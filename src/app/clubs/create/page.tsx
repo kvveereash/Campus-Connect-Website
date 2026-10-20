@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, BookOpen, Briefcase, Cpu, Globe, Palette, Sparkles, Trophy, Users, Wrench, Zap } from 'lucide-react';
+import { ArrowLeft, BookOpen, Briefcase, Cpu, Globe, Palette, Trophy, Users, Wrench } from 'lucide-react';
 import { createClub } from '@/lib/actions';
 import { getCollegesList } from '@/lib/actions';
 import { useAuth } from '@/context/AuthContext';
@@ -14,28 +13,37 @@ import styles from './page.module.css';
 
 /** Mirrors the categories clubs actually carry, so a new club is findable. */
 const CATEGORIES = [
-    { value: 'Technology', Icon: Cpu, label: 'Technology' },
-    { value: 'Technical', Icon: Wrench, label: 'Technical' },
-    { value: 'Art', Icon: Palette, label: 'Art' },
-    { value: 'Social', Icon: Users, label: 'Social' },
-    { value: 'Sports', Icon: Trophy, label: 'Sports' },
-    { value: 'Cultural', Icon: Globe, label: 'Cultural' },
-    { value: 'Literature', Icon: BookOpen, label: 'Literature' },
-    { value: 'Business', Icon: Briefcase, label: 'Business' },
+    { value: 'Technology', Icon: Cpu },
+    { value: 'Technical', Icon: Wrench },
+    { value: 'Art', Icon: Palette },
+    { value: 'Social', Icon: Users },
+    { value: 'Sports', Icon: Trophy },
+    { value: 'Cultural', Icon: Globe },
+    { value: 'Literature', Icon: BookOpen },
+    { value: 'Business', Icon: Briefcase },
 ];
+
+const PLACEHOLDER_LOGO = '/club-logo-placeholder.png';
+const OTHER_COLLEGE = 'Other';
+
+// The same limits the server enforces (clubSchema), so the form says so first.
+const NAME_MIN = 2;
+const NAME_MAX = 100;
+const ABOUT_MIN = 10;
+const ABOUT_MAX = 5000;
 
 export default function CreateClubPage() {
     const router = useRouter();
     const { refreshUser } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
-    const [colleges, setColleges] = useState<{ id: string, name: string }[]>([]);
+    const [colleges, setColleges] = useState<{ id: string; name: string }[]>([]);
     const [formData, setFormData] = useState({
         name: '',
         description: '',
         category: 'Technical',
-        logo: '/club-logo-placeholder.png',
+        logo: PLACEHOLDER_LOGO,
         collegeId: '',
-        newCollegeName: ''
+        newCollegeName: '',
     });
 
     useEffect(() => {
@@ -44,219 +52,149 @@ export default function CreateClubPage() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleImageChange = (url: string) => {
         // "Remove image" sends '', which the schema rejects as an invalid URL,
         // so removing a logo blocked creating the club. Fall back to the
         // placeholder the schema accepts.
-        setFormData(prev => ({ ...prev, logo: url || '/club-logo-placeholder.png' }));
+        setFormData((prev) => ({ ...prev, logo: url || PLACEHOLDER_LOGO }));
     };
+
+    const isOtherCollege = formData.collegeId === OTHER_COLLEGE;
+    const collegeName = isOtherCollege
+        ? formData.newCollegeName.trim()
+        : colleges.find((c) => c.id === formData.collegeId)?.name ?? '';
+
+    const nameOk = formData.name.trim().length >= NAME_MIN;
+    const collegeOk = isOtherCollege ? formData.newCollegeName.trim().length >= 3 : !!formData.collegeId;
+    const aboutLength = formData.description.trim().length;
+    const aboutOk = aboutLength >= ABOUT_MIN;
+    const ready = nameOk && collegeOk && aboutOk;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!ready) return;
         setIsLoading(true);
 
         try {
-            const submissionData = {
+            const result = await createClub({
                 ...formData,
-                collegeId: formData.collegeId === 'Other' ? undefined : formData.collegeId,
-                newCollegeName: formData.collegeId === 'Other' ? formData.newCollegeName : undefined
-            };
+                name: formData.name.trim(),
+                description: formData.description.trim(),
+                collegeId: isOtherCollege ? undefined : formData.collegeId,
+                newCollegeName: isOtherCollege ? formData.newCollegeName.trim() : undefined,
+            });
 
-            const result = await createClub(submissionData);
             if (result.success) {
-                toast.success('Club created successfully!');
+                // New clubs wait for an admin before they are listed publicly.
+                toast.success('Club submitted. It goes live once an admin approves it.');
                 await refreshUser();
-                if (result.data && result.data.id) {
-                    router.push(`/clubs/${result.data.id}`);
-                } else {
-                    router.push('/profile');
-                }
+                router.push(result.data?.id ? `/clubs/${result.data.id}` : '/profile');
             } else {
                 toast.error(result.error || 'Failed to create club');
             }
-        } catch (error) {
+        } catch {
             toast.error('An unexpected error occurred');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const isDefaultImage = formData.logo === '/club-logo-placeholder.png';
-
-    // Track completion for step indicator
-    const step1Done = formData.name.length > 0;
-    const step2Done = formData.collegeId.length > 0;
-    const step3Done = formData.description.length > 0;
+    const hasLogo = formData.logo !== PLACEHOLDER_LOGO;
+    const previewName = formData.name.trim() || 'Your club';
 
     return (
-        <div className={styles.pageWrapper}>
-            {/* Back Navigation */}
-            <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-            >
-                <Link href="/clubs" className={styles.backBtn}>
-                    <ArrowLeft size={16} className={styles.backArrow} />
-                    Back to Clubs
-                </Link>
-            </motion.div>
+        <div className={styles.page}>
+            <Link href="/clubs" className={styles.back}>
+                <ArrowLeft size={16} aria-hidden="true" />
+                All clubs
+            </Link>
 
-            {/* Split Layout */}
-            <div className={styles.splitLayout}>
-                {/* Left: Decorative Panel */}
-                <motion.div
-                    className={styles.sidePanel}
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                >
-                    <div className={styles.sidePanelBg} />
+            <header className={styles.masthead}>
+                <p className={styles.label}>New society</p>
+                <h1 className={styles.title}>
+                    Start a club <mark>people can find.</mark>
+                </h1>
+                <p className={styles.lede}>
+                    Four short sections. Your club appears on the clubs page once an admin has
+                    approved it, and you run it from then on.
+                </p>
+            </header>
 
-                    <div className={styles.sideContent}>
-                        
-                        <h2 className={styles.sideTitle}>
-                            Build Your <span className={styles.sideHighlight}>Community</span>
-                        </h2>
-                        <p className={styles.sideDesc}>
-                            Every great movement starts with a small group of passionate people.
-                            Your club could be the next big thing on campus.
-                        </p>
-                    </div>
-
-                    <ul className={styles.featureList}>
-                        <motion.li
-                            className={styles.featureItem}
-                            initial={{ opacity: 0, x: -15 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <span className={styles.featureIcon}>
-                                <Zap size={16} />
-                            </span>
-                            Instant visibility across campus
-                        </motion.li>
-                        <motion.li
-                            className={styles.featureItem}
-                            initial={{ opacity: 0, x: -15 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.4 }}
-                        >
-                            <span className={styles.featureIcon}>
-                                <Globe size={16} />
-                            </span>
-                            Connect with students everywhere
-                        </motion.li>
-                        <motion.li
-                            className={styles.featureItem}
-                            initial={{ opacity: 0, x: -15 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.5 }}
-                        >
-                            <span className={styles.featureIcon}>
-                                <Trophy size={16} />
-                            </span>
-                            Host events & grow your reach
-                        </motion.li>
-                    </ul>
-
-                    {/* Decorative dots */}
-                    <div className={styles.dotsGrid}>
-                        {Array.from({ length: 15 }).map((_, i) => (
-                            <div key={i} className={styles.dot} />
-                        ))}
-                    </div>
-                </motion.div>
-
-                {/* Right: Form */}
-                <motion.div
-                    className={styles.formPanel}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                    <div className={styles.formHeader}>
-                        <h1 className={styles.formTitle}>Create Your Club</h1>
-                        <p className={styles.formSubtitle}>Fill in the details below to get started</p>
-                    </div>
-
-                    {/* Step Indicator */}
-                    <div className={styles.stepIndicator}>
-                        <div className={`${styles.step} ${step1Done ? styles.stepDone : styles.stepActive}`}>
-                            <span className={styles.stepNumber}>{step1Done ? '✓' : '1'}</span>
-                            Identity
+            <div className={styles.layout}>
+                <form onSubmit={handleSubmit} className={styles.sheet} noValidate>
+                    {/* 01 — name and logo */}
+                    <section className={styles.section}>
+                        <div className={styles.sectionHead}>
+                            <span className={styles.step}>01</span>
+                            <h2 className={styles.sectionTitle}>Name and logo</h2>
                         </div>
-                        <div className={styles.stepLine} />
-                        <div className={`${styles.step} ${step2Done ? styles.stepDone : step1Done ? styles.stepActive : ''}`}>
-                            <span className={styles.stepNumber}>{step2Done ? '✓' : '2'}</span>
-                            Details
-                        </div>
-                        <div className={styles.stepLine} />
-                        <div className={`${styles.step} ${step3Done ? styles.stepDone : step2Done ? styles.stepActive : ''}`}>
-                            <span className={styles.stepNumber}>{step3Done ? '✓' : '3'}</span>
-                            About
-                        </div>
-                    </div>
 
-                    <form onSubmit={handleSubmit} className={styles.form}>
-                        {/* Club Name */}
-                        <div className={styles.formGroup}>
-                            <label className={styles.label} htmlFor="name">
-                                Club Name <span className={styles.required}>*</span>
-                            </label>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel} htmlFor="name">Club name</label>
                             <input
                                 type="text"
                                 id="name"
                                 name="name"
                                 required
+                                maxLength={NAME_MAX}
                                 className={styles.input}
                                 value={formData.name}
                                 onChange={handleChange}
                                 placeholder="e.g. Robotics Club"
+                                autoComplete="off"
                             />
                         </div>
 
-                        {/* Logo Upload */}
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Club Logo</label>
-                            <ImageUpload
-                                value={isDefaultImage ? '' : formData.logo}
-                                onChange={handleImageChange}
-                                label="Upload Club Logo"
-                            />
-                        </div>
-
-                        <div className={styles.divider} />
-
-                        {/* Category Selection - Pills */}
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>
-                                Category <span className={styles.required}>*</span>
-                            </label>
-                            <div className={styles.categoryGrid}>
-                                {CATEGORIES.map(cat => (
-                                    <motion.button
-                                        key={cat.value}
-                                        type="button"
-                                        className={`${styles.categoryPill} ${formData.category === cat.value ? styles.categoryPillActive : ''}`}
-                                        onClick={() => setFormData(prev => ({ ...prev, category: cat.value }))}
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        <span className={styles.pillIcon}><cat.Icon size={16} aria-hidden="true" /></span>
-                                        {cat.label}
-                                    </motion.button>
-                                ))}
+                        <div className={styles.field}>
+                            <span className={styles.fieldLabel}>
+                                Logo <span className={styles.optional}>optional</span>
+                            </span>
+                            <div className={styles.upload}>
+                                <ImageUpload
+                                    value={hasLogo ? formData.logo : ''}
+                                    onChange={handleImageChange}
+                                    label=""
+                                />
                             </div>
                         </div>
+                    </section>
 
-                        {/* College */}
-                        <div className={styles.formGroup}>
-                            <label className={styles.label} htmlFor="collegeId">
-                                Associated College <span className={styles.required}>*</span>
-                            </label>
+                    {/* 02 — category */}
+                    <section className={styles.section}>
+                        <div className={styles.sectionHead}>
+                            <span className={styles.step}>02</span>
+                            <h2 className={styles.sectionTitle}>What it is about</h2>
+                        </div>
+
+                        <div className={styles.pills} role="radiogroup" aria-label="Category">
+                            {CATEGORIES.map(({ value, Icon }) => (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={formData.category === value}
+                                    className={styles.pill}
+                                    onClick={() => setFormData((prev) => ({ ...prev, category: value }))}
+                                >
+                                    <Icon size={15} aria-hidden="true" />
+                                    {value}
+                                </button>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* 03 — college */}
+                    <section className={styles.section}>
+                        <div className={styles.sectionHead}>
+                            <span className={styles.step}>03</span>
+                            <h2 className={styles.sectionTitle}>Where it meets</h2>
+                        </div>
+
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel} htmlFor="collegeId">College</label>
                             <select
                                 id="collegeId"
                                 name="collegeId"
@@ -265,83 +203,117 @@ export default function CreateClubPage() {
                                 value={formData.collegeId}
                                 onChange={handleChange}
                             >
-                                <option value="">Select a College</option>
-                                {colleges.map(college => (
+                                <option value="">Choose a college</option>
+                                {colleges.map((college) => (
                                     <option key={college.id} value={college.id}>
                                         {college.name}
                                     </option>
                                 ))}
-                                <option value="Other">Other (Add New)</option>
+                                <option value={OTHER_COLLEGE}>My college is not listed</option>
                             </select>
                         </div>
 
-                        <AnimatePresence>
-                            {formData.collegeId === 'Other' && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className={styles.formGroup}
-                                >
-                                    <label className={styles.label} htmlFor="newCollegeName">
-                                        New College Name <span className={styles.required}>*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="newCollegeName"
-                                        name="newCollegeName"
-                                        className={styles.input}
-                                        value={formData.newCollegeName || ''}
-                                        onChange={handleChange}
-                                        placeholder="Enter the full name of your college"
-                                        required
-                                    />
-                                    <span className={styles.hint}>This will create a new college entry</span>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        {isOtherCollege && (
+                            <div className={styles.field}>
+                                <label className={styles.fieldLabel} htmlFor="newCollegeName">College name</label>
+                                <input
+                                    type="text"
+                                    id="newCollegeName"
+                                    name="newCollegeName"
+                                    required
+                                    maxLength={NAME_MAX}
+                                    className={styles.input}
+                                    value={formData.newCollegeName}
+                                    onChange={handleChange}
+                                    placeholder="The full name of your college"
+                                />
+                                <p className={styles.hint}>We will add it to the list of colleges.</p>
+                            </div>
+                        )}
+                    </section>
 
-                        <div className={styles.divider} />
+                    {/* 04 — description */}
+                    <section className={styles.section}>
+                        <div className={styles.sectionHead}>
+                            <span className={styles.step}>04</span>
+                            <h2 className={styles.sectionTitle}>Tell people why to join</h2>
+                        </div>
 
-                        {/* Description */}
-                        <div className={styles.formGroup}>
-                            <label className={styles.label} htmlFor="description">
-                                Description <span className={styles.required}>*</span>
-                            </label>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel} htmlFor="description">About the club</label>
                             <textarea
                                 id="description"
                                 name="description"
                                 required
+                                maxLength={ABOUT_MAX}
                                 className={styles.textarea}
                                 value={formData.description}
                                 onChange={handleChange}
-                                placeholder="Describe your club's mission, activities, and what makes it unique..."
+                                placeholder="What you do, when you meet, and who it is for."
                             />
-                            <span className={styles.hint}>
-                                {formData.description.length}/200 characters
-                            </span>
+                            {/* This said "0/200" while the real limits are 10 to 5000. */}
+                            <p className={styles.hint}>
+                                {aboutOk
+                                    ? `${aboutLength.toLocaleString('en-IN')} / ${ABOUT_MAX.toLocaleString('en-IN')} characters`
+                                    : `At least ${ABOUT_MIN} characters (${aboutLength} so far)`}
+                            </p>
                         </div>
+                    </section>
 
-                        {/* Submit */}
-                        <motion.button
-                            type="submit"
-                            className={styles.submitBtn}
-                            disabled={isLoading}
-                            whileHover={!isLoading ? { scale: 1.01 } : {}}
-                            whileTap={!isLoading ? { scale: 0.98 } : {}}
-                        >
-                            {isLoading ? (
-                                'Creating Club...'
+                    <div className={styles.submitRow}>
+                        <Link href="/clubs" className={styles.cancel}>Cancel</Link>
+                        <button type="submit" className={styles.submit} disabled={!ready || isLoading}>
+                            {isLoading ? 'Submitting…' : 'Submit for approval'}
+                        </button>
+                    </div>
+                </form>
+
+                <aside className={styles.side} aria-label="Preview">
+                    <p className={styles.sideLabel}>Preview</p>
+                    <div className={styles.preview}>
+                        <div className={styles.previewMedia}>
+                            {hasLogo ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={formData.logo} alt="" className={styles.previewImage} />
                             ) : (
-                                <>
-                                    <Sparkles size={18} />
-                                    Create Club
-                                    <ArrowRight size={18} className={styles.submitIcon} />
-                                </>
+                                <span className={styles.previewInitial}>{previewName.charAt(0).toUpperCase()}</span>
                             )}
-                        </motion.button>
-                    </form>
-                </motion.div>
+                        </div>
+                        <div className={styles.previewFoot}>
+                            <h3 className={styles.previewName}>{previewName}</h3>
+                            <span className={styles.previewCategory}>{formData.category}</span>
+                        </div>
+                        <p className={styles.previewMeta}>
+                            {collegeName || 'Your college'}
+                            <span className={styles.previewDivider}>/</span>
+                            1 member
+                        </p>
+                    </div>
+
+                    <ol className={styles.next}>
+                        <li>
+                            <span className={styles.nextStep}>1</span>
+                            <div>
+                                <p className={styles.nextTitle}>An admin reviews it</p>
+                                <p className={styles.nextText}>Until then only you can see the club page.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span className={styles.nextStep}>2</span>
+                            <div>
+                                <p className={styles.nextTitle}>You are its admin</p>
+                                <p className={styles.nextText}>Post to the club feed and host events under its name.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span className={styles.nextStep}>3</span>
+                            <div>
+                                <p className={styles.nextTitle}>People join</p>
+                                <p className={styles.nextText}>It is listed with every other club, filterable by category.</p>
+                            </div>
+                        </li>
+                    </ol>
+                </aside>
             </div>
         </div>
     );
