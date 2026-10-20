@@ -185,9 +185,20 @@
     position: relative;
     aspect-ratio: 1000 / 540;
     border-radius: 18px;
-    background-color: #efece4;
-    background-image: var(--dot-grid);
-    background-size: var(--dot-grid-size);
+    /* A soft wash of the category colours under the dot grid, each one
+       sitting roughly behind the card it belongs to: blue under the
+       event, violet under the match, green under the club, pink and
+       yellow around the photos. */
+    background-color: #f3efe6;
+    background-image:
+        var(--dot-grid),
+        radial-gradient(44% 62% at 16% 32%, rgba(47, 59, 255, 0.42), transparent 70%),
+        radial-gradient(40% 52% at 56% 18%, rgba(122, 60, 255, 0.4), transparent 70%),
+        radial-gradient(40% 52% at 56% 82%, rgba(18, 161, 80, 0.38), transparent 70%),
+        radial-gradient(30% 50% at 90% 22%, rgba(255, 214, 10, 0.75), transparent 70%),
+        radial-gradient(30% 45% at 88% 86%, rgba(232, 69, 126, 0.42), transparent 70%),
+        radial-gradient(30% 40% at 12% 88%, rgba(240, 106, 0, 0.36), transparent 70%);
+    background-size: var(--dot-grid-size), 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
     overflow: hidden;
     box-shadow: inset 0 0 0 1px rgba(17, 17, 20, 0.06), inset 0 30px 60px -40px rgba(17, 17, 20, 0.2);
 }
