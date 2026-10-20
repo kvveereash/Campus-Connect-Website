@@ -444,59 +444,149 @@ function Tile({
 }
 
 /**
- * The hero picture: the product's four moves, drawn as cards wired
- * together. An event leads to a team, a team to a chat, a club to the
- * next event. It uses the real next event and the real busiest club when
- * there are any, and a plain example of each when there are not.
+ * Photography for the hero board, from Unsplash (free licence). Served
+ * through next/image, which is already allowed to fetch from this host.
+ * Pictures of real students make the board read as a campus rather than a
+ * diagram; the cards on top are the product, the photos are the life it
+ * is for.
+ */
+const PHOTO = {
+    hackathon: '1731160807880-daf859b64420',
+    makers: '1631350397792-8e0c2de5b637',
+    fest: '1622831877966-18a6c8731a01',
+    friends: '1765572144519-1dc1e6e07bc9',
+    bench: '1517486808906-6ca8b3f04846',
+    study: '1686624386665-4cd01b96d0f6',
+    ananya: '1618245472177-2a74ad3b994a',
+    rohan: '1663576139896-f1e9b9537634',
+    meera: '1764740146693-4955d02c98f9',
+    kabir: '1604177091072-b7b677a077f6',
+} as const;
+
+function unsplash(id: string, w: number, h: number, faces = false) {
+    return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=70${faces ? '&crop=faces' : ''}`;
+}
+
+function Face({ id, size, ring }: { id: string; size: number; ring?: boolean }) {
+    return (
+        <span className={`${styles.face} ${ring ? styles.faceRing : ''}`} style={{ width: size, height: size }}>
+            <Image src={unsplash(id, size * 2, size * 2, true)} alt="" fill sizes={`${size}px`} />
+        </span>
+    );
+}
+
+function Polaroid({
+    id,
+    caption,
+    className,
+    tape = 'var(--color-marker)',
+}: {
+    id: string;
+    caption: string;
+    className: string;
+    tape?: string;
+}) {
+    return (
+        <figure className={`${styles.polaroid} ${className}`}>
+            <span className={styles.tape} style={{ background: tape }} />
+            <span className={styles.polaroidPhoto}>
+                <Image src={unsplash(id, 360, 300)} alt="" fill sizes="180px" />
+            </span>
+            <figcaption>{caption}</figcaption>
+        </figure>
+    );
+}
+
+/**
+ * The hero picture: a pinboard. The product's four moves are drawn as
+ * cards wired together (an event leads to a team, a team to a chat, a club
+ * hosts the event) with photos of campus life pinned around them. It uses
+ * the real next event and the real busiest club when there are any, and a
+ * plain example of each when there are not.
  */
 function ConnectCanvas({ next, club }: { next?: EventWithRelations; club?: FeaturedClub }) {
     const d = next ? istParts(next.date) : null;
+    const cover = next?.thumbnail || unsplash(PHOTO.hackathon, 640, 300);
+    const going = next?.registrationCount ?? 0;
+    const clubName = club?.name ?? 'Robotics Club';
 
     return (
         <div
             className={`${styles.canvasFrame} ${styles.enter}`}
             style={{ animationDelay: '260ms' }}
             role="img"
-            aria-label="Preview of Campus Connect: an event you register for, a teammate match, your club's feed and a team chat, all connected."
+            aria-label="Preview of Campus Connect: an event you register for, a teammate match, your club's feed and a team chat, all connected, pinned to a board of campus photos."
         >
             <div className={styles.canvas} aria-hidden="true">
-                <svg className={styles.wires} viewBox="0 0 1000 420" preserveAspectRatio="none">
-                    <path d="M300 140 C 390 140, 380 95, 465 95" />
-                    <path d="M300 220 C 390 220, 380 310, 465 310" />
-                    <path d="M705 105 C 755 105, 745 200, 790 200" />
+                {/* Pinned photos sit under the cards. */}
+                <Polaroid id={PHOTO.fest} caption="fest night ✦" className={styles.polA} tape="#ffb3c8" />
+                <Polaroid id={PHOTO.friends} caption="first-years meetup" className={styles.polB} />
+                <Polaroid id={PHOTO.study} caption="hack week, day 2" className={styles.polC} tape="#b9c2ff" />
+
+                <div className={styles.sticky}>
+                    <span className={styles.pin} />
+                    Free pizza at the 2 am check-in 🍕
+                </div>
+
+                <svg className={styles.wires} viewBox="0 0 1000 540" preserveAspectRatio="none">
+                    <path d="M318 170 C 390 170, 370 110, 440 110" />
+                    <path d="M318 300 C 390 300, 370 400, 440 400" />
+                    <path d="M705 110 C 750 110, 735 270, 772 270" />
                 </svg>
-                <span className={styles.wireTag} style={{ left: '38.2%', top: '28.5%' }}>find a team</span>
-                <span className={styles.wireTag} style={{ left: '38.2%', top: '63%' }}>hosted by</span>
-                <span className={styles.wireTag} style={{ left: '74.8%', top: '36%' }}>say hi</span>
+                <span className={styles.wireTag} style={{ left: '37.9%', top: '25.5%' }}>find a team</span>
+                <span className={styles.wireTag} style={{ left: '37.9%', top: '65%' }}>hosted by</span>
+                <span className={styles.wireTag} style={{ left: '73.8%', top: '35%' }}>say hi</span>
 
                 {/* Event */}
                 <div className={`${styles.node} ${styles.nodeEvent}`}>
-                    <span className={styles.catLabel}>
-                        <span className={styles.square} style={{ background: inkFor(next?.category ?? 'Hackathon') }} />
-                        {next?.category ?? 'Hackathon'}
-                    </span>
-                    <p className={styles.nodeTitle}>{next?.title ?? '36-hour campus hackathon'}</p>
-                    <p className={styles.nodeMeta}>
-                        <CalendarDays size={13} /> {d ? `${d.weekday} ${d.day} ${d.month}, ${d.time}` : 'Sat 14 Dec, 9:00 am'}
-                    </p>
-                    <p className={styles.nodeMeta}>
-                        <MapPin size={13} /> {next?.venue ?? 'Main auditorium'}
-                    </p>
-                    <div className={styles.nodeFoot}>
-                        <span className={styles.price}>{next ? priceLabel(next.price) : 'Free'}</span>
-                        <span className={styles.nodeBtn}>Register</span>
+                    <div className={styles.nodeCover}>
+                        <Image src={cover} alt="" fill sizes="(max-width: 900px) 50vw, 320px" />
+                        <span className={styles.coverDate}>
+                            <b>{d?.day ?? '14'}</b>
+                            <i>{d?.month ?? 'Dec'}</i>
+                        </span>
+                        <span className={styles.coverCat}>
+                            <span className={styles.square} style={{ background: inkFor(next?.category ?? 'Hackathon') }} />
+                            {next?.category ?? 'Hackathon'}
+                        </span>
+                    </div>
+                    <div className={styles.nodeBody}>
+                        <p className={styles.nodeTitle}>{next?.title ?? '36-hour campus hackathon'}</p>
+                        <p className={styles.nodeMeta}>
+                            <CalendarDays size={13} /> {d ? `${d.weekday}, ${d.time}` : 'Sat, 9:00 am'}
+                            <span className={styles.metaDot} />
+                            <MapPin size={13} /> {next?.venue ?? 'Main auditorium'}
+                        </p>
+                        <div className={styles.nodeFoot}>
+                            <span className={styles.faces}>
+                                <Face id={PHOTO.ananya} size={26} ring />
+                                <Face id={PHOTO.rohan} size={26} ring />
+                                <Face id={PHOTO.meera} size={26} ring />
+                                <span className={styles.goingText}>
+                                    {going > 0 ? `${going} going` : '+128 going'}
+                                </span>
+                            </span>
+                            <span className={styles.nodeBtn}>{next ? priceLabel(next.price) : 'Free'} · Join</span>
+                        </div>
                     </div>
                 </div>
 
                 {/* Team match */}
                 <div className={`${styles.node} ${styles.nodeMatch}`}>
-                    <p className={styles.nodeEyebrow}>Teammate found</p>
+                    <p className={styles.nodeEyebrow}>
+                        <span className={styles.liveDotSm} /> Teammate found
+                    </p>
                     <div className={styles.matchRow}>
-                        <span className={styles.avatar} style={{ background: '#ffd2e1' }}>A</span>
+                        <Face id={PHOTO.ananya} size={40} />
                         <div>
-                            <p className={styles.nodeTitleSm}>Can do: UI design, Figma</p>
-                            <p className={styles.nodeMetaSm}>Needs: backend, ML</p>
+                            <p className={styles.nodeTitleSm}>Ananya, 3rd year CSE</p>
+                            <p className={styles.nodeMetaSm}>Needs a backend dev for the hackathon</p>
                         </div>
+                    </div>
+                    <div className={styles.chipRow}>
+                        <span className={`${styles.skillSm} ${styles.skillHot}`}>Figma</span>
+                        <span className={`${styles.skillSm} ${styles.skillHot}`}>UI design</span>
+                        <span className={styles.skillSm}>+ you: Node</span>
                     </div>
                     <div className={styles.matchBar}>
                         <span style={{ width: '88%' }} />
@@ -506,26 +596,44 @@ function ConnectCanvas({ next, club }: { next?: EventWithRelations; club?: Featu
 
                 {/* Chat */}
                 <div className={`${styles.node} ${styles.nodeChat}`}>
-                    <p className={styles.nodeEyebrow}>Team chat</p>
-                    <p className={styles.bubble}>we&rsquo;re in! meet at 9?</p>
+                    <p className={styles.nodeEyebrow}>Team chat · 4</p>
+                    <div className={styles.chatLine}>
+                        <Face id={PHOTO.rohan} size={24} />
+                        <p className={styles.bubble}>we&rsquo;re in! meet at 9?</p>
+                    </div>
+                    <div className={styles.chatLine}>
+                        <Face id={PHOTO.meera} size={24} />
+                        <p className={styles.bubble}>I&rsquo;ll book a table 🙌</p>
+                    </div>
                     <p className={`${styles.bubble} ${styles.bubbleMine}`}>bringing chargers ⚡</p>
                 </div>
 
                 {/* Club */}
                 <div className={`${styles.node} ${styles.nodeClub}`}>
-                    <div className={styles.matchRow}>
-                        <span className={styles.clubLogoSm}>{(club?.name ?? 'Robotics Club').charAt(0)}</span>
-                        <div>
-                            <p className={styles.nodeTitleSm}>{club?.name ?? 'Robotics Club'}</p>
+                    <div className={styles.clubCover}>
+                        <Image src={unsplash(PHOTO.makers, 560, 200)} alt="" fill sizes="(max-width: 900px) 50vw, 300px" />
+                    </div>
+                    <div className={styles.clubRow}>
+                        <span className={styles.clubLogoSm}>
+                            {club?.logo ? (
+                                <Image src={club.logo} alt="" fill sizes="36px" style={{ objectFit: 'cover' }} />
+                            ) : (
+                                clubName.charAt(0)
+                            )}
+                        </span>
+                        <div className={styles.clubRowText}>
+                            <p className={styles.nodeTitleSm}>{clubName}</p>
                             <p className={styles.nodeMetaSm}>
                                 {club ? `${club.members} ${club.members === 1 ? 'member' : 'members'}` : '214 members'}
                             </p>
                         </div>
+                        <span className={styles.joinedPill}>
+                            <Check size={12} /> Joined
+                        </span>
                     </div>
-                    <span className={styles.joinedPill}>
-                        <Check size={12} /> Joined
-                    </span>
                 </div>
+
+                <span className={styles.stamp}>🔥 42 joined today</span>
             </div>
         </div>
     );

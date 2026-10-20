@@ -172,35 +172,39 @@
     margin: 64px auto 0;
     padding: 12px;
     border-radius: 28px;
-    /* A dithered blue frame: two offset dot screens over the accent,
-       thinning toward the bottom edge. */
+    /* A dithered blue frame: two offset dot screens over the accent. */
     background:
         radial-gradient(rgba(255, 255, 255, 0.5) 1.1px, transparent 1.5px) 0 0 / 7px 7px,
         radial-gradient(rgba(255, 255, 255, 0.28) 1px, transparent 1.4px) 3.5px 3.5px / 7px 7px,
         var(--color-accent);
 }
 
+/* The board: cork-warm paper with the dot grid, so pinned photos and
+   cards read as things stuck to something. */
 .canvas {
     position: relative;
-    aspect-ratio: 1000 / 420;
+    aspect-ratio: 1000 / 540;
     border-radius: 18px;
-    background-color: var(--color-canvas);
+    background-color: #efece4;
     background-image: var(--dot-grid);
     background-size: var(--dot-grid-size);
     overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(17, 17, 20, 0.06), inset 0 30px 60px -40px rgba(17, 17, 20, 0.2);
 }
 
 .wires {
     position: absolute;
     inset: 0;
+    z-index: 2;
     width: 100%;
     height: 100%;
     fill: none;
+    pointer-events: none;
 }
 
 .wires path {
     stroke: var(--color-accent);
-    stroke-width: 1.6;
+    stroke-width: 1.8;
     stroke-dasharray: 5 6;
     vector-effect: non-scaling-stroke;
     animation: flow 1.6s linear infinite;
@@ -214,6 +218,7 @@
 
 .wireTag {
     position: absolute;
+    z-index: 4;
     transform: translate(-50%, -50%);
     padding: 3px 8px;
     border-radius: 6px;
@@ -222,11 +227,125 @@
     font-family: var(--font-mono);
     font-size: 11px;
     white-space: nowrap;
+    box-shadow: 0 4px 10px -4px rgba(47, 59, 255, 0.6);
 }
 
+/* ── Pinned photos ── */
+.polaroid {
+    position: absolute;
+    z-index: 1;
+    margin: 0;
+    padding: 7px 7px 0;
+    background: #fff;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(17, 17, 20, 0.12), 0 14px 28px -14px rgba(17, 17, 20, 0.45);
+}
+
+.polaroidPhoto {
+    position: relative;
+    display: block;
+    aspect-ratio: 6 / 5;
+    overflow: hidden;
+    background: var(--color-slate);
+}
+
+.polaroidPhoto img {
+    object-fit: cover;
+}
+
+.polaroid figcaption {
+    padding: 6px 2px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: center;
+    color: var(--color-inkstone);
+    white-space: nowrap;
+}
+
+/* A strip of washi tape across the top edge. */
+.tape {
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    width: 46%;
+    height: 18px;
+    transform: translateX(-50%) rotate(-3deg);
+    opacity: 0.85;
+    border-radius: 2px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0 3px, #000 3px calc(100% - 3px), transparent calc(100% - 3px));
+    mask-image: linear-gradient(90deg, transparent 0 3px, #000 3px calc(100% - 3px), transparent calc(100% - 3px));
+}
+
+.polA {
+    left: 3%;
+    top: 61%;
+    width: 13.5%;
+    transform: rotate(-7deg);
+}
+
+.polB {
+    left: 81%;
+    top: 3%;
+    width: 13.5%;
+    transform: rotate(6deg);
+}
+
+.polC {
+    left: 80%;
+    top: 67%;
+    width: 16%;
+    transform: rotate(-4deg);
+}
+
+.sticky {
+    position: absolute;
+    z-index: 1;
+    left: 20%;
+    top: 67%;
+    width: 15%;
+    padding: 16px 12px 14px;
+    background: var(--color-marker);
+    box-shadow: 0 14px 24px -14px rgba(17, 17, 20, 0.45);
+    transform: rotate(3deg);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+.pin {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ff8a8a, #d92d20 60%, #8f1610);
+    box-shadow: 0 3px 4px rgba(0, 0, 0, 0.3);
+}
+
+.stamp {
+    position: absolute;
+    z-index: 4;
+    left: 32%;
+    top: 89%;
+    padding: 7px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-size: 13px;
+    font-weight: 600;
+    transform: rotate(-4deg);
+    box-shadow: var(--shadow-float);
+}
+
+/* ── Cards ── */
 .node {
     position: absolute;
-    padding: 16px;
+    z-index: 3;
+    padding: 14px;
     border-radius: 14px;
     background: var(--color-paper);
     border: 1px solid var(--border-hairline);
@@ -236,29 +355,33 @@
 }
 
 .nodeEvent {
-    left: 4%;
-    top: 14%;
-    width: 26%;
+    left: 5.5%;
+    top: 13%;
+    width: 26.5%;
+    padding: 0;
+    overflow: hidden;
 }
 
 .nodeMatch {
-    left: 46.5%;
-    top: 8%;
-    width: 24%;
+    left: 44%;
+    top: 6%;
+    width: 26.5%;
     animation-delay: -1.5s;
 }
 
 .nodeClub {
-    left: 46.5%;
-    top: 62%;
-    width: 24%;
+    left: 44%;
+    top: 59%;
+    width: 25%;
+    padding: 0;
+    overflow: hidden;
     animation-delay: -3s;
 }
 
 .nodeChat {
-    left: 79%;
-    top: 34%;
-    width: 18%;
+    left: 77.2%;
+    top: 37%;
+    width: 20%;
     animation-delay: -4.5s;
 }
 
@@ -272,13 +395,71 @@
     }
 }
 
+.nodeCover {
+    position: relative;
+    aspect-ratio: 16 / 7.5;
+    background: var(--color-slate);
+}
+
+.nodeCover img {
+    object-fit: cover;
+}
+
+.coverDate {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 40px;
+    padding: 4px 6px;
+    border-radius: 9px;
+    background: var(--color-paper);
+    line-height: 1.05;
+    box-shadow: var(--shadow-soft);
+}
+
+.coverDate b {
+    font-family: var(--font-display);
+    font-size: 17px;
+}
+
+.coverDate i {
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.coverCat {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.92);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.nodeBody {
+    padding: 12px 14px 14px;
+}
+
 .nodeTitle {
     font-family: var(--font-display);
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
     line-height: 1.15;
     letter-spacing: -0.02em;
-    margin: 8px 0 10px;
+    margin: 0 0 6px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -288,40 +469,96 @@
 .nodeMeta {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12.5px;
+    gap: 5px;
+    font-size: 12px;
     color: var(--color-felt);
-    margin-top: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.metaDot {
+    width: 3px;
+    height: 3px;
+    margin: 0 3px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
 }
 
 .nodeFoot {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 14px;
-    padding-top: 12px;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
     border-top: 1px solid var(--border-hairline);
 }
 
+.faces {
+    display: inline-flex;
+    align-items: center;
+}
+
+.faces > .face + .face {
+    margin-left: -8px;
+}
+
+.goingText {
+    margin-left: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-felt);
+    white-space: nowrap;
+}
+
+.face {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--color-slate);
+}
+
+.face img {
+    object-fit: cover;
+}
+
+.faceRing {
+    box-shadow: 0 0 0 2px var(--color-paper);
+}
+
 .nodeBtn {
-    padding: 6px 12px;
+    flex-shrink: 0;
+    padding: 6px 11px;
     border-radius: var(--radius-pill);
     background: var(--color-accent);
     color: var(--color-paper);
     font-size: 12px;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .nodeEyebrow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 10.5px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-ash);
     margin-bottom: 10px;
+}
+
+.liveDotSm {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-success);
+    box-shadow: 0 0 0 3px #d9f2e3;
 }
 
 .nodeTitleSm {
@@ -342,21 +579,25 @@
     gap: 10px;
 }
 
-.avatar {
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--color-obsidian);
+.chipRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.skillSm {
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-canvas);
+    border: 1px solid var(--border-hairline);
+    font-size: 11px;
+    font-weight: 500;
 }
 
 .matchBar {
     height: 6px;
-    margin: 12px 0 6px;
+    margin: 10px 0 5px;
     border-radius: 99px;
     background: var(--color-slate);
     overflow: hidden;
@@ -366,52 +607,92 @@
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: var(--press-hackathon);
+    background: linear-gradient(90deg, var(--press-hackathon), var(--color-accent));
+}
+
+.chatLine {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
 }
 
 .bubble {
     display: inline-block;
     max-width: 100%;
-    padding: 7px 11px;
+    padding: 6px 10px;
     margin-bottom: 6px;
     border-radius: 12px 12px 12px 4px;
     background: var(--color-slate);
-    font-size: 13px;
+    font-size: 12.5px;
     line-height: 1.3;
 }
 
 .bubbleMine {
     display: block;
     width: fit-content;
-    margin-left: auto;
+    margin: 2px 0 0 auto;
     border-radius: 12px 12px 4px 12px;
     background: var(--color-accent);
     color: var(--color-paper);
 }
 
+.clubCover {
+    position: relative;
+    aspect-ratio: 16 / 5.5;
+    background: var(--color-slate);
+}
+
+.clubCover img {
+    object-fit: cover;
+}
+
+.clubRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px 12px;
+    margin-top: -14px;
+}
+
+.clubRowText {
+    flex: 1;
+    min-width: 0;
+    padding-top: 16px;
+}
+
+.clubRowText p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .clubLogoSm {
+    position: relative;
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
-    border-radius: 9px;
+    overflow: hidden;
+    border-radius: 10px;
     background: var(--press-sports);
     color: var(--color-paper);
     font-family: var(--font-display);
     font-weight: 700;
+    box-shadow: 0 0 0 3px var(--color-paper);
 }
 
 .joinedPill {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-top: 12px;
-    padding: 4px 10px;
+    flex-shrink: 0;
+    margin-top: 16px;
+    padding: 4px 9px;
     border-radius: var(--radius-pill);
     background: #e3f6ea;
     color: #0b6b35;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
 }
 
@@ -1175,6 +1456,23 @@
         position: static;
         width: auto;
         animation: none;
+        order: 1;
+    }
+
+    /* The pinned photos follow the cards as a row of their own. */
+    .polaroid {
+        position: relative;
+        left: auto;
+        top: auto;
+        width: auto;
+        order: 2;
+        margin-top: 10px;
+    }
+
+    .polC,
+    .sticky,
+    .stamp {
+        display: none;
     }
 
     .stats {
@@ -1223,12 +1521,16 @@
     }
 
     .canvas {
-        grid-template-columns: 1fr;
         padding: 12px;
         border-radius: 14px;
     }
 
-    /* On a phone the hero shows the two cards that say the most. */
+    /* On a phone the hero shows the two cards that say the most, full
+       width, with two photos pinned side by side beneath them. */
+    .node {
+        grid-column: 1 / -1;
+    }
+
     .nodeClub,
     .nodeChat {
         display: none;
