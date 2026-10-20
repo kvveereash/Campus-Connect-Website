@@ -1,12 +1,18 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
 async function main() {
     console.log('🌱 Seeding dummy data...');
 
-    const password = await bcrypt.hash('password123', 10);
+    // Same rule as seed.ts: no shared, committed password.
+    if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PRODUCTION_SEED !== '1') {
+        throw new Error('Refusing to seed with NODE_ENV=production. Set ALLOW_PRODUCTION_SEED=1 if you really mean it.');
+    }
+    const plainPassword = process.env.SEED_PASSWORD || randomBytes(12).toString('base64url');
+    const password = await bcrypt.hash(plainPassword, 12);
 
     // ─── Colleges ───
     const colleges = [
@@ -224,7 +230,9 @@ async function main() {
 
     console.log('\n🎉 Dummy data seeded successfully!');
     console.log('────────────────────────────────');
-    console.log('All dummy users have password: password123');
+    console.log(process.env.SEED_PASSWORD
+        ? 'All dummy users have the password in SEED_PASSWORD'
+        : `All dummy users have this password (generated for this run, shown once): ${plainPassword}`);
     console.log('Emails: rahul@iitmumbai.edu, priya@nid.edu, arjun@du.edu, etc.');
     console.log('────────────────────────────────');
 }
