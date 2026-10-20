@@ -11,11 +11,13 @@ export async function getAdminStats() {
     if (!(await isAdmin())) return null;
 
     const [userCount, eventCount, clubCount, pendingClubs, pendingEvents] = await Promise.all([
-        prisma.user.count(),
+        prisma.user.count({ where: { deletedAt: null } }),
         prisma.event.count(),
         prisma.club.count(),
-        prisma.club.count({ where: { verified: false } }),
-        prisma.event.count({ where: { verified: false } })
+        // Same filter as the queue: these counted rejected and deleted rows,
+        // so the dashboard promised more reviews than the queue held.
+        prisma.club.count({ where: { verified: false, rejectionReason: null, deletedAt: null } }),
+        prisma.event.count({ where: { verified: false, rejectionReason: null, deletedAt: null } })
     ]);
 
     return {
@@ -54,8 +56,10 @@ export async function getPendingContent() {
         prisma.club.findMany({
             where: {
                 verified: false,
-                rejectionReason: null
+                rejectionReason: null,
+                deletedAt: null
             },
+            orderBy: { createdAt: 'asc' },
             include: {
                 members: {
                     where: { role: 'ADMIN' },
@@ -67,8 +71,10 @@ export async function getPendingContent() {
         prisma.event.findMany({
             where: {
                 verified: false,
-                rejectionReason: null
+                rejectionReason: null,
+                deletedAt: null
             },
+            orderBy: { date: 'asc' },
             include: { creator: { select: { name: true } }, club: { select: { name: true } } }
         })
     ]);

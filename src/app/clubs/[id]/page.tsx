@@ -76,7 +76,7 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                             {club._count.events} {club._count.events === 1 ? 'event' : 'events'}
                         </span>
                         {!club.verified && (
-                            <span className={styles.unverified}>Awaiting approval</span>
+                            <span className={styles.unverified}>{club.rejectionReason ? 'Not approved' : 'Awaiting approval'}</span>
                         )}
                     </div>
 

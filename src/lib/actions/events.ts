@@ -87,6 +87,8 @@ export const createEventAction = createProtectedAction(eventSchema, async (data,
     revalidatePath('/events');
     revalidatePath('/');
     updateTag(CACHE_TAGS.EVENTS);
+    // The club page lists its events from its own cache entry.
+    if (data.clubId) updateTag(`club-${data.clubId}`);
 
     return { event };
 }, {
@@ -202,6 +204,7 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
     revalidatePath('/events');
     updateTag(`event-${id}`);
     updateTag(CACHE_TAGS.EVENTS);
+    if (event.clubId) updateTag(`club-${event.clubId}`);
     return { event: updatedEvent };
 }, {
     audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.id },
@@ -294,40 +297,40 @@ export async function getUpcomingEvents(limit: number = 3): Promise<EventWithRel
     }
 }
 
+// No try/catch here: an error caught inside unstable_cache would be cached as
+// an empty board ("0 upcoming") for the whole TTL. getAllEvents catches.
 async function _allEvents(filters?: { search?: string; category?: string }) {
-    try {
-        const { search, category } = filters || {};
-        const where: any = { date: { gte: new Date() }, verified: true, deletedAt: null };
+    const { search, category } = filters || {};
+    const where: any = { date: { gte: new Date() }, verified: true, deletedAt: null };
 
-        if (search) {
-            where.OR = [
-                { title: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-                { venue: { contains: search, mode: 'insensitive' } },
-                { hostCollege: { name: { contains: search, mode: 'insensitive' } } }
-            ];
-        }
-
-        if (category && category !== 'All') {
-            where.category = category;
-        }
-
-        const events = await prisma.event.findMany({
-            where,
-            include: {
-                hostCollege: { select: { id: true, name: true, logo: true } },
-                club: { select: { id: true, name: true, logo: true } },
-                _count: { select: { registrations: true } }
-            },
-            orderBy: { date: 'asc' },
-            take: 50
-        });
-
-        return events;
-    } catch (error) {
-        console.error('Failed to fetch events:', error);
-        return [];
+    if (search) {
+        where.OR = [
+            { title: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+            { venue: { contains: search, mode: 'insensitive' } },
+            { hostCollege: { name: { contains: search, mode: 'insensitive' } } }
+        ];
     }
+
+    if (category && category !== 'All') {
+        where.category = category;
+    }
+
+    const events = await prisma.event.findMany({
+        where,
+        include: {
+            hostCollege: { select: { id: true, name: true, logo: true } },
+            club: { select: { id: true, name: true, logo: true } },
+            _count: { select: { registrations: true } }
+        },
+        orderBy: { date: 'asc' },
+        // The board derives its category counts from this list, so a low cap
+        // made them disagree with the landing page once there were more
+        // upcoming events than it.
+        take: 300
+    });
+
+    return events;
 }
 
 /**
@@ -347,13 +350,18 @@ export async function getAllEvents(filters?: { search?: string; category?: strin
     if (search && search.length > 100) return [];
     if (category && category.length > 50) return [];
 
-    if (search) return _allEvents(filters);
+    try {
+        if (search) return await _allEvents(filters);
 
-    const key = `events-list-${category ?? 'all'}`;
-    return unstable_cache(() => _allEvents(filters), [key], {
-        tags: [CACHE_TAGS.EVENTS],
-        revalidate: CACHE_TTL.EVENTS_LIST,
-    })();
+        const key = `events-list-${category ?? 'all'}`;
+        return await unstable_cache(() => _allEvents(filters), [key], {
+            tags: [CACHE_TAGS.EVENTS],
+            revalidate: CACHE_TTL.EVENTS_LIST,
+        })();
+    } catch (error) {
+        console.error('Failed to fetch events:', error);
+        return [];
+    }
 }
 
 /**
@@ -424,7 +432,9 @@ export async function getUserRegisteredEvents() {
 
     try {
         const registrations = await prisma.eventRegistration.findMany({
-            where: { userId },
+            // Deleted events 404 when clicked, and unpaid registrations are
+            // not places held; both were listed under "Registered".
+            where: { userId, status: { in: ['PAID', 'COMPLETED'] }, event: { deletedAt: null } },
             include: {
                 event: {
                     include: {
@@ -593,6 +603,7 @@ export async function deleteEvent(eventId: string) {
         revalidatePath('/profile');
         updateTag(`event-${eventId}`);
         updateTag(CACHE_TAGS.EVENTS);
+        if (event.clubId) updateTag(`club-${event.clubId}`);
 
         return { success: true, message: 'Event deleted successfully' };
     } catch (error) {

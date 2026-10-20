@@ -87,6 +87,10 @@ export const createClubAction = createProtectedAction(clubSchema, async (data, s
 });
 
 export const joinClubAction = createProtectedAction(joinClubSchema, async ({ clubId }, session) => {
+    // Pending, rejected and deleted clubs could be joined by id.
+    const club = await prisma.club.findFirst({ where: { id: clubId, verified: true, deletedAt: null }, select: { id: true } });
+    if (!club) throw new NotFoundError('Club not found');
+
     const existingMember = await prisma.clubMember.findUnique({
         where: {
             userId_clubId: { userId: session.userId, clubId }
@@ -360,10 +364,15 @@ async function _getClubDetailsUncached(clubId: string) {
             createdAt: true,
             updatedAt: true,
             verified: true,
+            rejectionReason: true,
+            deletedAt: true,
             college: {
                 select: { id: true, name: true, location: true }
             },
+            // Approved, live events only: deleted and pending ones were listed
+            // here and linked to pages that 404.
             events: {
+                where: { verified: true, deletedAt: null },
                 select: {
                     id: true, title: true, date: true,
                     category: true, thumbnail: true
@@ -385,7 +394,7 @@ async function _getClubDetailsUncached(clubId: string) {
                 orderBy: { joinedAt: 'asc' }
             },
             _count: {
-                select: { members: true, events: true }
+                select: { members: true, events: { where: { verified: true, deletedAt: null } } }
             }
         }
     });
@@ -402,7 +411,20 @@ export async function getClubDetails(clubId: string) {
                 revalidate: CACHE_TTL.CLUBS_DETAIL,
             }
         );
-        return await cached();
+        const club = await cached();
+        if (!club || club.deletedAt) return null;
+
+        // A club awaiting (or refused) approval is visible to its members and
+        // to site admins only, as unapproved events are. It used to be fully
+        // public and joinable by URL. Checked outside the shared cache entry.
+        if (!club.verified) {
+            const session = await getSession();
+            const viewerId = session?.userId as string | undefined;
+            const isMember = !!viewerId && club.members.some((m) => m.user.id === viewerId);
+            if (!isMember && session?.user?.role !== 'ADMIN') return null;
+        }
+
+        return club;
     } catch (error) {
         console.error('Error fetching club details:', error);
         throw error;
@@ -410,25 +432,23 @@ export async function getClubDetails(clubId: string) {
 }
 
 async function _clubPosts(clubId: string) {
-    try {
-        const posts = await prisma.post.findMany({
-            where: { clubId },
-            orderBy: { timestamp: 'desc' },
-            include: {
-                author: {
-                    select: { id: true, name: true, avatar: true }
-                }
+    // No try/catch in here: an error caught inside unstable_cache returns []
+    // and the cache keeps that empty feed for the whole TTL after one blip.
+    const posts = await prisma.post.findMany({
+        where: { clubId },
+        orderBy: { timestamp: 'desc' },
+        take: 50,
+        include: {
+            author: {
+                select: { id: true, name: true, avatar: true }
             }
-        });
+        }
+    });
 
-        return posts.map(post => ({
-            ...post,
-            timestamp: post.timestamp.toISOString()
-        }));
-    } catch (error) {
-        console.error('Failed to get club posts:', error);
-        return [];
-    }
+    return posts.map(post => ({
+        ...post,
+        timestamp: post.timestamp.toISOString()
+    }));
 }
 
 /**
@@ -437,10 +457,15 @@ async function _clubPosts(clubId: string) {
  * to one club does not invalidate every other club's feed.
  */
 export async function getClubPosts(clubId: string) {
-    return unstable_cache(() => _clubPosts(clubId), [`club-posts-${clubId}`], {
-        tags: [CACHE_TAGS.CLUBS, `club-${clubId}`],
-        revalidate: CACHE_TTL.CLUBS_DETAIL,
-    })();
+    try {
+        return await unstable_cache(() => _clubPosts(clubId), [`club-posts-${clubId}`], {
+            tags: [CACHE_TAGS.CLUBS, `club-${clubId}`],
+            revalidate: CACHE_TTL.CLUBS_DETAIL,
+        })();
+    } catch (error) {
+        console.error('Failed to get club posts:', error);
+        return [];
+    }
 }
 
 // ─────────────────────────────────────────────────
