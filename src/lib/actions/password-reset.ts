@@ -3,14 +3,11 @@
 import prisma from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { revalidatePath } from 'next/cache';
 
-/**
- * Generate a secure random token for password reset
- */
 import { sendPasswordResetEmail } from '@/lib/email';
+import { authLimiter, checkRateLimit } from '@/lib/rate-limit';
 
-// ... (imports remain)
+const MIN_PASSWORD_LENGTH = 8;
 
 /**
  * Generate a secure random token for password reset
@@ -20,16 +17,38 @@ function generateToken(): string {
 }
 
 /**
+ * What is stored for a token. The link carries the raw token; the database
+ * keeps only its SHA-256, so a leaked database or backup cannot be replayed
+ * as working reset links. A plain hash is enough here (no bcrypt): the token
+ * is 256 random bits, so there is nothing to brute-force.
+ */
+function hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+/**
  * Request a password reset
  * Creates a token and sends email
  */
 export async function requestPasswordReset(email: string) {
+    if (typeof email !== 'string' || !email.trim()) {
+        return { success: false, error: 'Enter your email address' };
+    }
+    const normalizedEmail = email.trim().toLowerCase();
+
     try {
+        // Keyed on the address, so one inbox cannot be flooded with reset
+        // mail. Answers like success, so it reveals nothing about the account.
+        const limit = await checkRateLimit(authLimiter, `reset:${normalizedEmail}`);
+        if (!limit.success) {
+            return { success: true, message: 'If an account exists, a reset link will be sent.' };
+        }
+
         // 1. Find user by email
         //    deletedAt: null for the same reason login checks it — a deleted
         //    account must not be recoverable through the reset flow.
         const user = await prisma.user.findFirst({
-            where: { email: email.toLowerCase(), deletedAt: null }
+            where: { email: normalizedEmail, deletedAt: null }
         });
 
         // Always return success to prevent email enumeration attacks
@@ -49,7 +68,7 @@ export async function requestPasswordReset(email: string) {
 
         await prisma.passwordResetToken.create({
             data: {
-                token,
+                token: hashToken(token),
                 userId: user.id,
                 expiresAt
             }
@@ -59,7 +78,7 @@ export async function requestPasswordReset(email: string) {
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const resetUrl = `${baseUrl}/reset-password/${token}`;
 
-        await sendPasswordResetEmail(email, resetUrl);
+        await sendPasswordResetEmail(user.email, resetUrl);
 
         return { success: true, message: 'If an account exists, a reset link will be sent.' };
     } catch (error) {
@@ -72,9 +91,11 @@ export async function requestPasswordReset(email: string) {
  * Verify a password reset token
  */
 export async function verifyResetToken(token: string) {
+    if (typeof token !== 'string' || !token) return { valid: false, error: 'Invalid or expired link' };
+
     try {
         const resetToken = await prisma.passwordResetToken.findUnique({
-            where: { token },
+            where: { token: hashToken(token) },
             include: { user: { select: { email: true } } }
         });
 
@@ -101,30 +122,46 @@ export async function verifyResetToken(token: string) {
  * Reset password using a valid token
  */
 export async function resetPassword(token: string, newPassword: string) {
+    // The page checks this too, but the page is not the only caller.
+    if (typeof newPassword !== 'string' || newPassword.length < MIN_PASSWORD_LENGTH) {
+        return { success: false, error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` };
+    }
+    if (typeof token !== 'string' || !token) {
+        return { success: false, error: 'Invalid or expired link' };
+    }
+
     try {
-        // 1. Verify token
-        const resetToken = await prisma.passwordResetToken.findUnique({
-            where: { token }
-        });
-
-        if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
-            return { success: false, error: 'Invalid or expired link' };
-        }
-
-        // 2. Hash new password
+        // 1. Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-        // 3. Update password and mark token as used
-        await prisma.$transaction([
-            prisma.user.update({
-                where: { id: resetToken.userId },
-                data: { password: hashedPassword }
-            }),
-            prisma.passwordResetToken.update({
-                where: { id: resetToken.id },
+        // 2. Claim the token and set the password together. The claim is a
+        //    conditional updateMany, so two requests racing on one link cannot
+        //    both get through: the second finds nothing unused to claim.
+        const updated = await prisma.$transaction(async (tx) => {
+            const claimed = await tx.passwordResetToken.updateMany({
+                where: { token: hashToken(token), used: false, expiresAt: { gt: new Date() } },
                 data: { used: true }
-            })
-        ]);
+            });
+            if (claimed.count === 0) return false;
+
+            const resetToken = await tx.passwordResetToken.findUnique({
+                where: { token: hashToken(token) },
+                select: { userId: true }
+            });
+            if (!resetToken) return false;
+
+            // Clearing the lock too: someone locked out by failed attempts is
+            // exactly who resets their password.
+            await tx.user.update({
+                where: { id: resetToken.userId },
+                data: { password: hashedPassword, lockedUntil: null }
+            });
+            return true;
+        });
+
+        if (!updated) {
+            return { success: false, error: 'Invalid or expired link' };
+        }
 
         return { success: true, message: 'Password reset successful' };
     } catch (error) {
