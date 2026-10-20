@@ -96,8 +96,14 @@ export const createEventAction = createProtectedAction(eventSchema, async (data,
 export const joinEventAction = createProtectedAction(joinEventSchema, async ({ eventId }, session) => {
     const userId = session.userId;
 
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
-    if (!event) throw new Error('Event not found');
+    // Only live, approved, upcoming events take registrations. Without this,
+    // deleted, rejected, unapproved and past events could all be joined, and
+    // each join counted towards badges (create your own unapproved
+    // "Hackathon", join it, collect Code Ninja).
+    const event = await prisma.event.findFirst({
+        where: { id: eventId, deletedAt: null, verified: true, date: { gte: new Date() } }
+    });
+    if (!event) throw new Error('Event not found or not open for registration');
 
     const existingRegistration = await prisma.eventRegistration.findUnique({
         where: { userId_eventId: { userId, eventId } }
@@ -365,6 +371,7 @@ async function _getEventByIdUncached(id: string) {
             price: true,
             thumbnail: true,
             verified: true,
+            deletedAt: true,
             creatorId: true,
             clubId: true,
             hostCollegeId: true,
@@ -438,7 +445,20 @@ export async function getEventById(id: string) {
             [`event-detail-${id}`],
             { tags: [CACHE_TAGS.EVENTS, `event-${id}`], revalidate: CACHE_TTL.EVENTS_DETAIL }
         );
-        return await cached();
+        const event = await cached();
+        if (!event || event.deletedAt) return null;
+
+        // An event awaiting (or refused) approval is visible to its creator and
+        // to admins only. This check sits outside the cache because the cache
+        // entry is shared by every viewer; it used to be missing altogether, so
+        // any pending or rejected event could be opened by URL.
+        if (!event.verified) {
+            const session = await getSession();
+            const viewerId = session?.userId as string | undefined;
+            if (viewerId !== event.creatorId && session?.user?.role !== 'ADMIN') return null;
+        }
+
+        return event;
     } catch (error) {
         console.error(`Failed to fetch event ${id}:`, error);
         return null;
@@ -489,7 +509,7 @@ export async function getUserBadges(userId: string) {
 }
 
 /**
- * Delete an event (creator or admin only)
+ * Delete an event (creator, club admin or site admin)
  */
 export async function deleteEvent(eventId: string) {
     const session = await getSession();
@@ -519,10 +539,15 @@ export async function deleteEvent(eventId: string) {
             return { success: false, error: 'Event not found' };
         }
 
+        if (event.deletedAt) {
+            return { success: false, error: 'Event not found' };
+        }
+
         const isCreator = event.creatorId === session.userId;
         const isClubAdmin = event.club?.members?.[0]?.role === 'ADMIN';
+        const isSiteAdmin = session.user?.role === 'ADMIN';
 
-        if (!isCreator && !isClubAdmin) {
+        if (!isCreator && !isClubAdmin && !isSiteAdmin) {
             await audit(
                 session.userId as string,
                 'PERMISSION_DENIED',
@@ -533,11 +558,14 @@ export async function deleteEvent(eventId: string) {
             return { success: false, error: 'Not authorized to delete this event' };
         }
 
-        await prisma.$transaction(async (tx) => {
-            await tx.eventReview.deleteMany({ where: { eventId } });
-            await tx.eventRegistration.deleteMany({ where: { eventId } });
-            await tx.teamRequest.deleteMany({ where: { eventId } });
-            await tx.event.delete({ where: { id: eventId } });
+        /* A soft delete, like the rest of the site. This was a hard delete
+           that also removed every registration, including PAID ones: the only
+           record tying a Stripe payment to an attendee went with it, so
+           nobody could be refunded, and a later webhook found nothing. Every
+           listing already filters on deletedAt. */
+        await prisma.event.update({
+            where: { id: eventId },
+            data: { deletedAt: new Date() },
         });
 
         await audit(
@@ -547,14 +575,16 @@ export async function deleteEvent(eventId: string) {
             eventId,
             {
                 eventTitle: event.title,
-                deletedRegistrations: event._count.registrations,
-                deletedTeamRequests: event._count.teamRequests,
-                deletedReviews: event._count.reviews,
+                registrationsKept: event._count.registrations,
+                teamRequests: event._count.teamRequests,
+                reviews: event._count.reviews,
             }
         );
 
         revalidatePath('/events');
         revalidatePath('/profile');
+        updateTag(`event-${eventId}`);
+        updateTag(CACHE_TAGS.EVENTS);
 
         return { success: true, message: 'Event deleted successfully' };
     } catch (error) {
