@@ -93,9 +93,9 @@ async function _getAllCollegesUncached() {
                 // so the numbers match what a visitor can actually open.
                 _count: {
                     select: {
-                        students: true,
-                        clubs: true,
-                        events: true,
+                        students: { where: { deletedAt: null } },
+                        clubs: { where: { verified: true, deletedAt: null } },
+                        events: { where: { verified: true, deletedAt: null } },
                     },
                 },
             },
@@ -135,20 +135,30 @@ export async function getCollegeById(id: string) {
         const college = await prisma.college.findUnique({
             where: { id },
             include: {
+                // Approved, live clubs only, and only the fields the page shows.
+                // This passed every club row to the client, so a college page
+                // listed unapproved, rejected and deleted clubs along with
+                // their rejection reasons.
                 clubs: {
-                    include: {
+                    where: { verified: true, deletedAt: null },
+                    select: {
+                        id: true,
+                        name: true,
+                        logo: true,
+                        category: true,
+                        description: true,
                         _count: {
                             select: { members: true }
                         }
                     }
                 },
                 events: {
-                    where: { date: { gte: new Date() } },
+                    where: { date: { gte: new Date() }, verified: true, deletedAt: null },
                     orderBy: { date: 'asc' },
                     take: 5
                 },
                 _count: {
-                    select: { students: true }
+                    select: { students: { where: { deletedAt: null } } }
                 }
             }
         });
