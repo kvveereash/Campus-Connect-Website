@@ -6,6 +6,7 @@ import { revalidatePath, updateTag } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { unstable_cache } from 'next/cache';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
+import { clampLimit } from '@/lib/pagination';
 import { isOk } from '@/lib/api-response';
 import { createProtectedAction } from '@/lib/protected-action';
 import { eventSchema, updateEventSchema, joinEventSchema } from '@/lib/schemas';
@@ -272,6 +273,7 @@ async function _getUpcomingEventsUncached(limit: number = 3): Promise<EventWithR
 }
 
 export async function getUpcomingEvents(limit: number = 3): Promise<EventWithRelations[]> {
+    limit = clampLimit(limit, 24, 3);
     try {
         // The helper was already named "uncached" but nothing ever wrapped it,
         // so every request hit the database. The landing page calls this on
@@ -338,6 +340,8 @@ async function _allEvents(filters?: { search?: string; category?: string }) {
  */
 export async function getAllEvents(filters?: { search?: string; category?: string }) {
     const { search, category } = filters || {};
+    if (search && search.length > 100) return [];
+    if (category && category.length > 50) return [];
 
     if (search) return _allEvents(filters);
 

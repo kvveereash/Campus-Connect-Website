@@ -29,7 +29,7 @@ export default async function TeamFinderPage() {
     // but here we can try-catch too just in case.
     let matches: any[] = [];
     try {
-        matches = await getRecommendedTeammates(user.id);
+        matches = await getRecommendedTeammates();
     } catch (e) {
         console.error("Match fetch error", e);
     }

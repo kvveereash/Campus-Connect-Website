@@ -324,6 +324,13 @@ async function _getClubsUncached(filters?: { search?: string; category?: string 
 }
 
 export async function getClubs(filters?: { search?: string; category?: string }) {
+    // A search is not cached (one entry per string anyone types, as with the
+    // events listing) and is bounded.
+    if (filters?.search) {
+        if (filters.search.length > 100) return [];
+        return _getClubsUncached(filters);
+    }
+
     try {
         const cacheKey = `clubs-list-${JSON.stringify(filters || {})}`;
         const cached = unstable_cache(

@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { clampLimit } from '@/lib/pagination';
 
 export interface LeaderboardUser {
     id: string;
@@ -29,36 +30,44 @@ export interface LeaderboardClub {
  * club would have appeared in the standings, linking to a page that 404s.
  */
 export async function getTopAttendees(limit = 10) {
+    limit = clampLimit(limit, 50, 10);
     try {
+        /* Ranked by the same number it displays. This ordered users by all
+           their registrations (CANCELLED and unpaid PENDING_PAYMENT included)
+           but showed only PAID/COMPLETED as the score, so joining paid events
+           without paying moved people up the board. Prisma cannot order by a
+           filtered relation count, hence the groupBy. */
+        const groups = await prisma.eventRegistration.groupBy({
+            by: ['userId'],
+            where: { status: { in: ['PAID', 'COMPLETED'] }, user: { deletedAt: null } },
+            _count: { userId: true },
+            orderBy: { _count: { userId: 'desc' } },
+            take: limit
+        });
+
         const users = await prisma.user.findMany({
-            where: { deletedAt: null },
+            where: { id: { in: groups.map((g) => g.userId) } },
             select: {
                 id: true,
                 name: true,
                 avatar: true,
                 college: { select: { name: true } },
-                _count: {
-                    select: {
-                        registrations: {
-                            where: { status: { in: ['PAID', 'COMPLETED'] } }
-                        }
-                    }
-                }
-            },
-            orderBy: {
-                registrations: { _count: 'desc' }
-            },
-            take: limit
+            }
         });
+        const byId = new Map(users.map((u) => [u.id, u]));
 
-        return users.map((user, index) => ({
-            id: user.id,
-            name: user.name,
-            avatar: user.avatar,
-            college: user.college?.name || 'Unknown',
-            score: user._count.registrations,
-            rank: index + 1
-        }));
+        return groups.flatMap((group, index) => {
+            const user = byId.get(group.userId);
+            if (!user) return [];
+            return [{
+                id: user.id,
+                name: user.name,
+                avatar: user.avatar,
+                college: user.college?.name || 'Unknown',
+                score: group._count.userId,
+                rank: index + 1
+            }];
+        });
     } catch (error) {
         console.error('Failed to get top attendees:', error);
         return [];
@@ -69,6 +78,7 @@ export async function getTopAttendees(limit = 10) {
  * Get top event hosts (most events created)
  */
 export async function getTopHosts(limit = 10) {
+    limit = clampLimit(limit, 50, 10);
     try {
         const users = await prisma.user.findMany({
             where: {
@@ -108,6 +118,7 @@ export async function getTopHosts(limit = 10) {
  * Get most active clubs (by member + event count)
  */
 export async function getTopClubs(limit = 10) {
+    limit = clampLimit(limit, 50, 10);
     try {
         const clubs = await prisma.club.findMany({
             where: { deletedAt: null, verified: true },
@@ -149,6 +160,7 @@ export async function getTopClubs(limit = 10) {
  * Get users with most badges
  */
 export async function getTopBadgeHolders(limit = 10) {
+    limit = clampLimit(limit, 50, 10);
     try {
         const users = await prisma.user.findMany({
             where: {

@@ -2,6 +2,7 @@
 
 import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { clampLimit } from '@/lib/pagination';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
 
 /**
@@ -124,6 +125,7 @@ export async function getCategoryBand() {
 }
 
 export async function getFeaturedClubs(limit = 6) {
+    limit = clampLimit(limit, 24, 6);
     return unstable_cache(() => _featuredClubs(limit), [`landing-clubs-${limit}`], {
         tags: [CACHE_TAGS.CLUBS],
         revalidate: CACHE_TTL.CLUBS_LIST,

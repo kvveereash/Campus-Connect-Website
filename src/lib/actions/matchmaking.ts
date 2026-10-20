@@ -1,8 +1,18 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { getSession } from '@/lib/auth';
 
-export async function getRecommendedTeammates(userId: string) {
+/**
+ * Teammate suggestions for the signed-in user. Takes no id: it used to trust
+ * one, so anyone (signed in or not) could list another user's college-mates
+ * along with which of their private skills and interests overlapped.
+ */
+export async function getRecommendedTeammates() {
+    const session = await getSession();
+    if (!session?.userId) return [];
+    const userId = session.userId as string;
+
     try {
         // Fix: Do not include scalar fields in `include` block unless they are relations
         const currentUser = await prisma.user.findUnique({
