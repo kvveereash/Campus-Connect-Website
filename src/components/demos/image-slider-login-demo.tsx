@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { login } from "@/lib/actions/auth";
 import { toast } from "sonner";
+import { safeRedirectPath } from "@/lib/utils";
 import styles from "@/app/login/auth.module.css";
 
 export function ImageSliderLoginDemo() {
@@ -24,13 +25,10 @@ export function ImageSliderLoginDemo() {
 
       // Send the user back where they were headed before the middleware
       // bounced them here; fall back to their profile.
-      // Only same-site paths are honoured, so a crafted ?redirect=//evil.com
-      // cannot turn our login page into an open redirect.
-      const requested = searchParams.get("redirect");
-      const destination =
-        requested && requested.startsWith("/") && !requested.startsWith("//")
-          ? requested
-          : "/profile";
+      // Only same-origin destinations are honoured, so a crafted
+      // ?redirect=//evil.com (or /\evil.com, which slipped past the old
+      // prefix check) cannot turn our login page into an open redirect.
+      const destination = safeRedirectPath(searchParams.get("redirect"), window.location.origin);
 
       // Navigate immediately, and do NOT wait on refreshUser().
       //
