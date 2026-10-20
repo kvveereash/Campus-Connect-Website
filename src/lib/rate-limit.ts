@@ -17,77 +17,88 @@ export { checkRedisHealth, isRedisHealthy };
  * Rate Limiters for different actions
  */
 
+/* Without Upstash, `redis` is redis.ts's InMemoryStore, which has none of the
+   eval/evalsha calls @upstash/ratelimit makes. Every limit() threw, and
+   checkRateLimit caught it and allowed the request, so no limiter ever
+   limited anything. Each limiter now also records its window here, and
+   checkRateLimit enforces that window in memory when Redis is not configured.
+   In memory means per server instance: weaker than Redis on a serverless host,
+   but a real limit rather than none. */
+const WINDOWS = new WeakMap<Ratelimit, { tokens: number; windowMs: number; prefix: string }>();
+
+const DURATION_MS = { m: 60_000, h: 3_600_000 } as const;
+
+function defineLimiter(tokens: number, window: `${number} ${'m' | 'h'}`, prefix: string): Ratelimit {
+    const limiter = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(tokens, window),
+        analytics: false,
+        prefix,
+    });
+    const [amount, unit] = window.split(' ') as [string, 'm' | 'h'];
+    WINDOWS.set(limiter, { tokens, windowMs: Number(amount) * DURATION_MS[unit], prefix });
+    return limiter;
+}
+
+const memoryHits = new Map<string, number[]>();
+const MEMORY_KEY_LIMIT = 10_000;
+
+function limitInMemory(limiter: Ratelimit, identifier: string) {
+    const config = WINDOWS.get(limiter);
+    const now = Date.now();
+    if (!config) return { success: true, limit: 0, remaining: 0, reset: new Date(now) };
+
+    const key = `${config.prefix}:${identifier}`;
+    const recent = (memoryHits.get(key) ?? []).filter((t) => now - t < config.windowMs);
+    const success = recent.length < config.tokens;
+    if (success) recent.push(now);
+
+    // Bounded, so a flood of distinct identifiers cannot grow this forever.
+    if (!memoryHits.has(key) && memoryHits.size >= MEMORY_KEY_LIMIT) {
+        const oldest = memoryHits.keys().next().value;
+        if (oldest !== undefined) memoryHits.delete(oldest);
+    }
+    memoryHits.set(key, recent);
+
+    return {
+        success,
+        limit: config.tokens,
+        remaining: Math.max(0, config.tokens - recent.length),
+        reset: new Date((recent[0] ?? now) + config.windowMs),
+    };
+}
+
+/** Test hook: forget every in-memory hit. */
+export function resetInMemoryRateLimits() {
+    memoryHits.clear();
+}
+
 // Authentication: 5 attempts per 15 minutes
-export const authLimiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(5, '15 m'),
-    analytics: false,
-    prefix: 'ratelimit:auth',
-});
+export const authLimiter = defineLimiter(5, '15 m', 'ratelimit:auth');
 
 // Signup: 3 attempts per hour (prevent spam accounts)
-export const signupLimiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(3, '1 h'),
-    analytics: false,
-    prefix: 'ratelimit:signup',
-});
+export const signupLimiter = defineLimiter(3, '1 h', 'ratelimit:signup');
 
 // Messages: 10 per minute (prevent chat spam)
-export const messageLimiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(10, '1 m'),
-    analytics: false,
-    prefix: 'ratelimit:message',
-});
+export const messageLimiter = defineLimiter(10, '1 m', 'ratelimit:message');
 
 // Posts: 5 per hour (prevent post spam)
-export const postLimiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(5, '1 h'),
-    analytics: false,
-    prefix: 'ratelimit:post',
-});
+export const postLimiter = defineLimiter(5, '1 h', 'ratelimit:post');
 
 // Comments: 10 per minute (prevent comment spam)
-export const commentLimiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(10, '1 m'),
-    analytics: false,
-    prefix: 'ratelimit:comment',
-});
+export const commentLimiter = defineLimiter(10, '1 m', 'ratelimit:comment');
 
 // Events: 3 per hour (prevent event spam)
-export const eventLimiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(3, '1 h'),
-    analytics: false,
-    prefix: 'ratelimit:event',
-});
+export const eventLimiter = defineLimiter(3, '1 h', 'ratelimit:event');
 
 // Global API: 100 requests per minute (DDoS protection)
-export const globalApiLimiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(100, '1 m'),
-    analytics: false,
-    prefix: 'ratelimit:api:global',
-});
+export const globalApiLimiter = defineLimiter(100, '1 m', 'ratelimit:api:global');
 
 // Uploads: 20 per hour (writes to disk — keep it tight)
-export const uploadLimiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(20, '1 h'),
-    analytics: false,
-    prefix: 'ratelimit:upload',
-});
+export const uploadLimiter = defineLimiter(20, '1 h', 'ratelimit:upload');
 
 // Sensitive Actions: 10 per hour (profile updates, password changes)
-export const sensitiveActionLimiter = new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(10, '1 h'),
-    analytics: false,
-    prefix: 'ratelimit:sensitive',
-});
+export const sensitiveActionLimiter = defineLimiter(10, '1 h', 'ratelimit:sensitive');
 
 /**
  * Helper function to check rate limit
@@ -111,6 +122,10 @@ export async function checkRateLimit(
             remaining: 99,
             reset: new Date(Date.now() + 60000),
         };
+    }
+
+    if (!isRedisConfiguredFn()) {
+        return limitInMemory(limiter, identifier);
     }
 
     try {
