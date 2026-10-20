@@ -181,12 +181,16 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
     if (data.thumbnail !== undefined) updateData.thumbnail = data.thumbnail;
     if (data.price !== undefined) updateData.price = data.price;
 
-    // An approved event that changes goes back to the admin queue, or approval
-    // would be a one-time check that any later edit walks around.
-    if (event.verified && contentChanged(event, updateData)) {
+    // Any content change goes (back) to the admin queue. For an approved event
+    // that stops approval being a one-time check later edits walk around; for
+    // a rejected one, clearing the reason is what puts the fixed event back in
+    // the queue, which lists only rows with no rejection reason. Previously a
+    // rejected event stayed rejected however it was fixed.
+    if ((event.verified || event.rejectionReason) && contentChanged(event, updateData)) {
         updateData.verified = false;
         updateData.verifiedBy = null;
         updateData.verifiedAt = null;
+        updateData.rejectionReason = null;
     }
 
     const updatedEvent = await prisma.event.update({

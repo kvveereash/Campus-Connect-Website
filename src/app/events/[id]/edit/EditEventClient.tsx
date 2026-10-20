@@ -2,32 +2,36 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
 import styles from './page.module.css';
 import { EventDetail } from '@/lib/actions/events';
-import { updateEvent } from '@/lib/actions/events'; // We'll need to create/ensure this action exists
+import { updateEvent } from '@/lib/actions/events';
 
-const CATEGORIES = ['Hackathon', 'Fest', 'Workshop', 'Seminar', 'Tech Talk'];
-const COLLEGES = [
-    { id: 'c1', name: 'IIT Bombay' },
-    { id: 'c2', name: 'BITS Pilani' },
-    { id: 'c3', name: 'NIT Trichy' }
-    // Ideally fetch this dynamically too, but hardcoded list matches seed for now
-];
+// The same categories the create form offers. This list had drifted (Fest,
+// Seminar, Tech Talk), so editing an event could not keep its own category.
+const CATEGORIES = ['Technology', 'Hackathon', 'Workshop', 'Cultural', 'Social', 'Art', 'Sports', 'Business'];
+
+/* A datetime-local input shows and returns the browser's local time. This was
+   filled with toISOString() (UTC), then read back as local time on submit, so
+   every save moved the event by the viewer's UTC offset (5h30m earlier in
+   India) and, because the date "changed", sent it back for re-approval. */
+function toLocalInputValue(date: Date | string) {
+    const d = new Date(date);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+}
 
 export default function EditEventClient({ event }: { event: EventDetail }) {
     const router = useRouter();
-    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
+    const categories = CATEGORIES.includes(event.category) ? CATEGORIES : [event.category, ...CATEGORIES];
 
     const [formData, setFormData] = useState({
         title: event.title,
         description: event.description,
-        date: new Date(event.date).toISOString().slice(0, 16),
+        date: toLocalInputValue(event.date),
         venue: event.venue,
-        hostCollegeId: event.hostCollegeId,
         category: event.category,
-        thumbnail: event.thumbnail || '/event-thumb-hackathon.png',
+        thumbnail: event.thumbnail || '',
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -35,17 +39,26 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
         setIsLoading(true);
 
         try {
-            // Call server action directly
-            await updateEvent(event.id, {
+            const result = await updateEvent(event.id, {
                 ...formData,
-                date: new Date(formData.date) as any
+                thumbnail: formData.thumbnail.trim() || undefined,
+                // Parsed as local time, which is what the input showed.
+                date: new Date(formData.date),
             });
 
+            // updateEvent reports failure in its result rather than throwing,
+            // and this used to navigate away as if every save had worked.
+            if (!result.success) {
+                toast.error(result.error || 'Could not save the event');
+                return;
+            }
+
+            toast.success('Event updated');
             router.push(`/events/${event.id}`);
             router.refresh();
         } catch (error) {
-            alert('Failed to update event');
             console.error(error);
+            toast.error('Could not save the event');
         } finally {
             setIsLoading(false);
         }
@@ -72,25 +85,13 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
                     />
                 </div>
 
-                {/* Only show college select if not a club event */}
-                {!event.clubId && (
-                    <div className={styles.formGroup}>
-                        <label className={styles.label} htmlFor="college">Hosting College</label>
-                        <select
-                            id="college"
-                            name="hostCollegeId"
-                            className={styles.select}
-                            value={formData.hostCollegeId}
-                            onChange={handleChange}
-                        >
-                            {COLLEGES.map(college => (
-                                <option key={college.id} value={college.id}>
-                                    {college.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                )}
+                {/* Read-only: the host cannot be changed after creation (the
+                    server ignores it). This was a select of three made-up
+                    colleges that showed the wrong one for most events. */}
+                <div className={styles.formGroup}>
+                    <span className={styles.label}>Hosted by</span>
+                    <p>{event.club?.name ?? event.hostCollege.name}</p>
+                </div>
 
                 <div className={styles.formGroup}>
                     <label className={styles.label} htmlFor="category">Category</label>
@@ -101,7 +102,7 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
                         value={formData.category}
                         onChange={handleChange}
                     >
-                        {CATEGORIES.map(cat => (
+                        {categories.map(cat => (
                             <option key={cat} value={cat}>{cat}</option>
                         ))}
                     </select>
@@ -147,8 +148,11 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
 
                 <div className={styles.formGroup}>
                     <label className={styles.label} htmlFor="thumbnail">Thumbnail URL</label>
+                    {/* text, not url: stored thumbnails are often site paths
+                        (/event-placeholder.png), which type="url" rejects, so
+                        most events could not be saved at all. */}
                     <input
-                        type="url"
+                        type="text"
                         id="thumbnail"
                         name="thumbnail"
                         placeholder="https://example.com/image.jpg"
