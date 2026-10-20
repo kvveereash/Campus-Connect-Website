@@ -1,7 +1,6 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { pusherServer } from '@/lib/pusher';
 import { getSession } from '@/lib/auth';
 
 

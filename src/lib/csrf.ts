@@ -1,4 +1,7 @@
-'use server';
+/* Not 'use server': that made setCsrfToken, getCsrfToken and validateCsrf
+   callable from the browser as server actions. These are helpers for
+   protected-action.ts only. */
+import 'server-only';
 
 import { cookies, headers } from 'next/headers';
 import crypto from 'crypto';

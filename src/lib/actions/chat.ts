@@ -4,7 +4,9 @@ import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { ActionState } from '@/types';
-import { pusherServer } from '@/lib/pusher';
+import { broadcast } from '@/lib/pusher-server';
+import { chatChannel } from '@/lib/pusher-channels';
+import { publicObjectUrlPrefix } from '@/lib/storage';
 
 // Start or Get existing conversation with a user
 import { createProtectedAction } from '@/lib/protected-action';
@@ -88,13 +90,21 @@ export const startConversationAction = createProtectedAction(startConversationSc
 });
 
 // 2. Send Message
+function isOwnUpload(url: string): boolean {
+    const name = /^[\w.-]+$/;
+    if (url.startsWith('/uploads/')) return name.test(url.slice('/uploads/'.length));
+    const prefix = publicObjectUrlPrefix();
+    return !!prefix && url.startsWith(prefix) && name.test(url.slice(prefix.length));
+}
+
 const sendMessageSchema = z.object({
     conversationId: z.string().max(50),
     content: z.string().max(2000, 'Message cannot exceed 2000 characters'),
-    // Our own uploads, or an http(s) link. Any string used to be accepted and
-    // rendered as a "Download File" link.
+    // Only files that went through /api/upload: our storage bucket, or
+    // public/uploads in development. Any string used to be accepted and
+    // rendered as a "Download File" link, which made chat a phishing channel.
     attachmentUrl: z.string().max(2048)
-        .refine((url) => /^\/uploads\/[\w.-]+$/.test(url) || /^https:\/\//i.test(url), 'Invalid attachment')
+        .refine(isOwnUpload, 'Invalid attachment')
         .optional(),
     attachmentType: z.enum(['image', 'file']).optional()
 });
@@ -131,14 +141,10 @@ export const sendMessageAction = createProtectedAction(sendMessageSchema, async 
             });
         });
 
-        // Trigger pusher event (optional, usually done here or in separate event handler)
-        // Original code didn't trigger 'new-message' via Pusher? 
-        // Wait, `sendMessage` in original code (lines 162-208) did NOT trigger Pusher.
-        // But `markAsRead` and others do. 
-        // Maybe the client subscribes to DB changes or uses polling? Or I missed it.
-        // Ah, `sendMessage` logic in original code (lines 162-208) does NOT show Pusher trigger.
-        // That's standard for some apps (optimistic UI), but usually backend triggers it.
-        // I will preserve original behavior (no pusher trigger in sendMessage).
+        // Nudge open chat windows to fetch. Only the sender's id goes out, not
+        // the message: the window loads it through getMessages, which checks
+        // membership. (ChatWindow listened for this, but nothing sent it.)
+        await broadcast(chatChannel(data.conversationId), 'new-message', { senderId: session.userId });
 
         revalidatePath(`/messages`);
         return { message: 'Sent' };
@@ -163,7 +169,7 @@ export const markAsReadAction = createProtectedAction(markAsReadSchema, async (d
     });
 
     // Trigger read-update
-    await pusherServer.trigger(`chat-${data.conversationId}`, 'read-update', {
+    await broadcast(chatChannel(data.conversationId), 'read-update', {
         userId: session.userId,
         lastReadAt: new Date()
     });
@@ -414,7 +420,7 @@ const triggerTypingSchema = z.object({
 export const triggerTypingAction = createProtectedAction(triggerTypingSchema, async (data, session) => {
     await assertParticipant(session.userId, data.conversationId);
 
-    await pusherServer.trigger(`chat-${data.conversationId}`, 'typing', {
+    await broadcast(chatChannel(data.conversationId), 'typing', {
         userId: session.userId
     });
     return { success: true };
@@ -449,7 +455,7 @@ export const toggleReactionAction = createProtectedAction(toggleReactionSchema, 
         include: { user: { select: { id: true, name: true } } }
     });
 
-    await pusherServer.trigger(`chat-${message.conversationId}`, 'reaction-update', {
+    await broadcast(chatChannel(message.conversationId), 'reaction-update', {
         messageId: data.messageId,
         reactions
     });

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
-import { pusherClient } from '@/lib/pusher';
+import { pusherClient } from '@/lib/pusher-client';
+import { userChannel } from '@/lib/pusher-channels';
 import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/lib/actions/notifications'; // Need to add markAll logic if missing
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
@@ -51,19 +52,23 @@ export function NotificationBell() {
     useEffect(() => {
         if (!user?.id) return;
 
-        const channel = pusherClient.subscribe(`user-${user.id}`);
+        const channel = pusherClient.subscribe(userChannel(user.id));
 
-        channel.bind('notification:new', (newNotification: any) => {
+        const onNotification = (newNotification: any) => {
             const parsed = {
                 ...newNotification,
                 createdAt: new Date(newNotification.createdAt)
             };
             setNotifications(prev => [parsed, ...prev]);
             setUnreadCount(prev => prev + 1);
-        });
+        };
+        channel.bind('notification:new', onNotification);
 
+        // Unbind this handler only. GlobalNotificationListener shares the
+        // channel, and unsubscribing here (or there) dropped the other's
+        // bindings, so live updates stopped after the first navigation.
         return () => {
-            pusherClient.unsubscribe(`user-${user.id}`);
+            channel.unbind('notification:new', onNotification);
         };
     }, [user?.id]);
 

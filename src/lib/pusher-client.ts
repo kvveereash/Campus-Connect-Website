@@ -1,22 +1,8 @@
-import PusherServer from 'pusher';
+'use client';
+
 import PusherClient from 'pusher-js';
 
-// Lazy initialization to prevent build-time crashes when env vars aren't available
-let _pusherServer: PusherServer | null = null;
 let _pusherClient: PusherClient | null = null;
-
-export function getPusherServer(): PusherServer {
-    if (!_pusherServer) {
-        _pusherServer = new PusherServer({
-            appId: process.env.PUSHER_APP_ID!,
-            key: process.env.NEXT_PUBLIC_PUSHER_KEY!,
-            secret: process.env.PUSHER_SECRET!,
-            cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-            useTLS: true,
-        });
-    }
-    return _pusherServer;
-}
 
 /**
  * Stands in for the client when no Pusher key is configured. pusher-js throws
@@ -42,23 +28,21 @@ function offlineClient(): PusherClient {
     } as unknown as PusherClient;
 }
 
+/** The browser's Pusher connection. Private channels are signed by /api/pusher/auth. */
 export function getPusherClient(): PusherClient {
     if (!_pusherClient) {
         const key = process.env.NEXT_PUBLIC_PUSHER_KEY;
         _pusherClient = key
-            ? new PusherClient(key, { cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER! })
+            ? new PusherClient(key, {
+                  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+                  channelAuthorization: { endpoint: '/api/pusher/auth', transport: 'ajax' },
+              })
             : offlineClient();
     }
     return _pusherClient;
 }
 
-// Keep backward-compatible exports as getters
-export const pusherServer = new Proxy({} as PusherServer, {
-    get(_, prop) {
-        return (getPusherServer() as any)[prop];
-    },
-});
-
+// Kept as a lazy proxy so importing this never connects on its own.
 export const pusherClient = new Proxy({} as PusherClient, {
     get(_, prop) {
         return (getPusherClient() as any)[prop];

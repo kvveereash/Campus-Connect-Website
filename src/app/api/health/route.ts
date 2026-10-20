@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { checkDatabaseHealth } from '@/lib/db';
+import { checkDatabaseHealth, diagnoseDatabase } from '@/lib/db';
 import { checkRedisHealth } from '@/lib/rate-limit';
 
 /**
@@ -18,10 +18,11 @@ export async function GET() {
 
     try {
         // Check dependencies in parallel
-        const [dbHealthy, redisHealthy] = await Promise.all([
-            checkDatabaseHealth(),
+        const [db, redisHealthy] = await Promise.all([
+            diagnoseDatabase(),
             checkRedisHealth(),
         ]);
+        const dbHealthy = db.healthy;
 
         const responseTime = Date.now() - startTime;
 
@@ -35,7 +36,9 @@ export async function GET() {
                 timestamp: new Date().toISOString(),
                 uptime: process.uptime(),
                 checks: {
-                    database: { status: dbHealthy ? 'healthy' : 'unhealthy' },
+                    database: db.healthy
+                        ? { status: 'healthy' }
+                        : { status: 'unhealthy', reason: db.reason, code: db.code },
                     redis: { status: redisHealthy ? 'healthy' : 'degraded', critical: false },
                 },
                 responseTimeMs: responseTime,

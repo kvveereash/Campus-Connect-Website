@@ -57,7 +57,8 @@ export default function ImageUpload({ value, onChange, disabled, label = "Upload
             toast.success('Image uploaded successfully');
         } catch (error) {
             console.error('Upload error:', error);
-            toast.error('Failed to upload image');
+            // The server's message says why (e.g. no storage configured).
+            toast.error(error instanceof Error && error.message ? error.message : 'Failed to upload image');
             // Revert preview on error
             setPreview(value);
         } finally {

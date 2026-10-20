@@ -21,6 +21,11 @@ const envSchema = z.object({
     STRIPE_SECRET_KEY: z.string().startsWith('sk_', 'STRIPE_SECRET_KEY must start with sk_'),
     STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional(),
 
+    // File uploads — Supabase Storage (required for uploads in production)
+    SUPABASE_URL: z.string().url().optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+    SUPABASE_STORAGE_BUCKET: z.string().min(1).optional(),
+
     // Node Environment
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });

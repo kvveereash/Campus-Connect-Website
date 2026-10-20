@@ -28,6 +28,20 @@ const securityHeaders = [
   },
 ];
 
+function supabaseImagePattern() {
+  try {
+    const url = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL) : null;
+    if (!url || url.hostname.endsWith('.supabase.co')) return [];
+    return [{
+      protocol: url.protocol.replace(':', '') as 'http' | 'https',
+      hostname: url.hostname,
+      pathname: '/storage/v1/object/public/**',
+    }];
+  } catch {
+    return [];
+  }
+}
+
 // NOTE: Do not add a `env: {...}` block here for secrets. Next.js inlines those
 // values into the build output at compile time, which bakes them into artifacts
 // and risks leaking any that a client component happens to reference. Server
@@ -48,6 +62,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'ui-avatars.com',
       },
+      // Uploaded files (src/lib/storage.ts), public buckets only.
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+      // A custom or self-hosted Supabase domain, read from the build env.
+      ...supabaseImagePattern(),
     ],
     // Image optimization settings
     formats: ['image/avif', 'image/webp'],

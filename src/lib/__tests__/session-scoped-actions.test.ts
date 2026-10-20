@@ -20,7 +20,7 @@ const mockDb = {
 // A getter, because the imports below are hoisted above mockDb's initialiser.
 jest.mock('@/lib/db', () => ({ __esModule: true, get default() { return mockDb; } }));
 jest.mock('@/lib/auth', () => ({ getSession: () => mockGetSession() }));
-jest.mock('@/lib/pusher', () => ({ pusherServer: { trigger: (...a: unknown[]) => mockTrigger(...a) } }));
+jest.mock('@/lib/pusher-server', () => ({ broadcast: (...a: unknown[]) => mockTrigger(...a) }));
 jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }));
 jest.mock('@/lib/rate-limit', () => ({
     messageLimiter: undefined,
@@ -78,6 +78,29 @@ describe('chat membership', () => {
         const result = await sendMessageAction({ conversationId: 'c1', content: 'hi' });
         expect(result.success).toBe(true);
         expect(mockDb.message.create).toHaveBeenCalled();
+    });
+
+    it('refuses attachments that did not come through our upload route', async () => {
+        mockDb.conversationParticipant.findUnique.mockResolvedValue({ id: 'p1' });
+        const result = await sendMessageAction({
+            conversationId: 'c1',
+            content: 'see this',
+            attachmentUrl: 'https://evil.example/login',
+            attachmentType: 'file',
+        });
+        expect(result.success).toBe(false);
+        expect(mockDb.message.create).not.toHaveBeenCalled();
+    });
+
+    it('accepts an attachment from our own uploads', async () => {
+        mockDb.conversationParticipant.findUnique.mockResolvedValue({ id: 'p1' });
+        const result = await sendMessageAction({
+            conversationId: 'c1',
+            content: '',
+            attachmentUrl: '/uploads/1767102939801-4042356.png',
+            attachmentType: 'image',
+        });
+        expect(result.success).toBe(true);
     });
 
     it('refuses typing events for a conversation the caller is not in', async () => {
