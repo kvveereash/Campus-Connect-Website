@@ -7,20 +7,38 @@ import { chatChannel } from '@/lib/pusher-channels';
 import styles from './Chat.module.css';
 import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
-import { Send, Paperclip, FileText, X, Image as ImageIcon, Smile, CheckCheck, Check, Search } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, FileText, X, Image as ImageIcon, Heart, CheckCheck, Check, Search, Info, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { GroupDetailsModal } from './GroupDetailsModal';
 import { formatIST } from '@/lib/format';
+import ChatAvatar, { inkForName } from './ChatAvatar';
 
 interface ChatWindowProps {
     conversationId: string;
     onBack?: () => void;
 }
 
+/** Messages from one person less than this far apart read as one run. */
+const RUN_GAP = 5 * 60 * 1000;
+const dayKey = (d: string | Date) => formatIST(d, { day: 'numeric', month: 'numeric', year: 'numeric' });
+
+/** "Today", "Yesterday", or "Mon, 12 Oct". */
+function dayLabel(d: string | Date) {
+    const today = new Date();
+    const yesterday = new Date(today.getTime() - 86400000);
+    if (dayKey(d) === dayKey(today)) return 'Today';
+    if (dayKey(d) === dayKey(yesterday)) return 'Yesterday';
+    return formatIST(d, { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
 export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const { user } = useAuth();
     const [messages, setMessages] = useState<any[]>([]);
+    // ChatLayout keys this component by conversation, so it starts fresh per chat.
+    const [loaded, setLoaded] = useState(false);
+    // The clock used for "Online": refreshed with each details poll, not read during render.
+    const [now, setNow] = useState(() => Date.now());
     const [input, setInput] = useState('');
     const [sending, setSending] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
@@ -53,7 +71,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
         // Also bind to new-message to instant update
         channel.bind('new-message', (data: any) => {
-            // If I am the sender, I already have it via optimistic UI (or fetch), but for now fetch is easiest
             // If I am receiver, trigger markAsRead
             if (data.senderId !== user?.id) {
                 markAsRead(conversationId);
@@ -93,12 +110,14 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         if (!conversationId) return;
         const data = await getMessages(conversationId);
         setMessages(data);
+        setLoaded(true);
     };
 
     useEffect(() => {
         const loadDetails = async () => {
             const data = await getConversationDetails(conversationId);
             setDetails(data);
+            setNow(Date.now());
         };
         loadDetails();
         const interval = setInterval(loadDetails, 10000); // 10s poll
@@ -112,19 +131,20 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         return () => clearInterval(interval);
     }, [conversationId]);
 
-    // Scroll to bottom on updates
+    // Scroll to bottom when a message arrives (not on every poll).
+    const lastId = messages[messages.length - 1]?.id;
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [messages]);
+    }, [lastId, typingUsers.length]);
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         if (file.size > 5 * 1024 * 1024) {
-            alert('File too large (Max 5MB)');
+            toast.error('That file is over 5 MB');
             return;
         }
 
@@ -139,11 +159,11 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                 const type = file.type.startsWith('image/') ? 'image' : 'file';
                 setAttachment({ url: data.url, type, name: file.name });
             } else {
-                alert('Upload failed: ' + data.error);
+                toast.error(data.error || 'Upload failed');
             }
         } catch (err) {
             console.error(err);
-            alert('Upload failed');
+            toast.error('Upload failed');
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -155,7 +175,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         if ((!input.trim() && !attachment) || sending || isUploading) return;
 
         setSending(true);
-        // Optimistic UI could be added here
         const result = await sendMessage(conversationId, input, attachment?.url, attachment?.type);
         if (result.success) {
             setInput('');
@@ -167,90 +186,194 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         setSending(false);
     };
 
+    const other = details && !details.isGroup
+        ? details.participants.find((p: any) => p.userId !== user?.id)?.user
+        : null;
+    const title = details ? (details.isGroup ? details.name || 'Group chat' : other?.name || 'Chat') : '';
+    const online = !!other?.lastSeenAt && now - new Date(other.lastSeenAt).getTime() < 2 * 60 * 1000;
+    const status = !details
+        ? 'Loading'
+        : details.isGroup
+            ? `${details.participants.length} members`
+            : online
+                ? 'Online'
+                : other?.lastSeenAt
+                    ? `Last seen ${dayLabel(other.lastSeenAt).toLowerCase()}, ${formatIST(other.lastSeenAt, { hour: 'numeric', minute: '2-digit' })}`
+                    : 'Offline';
+
+    const q = searchQuery.trim().toLowerCase();
+    const visible = q ? messages.filter((m) => m.content?.toLowerCase().includes(q)) : messages;
+
+    const readByAll = (m: any) =>
+        !!details &&
+        details.participants
+            .filter((p: any) => p.userId !== user?.id)
+            .every((p: any) => new Date(p.lastReadAt) >= new Date(m.createdAt));
+
     return (
         <div className={styles.window}>
-            <div className={styles.chatHeader}>
-                {onBack && <button className={styles.backBtn} onClick={onBack}>←</button>}
-                <div
-                    style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
-                    onClick={() => setShowDetails(true)}
-                    title="View Details"
-                >
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {details?.isGroup ? (details.name || 'Group Chat') : (
-                            details?.participants?.find((p: any) => p.userId !== user?.id)?.user.name || 'Chat'
-                        )}
-                        <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>ⓘ</span>
-                    </h3>
-                    <span style={{ fontSize: '0.8rem', color: '#a1a1aa', fontWeight: 500 }}>
-                        {details ? (
-                            details.isGroup ? `${details.participants.length} members` : (
-                                (() => {
-                                    const other = details.participants.find((p: any) => p.userId !== user?.id)?.user;
-                                    if (!other?.lastSeenAt) return 'Offline';
-                                    const diff = new Date().getTime() - new Date(other.lastSeenAt).getTime();
-                                    return diff < 2 * 60 * 1000 ? 'Online' : `Last seen ${formatIST(other.lastSeenAt, { hour: '2-digit', minute: '2-digit' })}`;
-                                })()
-                            )
-                        ) : 'Click for Info'}
+            <header className={styles.chatHeader}>
+                {onBack && (
+                    <button type="button" className={styles.backBtn} onClick={onBack} aria-label="Back to conversations">
+                        <ArrowLeft size={18} aria-hidden="true" />
+                    </button>
+                )}
+                <button type="button" className={styles.headPerson} onClick={() => setShowDetails(true)}>
+                    <span className={styles.avatar}>
+                        <ChatAvatar
+                            name={title || '?'}
+                            src={details?.isGroup ? details?.groupImage : other?.avatar}
+                            size={42}
+                            group={!!details?.isGroup}
+                        />
+                        {online && <span className={styles.onlineStatusDot} />}
                     </span>
+                    <span className={styles.headText}>
+                        <span className={styles.headName}>{title || ' '}</span>
+                        <span className={`${styles.headStatus} ${online ? styles.statusOnline : ''}`}>{status}</span>
+                    </span>
+                </button>
+                <div className={styles.headActions}>
+                    <button
+                        type="button"
+                        className={`${styles.iconBtn} ${isSearchVisible ? styles.iconBtnOn : ''}`}
+                        onClick={() => {
+                            setIsSearchVisible((v) => !v);
+                            setSearchQuery('');
+                        }}
+                        aria-label="Search this conversation"
+                        aria-pressed={isSearchVisible}
+                    >
+                        <Search size={16} aria-hidden="true" />
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.iconBtn}
+                        onClick={() => setShowDetails(true)}
+                        aria-label="Conversation details"
+                    >
+                        <Info size={16} aria-hidden="true" />
+                    </button>
                 </div>
-            </div>
+            </header>
+
+            {isSearchVisible && (
+                <div className={styles.searchBar}>
+                    <Search size={15} aria-hidden="true" />
+                    <input
+                        autoFocus
+                        className={styles.searchInput}
+                        type="search"
+                        placeholder="Search in this conversation"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        aria-label="Search in this conversation"
+                    />
+                    {q && <span className={styles.searchHits}>{visible.length} found</span>}
+                </div>
+            )}
 
             <div className={styles.messagesArea} ref={scrollRef}>
-                {messages
-                    .filter(m => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map((m, i) => {
-                        const isMe = m.senderId === user?.id;
-                        return (
-                            <div key={m.id} className={`${styles.messageRow} ${isMe ? styles.rowMe : styles.rowOther}`}>
+                {!loaded && (
+                    <p className={styles.noMatches} role="status">
+                        <Loader2 size={20} className={styles.spin} aria-label="Loading messages" />
+                    </p>
+                )}
+                {loaded && messages.length === 0 && (
+                    <div className={styles.noMatches} style={{ textAlign: 'center' }}>
+                        <p className={styles.emptyTitle} style={{ fontSize: 22 }}>Say hello.</p>
+                        <p className={styles.emptyText}>
+                            This is the start of your conversation{title ? ` with ${title}` : ''}.
+                        </p>
+                    </div>
+                )}
+                {q && visible.length === 0 && (
+                    <p className={styles.noMatches}>No messages match &ldquo;{searchQuery}&rdquo;.</p>
+                )}
+                {visible.map((m, i) => {
+                    const isMe = m.senderId === user?.id;
+                    const prev = visible[i - 1];
+                    const next = visible[i + 1];
+                    const at = new Date(m.createdAt).getTime();
+                    const newDay = !prev || dayKey(prev.createdAt) !== dayKey(m.createdAt);
+                    const joinsPrev = !!prev && !newDay && prev.senderId === m.senderId &&
+                        at - new Date(prev.createdAt).getTime() < RUN_GAP;
+                    const joinsNext = !!next && next.senderId === m.senderId &&
+                        dayKey(next.createdAt) === dayKey(m.createdAt) &&
+                        new Date(next.createdAt).getTime() - at < RUN_GAP;
+                    const rowClass = [
+                        styles.messageRow,
+                        isMe ? styles.rowMe : styles.rowOther,
+                        joinsPrev ? '' : styles.rowStart,
+                        joinsNext ? '' : styles.rowEnd,
+                    ].join(' ');
+                    const senderName = m.sender?.name || 'Someone';
+                    const read = isMe && readByAll(m);
+
+                    return (
+                        <div key={m.id} style={{ display: 'contents' }}>
+                            {newDay && <div className={styles.dayDivider}>{dayLabel(m.createdAt)}</div>}
+                            <div className={rowClass}>
                                 {!isMe && (
                                     <div className={styles.msgAvatar}>
-                                        {m.sender?.avatar ? (
-                                            <Image src={m.sender.avatar} width={28} height={28} alt="" style={{ borderRadius: '50%' }} />
-                                        ) : (
-                                            <div className={styles.tinyAvatar}>{m.sender?.name?.[0]}</div>
-                                        )}
+                                        {!joinsNext && <ChatAvatar name={senderName} src={m.sender?.avatar} size={30} />}
                                     </div>
                                 )}
-                                <div className={`${styles.bubble} ${isMe ? styles.bubbleMe : styles.bubbleOther}`} style={{ position: 'relative' }}>
-                                    {m.attachmentUrl && (
-                                        <div className={styles.attachmentPreview}>
-                                            {m.attachmentType === 'image' ? (
-                                                <div style={{ position: 'relative', width: '200px', height: '150px', marginBottom: '8px' }}>
-                                                    <Image src={m.attachmentUrl} alt="Attachment" fill style={{ objectFit: 'cover', borderRadius: '8px' }} />
-                                                </div>
-                                            ) : (
-                                                <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer" className={styles.fileAttachment}>
-                                                    <FileText size={20} />
-                                                    <span>{m.content === 'Sent a file' ? 'Download File' : 'Attachment'}</span>
-                                                </a>
-                                            )}
-                                        </div>
-                                    )}
-                                    <p>{m.content}</p>
-
-                                    <div className={styles.msgFooter}>
-                                        <span className={styles.msgTime}>
-                                            {formatIST(m.createdAt, { hour: '2-digit', minute: '2-digit' })}
+                                <div className={styles.msgStack}>
+                                    {!isMe && details?.isGroup && !joinsPrev && (
+                                        <span className={styles.senderName} style={{ color: inkForName(senderName) }}>
+                                            {senderName}
                                         </span>
-                                        {isMe && (
-                                            <div className={styles.readStatus}>
-                                                {/* Logic: if details.participants all read > createdAt */}
-                                                {(() => {
-                                                    if (!details) return <Check size={14} />;
-                                                    // Basic check: if everyone else has readAt > message.createdAt
-                                                    const everyoneRead = details.participants
-                                                        .filter((p: any) => p.userId !== user?.id)
-                                                        .every((p: any) => new Date(p.lastReadAt) > new Date(m.createdAt));
-
-                                                    return everyoneRead ? <CheckCheck size={14} color="#60a5fa" /> : <CheckCheck size={14} color="#71717a" />;
-                                                })()}
+                                    )}
+                                    <div className={`${styles.bubble} ${isMe ? styles.bubbleMe : styles.bubbleOther}`}>
+                                        {m.attachmentUrl && (
+                                            <div className={styles.attachmentPreview}>
+                                                {m.attachmentType === 'image' ? (
+                                                    <div className={styles.attachmentImage}>
+                                                        <Image src={m.attachmentUrl} alt="Attachment" fill sizes="240px" />
+                                                    </div>
+                                                ) : (
+                                                    <a
+                                                        href={m.attachmentUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={styles.fileAttachment}
+                                                    >
+                                                        <FileText size={18} aria-hidden="true" />
+                                                        <span>{m.content === 'Sent a file' ? 'Download file' : 'Attachment'}</span>
+                                                    </a>
+                                                )}
                                             </div>
                                         )}
+                                        {m.content && <p>{m.content}</p>}
+
+                                        <div className={styles.msgFooter}>
+                                            <span className={styles.msgTime}>
+                                                {formatIST(m.createdAt, { hour: 'numeric', minute: '2-digit' })}
+                                            </span>
+                                            {isMe && (
+                                                <span
+                                                    className={`${styles.readStatus} ${read ? styles.readDone : ''}`}
+                                                    aria-label={read ? 'Read' : 'Sent'}
+                                                >
+                                                    {read ? <CheckCheck size={14} /> : <Check size={14} />}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            className={styles.addReactionBtn}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleReaction(m.id, '❤️');
+                                            }}
+                                            aria-label="React with a heart"
+                                        >
+                                            <Heart size={14} aria-hidden="true" />
+                                        </button>
                                     </div>
 
-                                    {/* Reactions Display */}
                                     {m.reactions?.length > 0 && (
                                         <div className={styles.reactionRow}>
                                             {m.reactions.map((r: any) => (
@@ -258,57 +381,79 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                                             ))}
                                         </div>
                                     )}
-
-                                    {/* Reaction Button (Hover) */}
-                                    <button
-                                        className={styles.addReactionBtn}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleReaction(m.id, '❤️'); // Default heart for MVP
-                                        }}
-                                    >
-                                        <Smile size={14} />
-                                    </button>
                                 </div>
                             </div>
-                        );
-                    })}
+                        </div>
+                    );
+                })}
                 {typingUsers.length > 0 && (
-                    <div className={styles.typingIndicator}>
-                        <span className={styles.typingDots}>typing...</span>
+                    <div className={styles.typingIndicator} aria-label="Typing">
+                        <span />
+                        <span />
+                        <span />
                     </div>
                 )}
             </div>
 
             <form className={styles.inputArea} onSubmit={handleSend}>
-                <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileSelect} />
+                <input type="file" ref={fileInputRef} hidden onChange={handleFileSelect} />
 
-                <button type="button" className={styles.attachBtn} onClick={() => fileInputRef.current?.click()} disabled={isUploading} title="Attach File">
-                    {isUploading ? <span style={{ fontSize: '0.6rem', color: 'white' }}>...</span> : <Paperclip size={20} />}
+                <button
+                    type="button"
+                    className={styles.attachBtn}
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    aria-label="Attach a file"
+                >
+                    {isUploading ? (
+                        <Loader2 size={20} className={styles.spin} aria-hidden="true" />
+                    ) : (
+                        <Paperclip size={20} aria-hidden="true" />
+                    )}
                 </button>
 
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div className={styles.composer}>
                     {attachment && (
                         <div className={styles.attachmentChip}>
-                            <span style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                {attachment.type === 'image' ? <ImageIcon size={14} /> : <FileText size={14} />}
+                            <span className={styles.chipName}>
+                                {attachment.type === 'image' ? (
+                                    <ImageIcon size={14} aria-hidden="true" />
+                                ) : (
+                                    <FileText size={14} aria-hidden="true" />
+                                )}
                                 {attachment.name}
                             </span>
-                            <button type="button" onClick={() => setAttachment(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}><X size={14} /></button>
+                            <button
+                                type="button"
+                                className={styles.chipRemove}
+                                onClick={() => setAttachment(null)}
+                                aria-label="Remove attachment"
+                            >
+                                <X size={14} aria-hidden="true" />
+                            </button>
                         </div>
                     )}
                     <input
                         type="text"
                         value={input}
                         onChange={handleInput}
-                        placeholder="Type a message..."
+                        placeholder={title ? `Message ${details?.isGroup ? title : title.split(' ')[0]}` : 'Write a message'}
                         className={styles.chatInput}
-                        style={{ width: '100%' }}
+                        aria-label="Message"
                     />
                 </div>
 
-                <button type="submit" disabled={sending || isUploading || (!input.trim() && !attachment)} className={styles.sendBtn}>
-                    {sending ? '...' : <Send size={20} />}
+                <button
+                    type="submit"
+                    disabled={sending || isUploading || (!input.trim() && !attachment)}
+                    className={styles.sendBtn}
+                    aria-label="Send"
+                >
+                    {sending ? (
+                        <Loader2 size={18} className={styles.spin} aria-hidden="true" />
+                    ) : (
+                        <Send size={18} aria-hidden="true" />
+                    )}
                 </button>
             </form>
             {showDetails && <GroupDetailsModal conversationId={conversationId} onClose={() => setShowDetails(false)} />}

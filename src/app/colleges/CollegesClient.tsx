@@ -106,21 +106,23 @@ function CollegeRow({ college }: { college: College }) {
 
     return (
         <Link href={`/colleges/${college.id}`} className={styles.row}>
-            <div>
-                <h2 className={styles.name}>{college.name}</h2>
-                <p className={styles.place}>{college.location || 'Location unknown'}</p>
-            </div>
-
-            {/* The photograph rides the row and appears only on approach, so
-                ten of them do not turn an index into a gallery. */}
-            <span className={styles.peek} aria-hidden="true">
+            {/* The campus photo sits in its own column. It used to float in
+                on hover at a fixed offset, landing on top of the counts. */}
+            <span className={styles.thumb} aria-hidden="true">
                 <Image
                     src={resolveCollegeImage(college)}
                     alt=""
                     fill
-                    sizes="148px"
+                    sizes="(max-width: 640px) 88px, 132px"
                 />
             </span>
+
+            <div className={styles.rowText}>
+                <h2 className={styles.name}>{college.name}</h2>
+                <p className={styles.place}>
+                    {college.location && college.location !== 'Unspecified' ? college.location : 'Location not added'}
+                </p>
+            </div>
 
             <div className={styles.figures}>
                 <span className={styles.figure}>

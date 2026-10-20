@@ -1,17 +1,25 @@
 'use client';
-import { MapPin, Pencil } from 'lucide-react';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ArrowLeft, ArrowUpRight, Check, MapPin, Pencil, Plus, Users } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import EventCard from '@/components/EventCard';
-import styles from './page.module.css';
-import { resolveCollegeImage, getCollegePhotoCredit } from '@/lib/college-images';
-import { EventWithRelations } from '@/lib/actions';
 import EditCollegeModal from '@/components/colleges/EditCollegeModal';
-import { motion, AnimatePresence } from 'framer-motion';
-import Button from '@/components/ui/Button';
+import { resolveCollegeImage, resolveClubImage, getCollegePhotoCredit } from '@/lib/college-images';
+import { inkFor } from '@/app/events/press';
+import type { EventWithRelations } from '@/lib/actions';
+import styles from './page.module.css';
+
+interface CollegeClub {
+    id: string;
+    name: string;
+    logo: string | null;
+    category: string;
+    description: string;
+    members: number;
+}
 
 interface CollegeClientProps {
     college: {
@@ -22,212 +30,202 @@ interface CollegeClientProps {
         description: string;
     };
     events: EventWithRelations[];
-    clubs?: any[];
+    clubs: CollegeClub[];
+    students: number;
 }
 
-export default function CollegeClient({ college, events, clubs = [] }: CollegeClientProps) {
+/**
+ * A college's page: its campus up top, what is going on there, and the
+ * clubs that run it. Entrances are CSS, so nothing waits on JavaScript to
+ * become visible.
+ */
+export default function CollegeClient({ college, events, clubs, students }: CollegeClientProps) {
     const { user, toggleFollow } = useAuth();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const isFollowing = user?.followedColleges?.includes(college.id);
+    const canEdit = user?.role === 'COLLEGE_ADMIN' && user?.collegeId === college.id;
+    const credit = getCollegePhotoCredit(college.name);
+    const place = college.location && college.location !== 'Unspecified' ? college.location : null;
 
     return (
-        <div className={styles.container}>
-            <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <Link href="/colleges" className={styles.backLink}>
-                    ← Back to Colleges
-                </Link>
-            </motion.div>
+        <div className={styles.page}>
+            <Link href="/colleges" className={styles.back}>
+                <ArrowLeft size={14} aria-hidden="true" /> All colleges
+            </Link>
 
-            <motion.div
-                className={styles.headerCard}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            >
-                <div className={styles.headerContent}>
-                    <div className={styles.logoColumn}>
-                        <motion.div
-                            className={styles.logoWrapper}
-                            initial={{ filter: 'grayscale(1)', opacity: 0 }}
-                            animate={{ filter: 'grayscale(0)', opacity: 1 }}
-                            transition={{ delay: 0.4, duration: 1 }}
-                        >
-                            <Image
-                                src={resolveCollegeImage(college)}
-                                alt={`${college.name} photo`}
-                                fill
-                                className={styles.logo}
-                            />
-                        </motion.div>
-                        <PhotoCreditLine name={college.name} />
-                    </div>
-
-                    <div className={styles.info}>
-                        <motion.h1
-                            className={styles.name}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            {college.name}
-                        </motion.h1>
-
-                        <motion.div
-                            className={styles.location}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.5 }}
-                        >
-                            <MapPin size={14} className={styles.locationPin} aria-hidden="true" /> {college.location}
-                        </motion.div>
-
-                        <motion.p
-                            className={styles.description}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.6 }}
-                        >
-                            {college.description}
-                        </motion.p>
-
-                        <motion.div
-                            className={styles.actionRow}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.7 }}
-                        >
-                            {user && (
-                                <Button
-                                    onClick={() => toggleFollow(college.id)}
-                                    variant={isFollowing ? 'outline' : 'primary'}
-                                    size="sm"
-                                    leftIcon={isFollowing ? '✓' : '＋'}
-                                >
-                                    {isFollowing ? 'Following' : 'Follow College'}
-                                </Button>
-                            )}
-
-                            {user?.role === 'COLLEGE_ADMIN' && user?.collegeId === college.id && (
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => setIsEditModalOpen(true)}
-                                    leftIcon={<Pencil size={15} aria-hidden="true" />}
-                                >
-                                    Edit Profile
-                                </Button>
-                            )}
-                        </motion.div>
-                    </div>
+            {/* ── Hero ── */}
+            <section className={styles.hero}>
+                <div className={styles.heroMedia}>
+                    <Image
+                        src={resolveCollegeImage(college)}
+                        alt={`${college.name} campus`}
+                        fill
+                        priority
+                        sizes="(max-width: 1200px) 100vw, 1200px"
+                    />
                 </div>
-            </motion.div>
+                <div className={styles.heroShade} aria-hidden="true" />
 
-            {isEditModalOpen && (
-                <EditCollegeModal
-                    college={college}
-                    onClose={() => setIsEditModalOpen(false)}
-                />
-            )}
-
-            <motion.div
-                className={styles.section}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-            >
-                <div className={styles.sectionHeader}>
-                    <h2 className={styles.sectionTitle}>Student Communities</h2>
-                    <span className={styles.itemCount}>{clubs.length} Clubs</span>
+                <div className={styles.heroBody}>
+                    <p className={styles.heroLabel}>College</p>
+                    <h1 className={styles.heroTitle}>{college.name}</h1>
+                    {place && (
+                        <p className={styles.heroPlace}>
+                            <MapPin size={14} aria-hidden="true" /> {place}
+                        </p>
+                    )}
                 </div>
 
-                {clubs && clubs.length > 0 ? (
-                    <div className={styles.grid}>
-                        {clubs.map((club, index) => (
-                            <motion.div
-                                key={club.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.5 + (index * 0.1) }}
+                {(user || canEdit) && (
+                    <div className={styles.heroActions}>
+                        {user && (
+                            <button
+                                type="button"
+                                onClick={() => toggleFollow(college.id)}
+                                className={`${styles.followBtn} ${isFollowing ? styles.following : ''}`}
+                                aria-pressed={!!isFollowing}
                             >
-                                <Link href={`/clubs/${club.id}`} className={styles.clubCard}>
-                                    <div className={styles.clubImageWrapper}>
-                                        {club.image || club.logo ? (
-                                            <Image
-                                                src={club.image || club.logo}
-                                                alt={club.name}
-                                                fill
-                                                className={styles.clubImage}
-                                            />
-                                        ) : (
-                                            <div className={styles.noImage}>No Image</div>
-                                        )}
-                                        <div className={styles.categoryBadge}>{club.category}</div>
-                                    </div>
-                                    <div className={styles.clubInfo}>
-                                        <h3 className={styles.clubName}>{club.name}</h3>
-                                        <p className={styles.viewLink}>View Community →</p>
-                                    </div>
-                                </Link>
-                            </motion.div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className={styles.emptyState}>
-                        <p>No clubs active at {college.name} yet.</p>
+                                {isFollowing ? <Check size={15} aria-hidden="true" /> : <Plus size={15} aria-hidden="true" />}
+                                {isFollowing ? 'Following' : 'Follow'}
+                            </button>
+                        )}
+                        {canEdit && (
+                            <button type="button" onClick={() => setIsEditModalOpen(true)} className={styles.editBtn}>
+                                <Pencil size={14} aria-hidden="true" /> Edit
+                            </button>
+                        )}
                     </div>
                 )}
-            </motion.div>
+            </section>
 
-            <motion.div
-                className={styles.section}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-            >
-                <div className={styles.sectionHeader}>
-                    <h2 className={styles.sectionTitle}>Hosted Events</h2>
-                    <span className={styles.itemCount}>{events.length} Upcoming</span>
+            {credit && (
+                <p className={styles.photoCredit}>
+                    Photo:{' '}
+                    <a href={credit.source} target="_blank" rel="noopener noreferrer">
+                        {credit.author}
+                    </a>
+                    , {credit.license}
+                </p>
+            )}
+
+            {/* ── About + numbers ── */}
+            <section className={styles.overview}>
+                <div className={styles.about}>
+                    <p className="mono-label">About</p>
+                    <p className={styles.aboutText}>
+                        {college.description || `${college.name} is on Campus Connect.`}
+                    </p>
+                </div>
+                <dl className={styles.stats}>
+                    <div className={styles.stat}>
+                        <dt>
+                            <span className={styles.square} style={{ background: 'var(--press-sports)' }} aria-hidden="true" />
+                            Clubs
+                        </dt>
+                        <dd>{clubs.length}</dd>
+                    </div>
+                    <div className={styles.stat}>
+                        <dt>
+                            <span className={styles.square} style={{ background: 'var(--press-technology)' }} aria-hidden="true" />
+                            Upcoming
+                        </dt>
+                        <dd>{events.length}</dd>
+                    </div>
+                    <div className={styles.stat}>
+                        <dt>
+                            <span className={styles.square} style={{ background: 'var(--press-cultural)' }} aria-hidden="true" />
+                            Students
+                        </dt>
+                        <dd>{students}</dd>
+                    </div>
+                </dl>
+            </section>
+
+            {/* ── Events ── */}
+            <section className={styles.section}>
+                <div className={styles.sectionHead}>
+                    <div>
+                        <p className="mono-label">On the board</p>
+                        <h2 className={styles.sectionTitle}>Upcoming events</h2>
+                    </div>
+                    <span className={styles.countPill}>{events.length} upcoming</span>
                 </div>
 
                 {events.length > 0 ? (
                     <div className={styles.grid}>
-                        {events.map((event, index) => (
-                            <motion.div
-                                key={event.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.7 + (index * 0.1) }}
-                            >
-                                <EventCard event={event} index={index} />
-                            </motion.div>
+                        {events.map((event) => (
+                            <EventCard key={event.id} event={event} />
                         ))}
                     </div>
                 ) : (
-                    <div className={styles.emptyState}>
-                        <p>No upcoming events listed for {college.name} yet.</p>
+                    <div className={styles.empty}>
+                        <p className={styles.emptyTitle}>Nothing on the board yet.</p>
+                        <p className={styles.emptyText}>
+                            When a club at {college.name} posts an event, it shows up here.
+                        </p>
                     </div>
                 )}
-            </motion.div>
-        </div>
-    );
-}
+            </section>
 
-/** The photographer and licence for a real campus photo; nothing for stock. */
-function PhotoCreditLine({ name }: { name: string }) {
-    const credit = getCollegePhotoCredit(name);
-    if (!credit) return null;
-    return (
-        <p className={styles.photoCredit}>
-            Photo:{' '}
-            <a href={credit.source} target="_blank" rel="noopener noreferrer">
-                {credit.author}
-            </a>
-            , {credit.license}
-        </p>
+            {/* ── Clubs ── */}
+            <section className={styles.section}>
+                <div className={styles.sectionHead}>
+                    <div>
+                        <p className="mono-label">Societies</p>
+                        <h2 className={styles.sectionTitle}>Clubs on campus</h2>
+                    </div>
+                    <span className={styles.countPill}>
+                        {clubs.length} {clubs.length === 1 ? 'club' : 'clubs'}
+                    </span>
+                </div>
+
+                {clubs.length > 0 ? (
+                    <div className={styles.grid}>
+                        {clubs.map((club) => (
+                            <Link key={club.id} href={`/clubs/${club.id}`} className={styles.clubCard}>
+                                <div className={styles.clubMedia}>
+                                    <Image
+                                        src={resolveClubImage(club)}
+                                        alt=""
+                                        fill
+                                        sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
+                                    />
+                                    <span className={styles.clubCat}>
+                                        <span
+                                            className={styles.square}
+                                            style={{ background: inkFor(club.category) }}
+                                            aria-hidden="true"
+                                        />
+                                        {club.category}
+                                    </span>
+                                </div>
+                                <div className={styles.clubBody}>
+                                    <h3 className={styles.clubName}>{club.name}</h3>
+                                    {club.description && <p className={styles.clubDesc}>{club.description}</p>}
+                                    <span className={styles.clubFoot}>
+                                        <span className={styles.members}>
+                                            <Users size={14} aria-hidden="true" />
+                                            {club.members} {club.members === 1 ? 'member' : 'members'}
+                                        </span>
+                                        <ArrowUpRight size={18} className={styles.clubArrow} aria-hidden="true" />
+                                    </span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <div className={styles.empty}>
+                        <p className={styles.emptyTitle}>No clubs here yet.</p>
+                        <p className={styles.emptyText}>Start one and it will be the first on campus.</p>
+                        <Link href="/clubs/create" className="btn btn-primary">
+                            Start a club
+                        </Link>
+                    </div>
+                )}
+            </section>
+
+            {isEditModalOpen && <EditCollegeModal college={college} onClose={() => setIsEditModalOpen(false)} />}
+        </div>
     );
 }

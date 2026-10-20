@@ -242,7 +242,9 @@ export async function getConversations() {
         return conversations.map(c => {
             const isGroup = c.isGroup;
             const other = c.participants.find(p => p.userId !== session.userId)?.user;
+            const me = c.participants.find(p => p.userId === session.userId);
             const lastMsg = c.messages[0];
+            const lastSender = lastMsg ? c.participants.find(p => p.userId === lastMsg.senderId)?.user : null;
 
             let name = 'Unknown';
             let avatar = null;
@@ -263,7 +265,11 @@ export async function getConversations() {
                 avatar,
                 lastMessage: lastMsg?.content || 'No messages yet',
                 lastMessageAt: lastMsg?.createdAt || c.updatedAt,
-                unread: false,
+                lastMessageFromMe: lastMsg?.senderId === session.userId,
+                lastSenderName: lastSender?.name ?? null,
+                // Unread when the newest message is someone else's and arrived
+                // after this person last opened the conversation.
+                unread: !!lastMsg && lastMsg.senderId !== session.userId && !!me && lastMsg.createdAt > me.lastReadAt,
                 isOnline: other?.lastSeenAt ? (new Date().getTime() - new Date(other.lastSeenAt).getTime() < 2 * 60 * 1000) : false,
                 lastSeen: other?.lastSeenAt
             };
