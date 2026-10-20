@@ -16,6 +16,16 @@ interface LandingProps {
     clubs: FeaturedClub[];
     /** Rows for the running band. Real events, or nothing. */
     marquee: MarqueeItem[];
+    /** The busiest colleges on the board, for the wall of campuses. */
+    colleges: LandingCollege[];
+}
+
+export interface LandingCollege {
+    id: string;
+    name: string;
+    location: string;
+    clubs: number;
+    events: number;
 }
 
 /**
@@ -46,7 +56,7 @@ function priceLabel(price: number) {
  * except the counters, the running band and the scroll reveals, which are
  * their own small client islands.
  */
-export default function Landing({ initialEvents, stats, categories, clubs, marquee }: LandingProps) {
+export default function Landing({ initialEvents, stats, categories, clubs, marquee, colleges }: LandingProps) {
     const next = initialEvents[0];
     const topClub = clubs[0];
 
@@ -97,6 +107,8 @@ export default function Landing({ initialEvents, stats, categories, clubs, marqu
 
             <Marquee items={marquee} duration={60} tone="paper" label="Upcoming events" />
 
+            <Problem />
+
             {/* ── Stats ─────────────────────────────────────────────────
                 Hidden outright when the counts could not be taken. A row
                 of zeros reads as a real measurement of an empty site. */}
@@ -129,6 +141,8 @@ export default function Landing({ initialEvents, stats, categories, clubs, marqu
                     </Reveal>
                 </section>
             )}
+
+            <Steps />
 
             {/* ── What you can do ──────────────────────────────────────
                 A hairline bento. Each tile shows a sliver of the actual
@@ -249,6 +263,8 @@ export default function Landing({ initialEvents, stats, categories, clubs, marqu
                 </section>
             )}
 
+            <PhotoStrip />
+
             {/* ── Categories ─────────────────────────────────────────── */}
             {categories.length > 0 && (
                 <section className={styles.section}>
@@ -270,6 +286,8 @@ export default function Landing({ initialEvents, stats, categories, clubs, marqu
                     </Reveal>
                 </section>
             )}
+
+            {colleges.length > 0 && <CollegeWall colleges={colleges} />}
 
             {/* ── Clubs ──────────────────────────────────────────────── */}
             {clubs.length > 0 && (
@@ -718,5 +736,202 @@ function MiniBoard() {
                 </div>
             ))}
         </div>
+    );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Sections borrowed from the best of godly.design: a problem told
+   with strikethroughs (Kira), three steps with a sliver of UI each
+   (mmmmenu), a running wall of photographs (Cofounder), and a grid
+   of campuses where other sites put customer logos (Gumloop, Teak).
+   ───────────────────────────────────────────────────────────── */
+
+/** Why the board exists, told by crossing out what it replaces. */
+function Problem() {
+    return (
+        <section className={styles.section}>
+            <Reveal>
+                <div className={styles.problem}>
+                    <p className="mono-label">Why this exists</p>
+                    <h2 className={styles.problemTitle}>
+                        <s>Twelve WhatsApp groups.</s> <s>A poster on the canteen wall.</s>{' '}
+                        <s>Finding out the day after.</s> <mark>One board.</mark>
+                    </h2>
+                    <p className={styles.problemBody}>
+                        Campus life is scattered across group chats, notice boards and someone&rsquo;s
+                        story that expired yesterday. Campus Connect puts every event, club and team call
+                        from every college in one place, in the order it happens.
+                    </p>
+                </div>
+            </Reveal>
+        </section>
+    );
+}
+
+/** Three steps from signing up to walking in, each with its own sliver of UI. */
+function Steps() {
+    return (
+        <section className={styles.section}>
+            <Reveal>
+                <SectionHead label="How it works" title={<>From scrolling to <mark>showing up.</mark></>} />
+            </Reveal>
+            <div className={styles.steps}>
+                <Reveal delay={0}>
+                    <div className={styles.step}>
+                        <span className={styles.stepNum}>01</span>
+                        <h3 className={styles.stepTitle}>Pick your campus</h3>
+                        <p className={styles.stepBody}>
+                            Choose your college and what you&rsquo;re into. The board fills with what matters to you.
+                        </p>
+                        <div className={styles.stepVisual} aria-hidden="true">
+                            <div className={styles.selectPill}>
+                                <span className={styles.square} style={{ background: 'var(--press-technology)' }} />
+                                Your college
+                                <span className={styles.selectCaret}>▾</span>
+                            </div>
+                            <div className={styles.chipRowCenter}>
+                                <span className={`${styles.skillSm} ${styles.skillOn}`}>Hackathons</span>
+                                <span className={`${styles.skillSm} ${styles.skillOn}`}>Music</span>
+                                <span className={styles.skillSm}>Sports</span>
+                                <span className={styles.skillSm}>Design</span>
+                            </div>
+                        </div>
+                    </div>
+                </Reveal>
+                <Reveal delay={0.08}>
+                    <div className={styles.step}>
+                        <span className={styles.stepNum}>02</span>
+                        <h3 className={styles.stepTitle}>Tap to join</h3>
+                        <p className={styles.stepBody}>
+                            Register for events, join clubs, or post that you need a teammate. One tap each.
+                        </p>
+                        <div className={styles.stepVisual} aria-hidden="true">
+                            <div className={styles.joinRow}>
+                                <span className={styles.miniDate}>
+                                    <b>14</b>
+                                    Dec
+                                </span>
+                                <span className={styles.miniTitle}>Campus hackathon</span>
+                                <span className={styles.joinedPillSolid}>
+                                    <Check size={12} /> You&rsquo;re in
+                                </span>
+                            </div>
+                            <div className={`${styles.joinRow} ${styles.joinRowFaded}`}>
+                                <span className={styles.miniDate}>
+                                    <b>19</b>
+                                    Dec
+                                </span>
+                                <span className={styles.miniTitle}>Winter cultural night</span>
+                                <span className={styles.joinBtnSm}>Join</span>
+                            </div>
+                        </div>
+                    </div>
+                </Reveal>
+                <Reveal delay={0.16}>
+                    <div className={styles.step}>
+                        <span className={styles.stepNum}>03</span>
+                        <h3 className={styles.stepTitle}>Show up together</h3>
+                        <p className={styles.stepBody}>
+                            Your ticket, the venue and a group chat with your team, all waiting on the day.
+                        </p>
+                        <div className={styles.stepVisual} aria-hidden="true">
+                            <div className={styles.ticket}>
+                                <div className={styles.ticketMain}>
+                                    <span className={styles.ticketLabel}>Admit one</span>
+                                    <span className={styles.ticketTitle}>Campus hackathon</span>
+                                    <span className={styles.ticketMeta}>Sat 9:00 am · Main auditorium</span>
+                                </div>
+                                <span className={styles.ticketCode} />
+                            </div>
+                        </div>
+                    </div>
+                </Reveal>
+            </div>
+        </section>
+    );
+}
+
+const STRIP = [
+    { id: '1661534424056-6589e239546b', caption: 'fest finale' },
+    { id: '1517486808906-6ca8b3f04846', caption: 'between classes' },
+    { id: '1731160807880-daf859b64420', caption: 'hack week' },
+    { id: '1558023598-0afa967eac90', caption: 'club fair' },
+    { id: '1622831877966-18a6c8731a01', caption: 'cultural night' },
+    { id: '1682962232755-f1d051ddb638', caption: 'project sprint' },
+    { id: '1765572144519-1dc1e6e07bc9', caption: 'orientation week' },
+    { id: '1549057446-9f5c6ac91a04', caption: 'after the exam' },
+] as const;
+
+/**
+ * A running wall of campus photographs. Rendered twice so the loop is
+ * seamless, the same trick the text marquee uses; hovering holds it.
+ */
+function PhotoStrip() {
+    const run = (hidden: boolean) => (
+        <div className={styles.stripRun} aria-hidden={hidden || undefined}>
+            {STRIP.map((p, i) => (
+                <figure
+                    key={p.id}
+                    className={styles.stripItem}
+                    style={{ transform: `rotate(${i % 2 ? 2.5 : -2}deg)` }}
+                >
+                    <span className={styles.stripPhoto}>
+                        <Image src={unsplash(p.id, 520, 620)} alt="" fill sizes="260px" />
+                    </span>
+                    <figcaption>{p.caption}</figcaption>
+                </figure>
+            ))}
+        </div>
+    );
+
+    return (
+        <section className={styles.section}>
+            <Reveal>
+                <div className={styles.stripHead}>
+                    <p className="mono-label">Campus life</p>
+                    <h2 className={styles.sectionTitle}>
+                        This is what it&rsquo;s <mark>for.</mark>
+                    </h2>
+                </div>
+            </Reveal>
+            <div
+                className={styles.strip}
+                role="img"
+                aria-label="Photographs of students at fests, hackathons, club fairs and between classes."
+            >
+                <div className={styles.stripTrack}>
+                    {run(false)}
+                    {run(true)}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+/** Where other sites put customer logos, the campuses on the board. */
+function CollegeWall({ colleges }: { colleges: LandingCollege[] }) {
+    return (
+        <section className={styles.section}>
+            <Reveal>
+                <SectionHead
+                    label="Campuses"
+                    title="Colleges already on the board."
+                    link={{ href: '/colleges', label: 'All colleges' }}
+                />
+            </Reveal>
+            <Reveal>
+                <div className={styles.collegeWall}>
+                    {colleges.map((c) => (
+                        <Link key={c.id} href={`/colleges/${c.id}`} className={styles.collegeTile}>
+                            <span className={styles.collegeName}>{c.name}</span>
+                            <span className={styles.collegeMeta}>
+                                {c.location && c.location !== 'Unspecified' ? c.location : 'Campus'}
+                                {c.clubs > 0 && ` · ${c.clubs} ${c.clubs === 1 ? 'club' : 'clubs'}`}
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            </Reveal>
+        </section>
     );
 }
