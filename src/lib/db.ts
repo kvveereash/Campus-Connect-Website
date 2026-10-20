@@ -21,9 +21,26 @@ if (!process.env.DATABASE_URL) {
     )
 }
 
+/* Prisma gives up connecting after 5 seconds unless the URL says otherwise.
+   The functions run in Netlify's us-east-2 and the database is Supabase in
+   ap-south-1, and a cold connection across that distance (TCP, TLS, then the
+   pooler's own handshake) can exceed it: the live site failed every query
+   with "Can't reach database server" at exactly 5s while the same URL
+   connected locally. A URL that sets its own timeouts keeps them. */
+function withConnectionTimeouts(url: string): string {
+    try {
+        const parsed = new URL(url)
+        if (!parsed.searchParams.has('connect_timeout')) parsed.searchParams.set('connect_timeout', '15')
+        if (!parsed.searchParams.has('pool_timeout')) parsed.searchParams.set('pool_timeout', '15')
+        return parsed.toString()
+    } catch {
+        return url
+    }
+}
+
 const prismaClientSingleton = () => {
     const client = new PrismaClient({
-        datasourceUrl: process.env.DATABASE_URL,
+        datasourceUrl: withConnectionTimeouts(process.env.DATABASE_URL!),
         log: [
             { emit: 'event', level: 'query' },
             { emit: 'event', level: 'error' },
