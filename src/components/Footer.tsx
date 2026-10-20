@@ -72,6 +72,7 @@ export default function Footer() {
                             <Link href="/legal/terms">Terms</Link>
                             <Link href="/legal/guidelines">Guidelines</Link>
                             <Link href="/legal/refunds">Refunds</Link>
+                            <Link href="/legal/credits">Credits</Link>
                         </nav>
                     </div>
                 </div>

@@ -7,6 +7,7 @@ import { inkFor } from './events/press';
 import Marquee, { type MarqueeItem } from '@/components/Marquee';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import Reveal from '@/components/Reveal';
+import { resolveCollegeImage } from '@/lib/college-images';
 import styles from './landing.module.css';
 
 interface LandingProps {
@@ -923,6 +924,14 @@ function CollegeWall({ colleges }: { colleges: LandingCollege[] }) {
                 <div className={styles.collegeWall}>
                     {colleges.map((c) => (
                         <Link key={c.id} href={`/colleges/${c.id}`} className={styles.collegeTile}>
+                            <span className={styles.collegePhoto}>
+                                <Image
+                                    src={resolveCollegeImage({ name: c.name })}
+                                    alt=""
+                                    fill
+                                    sizes="(max-width: 640px) 50vw, (max-width: 1000px) 33vw, 240px"
+                                />
+                            </span>
                             <span className={styles.collegeName}>{c.name}</span>
                             <span className={styles.collegeMeta}>
                                 {c.location && c.location !== 'Unspecified' ? c.location : 'Campus'}

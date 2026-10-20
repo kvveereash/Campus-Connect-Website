@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import EventCard from '@/components/EventCard';
 import styles from './page.module.css';
-import { resolveCollegeImage } from '@/lib/college-images';
+import { resolveCollegeImage, getCollegePhotoCredit } from '@/lib/college-images';
 import { EventWithRelations } from '@/lib/actions';
 import EditCollegeModal from '@/components/colleges/EditCollegeModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -64,6 +64,7 @@ export default function CollegeClient({ college, events, clubs = [] }: CollegeCl
                                 className={styles.logo}
                             />
                         </motion.div>
+                        <PhotoCreditLine name={college.name} />
                     </div>
 
                     <div className={styles.info}>
@@ -216,3 +217,17 @@ export default function CollegeClient({ college, events, clubs = [] }: CollegeCl
     );
 }
 
+/** The photographer and licence for a real campus photo; nothing for stock. */
+function PhotoCreditLine({ name }: { name: string }) {
+    const credit = getCollegePhotoCredit(name);
+    if (!credit) return null;
+    return (
+        <p className={styles.photoCredit}>
+            Photo:{' '}
+            <a href={credit.source} target="_blank" rel="noopener noreferrer">
+                {credit.author}
+            </a>
+            , {credit.license}
+        </p>
+    );
+}

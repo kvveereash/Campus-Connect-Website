@@ -321,3 +321,18 @@
         justify-content: center;
     }
 }
+
+/* Credit for a Wikimedia Commons campus photo: the licences require it. */
+.photoCredit {
+    max-width: 220px;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--color-ash);
+}
+
+.photoCredit a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
