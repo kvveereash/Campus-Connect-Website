@@ -153,7 +153,7 @@ export default function CollegeClient({ college, events, clubs, students }: Coll
                 </div>
 
                 {events.length > 0 ? (
-                    <div className={styles.grid}>
+                    <div className={styles.grid} data-reveal-group>
                         {events.map((event) => (
                             <EventCard key={event.id} event={event} />
                         ))}
@@ -181,7 +181,7 @@ export default function CollegeClient({ college, events, clubs, students }: Coll
                 </div>
 
                 {clubs.length > 0 ? (
-                    <div className={styles.grid}>
+                    <div className={styles.grid} data-reveal-group>
                         {clubs.map((club) => (
                             <Link key={club.id} href={`/clubs/${club.id}`} className={styles.clubCard}>
                                 <div className={styles.clubMedia}>

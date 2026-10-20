@@ -39,7 +39,9 @@ export default async function TeamFinderPage() {
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.title}>Team Matchmaker</h1>
+                <h1 className={styles.title}>
+                    Team <em className="accent">matchmaker</em>
+                </h1>
                 <p className={styles.subtitle}>
                     We analyzed your skills and interests to find these perfect teammates for your next project.
                 </p>
@@ -77,7 +79,7 @@ export default async function TeamFinderPage() {
                 </div>
 
                 {matches.length > 0 ? (
-                    <div className={styles.grid}>
+                    <div className={styles.grid} data-reveal-group>
                         {matches.map((match) => (
                             <div key={match.id} className={styles.matchCard}>
                                 <div className={styles.matchScore}>

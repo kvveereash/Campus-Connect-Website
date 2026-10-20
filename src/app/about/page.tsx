@@ -45,7 +45,7 @@ export default async function AboutPage() {
         <div className={styles.page}>
             <p className={styles.label}>About</p>
             <h1 className={styles.lede}>
-                Campus life is spread across forty group chats.
+                Campus life is spread across <em className="accent">forty group chats.</em>
             </h1>
 
             <div className={styles.prose}>

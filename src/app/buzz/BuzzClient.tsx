@@ -120,7 +120,9 @@ export default function BuzzClient({ posts, myClubs }: Props) {
             <header className={styles.masthead}>
                 <div>
                     <p className={styles.label}>Buzz</p>
-                    <h1 className={styles.title}>What clubs are saying.</h1>
+                    <h1 className={styles.title}>
+                        What clubs are <em className="accent">saying.</em>
+                    </h1>
                 </div>
                 <p className={styles.note}>Newest first, across every verified club</p>
             </header>

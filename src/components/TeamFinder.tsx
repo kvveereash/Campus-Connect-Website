@@ -136,7 +136,7 @@ export default function TeamFinder({ eventId }: { eventId: string }) {
                 </div>
             )}
 
-            <div className={styles.list}>
+            <div className={styles.list} data-reveal-group>
                 {requests.length > 0 ? (
                     requests.map((req) => (
                         <TeamRequestCard

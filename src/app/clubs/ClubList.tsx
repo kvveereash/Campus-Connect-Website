@@ -71,7 +71,7 @@ export default function ClubList({ initialClubs, user, joinedClubIds }: ClubList
                 <div>
                     <p className={styles.label}>Societies</p>
                     <h1 className={styles.title}>
-                        Find the people <mark>already doing it.</mark>
+                        Find the people <em className="accent">already doing it.</em>
                     </h1>
                 </div>
                 <span className={styles.count}>

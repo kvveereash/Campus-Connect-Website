@@ -8,10 +8,10 @@ import Landing from './Landing';
 export const dynamic = 'force-dynamic';
 
 export default async function LandingPage() {
-    // Three for the "Coming up" rows, a longer run for the marquee. Both
-    // come from the same cached query, so the second costs nothing.
+    // Eight for the hero deck and the week rail, a longer run for the
+    // marquee. Both come from the same cached query, so the second is cheap.
     const [events, marqueeEvents, stats, categories, clubs, allColleges] = await Promise.all([
-        getUpcomingEvents(3),
+        getUpcomingEvents(8),
         getUpcomingEvents(14),
         getLandingStats(),
         getCategoryBand(),
@@ -19,29 +19,20 @@ export default async function LandingPage() {
         getAllColleges(),
     ]);
 
-    // The wall leads with the campuses that have the most going on.
+    // The index leads with the campuses that have the most going on.
     const colleges = [...allColleges]
         .sort((a, b) => b.clubs + b.events - (a.clubs + a.events))
-        .slice(0, 10)
+        .slice(0, 8)
         .map(({ id, name, location, clubs, events }) => ({ id, name, location, clubs, events }));
 
     return (
         <Landing
-            initialEvents={events}
+            events={events}
             stats={stats}
             categories={categories}
             clubs={clubs}
             colleges={colleges}
-            marquee={marqueeEvents.map((e) => ({
-                id: e.id,
-                label: e.title,
-                meta: new Date(e.date).toLocaleDateString('en-IN', {
-                    timeZone: 'Asia/Kolkata',
-                    day: 'numeric',
-                    month: 'short',
-                }),
-                href: `/events/${e.id}`,
-            }))}
+            marquee={marqueeEvents.map((e) => e.title)}
         />
     );
 }

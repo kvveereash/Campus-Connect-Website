@@ -52,7 +52,9 @@ export default function CollegesClient({ initialColleges }: CollegesClientProps)
             <header className={styles.masthead}>
                 <div>
                     <p className={styles.label}>Campuses</p>
-                    <h1 className={styles.title}>Every campus, one feed.</h1>
+                    <h1 className={styles.title}>
+                        Every campus, <em className="accent">one feed.</em>
+                    </h1>
                 </div>
                 <span className={styles.count}>
                     {initialColleges.length} institutions

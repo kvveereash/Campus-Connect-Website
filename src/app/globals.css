@@ -95,6 +95,7 @@
   --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-serif: var(--font-display);
+  --font-accent: var(--font-instrument-serif), ui-serif, Georgia, serif;
 
   --font-heading: var(--font-display);
   --font-body: var(--font-sans);
@@ -265,11 +266,28 @@ html.lenis body {
 }
 
 /* The page entrance, from app/template.tsx.
-   `both` fill-mode means the first keyframe applies at first paint, so the
-   fade starts immediately rather than waiting on hydration, and the last
-   keyframe sticks — the page ends visible no matter what JavaScript does. */
+   `backwards` fill-mode applies the first keyframe at first paint, so the
+   fade starts immediately rather than waiting on hydration, and the page
+   ends visible no matter what JavaScript does (its own styles are opacity
+   1, no transform).
+   Not `both`: a transform animation that keeps filling after it ends stays
+   active, and an element with an active transform animation becomes the
+   containing block for position: fixed descendants. Every pinned section
+   (GSAP pins with position: fixed) then scrolled away with the page. */
+/* The spoken word in a headline: a serif italic in campus blue, set a
+   touch larger so it sits optically level with the grotesk around it.
+   One per heading, the way the home page uses it. */
+.accent {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
+  letter-spacing: -0.02em;
+  color: var(--color-accent);
+}
+
 .pageEnter {
-  animation: pageEnter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: pageEnter 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 @keyframes pageEnter {

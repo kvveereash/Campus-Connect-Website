@@ -41,7 +41,7 @@ export default function EventSection({ kicker, title, events, loading, empty, ac
                     <EventCardSkeleton />
                 </div>
             ) : events.length > 0 ? (
-                <div className={styles.eventsGrid}>
+                <div className={styles.eventsGrid} data-reveal-group>
                     {events.map((event, i) => (
                         <EventCard key={event.id} event={event} index={i} />
                     ))}

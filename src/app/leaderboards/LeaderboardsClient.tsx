@@ -64,7 +64,9 @@ export default function LeaderboardsClient({ data }: { data: LeaderboardsData })
             <header className={styles.masthead}>
                 <div>
                     <p className={styles.label}>Standings</p>
-                    <h1 className={styles.title}>Who turns up.</h1>
+                    <h1 className={styles.title}>
+                        Who <em className="accent">turns up.</em>
+                    </h1>
                 </div>
                 <p className={styles.note}>Counted from registrations, not self-reported</p>
             </header>

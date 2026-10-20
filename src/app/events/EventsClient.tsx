@@ -95,7 +95,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
                     <p className="mono-label">The board</p>
                     <div className={styles.mastheadRow}>
                         <h1 className={styles.wordmark}>
-                            What&rsquo;s <mark>on</mark>
+                            What&rsquo;s <em className="accent">on</em>
                         </h1>
                         <span className={styles.count}>{visible.length} upcoming</span>
                     </div>
@@ -159,7 +159,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
                         <p className={styles.empty}>Nothing matches those filters.</p>
                     ) : (
                         groups.map((group) => (
-                            <section key={group.label}>
+                            <section key={group.label} data-reveal-group>
                                 <div className={styles.groupHead}>
                                     <h2>{group.label}</h2>
                                     <span className={styles.groupCount}>{group.items.length}</span>

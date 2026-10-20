@@ -3,6 +3,10 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Lenis from 'lenis';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 /**
  * Lenis smooth scrolling.
@@ -63,6 +67,11 @@ export default function SmoothScroll() {
             });
 
             instance.current = lenis;
+
+            // GSAP's ScrollTrigger reads the scroll position on native scroll
+            // events; telling it on every Lenis frame keeps pinned and
+            // scrubbed sections exactly in step with the eased scroll.
+            lenis.on('scroll', ScrollTrigger.update);
 
             // A modal locking the body should freeze the page behind it.
             observer = new MutationObserver(() => {

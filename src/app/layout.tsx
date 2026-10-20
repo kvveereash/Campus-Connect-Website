@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Bricolage_Grotesque, Geist_Mono } from "next/font/google";
+import { Inter, Bricolage_Grotesque, Geist_Mono, Instrument_Serif } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChromeGate from "@/components/ChromeGate";
 import SmoothScroll from "@/components/SmoothScroll";
+import ScrollReveal from "@/components/ScrollReveal";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -28,6 +29,15 @@ const bricolage = Bricolage_Grotesque({
   display: "swap",
 });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
+// The accent: a serif italic for the odd word that should sound spoken, set
+// against the grotesk the way a poster mixes a headline with a hand note.
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://campusconnect2026.netlify.app'),
@@ -78,7 +88,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${bricolage.variable} ${geistMono.variable}`}
+      className={`${inter.variable} ${bricolage.variable} ${geistMono.variable} ${instrumentSerif.variable}`}
     >
       <body>
         <SWRegister /> {/* Added Service Worker Registration */}
@@ -92,6 +102,7 @@ export default function RootLayout({
             <AuthProvider>
               <CommandProvider>
                 <SmoothScroll />
+                <ScrollReveal />
                 <ChromeGate>
                   <Navbar />
                 </ChromeGate>
