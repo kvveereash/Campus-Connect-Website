@@ -36,7 +36,7 @@ export async function changePassword(
 
     // Same limiter as sign-in: this endpoint verifies a password, so it can be
     // used to guess one just as effectively.
-    const limit = await checkRateLimit(authLimiter, await getRateLimitIdentifier());
+    const limit = await checkRateLimit(authLimiter, getRateLimitIdentifier(session.userId as string));
     if (!limit.success) {
         return { success: false, error: 'Too many attempts. Try again in a minute.' };
     }
@@ -75,7 +75,7 @@ export async function deleteAccount(password: string): Promise<ActionState> {
     const session = await getSession();
     if (!session?.userId) return { success: false, error: 'Not signed in' };
 
-    const limit = await checkRateLimit(authLimiter, await getRateLimitIdentifier());
+    const limit = await checkRateLimit(authLimiter, getRateLimitIdentifier(session.userId as string));
     if (!limit.success) {
         return { success: false, error: 'Too many attempts. Try again in a minute.' };
     }

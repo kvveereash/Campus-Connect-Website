@@ -153,3 +153,25 @@ export function getRateLimitIdentifier(
     // Default fallback
     return 'anonymous';
 }
+
+/**
+ * The caller's IP, for rate limiting requests that have no user yet.
+ *
+ * Netlify sets x-nf-client-connection-ip itself, so prefer it; the first
+ * x-forwarded-for hop is the fallback elsewhere. Without either, every
+ * anonymous request would share one 'anonymous' bucket, and a single client
+ * could use it up for everyone.
+ */
+export async function getClientIp(): Promise<string | undefined> {
+    try {
+        const { headers } = await import('next/headers');
+        const h = await headers();
+        return h.get('x-nf-client-connection-ip')
+            ?? h.get('x-forwarded-for')?.split(',')[0]?.trim()
+            ?? h.get('x-real-ip')
+            ?? undefined;
+    } catch {
+        // Called outside a request (scripts, tests).
+        return undefined;
+    }
+}

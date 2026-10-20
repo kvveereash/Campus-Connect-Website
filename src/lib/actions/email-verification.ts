@@ -30,7 +30,9 @@ export async function sendVerificationEmail(): Promise<ActionState> {
     const session = await getSession();
     if (!session?.userId) return { success: false, error: 'Not signed in' };
 
-    const limit = await checkRateLimit(authLimiter, await getRateLimitIdentifier());
+    // Per user, and under its own key: sharing the sign-in bucket meant a few
+    // resends locked the user out of changing their password.
+    const limit = await checkRateLimit(authLimiter, `${getRateLimitIdentifier(session.userId as string)}:verify-email`);
     if (!limit.success) {
         return { success: false, error: 'Just sent one. Give it a minute.' };
     }
