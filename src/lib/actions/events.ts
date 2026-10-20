@@ -1,12 +1,11 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { Event as PrismaEvent, Badge } from '@prisma/client';
+import { Event as PrismaEvent, Badge, Prisma } from '@prisma/client';
 import { revalidatePath, updateTag } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { unstable_cache } from 'next/cache';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
-import { z } from 'zod';
 import { isOk } from '@/lib/api-response';
 import { createProtectedAction } from '@/lib/protected-action';
 import { eventSchema, updateEventSchema, joinEventSchema } from '@/lib/schemas';
@@ -209,6 +208,15 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
     audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.eventId },
 });
 
+function contentChanged(event: PrismaEvent, update: Prisma.EventUpdateInput) {
+    return (Object.keys(update) as (keyof PrismaEvent & keyof Prisma.EventUpdateInput)[]).some((key) => {
+        const before = event[key];
+        const after = update[key];
+        if (before instanceof Date && after instanceof Date) return before.getTime() !== after.getTime();
+        return before !== after;
+    });
+}
+
 export const updateEventAction = createProtectedAction(updateEventSchema, async ({ id, data }, session) => {
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) throw new Error('Event not found');
@@ -217,10 +225,23 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
         throw new Error('Unauthorized');
     }
 
-    const { date, ...otherData } = data;
-    const updateData: any = { ...otherData };
-    if (date) {
-        updateData.date = new Date(date);
+    // Field by field, never a spread: the schema strips unknown keys, but this
+    // is the line that decides what reaches the database.
+    const updateData: Prisma.EventUpdateInput = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.date !== undefined) updateData.date = new Date(data.date);
+    if (data.venue !== undefined) updateData.venue = data.venue;
+    if (data.category !== undefined) updateData.category = data.category;
+    if (data.thumbnail !== undefined) updateData.thumbnail = data.thumbnail;
+    if (data.price !== undefined) updateData.price = data.price;
+
+    // An approved event that changes goes back to the admin queue, or approval
+    // would be a one-time check that any later edit walks around.
+    if (event.verified && contentChanged(event, updateData)) {
+        updateData.verified = false;
+        updateData.verifiedBy = null;
+        updateData.verifiedAt = null;
     }
 
     const updatedEvent = await prisma.event.update({
@@ -236,36 +257,6 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
 }, {
     audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.id },
 });
-
-export const completePaymentAction = createProtectedAction(
-    z.object({ registrationId: z.string() }),
-    async ({ registrationId }, session) => {
-        const registration = await prisma.eventRegistration.findUnique({
-            where: { id: registrationId }
-        });
-
-        if (!registration || registration.userId !== session.userId) {
-            throw new Error('Registration not found');
-        }
-
-        await prisma.eventRegistration.update({
-            where: { id: registrationId },
-            data: {
-                status: 'PAID',
-                amountPaid: 0,
-                paymentId: `sim_${Math.random().toString(36).substr(2, 9)}`
-            }
-        });
-
-        revalidatePath('/events');
-        revalidatePath(`/events/${registration.eventId}`);
-        revalidatePath('/profile');
-        updateTag(`event-${registration.eventId}`);
-        updateTag(CACHE_TAGS.EVENTS);
-
-        return { success: true };
-    }
-);
 
 // ─────────────────────────────────────────────────
 // Legacy Wrappers (backward compatible)
@@ -314,13 +305,6 @@ export async function updateEvent(eventId: string, data: Partial<PrismaEvent>) {
     const result = await updateEventAction({ id: eventId, data: safeData });
     if (!isOk(result)) return { success: false, error: result.error || 'Unknown error' };
     return { success: true, event: result.data.event };
-}
-
-/** @deprecated Use completePaymentAction directly */
-export async function completePayment(registrationId: string) {
-    const result = await completePaymentAction({ registrationId });
-    if (!isOk(result)) return { success: false, error: result.error };
-    return { success: true };
 }
 
 // ─────────────────────────────────────────────────

@@ -51,9 +51,22 @@ export const eventSchema = z.object({
     maxAttendees: z.number().int().positive().max(100000).optional(),
 });
 
+/* Not eventSchema.partial(). Under zod 4 .partial() keeps price's .default(0),
+   so every edit that left price out quietly made a paid event free. The host
+   club and college are not editable here either: moving an event to a club
+   would need the same club-admin check that createEventAction does. Keys not
+   listed are stripped. */
 export const updateEventSchema = z.object({
     id: z.string().max(50),
-    data: eventSchema.partial()
+    data: eventSchema
+        .omit({ price: true, clubId: true, hostCollegeId: true })
+        .partial()
+        .extend({
+            price: z.number()
+                .nonnegative("Price cannot be negative")
+                .max(100000, "Price seems too high")
+                .optional(),
+        }),
 });
 
 export const joinEventSchema = z.object({
