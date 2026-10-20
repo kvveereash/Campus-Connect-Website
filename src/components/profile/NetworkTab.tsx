@@ -1,12 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowRight, Building2, Plus, Users } from 'lucide-react';
 import { User, Club, College } from '@/types';
-import { resolveCollegeImage } from '@/lib/college-images';
+import { resolveClubImage, resolveCollegeImage } from '@/lib/college-images';
 import styles from '@/app/profile/page.module.css';
-import EmptyState from '@/components/common/EmptyState';
-import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 
 interface NetworkTabProps {
     user: User;
@@ -14,110 +13,98 @@ interface NetworkTabProps {
     followedColleges: College[];
 }
 
-export default function NetworkTab({ user, clubs, followedColleges }: NetworkTabProps) {
-    const router = useRouter();
+/** Clubs you belong to and colleges you follow, as tiles. */
+export default function NetworkTab({ user, followedColleges }: NetworkTabProps) {
+    const memberships = user.clubMemberships ?? [];
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-8"
-        >
-            {/* Joined Clubs */}
-            <div className={styles.card}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 className={styles.cardTitle} style={{ marginBottom: 0 }}>My Clubs</h3>
-                    <button
-                        onClick={() => router.push('/clubs/create')}
-                        className="btn btn-outline"
-                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
-                    >
-                        + Create Club
-                    </button>
+        <>
+            <section className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <div>
+                        <span className={styles.cardKicker}>Member of</span>
+                        <h2 className={styles.cardTitle}>
+                            <Users size={18} aria-hidden="true" /> My clubs
+                            <span className={styles.countPill}>{memberships.length}</span>
+                        </h2>
+                    </div>
+                    <Link href="/clubs/create" className={styles.headLink}>
+                        <Plus size={14} aria-hidden="true" /> Start a club
+                    </Link>
                 </div>
 
-                {user.clubMemberships && user.clubMemberships.length > 0 ? (
+                {memberships.length > 0 ? (
                     <div className={styles.networkGrid}>
-                        {user.clubMemberships.map(membership => (
-                            <div key={membership.clubId} className={styles.networkCard} onClick={() => router.push(`/clubs/${membership.clubId}`)}>
-                                {membership.club?.logo ? (
-                                    <Image
-                                        src={membership.club.logo}
-                                        alt=""
-                                        width={48}
-                                        height={48}
-                                        className={styles.miniLogo}
-                                        style={{ objectFit: 'cover' }}
-                                    />
-                                ) : (
-                                    <div className={styles.miniLogo} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--primary)', color: 'white' }}>
-                                        {membership.club?.name.charAt(0)}
-                                    </div>
-                                )}
-                                <div>
-                                    <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>{membership.club?.name}</h4>
-                                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{membership.role}</p>
-                                </div>
-                            </div>
+                        {memberships.map((m) => (
+                            <Link key={m.clubId} href={`/clubs/${m.clubId}`} className={styles.networkCard}>
+                                <Image
+                                    src={resolveClubImage({ name: m.club?.name ?? '', logo: m.club?.logo ?? null, category: m.club?.category ?? '' })}
+                                    alt=""
+                                    width={44}
+                                    height={44}
+                                    className={styles.miniLogo}
+                                />
+                                <span className={styles.networkText}>
+                                    <span className={styles.networkName}>{m.club?.name}</span>
+                                    <span className={styles.networkMeta}>{m.role.toLowerCase()}</span>
+                                </span>
+                                <ArrowRight size={15} className={styles.networkArrow} aria-hidden="true" />
+                            </Link>
                         ))}
                     </div>
                 ) : (
-                    <p className={styles.empty}>You aren't a member of any clubs yet.</p>
+                    <div className={`${styles.empty} ${styles.emptyBox}`}>
+                        <p className={styles.emptyTitle}>No clubs yet.</p>
+                        <p>Join a club and it shows up here.</p>
+                        <Link href="/clubs" className={styles.headLink}>
+                            Browse clubs <ArrowRight size={14} aria-hidden="true" />
+                        </Link>
+                    </div>
                 )}
-            </div>
+            </section>
 
-            {/* Following Colleges */}
-            <div className={styles.card}>
-                <h3 className={styles.cardTitle} style={{ marginBottom: '1rem' }}>Colleges Following</h3>
+            <section className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <div>
+                        <span className={styles.cardKicker}>Following</span>
+                        <h2 className={styles.cardTitle}>
+                            <Building2 size={18} aria-hidden="true" /> Colleges
+                            <span className={styles.countPill}>{followedColleges.length}</span>
+                        </h2>
+                    </div>
+                </div>
+
                 {followedColleges.length > 0 ? (
                     <div className={styles.networkGrid}>
                         {followedColleges.map((college) => (
-                            <div key={college.id} className={styles.networkCard} onClick={() => router.push(`/colleges/${college.id}`)}>
+                            <Link key={college.id} href={`/colleges/${college.id}`} className={styles.networkCard}>
                                 <Image
                                     src={resolveCollegeImage(college)}
                                     alt=""
-                                    width={48}
-                                    height={48}
+                                    width={44}
+                                    height={44}
                                     className={styles.miniLogo}
                                 />
-                                <div>
-                                    <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>{college.name}</h4>
-                                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>University</p>
-                                </div>
-                            </div>
+                                <span className={styles.networkText}>
+                                    <span className={styles.networkName}>{college.name}</span>
+                                    {college.location && college.location !== 'Unspecified' && (
+                                        <span className={styles.networkMeta}>{college.location}</span>
+                                    )}
+                                </span>
+                                <ArrowRight size={15} className={styles.networkArrow} aria-hidden="true" />
+                            </Link>
                         ))}
                     </div>
                 ) : (
-                    <p className={styles.empty}>You are not following any colleges.</p>
+                    <div className={`${styles.empty} ${styles.emptyBox}`}>
+                        <p className={styles.emptyTitle}>Not following any colleges.</p>
+                        <p>Follow a campus to see its events first.</p>
+                        <Link href="/colleges" className={styles.headLink}>
+                            Browse colleges <ArrowRight size={14} aria-hidden="true" />
+                        </Link>
+                    </div>
                 )}
-            </div>
-
-            {/* Following Users */}
-            <div className={styles.card}>
-                <h3 className={styles.cardTitle} style={{ marginBottom: '1rem' }}>People Following</h3>
-                <div className={styles.networkGrid}>
-                    {user.following && user.following.length > 0 ? (
-                        user.following.map(userId => (
-                            <div key={userId} className={styles.networkCard} onClick={() => router.push(`/profile/${userId}`)}>
-                                <div style={{
-                                    width: '48px', height: '48px', borderRadius: '50%', background: 'var(--primary-color)',
-                                    color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold'
-                                }}>
-                                    U{userId.replace('u', '')}
-                                </div>
-                                <div>
-                                    <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>User {userId}</h4>
-                                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Student</p>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <EmptyState title="No Connections" description="Connect with other students." />
-                    )}
-                </div>
-            </div>
-        </motion.div>
+            </section>
+        </>
     );
 }

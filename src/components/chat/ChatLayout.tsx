@@ -1,74 +1,84 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Plus, Users } from 'lucide-react';
 import { ConversationList } from './ConversationList';
 import { ChatWindow } from './ChatWindow';
 import { CreateGroupModal } from './CreateGroupModal';
-import styles from './Chat.module.css';
-import { useSearchParams, useRouter } from 'next/navigation';
-
 import { updatePresence } from '@/lib/actions/chat';
+import styles from './Chat.module.css';
 
+/**
+ * Inbox on the left, the open conversation on the right. The open one lives
+ * in the URL (?c=...) so a refresh or a shared link lands on it, and on a
+ * phone that same param decides which of the two panes is showing.
+ */
 export default function ChatLayout() {
-    // Current conversation ID from URL or state
-    // Actually URL param ?c=... is better for refreshing
     const searchParams = useSearchParams();
     const router = useRouter();
     const activeId = searchParams.get('c');
-
-    const [mobileView, setMobileView] = useState('list'); // 'list' or 'chat'
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         // Heartbeat for online status
         updatePresence();
-        const interval = setInterval(updatePresence, 30000); // Every 30s
+        const interval = setInterval(updatePresence, 30000);
         return () => clearInterval(interval);
     }, []);
 
-    useEffect(() => {
-        if (activeId) {
-            setMobileView('chat');
-        } else {
-            setMobileView('list');
-        }
-    }, [activeId]);
-
-    const handleSelect = (id: string) => {
-        router.push(`/messages?c=${id}`);
-    };
-
-    const handleBack = () => {
-        router.push('/messages');
-    };
-
-    const handleGroupCreated = (id: string) => { // Auto-select new group
-        router.push(`/messages?c=${id}`);
-    };
+    const open = (id: string) => router.push(`/messages?c=${id}`);
 
     return (
         <div className={styles.chatContainer}>
-            <div className={`${styles.sidebar} ${mobileView === 'chat' ? styles.hiddenMobile : ''}`}>
-                <div className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2>Messages</h2>
-                    <button className={styles.createGroupBtn} onClick={() => setIsModalOpen(true)} title="Create Group">+</button>
+            <aside className={`${styles.sidebar} ${activeId ? styles.hiddenMobile : ''}`} aria-label="Conversations">
+                <div className={styles.sideHead}>
+                    <div className={styles.sideTop}>
+                        <div>
+                            <span className={styles.sideKicker}>Inbox</span>
+                            <h1 className={styles.sideTitle}>Messages</h1>
+                        </div>
+                        <button type="button" className={styles.newGroupBtn} onClick={() => setIsModalOpen(true)}>
+                            <Plus size={15} aria-hidden="true" /> New group
+                        </button>
+                    </div>
                 </div>
-                <ConversationList activeId={activeId} onSelect={handleSelect} />
-            </div>
-            <div className={`${styles.main} ${mobileView === 'list' ? styles.hiddenMobile : ''}`}>
+                <ConversationList activeId={activeId} onSelect={open} />
+            </aside>
+
+            <section className={`${styles.main} ${activeId ? '' : styles.hiddenMobile}`}>
                 {activeId ? (
-                    <ChatWindow conversationId={activeId} onBack={handleBack} />
+                    <ChatWindow key={activeId} conversationId={activeId} onBack={() => router.push('/messages')} />
                 ) : (
                     <div className={styles.emptyState}>
-                        <div className={styles.emptyIconWrapper}>
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        <div className={styles.emptyArt} aria-hidden="true">
+                            <span />
+                            <span />
+                            <span />
                         </div>
-                        <p>No Conversation Selected</p>
-                        <span>Choose a chat from the sidebar to start messaging</span>
+                        <p className={styles.emptyTitle}>Pick up a conversation.</p>
+                        <p className={styles.emptyText}>
+                            Choose a chat on the left, or start a group for your hackathon team, your club
+                            committee or your fest crew.
+                        </p>
+                        <div className={styles.emptyActions}>
+                            <button
+                                type="button"
+                                className={`${styles.pillBtn} ${styles.pillPrimary}`}
+                                onClick={() => setIsModalOpen(true)}
+                            >
+                                <Users size={15} aria-hidden="true" /> Start a group
+                            </button>
+                            <Link href="/team-finder" className={styles.pillBtn}>
+                                Find teammates
+                            </Link>
+                        </div>
                     </div>
                 )}
-            </div>
-            {isModalOpen && <CreateGroupModal onClose={() => setIsModalOpen(false)} onGroupCreated={handleGroupCreated} />}
+            </section>
+
+            {isModalOpen && <CreateGroupModal onClose={() => setIsModalOpen(false)} onGroupCreated={open} />}
         </div>
     );
 }

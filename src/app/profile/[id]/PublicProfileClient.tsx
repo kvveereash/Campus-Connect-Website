@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { GraduationCap, Building2 } from 'lucide-react';
-import EventCard from '@/components/EventCard';
+import { Link2, MessageCircle } from 'lucide-react';
 import ActivityHeatmap from '@/components/ActivityHeatmap';
+import ProfileHero, { heroButton, heroButtonPrimary } from '@/components/profile/ProfileHero';
+import ProfileTabs from '@/components/profile/ProfileTabs';
+import EventSection from '@/components/profile/EventSection';
 import { useAuth } from '@/context/AuthContext';
 import { startConversation } from '@/lib/actions/chat';
 import type { PublicProfile } from '@/lib/actions/profile';
@@ -25,10 +25,9 @@ type Tab = 'registered' | 'hosted' | 'professional';
 
 /**
  * The profile a stranger sees — the one the "Copy profile link" button hands
- * out. It used to be a second, unrelated implementation in inline Tailwind:
- * rounded panels, bold headings, a separate stat block. It now uses the same
- * ID-card sheet as the signed-in profile, so following a shared link does not
- * land you on what looks like a different product.
+ * out. It shares the hero, tabs and event sheets with your own profile, so
+ * following a shared link does not land you on what looks like a different
+ * product.
  */
 export default function PublicProfileClient({ user, registered, hosted }: Props) {
     const router = useRouter();
@@ -41,13 +40,14 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
         month: 'long',
         year: 'numeric',
     });
-
-    // Nullable columns, so an untouched profile omits the line rather than
-    // printing "undefined · undefined".
-    const studyLine = [user.department, user.year]
-        .filter(Boolean)
-        .map((v) => String(v).toUpperCase())
-        .join(' · ');
+    const firstName = user.name.split(' ')[0];
+    const [pastDates] = useState(() => {
+        const now = Date.now();
+        return [...registered, ...hosted]
+            .map((e) => new Date(e.date))
+            .filter((d) => d.getTime() <= now)
+            .map((d) => d.toISOString());
+    });
 
     const handleMessage = async () => {
         setStartingChat(true);
@@ -65,6 +65,11 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
         }
     };
 
+    const handleCopy = () => {
+        navigator.clipboard.writeText(window.location.href);
+        toast.success('Profile link copied');
+    };
+
     const tabs: { key: Tab; label: string; count: number }[] = [
         { key: 'registered', label: 'Attending', count: registered.length },
         { key: 'hosted', label: 'Hosted', count: hosted.length },
@@ -77,169 +82,80 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
 
     return (
         <div className={styles.container}>
-            <div className={styles.idCardContainer}>
-                <div className={styles.idSidebar}>
-                    <div className={styles.sidebarTopClip}>
-                        <div className={styles.clipHole} />
-                    </div>
-
-                    <div className={styles.idAvatarContainer}>
-                        <div className={styles.idAvatarBorder}>
-                            {user.avatar ? (
-                                <Image
-                                    src={user.avatar}
-                                    alt=""
-                                    width={132}
-                                    height={132}
-                                    className={styles.idAvatarImage}
-                                />
-                            ) : (
-                                <div className={styles.idAvatarPlaceholder}>
-                                    {user.name.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className={styles.sidebarLabel}>
-                        <span className={styles.labelSub}>Student</span>
-                        <span className={styles.labelMain}>Campus Connect</span>
-                    </div>
-
-                    <div className={styles.verticalText}>Since {joined}</div>
-                </div>
-
-                <div className={styles.idContent}>
-                    <div className={styles.idHeaderRow}>
-                        <h1 className={styles.idName}>{user.name}</h1>
-                    </div>
-
-                    <div className={styles.idMetadata}>
-                        {studyLine && (
-                            <div className={styles.idMetaLine}>
-                                <GraduationCap size={16} className={styles.metaIcon} />
-                                <span className={styles.idDeptYear}>{studyLine}</span>
-                            </div>
-                        )}
-                        {user.college?.name && (
-                            <div className={styles.idMetaLine}>
-                                <Building2 size={16} className={styles.metaIcon} />
-                                <Link
-                                    href={`/colleges/${user.college.id}`}
-                                    className={styles.idCollege}
-                                >
-                                    {user.college.name.toUpperCase()}
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-
-                    {user.bio && (
-                        <div className={styles.idBioBlock}>
-                            <div className={styles.bioQuoteLine} />
-                            <p className={styles.idBioText}>{user.bio}</p>
-                        </div>
-                    )}
-
-                    <div className={styles.idFooterActions}>
-                        {/* Counts belong beside the name, not in a separate
-                            panel — they describe this person. */}
-                        <div className={styles.idUtilityActions}>
-                            <span className={styles.utilDivider}>
-                                {user._count.registrations} attending
-                            </span>
-                            <span className={styles.utilDivider}>·</span>
-                            <span className={styles.utilDivider}>
-                                {user._count.createdEvents} hosted
-                            </span>
-                            <span className={styles.utilDivider}>·</span>
-                            <span className={styles.utilDivider}>
-                                {user._count.clubMemberships} clubs
-                            </span>
-                        </div>
-
+            <ProfileHero
+                name={user.name}
+                avatar={user.avatar}
+                department={user.department}
+                year={user.year}
+                college={user.college ? { id: user.college.id, name: user.college.name } : null}
+                bio={user.bio}
+                since={`Member since ${joined}`}
+                stats={[
+                    { label: 'Attending', value: user._count.registrations, mark: 'var(--press-technology)' },
+                    { label: 'Hosted', value: user._count.createdEvents, mark: 'var(--press-cultural)' },
+                    { label: 'Clubs', value: user._count.clubMemberships, mark: 'var(--press-sports)' },
+                ]}
+                skills={user.skills.map((s) => s.name)}
+                badges={user.badges}
+                actions={
+                    <>
                         {!isMe && currentUser && (
                             <button
                                 type="button"
                                 onClick={handleMessage}
                                 disabled={startingChat}
-                                className={styles.addSkillBtn}
+                                className={heroButtonPrimary}
                             >
-                                {startingChat ? 'Opening' : 'Message'}
+                                <MessageCircle size={15} aria-hidden="true" />
+                                {startingChat ? 'Opening' : `Message ${firstName}`}
                             </button>
                         )}
-                    </div>
+                        <button type="button" onClick={handleCopy} className={heroButton}>
+                            <Link2 size={14} aria-hidden="true" /> Copy link
+                        </button>
+                    </>
+                }
+            />
 
-                    {(user.skills.length > 0 || user.badges.length > 0) && (
-                        <div className={styles.idExtraInfo}>
-                            {user.skills.length > 0 && (
-                                <div className={styles.idExtraGroup}>
-                                    <span className={styles.idExtraLabel}>Skills</span>
-                                    <div className={styles.idSkillTags}>
-                                        {/* Skills are rows here, not the plain
-                                            strings the signed-in profile keeps. */}
-                                        {user.skills.map((skill) => (
-                                            <span key={skill.id} className={styles.idSkillTag}>
-                                                {skill.name}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {user.badges.length > 0 && (
-                                <div className={styles.idExtraGroup}>
-                                    <span className={styles.idExtraLabel}>Badges</span>
-                                    <div className={styles.idBadgesMini}>
-                                        {user.badges.map((b) => (
-                                            <div
-                                                key={b.id}
-                                                className={styles.idBadgeMini}
-                                                title={`${b.name} — ${b.description}`}
-                                            >
-                                                {b.icon}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {(registered.length > 0 || hosted.length > 0) && (
-                <div style={{ marginTop: 40 }}>
-                    <ActivityHeatmap
-                        dates={[...registered, ...hosted].map((e) =>
-                            new Date(e.date).toISOString()
-                        )}
-                    />
+            {/* The graph covers the past year, so it only shows once some of
+                this person's events are behind them; upcoming ones would
+                leave it blank. */}
+            {pastDates.length > 0 && (
+                <div className={styles.heatmapCard}>
+                    <ActivityHeatmap dates={pastDates} />
                 </div>
             )}
 
-            <div className={styles.tabs} role="tablist" aria-label="Profile sections">
-                {tabs.map((t) => (
-                    <button
-                        key={t.key}
-                        type="button"
-                        role="tab"
-                        aria-selected={activeTab === t.key}
-                        onClick={() => setActiveTab(t.key)}
-                        className={`${styles.tab} ${activeTab === t.key ? styles.activeTab : ''}`}
-                    >
-                        {t.label} {t.count}
-                        {activeTab === t.key && <span className={styles.activeTabLine} />}
-                    </button>
-                ))}
-            </div>
+            <ProfileTabs<Tab> tabs={tabs} active={activeTab} onChange={setActiveTab} />
 
-            <div className={styles.content}>
+            <div
+                key={activeTab}
+                className={styles.content}
+                role="tabpanel"
+                id={`${activeTab}-panel`}
+                aria-labelledby={`${activeTab}-tab`}
+            >
                 {activeTab === 'registered' && (
-                    <EventGrid events={registered} empty="Not attending anything yet." />
+                    <EventSection
+                        kicker="Registered"
+                        title="Attending"
+                        events={registered}
+                        empty={{
+                            title: 'Not attending anything yet.',
+                            text: `When ${firstName} registers for an event, it shows up here.`,
+                        }}
+                    />
                 )}
                 {activeTab === 'hosted' && (
-                    <EventGrid events={hosted} empty="Has not hosted an event yet." />
+                    <EventSection
+                        kicker="Organised"
+                        title="Hosted"
+                        events={hosted}
+                        empty={{
+                            title: 'Has not hosted an event yet.',
+                            text: `Events ${firstName} organises will be listed here.`,
+                        }}
+                    />
                 )}
 
                 {activeTab === 'professional' && (
@@ -338,13 +254,3 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
     );
 }
 
-function EventGrid({ events, empty }: { events: EventWithRelations[]; empty: string }) {
-    if (events.length === 0) return <p className={styles.empty}>{empty}</p>;
-    return (
-        <div className={styles.eventsGrid}>
-            {events.map((e, i) => (
-                <EventCard key={e.id} event={e} index={i} />
-            ))}
-        </div>
-    );
-}

@@ -95,14 +95,20 @@ export function GroupDetailsModal({ conversationId, onClose }: GroupDetailsModal
                         {details.isGroup ? <Users size={18} aria-hidden="true" /> : <User size={18} aria-hidden="true" />}
                     </div>
                     <div>
-                        <h2 className={styles.groupTitle}>{details.name || 'Group Chat'}</h2>
-                        <span className={styles.memberCount}>{details.participants.length} members</span>
+                        <h2 className={styles.groupTitle}>
+                            {details.isGroup
+                                ? (details.name || 'Group Chat')
+                                : (details.participants.find((p: any) => p.userId !== currentUser?.id)?.user.name || 'Direct message')}
+                        </h2>
+                        <span className={styles.memberCount}>
+                            {details.isGroup ? `${details.participants.length} members` : 'Direct message'}
+                        </span>
                     </div>
                 </div>
 
                 <div className={styles.sectionHeader}>
                     <h4>Members</h4>
-                    {isAdmin && (
+                    {isAdmin && details.isGroup && (
                         <button
                             className={styles.iconBtn}
                             onClick={() => setIsAdding(!isAdding)}
@@ -162,11 +168,15 @@ export function GroupDetailsModal({ conversationId, onClose }: GroupDetailsModal
                     ))}
                 </div>
 
-                <div className={styles.footerActions}>
-                    <button className={styles.dangerBtn} onClick={handleLeave}>
-                        <LogOut size={16} /> Leave Group
-                    </button>
-                </div>
+                {/* Groups only. A direct message showed "Leave Group", and
+                    leaving one stranded the other person in it. */}
+                {details.isGroup && (
+                    <div className={styles.footerActions}>
+                        <button className={styles.dangerBtn} onClick={handleLeave}>
+                            <LogOut size={16} /> Leave Group
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

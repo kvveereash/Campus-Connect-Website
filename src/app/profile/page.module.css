@@ -1,413 +1,259 @@
 /* ============================================================
-   PROFILE — and the shared sheet behind the forms
-   Thirteen files import this stylesheet: the profile and its tabs,
-   both create forms, the edit modal, map, team-finder, college and
-   event detail. It was the last of the old system still in service —
-   dotted backgrounds, a rotated "VERIFIED" rubber stamp, gradient
-   avatars, lifted cards.
-
-   The one idea worth keeping was the student ID card, because that is
-   genuinely what a campus profile is. It is set here as a printed
-   credential rather than a skeuomorphic one: a black stub, a square
-   photograph, hairline rules and letterspaced labels.
+   PROFILE — and the sheet behind its tabs and forms
+   Used by both profiles (yours and anyone's), the professional and
+   network tabs, and the edit modal. The hero above the tabs has its
+   own module: components/profile/ProfileHero.module.css.
    ============================================================ */
 
 .container {
-    max-width: 1078px;
+    max-width: 1120px;
     margin: 0 auto;
-    padding: clamp(28px, 5vw, 56px) 0 clamp(72px, 10vw, 152px);
+    padding: 28px 0 clamp(72px, 10vw, 128px);
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding-top: 16px;
+    }
 }
 
 /* ============================================================
-   THE CARD
-   ============================================================ */
-
-.idCardContainer {
-    display: grid;
-    grid-template-columns: 232px minmax(0, 1fr);
-    border: 1px solid var(--color-obsidian);
-    border-radius: var(--radius-card);
-    overflow: hidden;
-    background: var(--color-paper);
-}
-
-/* ---------- the black stub ---------- */
-.idSidebar {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 32px 24px 28px;
-    background: var(--color-obsidian);
-    color: var(--color-paper);
-}
-
-/* The punch a lanyard would go through. One detail of the object,
-   drawn once, rather than a whole imitation of plastic. */
-.sidebarTopClip {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-bottom: 26px;
-}
-
-.clipHole {
-    width: 46px;
-    height: 8px;
-    border-radius: 75px;
-    background: var(--color-paper);
-    opacity: 0.32;
-}
-
-.idAvatarContainer {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-/* Square, like every other image on the site. */
-.idAvatarBorder {
-    position: relative;
-    width: 132px;
-    height: 132px;
-    overflow: hidden;
-    border-radius: var(--radius-card);
-    background: var(--color-paper);
-}
-
-.idAvatarImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.idAvatarPlaceholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 3.25rem;
-    letter-spacing: -0.04em;
-    color: var(--color-obsidian);
-}
-
-.sidebarLabel {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 26px;
-    text-align: center;
-}
-
-.labelSub {
-    font-size: 9px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.labelMain {
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    color: var(--color-paper);
-}
-
-.verticalText {
-    margin-top: auto;
-    padding-top: 26px;
-    font-size: 9px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.32);
-}
-
-/* ---------- the printed side ---------- */
-.idContent {
-    position: relative;
-    padding: clamp(28px, 4vw, 44px);
-}
-
-/* Was a dot-grid overlay. Nothing else on the site has a texture. */
-.idDottedBg {
-    display: none;
-}
-
-/* Was a rotated red "VERIFIED" rubber stamp. Nothing verifies a user
-   account here, so the stamp asserted something untrue about every
-   person who loaded the page. Hidden rather than restyled. */
-.verifiedStamp {
-    display: none;
-}
-
-.idHeaderRow {
-    margin-bottom: 22px;
-}
-
-.idName {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(2rem, 5vw, 3.375rem);
-    line-height: 1.04;
-    letter-spacing: -0.035em;
-    color: var(--color-obsidian);
-    margin: 0;
-    text-wrap: balance;
-}
-
-.idMetadata {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-    padding-bottom: 22px;
-    border-bottom: 1px solid var(--border-hairline);
-}
-
-.idMetaLine {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.metaIcon {
-    flex: none;
-    color: var(--color-ash);
-}
-
-.idDeptYear,
-.idCollege {
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    color: var(--color-felt);
-}
-
-/* ---------- bio ---------- */
-.idBioBlock {
-    display: flex;
-    gap: 16px;
-    padding: 22px 0;
-    border-bottom: 1px solid var(--border-hairline);
-}
-
-.bioQuoteLine {
-    flex: none;
-    width: 1px;
-    background: var(--color-obsidian);
-}
-
-.idBioText {
-    font-size: 16px;
-    line-height: 1.58;
-    color: var(--color-inkstone);
-    max-width: 58ch;
-    margin: 0;
-}
-
-/* ---------- actions ---------- */
-.idFooterActions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 14px;
-    padding: 22px 0;
-}
-
-.idFollowBtn {
-    white-space: nowrap;
-}
-
-.idUtilityActions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.utilLink,
-.utilLinkLogout {
-    background: none;
-    border: 0;
-    padding: 0;
-    font: inherit;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    color: var(--color-felt);
-    cursor: pointer;
-    transition: color var(--duration-base) var(--ease-glide);
-}
-
-.utilLink:hover,
-.utilLinkLogout:hover {
-    color: var(--color-obsidian);
-}
-
-.utilDivider {
-    color: var(--color-ash);
-    font-size: 11px;
-}
-
-/* ---------- skills and badges ---------- */
-.idExtraInfo {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 32px;
-    padding-top: 22px;
-    border-top: 1px solid var(--border-hairline);
-}
-
-.idExtraGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 0;
-}
-
-.idExtraLabel {
-    font-size: 9px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    color: var(--color-ash);
-}
-
-.idSkillTags,
-.idBadgesMini {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.idSkillTag {
-    padding: 4px 13px;
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--border-hairline);
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    color: var(--color-inkstone);
-}
-
-.idBadgeMini {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--border-hairline);
-    font-size: 13px;
-}
-
-/* ============================================================
-   TABS
+   TABS — a pill segmented control; the black pill slides between
+   tabs (framer-motion moves .activeTabLine).
    ============================================================ */
 
 .tabs {
-    display: flex;
-    gap: 28px;
-    margin: clamp(32px, 5vw, 52px) 0 0;
-    padding-bottom: 0;
-    border-bottom: 1px solid var(--border-hairline);
+    display: inline-flex;
+    gap: 4px;
+    max-width: 100%;
+    margin-top: 28px;
+    padding: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+    display: none;
 }
 
 .tab {
     position: relative;
-    background: none;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
     border: 0;
-    padding: 0 0 14px;
+    border-radius: var(--radius-pill);
+    background: transparent;
     font: inherit;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    color: var(--color-ash);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-felt);
+    white-space: nowrap;
     cursor: pointer;
     transition: color var(--duration-base) var(--ease-glide);
 }
 
 .tab:hover {
-    color: var(--color-inkstone);
-}
-
-.activeTab {
     color: var(--color-obsidian);
 }
 
-/* framer-motion slides this rule between tabs. */
+.activeTab,
+.activeTab:hover {
+    color: var(--color-paper);
+}
+
 .activeTabLine {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 1px;
+    inset: 0;
+    z-index: -1;
+    border-radius: var(--radius-pill);
     background: var(--color-obsidian);
 }
 
+.tabCount {
+    display: inline-grid;
+    place-items: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-slate);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-inkstone);
+}
+
+.activeTab .tabCount {
+    background: var(--color-marker);
+    color: var(--color-obsidian);
+}
+
 .content {
-    margin-top: clamp(32px, 5vw, 48px);
+    margin-top: 20px;
+    animation: rise 0.5s var(--ease-glide) both;
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 /* ============================================================
-   SECTIONS
+   SECTIONS — white sheets, the same as the college page's cards.
    ============================================================ */
 
-/* Was a white panel with a border-radius and a shadow. A section on a
-   white page needs a rule and a label, not a container. */
 .card {
-    padding: 0 0 clamp(32px, 5vw, 48px);
+    padding: clamp(20px, 3vw, 28px);
+    border-radius: 20px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.card + .card {
+    margin-top: 16px;
 }
 
 .cardHeader {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px 16px;
     flex-wrap: wrap;
-    padding-bottom: 18px;
-    margin-bottom: 24px;
-    border-bottom: 1px solid var(--border-hairline);
+    margin-bottom: 20px;
 }
 
 .cardTitle {
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    color: var(--color-felt);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    color: var(--color-obsidian);
+}
+
+.cardTitle svg {
+    color: var(--color-accent);
+}
+
+.cardKicker {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-ash);
+}
+
+.countPill {
+    display: inline-grid;
+    place-items: center;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-canvas);
+    border: 1px solid var(--border-hairline);
+    font-family: var(--font-mono);
+    font-size: 12px;
     font-weight: 400;
+    letter-spacing: 0;
+    color: var(--color-inkstone);
+}
+
+.headLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-strong);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-obsidian);
+    transition: border-color var(--duration-micro) var(--ease-glide),
+                transform var(--duration-micro) var(--ease-glide);
+}
+
+.headLink:hover {
+    border-color: var(--color-obsidian);
+    transform: translateY(-1px);
 }
 
 .eventsGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
-    gap: 32px;
+    gap: 16px;
 }
 
 .actionRow {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
-    margin-top: 28px;
+    margin-top: 20px;
 }
 
 .empty {
-    padding: clamp(40px, 6vw, 72px) 0;
+    padding: clamp(32px, 5vw, 48px) 24px;
+    border-radius: 16px;
+    border: 1px dashed var(--border-strong);
+    background-color: var(--color-canvas);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
     text-align: center;
-    border-top: 1px solid var(--border-hairline);
     font-size: 15px;
-    line-height: 1.58;
+    line-height: 1.55;
     color: var(--color-felt);
+}
+
+.emptyBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.emptyTitle {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+}
+
+.emptyBox .headLink {
+    margin-top: 8px;
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.emptyBox .headLink:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+/* ActivityHeatmap brings its own card and top margin. */
+.heatmapCard {
+    margin-top: 0;
 }
 
 .fullWidth {
@@ -562,10 +408,10 @@
     gap: 8px;
     padding: 5px 14px;
     border-radius: var(--radius-pill);
-    border: 1px solid var(--border-hairline);
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    color: var(--color-inkstone);
+    background: var(--color-accent-soft);
+    font-size: 13px;
+    font-weight: 500;
+    color: #1f29b8;
 }
 
 .deleteSkill {
@@ -701,10 +547,13 @@
 .resumeContainer {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 16px;
-    padding: 18px 0;
-    border-top: 1px solid var(--border-hairline);
-    border-bottom: 1px solid var(--border-hairline);
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--color-canvas);
+    border: 1px solid var(--border-hairline);
 }
 
 .pdfIcon {
@@ -714,8 +563,8 @@
     width: 40px;
     height: 40px;
     flex: none;
-    border-radius: var(--radius-card);
-    background: var(--color-obsidian);
+    border-radius: 10px;
+    background: var(--color-accent);
     color: var(--color-paper);
     font-size: 10px;
     letter-spacing: 0.1em;
@@ -734,94 +583,99 @@
 .networkGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
-    gap: 0 32px;
+    gap: 10px;
 }
 
 .networkCard {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--border-hairline);
+    min-width: 0;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--color-canvas);
+    border: 1px solid var(--border-hairline);
     color: var(--color-obsidian);
-    transition: padding-left var(--duration-base) var(--ease-glide);
+    cursor: pointer;
+    transition: border-color var(--duration-micro) var(--ease-glide),
+                transform var(--duration-micro) var(--ease-glide);
 }
 
 .networkCard:hover {
-    padding-left: 10px;
+    border-color: var(--color-obsidian);
+    transform: translateY(-1px);
 }
 
 .miniLogo {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     flex: none;
     object-fit: cover;
-    border-radius: var(--radius-card);
-    filter: grayscale(1) brightness(1.14) contrast(0.95);
-    transition: filter var(--duration-slow) var(--ease-glide);
+    border-radius: 10px;
 }
 
-.networkCard:hover .miniLogo {
-    filter: none;
+.networkText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.networkName {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.networkMeta {
+    font-size: 13px;
+    color: var(--color-felt);
+    text-transform: capitalize;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.networkArrow {
+    flex-shrink: 0;
+    color: var(--color-ash);
+    transition: transform var(--duration-micro) var(--ease-glide),
+                color var(--duration-micro) var(--ease-glide);
+}
+
+.networkCard:hover .networkArrow {
+    color: var(--color-obsidian);
+    transform: translateX(2px);
 }
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
 
-@media (max-width: 860px) {
-    .idCardContainer {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .idSidebar {
-        flex-direction: row;
-        align-items: center;
-        gap: 20px;
-        padding: 22px;
-    }
-
-    .sidebarTopClip {
-        display: none;
-    }
-
-    .idAvatarContainer {
-        width: auto;
-    }
-
-    .idAvatarBorder {
-        width: 76px;
-        height: 76px;
-    }
-
-    .idAvatarPlaceholder {
-        font-size: 2rem;
-    }
-
-    .sidebarLabel {
-        margin-top: 0;
-        text-align: left;
-    }
-
-    .verticalText {
-        display: none;
-    }
-}
-
 @media (max-width: 620px) {
     .tabs {
-        gap: 20px;
+        display: flex;
+        width: 100%;
     }
 
-    .idExtraInfo {
-        gap: 22px;
+    .tab {
+        flex: 1;
+        justify-content: center;
+        padding: 0 12px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .content {
+        animation: none;
+    }
+
     .tab,
-    .utilLink,
-    .utilLinkLogout,
+    .headLink,
     .deleteSkill,
     .addSkillBtn,
     .projectLink,
@@ -836,6 +690,6 @@
     }
 
     .networkCard:hover {
-        padding-left: 0;
+        transform: none;
     }
 }

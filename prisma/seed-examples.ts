@@ -1,7 +1,8 @@
 /**
  * Loads the full set of example data: colleges, students, clubs and events
  * (seed-dummy), club posts for Buzz (seed-buzz), then hackathons, members,
- * registrations and team-finder posts (seed-showcase).
+ * registrations and team-finder posts (seed-showcase), and a few example
+ * conversations for Messages (seed-chats).
  *
  *   npm run seed:examples -- --yes
  *
@@ -37,6 +38,6 @@ if (!process.argv.includes('--yes')) {
 
 console.log(`Seeding examples into ${target}\n`);
 const env = { ...process.env, SEED_EXAMPLES: '1' };
-for (const script of ['seed-dummy.ts', 'seed-buzz.ts', 'seed-showcase.ts']) {
+for (const script of ['seed-dummy.ts', 'seed-buzz.ts', 'seed-showcase.ts', 'seed-chats.ts']) {
     execSync(`npx tsx prisma/${script}`, { stdio: 'inherit', env });
 }
