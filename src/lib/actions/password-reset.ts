@@ -48,7 +48,7 @@ export async function requestPasswordReset(email: string) {
         //    deletedAt: null for the same reason login checks it — a deleted
         //    account must not be recoverable through the reset flow.
         const user = await prisma.user.findFirst({
-            where: { email: normalizedEmail, deletedAt: null }
+            where: { email: { equals: normalizedEmail, mode: 'insensitive' }, deletedAt: null }
         });
 
         // Always return success to prevent email enumeration attacks

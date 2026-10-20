@@ -22,12 +22,16 @@ export async function getSession() {
 
         const user = await prisma.user.findUnique({
             where: { id: payload.userId as string },
-            select: { id: true, name: true, email: true, role: true, avatar: true, collegeId: true }
+            select: { id: true, name: true, email: true, role: true, avatar: true, collegeId: true, deletedAt: true }
         });
 
-        if (!user) return null;
+        // A deleted account's sessions on other devices end here. deleteAccount
+        // can only clear the cookie in the browser that asked, and the JWT
+        // stays valid for up to a day.
+        if (!user || user.deletedAt) return null;
 
-        return { ...payload, user };
+        const { deletedAt: _deletedAt, ...sessionUser } = user;
+        return { ...payload, user: sessionUser };
     } catch (error) {
         return null;
     }

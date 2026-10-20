@@ -12,7 +12,9 @@ import { updateUserProfileSchema, type UpdateUserProfileInput } from '@/lib/sche
 
 export async function signup(prevState: ActionState | null, formData: FormData): Promise<ActionState> {
     const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
+    // Stored lower-cased so the same inbox cannot hold two accounts, and so
+    // password reset (which looks addresses up lower-cased) can find it.
+    const email = ((formData.get('email') as string) || '').trim().toLowerCase();
     const password = formData.get('password') as string;
     const department = (formData.get('department') as string) || 'General';
     const year = (formData.get('year') as string) || '1st Year';
@@ -34,7 +36,12 @@ export async function signup(prevState: ActionState | null, formData: FormData):
             };
         }
 
-        const existingUser = await prisma.user.findUnique({ where: { email } });
+        // Case-insensitive: accounts created before emails were normalised
+        // may still be stored with capitals.
+        const existingUser = await prisma.user.findFirst({
+            where: { email: { equals: email, mode: 'insensitive' } },
+            select: { id: true },
+        });
         if (existingUser) {
             return { success: false, error: 'User already exists' };
         }
@@ -93,7 +100,7 @@ export async function signup(prevState: ActionState | null, formData: FormData):
 }
 
 export async function login(prevState: ActionState | null, formData: FormData): Promise<ActionState> {
-    const email = formData.get('email') as string;
+    const email = ((formData.get('email') as string) || '').trim().toLowerCase();
     const password = formData.get('password') as string;
 
     console.log('[LOGIN] Starting login for:', email);
@@ -122,7 +129,9 @@ export async function login(prevState: ActionState | null, formData: FormData): 
            This was findUnique({ where: { email } }) with no such check, so a
            soft-deleted account could still sign in — which would have made the
            new "delete my account" button a no-op dressed as a deletion. */
-        const user = await prisma.user.findFirst({ where: { email, deletedAt: null } });
+        const user = await prisma.user.findFirst({
+            where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null }
+        });
         if (!user || !user.password) {
             console.log('[LOGIN] User not found or no password');
             return { success: false, error: 'Invalid credentials' };
@@ -130,11 +139,12 @@ export async function login(prevState: ActionState | null, formData: FormData): 
 
         // Check if account is locked
         if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-            const lockRemaining = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 60000);
             logger.auth('login_blocked', user.id, { email, reason: 'account_locked' });
+            // Worded like the rate limiter's reply, which every address gets,
+            // so the response does not reveal that this account exists.
             return {
                 success: false,
-                error: `Account locked. Please try again in ${lockRemaining} minute(s).`
+                error: `Too many login attempts. Please try again at ${new Date(user.lockedUntil).toLocaleTimeString()}.`
             };
         }
 
@@ -178,10 +188,9 @@ export async function login(prevState: ActionState | null, formData: FormData): 
                     }
                 });
                 logger.auth('account_locked', user.id, { email, failedAttempts: recentFailures + 1 });
-                return {
-                    success: false,
-                    error: `Too many failed attempts. Account locked for ${LOCKOUT_DURATION_MINUTES} minutes.`
-                };
+                // Same answer as any wrong password: announcing the lock here
+                // told a caller the address belonged to a real account.
+                return { success: false, error: 'Invalid credentials' };
             }
 
             logger.auth('failed', user.id, { email, reason: 'invalid_password', failedAttempts: recentFailures + 1 });
