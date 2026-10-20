@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { verifyPaymentStatus } from '@/lib/actions/verify-payment';
+import { useAuth } from '@/context/AuthContext';
 import styles from './PaymentReturn.module.css';
 
 /**
@@ -32,6 +33,10 @@ export default function PaymentReturn({
 }) {
     const params = useSearchParams();
     const router = useRouter();
+    // The registration comes from the session, which loads after first
+    // render. Deciding before it arrived meant registrationId was always
+    // undefined, so a returning payer was never verified.
+    const { isInitialized } = useAuth();
     const outcome = params.get('payment');
     const handled = useRef(false);
     const [state, setState] = useState<'idle' | 'checking' | 'paid' | 'pending' | 'cancelled'>(
@@ -39,7 +44,7 @@ export default function PaymentReturn({
     );
 
     useEffect(() => {
-        if (!outcome || handled.current) return;
+        if (!outcome || handled.current || !isInitialized) return;
         handled.current = true;
 
         // Take the parameter out of the address bar either way, so a refresh
@@ -83,7 +88,7 @@ export default function PaymentReturn({
                 toast('Payment received. We could not confirm it just yet.');
             })
             .finally(clean);
-    }, [outcome, registrationId, eventId, router]);
+    }, [outcome, registrationId, eventId, router, isInitialized]);
 
     if (state === 'idle') return null;
 

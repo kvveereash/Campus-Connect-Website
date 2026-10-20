@@ -57,29 +57,40 @@ export function dateParts(value: Date | string) {
  * scannability for what is far — "this week" earns its own heading, anything
  * beyond the current month collapses into month headings.
  */
+const IST_PARTS = new Intl.DateTimeFormat('en-US', {
+    timeZone: IST, year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short',
+});
+const WEEKDAY_INDEX: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+const MONTH_LONG = fmt({ month: 'long' });
+const MONTH_YEAR = fmt({ month: 'long', year: 'numeric' });
+
+/** The calendar day an instant falls on in India, as a comparable day number. */
+function istDay(d: Date) {
+    const parts = Object.fromEntries(IST_PARTS.formatToParts(d).map((p) => [p.type, p.value]));
+    const year = Number(parts.year);
+    const month = Number(parts.month);
+    const day = Number(parts.day);
+    return { year, month, dayNumber: Date.UTC(year, month - 1, day) / 86_400_000, weekday: WEEKDAY_INDEX[parts.weekday] ?? 0 };
+}
+
 export function groupByProximity<T extends { date: Date | string }>(events: T[]) {
-    const now = new Date();
-
-    const endOfWeek = new Date(now);
-    endOfWeek.setDate(now.getDate() + (7 - now.getDay()));
-    endOfWeek.setHours(23, 59, 59, 999);
-
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    /* Week and month boundaries are taken on Indian time, like dateParts
+       above. They used the runtime's zone, which is UTC on the server and IST
+       in the browser, so an event near midnight or a month's end landed under
+       a different heading on each side and React reported a hydration error. */
+    const today = istDay(new Date());
+    const endOfWeek = today.dayNumber + (7 - today.weekday);
 
     const groups: { label: string; items: T[] }[] = [];
 
     for (const event of events) {
-        const d = new Date(event.date);
+        const date = new Date(event.date);
+        const d = istDay(date);
 
         let label: string;
-        if (d <= endOfWeek) label = 'This week';
-        else if (d <= endOfMonth) label = 'Later this month';
-        else {
-            label = d.toLocaleDateString('en-US', {
-                month: 'long',
-                ...(d.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}),
-            });
-        }
+        if (d.dayNumber <= endOfWeek) label = 'This week';
+        else if (d.year === today.year && d.month === today.month) label = 'Later this month';
+        else label = (d.year !== today.year ? MONTH_YEAR : MONTH_LONG).format(date);
 
         const existing = groups.find((g) => g.label === label);
         if (existing) existing.items.push(event);

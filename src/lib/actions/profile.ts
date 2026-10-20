@@ -37,8 +37,17 @@ export async function getPublicProfile(userId: string) {
                     },
                     orderBy: { dateEarned: 'desc' },
                 },
+                // Counted the way the lists below are filtered. These counted
+                // cancelled and unpaid registrations, deleted and rejected
+                // events and deleted clubs, so "9 attending" sat above 3.
                 _count: {
-                    select: { registrations: true, createdEvents: true, clubMemberships: true },
+                    select: {
+                        registrations: {
+                            where: { status: { in: ['PAID', 'COMPLETED'] }, event: { deletedAt: null, verified: true } },
+                        },
+                        createdEvents: { where: { deletedAt: null, verified: true } },
+                        clubMemberships: { where: { club: { deletedAt: null, verified: true } } },
+                    },
                 },
             },
         });
@@ -80,7 +89,7 @@ export async function getPublicProfileEvents(userId: string) {
     try {
         const [registered, hosted] = await Promise.all([
             prisma.eventRegistration.findMany({
-                where: { userId, event: { deletedAt: null, verified: true } },
+                where: { userId, status: { in: ['PAID', 'COMPLETED'] }, event: { deletedAt: null, verified: true } },
                 select: {
                     event: {
                         include: {

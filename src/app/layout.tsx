@@ -49,15 +49,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Campus Connect',
     description: 'Discover events, join clubs, and connect with peers.',
-    url: 'https://campus-connect.demo', // Placeholder
+    // url comes from metadataBase. This was a placeholder domain, and the
+    // image it named (/og-image.png) does not exist, so shared links showed
+    // the wrong address and a broken preview.
     siteName: 'Campus Connect',
-    images: [
-      {
-        url: '/og-image.png', // Placeholder
-        width: 1200,
-        height: 630,
-      },
-    ],
+    images: [{ url: '/logo.png' }],
     locale: 'en_US',
     type: 'website',
   },

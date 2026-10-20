@@ -80,34 +80,35 @@ export async function getTopAttendees(limit = 10) {
 export async function getTopHosts(limit = 10) {
     limit = clampLimit(limit, 50, 10);
     try {
-        const users = await prisma.user.findMany({
-            where: {
-                deletedAt: null,
-                createdEvents: { some: {} }
-            },
-            select: {
-                id: true,
-                name: true,
-                avatar: true,
-                college: { select: { name: true } },
-                _count: {
-                    select: { createdEvents: true }
-                }
-            },
-            orderBy: {
-                createdEvents: { _count: 'desc' }
-            },
+        // Live, approved events only. Counting every created event ranked
+        // people by deleted and rejected ones, and someone whose only event
+        // was deleted still made the board.
+        const groups = await prisma.event.groupBy({
+            by: ['creatorId'],
+            where: { deletedAt: null, verified: true, creatorId: { not: null }, creator: { deletedAt: null } },
+            _count: { creatorId: true },
+            orderBy: { _count: { creatorId: 'desc' } },
             take: limit
         });
 
-        return users.map((user, index) => ({
-            id: user.id,
-            name: user.name,
-            avatar: user.avatar,
-            college: user.college?.name || 'Unknown',
-            score: user._count.createdEvents,
-            rank: index + 1
-        }));
+        const users = await prisma.user.findMany({
+            where: { id: { in: groups.map((g) => g.creatorId!) } },
+            select: { id: true, name: true, avatar: true, college: { select: { name: true } } }
+        });
+        const byId = new Map(users.map((u) => [u.id, u]));
+
+        return groups.flatMap((group, index) => {
+            const user = byId.get(group.creatorId!);
+            if (!user) return [];
+            return [{
+                id: user.id,
+                name: user.name,
+                avatar: user.avatar,
+                college: user.college?.name || 'Unknown',
+                score: group._count.creatorId,
+                rank: index + 1
+            }];
+        });
     } catch (error) {
         console.error('Failed to get top hosts:', error);
         return [];
@@ -130,7 +131,7 @@ export async function getTopClubs(limit = 10) {
                 _count: {
                     select: {
                         members: true,
-                        events: true
+                        events: { where: { deletedAt: null, verified: true } }
                     }
                 }
             },

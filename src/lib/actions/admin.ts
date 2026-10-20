@@ -92,6 +92,8 @@ export const verifyEntityAction = createProtectedAction(verifyEntitySchema, asyn
     } else {
         updateTag(CACHE_TAGS.EVENTS);
         updateTag(`event-${data.id}`);
+        const event = await prisma.event.findUnique({ where: { id: data.id }, select: { clubId: true } });
+        if (event?.clubId) updateTag(`club-${event.clubId}`);
     }
     return { success: true };
 }, {

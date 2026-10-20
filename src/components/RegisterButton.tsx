@@ -9,6 +9,9 @@ import { createEventPaymentSession } from '@/lib/actions/payments';
 import { verifyPaymentStatus } from '@/lib/actions/verify-payment';
 import { toast } from 'sonner';
 
+// Stripe charges in INR (lib/stripe.ts), and every listing shows rupees.
+const rupees = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
+
 export default function RegisterButton({ eventId, price = 0 }: { eventId: string, price?: number }) {
     const { user, registerForEvent, isLoading } = useAuth();
     const router = useRouter();
@@ -106,8 +109,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
         setStatus('processing_payment');
 
         try {
-            // Use the paymentId from registration if available, or registration id
-            const result = await verifyPaymentStatus(registration.id || registrationId || '');
+            const result = await verifyPaymentStatus(registration.id);
 
             if (result.success) {
                 registerForEvent(eventId);
@@ -131,16 +133,43 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
         );
     }
 
-    // Show verify payment button for pending payments
+    // A registration waiting on payment: someone who closed Stripe, or paid and
+    // came back before the webhook. Offer both ways forward. This used to offer
+    // only "Verify payment", so anyone who had not finished paying was stuck:
+    // verifying failed and registering again said "Already registered".
     if (isPendingPayment) {
+        const resumePayment = async () => {
+            setStatus('processing_payment');
+            try {
+                const result = await createEventPaymentSession(registration.id);
+                if (result.success) {
+                    window.location.href = result.checkoutUrl;
+                    return;
+                }
+                toast.error(result.error || 'Could not start the payment');
+            } catch {
+                toast.error('Could not start the payment');
+            }
+            setStatus('idle');
+        };
+
         return (
-            <button
-                className="btn btn-primary"
-                onClick={handleVerifyPayment}
-                disabled={status === 'processing_payment'}
-            >
-                {status === 'processing_payment' ? 'Verifying…' : 'Verify payment'}
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button
+                    className="btn btn-primary"
+                    onClick={resumePayment}
+                    disabled={status === 'processing_payment'}
+                >
+                    {status === 'processing_payment' ? 'Please wait…' : `Pay ${rupees(price)}`}
+                </button>
+                <button
+                    className="btn btn-outline"
+                    onClick={handleVerifyPayment}
+                    disabled={status === 'processing_payment'}
+                >
+                    I have paid
+                </button>
+            </div>
         );
     }
 
@@ -150,7 +179,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                 className="btn btn-primary"
                 onClick={handleOpenModal}
             >
-                {price > 0 ? `Pay $${price} & Register` : 'Register (Free)'}
+                {price > 0 ? `Pay ${rupees(price)} & Register` : 'Register (Free)'}
             </button>
 
             <AnimatePresence>
@@ -220,11 +249,11 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                                     <div style={{ background: 'var(--surface-color)', padding: '1.5rem', borderRadius: '0.75rem', marginBottom: '1.5rem' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                             <span>Registration Fee</span>
-                                            <span style={{ fontWeight: 700 }}>${price}</span>
+                                            <span style={{ fontWeight: 700 }}>{rupees(price)}</span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem' }}>
                                             <span style={{ fontWeight: 700 }}>Total</span>
-                                            <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>${price}</span>
+                                            <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{rupees(price)}</span>
                                         </div>
                                     </div>
                                     <button

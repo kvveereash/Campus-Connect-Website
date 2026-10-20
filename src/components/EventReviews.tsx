@@ -20,6 +20,40 @@ interface Review {
     };
 }
 
+/* Defined at module level. Declared inside EventReviews it was a new
+   component on every render, so its buttons were thrown away and rebuilt on
+   each click, and keyboard focus was lost after choosing a rating. */
+const StarRating = ({
+    value,
+    onChange,
+    readonly = false,
+    large = false,
+}: {
+    value: number;
+    onChange?: (v: number) => void;
+    readonly?: boolean;
+    large?: boolean;
+}) => (
+    <div
+        className={`${styles.stars} ${large ? styles.starsLarge : ''}`}
+        role={readonly ? 'img' : undefined}
+        aria-label={readonly ? `${value} out of 5` : undefined}
+    >
+        {[1, 2, 3, 4, 5].map((star) => (
+            <button
+                key={star}
+                type="button"
+                onClick={() => !readonly && onChange?.(star)}
+                disabled={readonly}
+                aria-label={readonly ? undefined : `${star} star${star > 1 ? 's' : ''}`}
+                className={`${styles.star} ${star <= value ? styles.starOn : ''}`}
+            >
+                ★
+            </button>
+        ))}
+    </div>
+);
+
 export default function EventReviews({ eventId, isPastEvent }: { eventId: string; isPastEvent: boolean }) {
     const { user } = useAuth();
     const [reviews, setReviews] = useState<Review[]>([]);
@@ -39,9 +73,11 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
         r => r.eventId === eventId && (r.status === 'PAID' || r.status === 'COMPLETED')
     );
 
+    // Re-run once the session arrives: on a fresh load `user` is still null on
+    // the first pass, so someone who had already reviewed saw an empty form.
     useEffect(() => {
         loadReviews();
-    }, [eventId]);
+    }, [eventId, user?.id]);
 
     const loadReviews = async () => {
         setIsLoading(true);
@@ -95,37 +131,6 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
             toast.error(result.error || 'Failed to delete');
         }
     };
-
-    const StarRating = ({
-        value,
-        onChange,
-        readonly = false,
-        large = false,
-    }: {
-        value: number;
-        onChange?: (v: number) => void;
-        readonly?: boolean;
-        large?: boolean;
-    }) => (
-        <div
-            className={`${styles.stars} ${large ? styles.starsLarge : ''}`}
-            role={readonly ? 'img' : undefined}
-            aria-label={readonly ? `${value} out of 5` : undefined}
-        >
-            {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                    key={star}
-                    type="button"
-                    onClick={() => !readonly && onChange?.(star)}
-                    disabled={readonly}
-                    aria-label={readonly ? undefined : `${star} star${star > 1 ? 's' : ''}`}
-                    className={`${styles.star} ${star <= value ? styles.starOn : ''}`}
-                >
-                    ★
-                </button>
-            ))}
-        </div>
-    );
 
     if (!isPastEvent) {
         // Future events keep the heading, so the page does not simply stop at

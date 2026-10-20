@@ -1,6 +1,6 @@
 import { getEventById } from '@/lib/actions/events';
 import EditEventClient from './EditEventClient';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 
 export default async function EditEventPage(props: { params: Promise<{ id: string }> }) {
@@ -15,7 +15,7 @@ export default async function EditEventPage(props: { params: Promise<{ id: strin
     const event = await getEventById(id);
 
     if (!event) {
-        redirect('/events'); // Or 404 page
+        notFound();
     }
 
     // Server-side authorization check
