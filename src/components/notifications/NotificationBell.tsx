@@ -33,7 +33,7 @@ export function NotificationBell() {
     // Fetch initial
     useEffect(() => {
         if (user?.id) {
-            getNotifications(user.id).then(data => {
+            getNotifications().then(data => {
                 // Ensure dates are Date objects if serialized
                 const parsed = data.map(n => ({
                     ...n,
@@ -102,7 +102,7 @@ export function NotificationBell() {
         // Actually, NotificationsList.tsx used `markAllAsRead` import. Let's assume I need to double check actions.
         // I will just loop for now to be safe, or simply don't await.
         if (user?.id) {
-            await markAllNotificationsAsRead(user.id);
+            await markAllNotificationsAsRead();
         }
     };
 

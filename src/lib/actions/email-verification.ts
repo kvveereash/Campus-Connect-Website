@@ -1,11 +1,10 @@
 'use server';
 
-import { randomBytes } from 'crypto';
 import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
-import { sendEmail } from '@/lib/email';
 import { authLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
+import { issueVerificationEmail } from '@/lib/email-verification';
 import type { ActionState } from '@/types';
 
 /**
@@ -22,82 +21,21 @@ import type { ActionState } from '@/types';
  * unverified state is surfaced and left to the person to resolve.
  */
 
-const TOKEN_HOURS = 24;
+/**
+ * Emails a fresh link to the signed-in user. Takes no id: the account is
+ * always the session's, so this cannot be pointed at someone else's address.
+ * Signup sends its first link through issueVerificationEmail directly.
+ */
+export async function sendVerificationEmail(): Promise<ActionState> {
+    const session = await getSession();
+    if (!session?.userId) return { success: false, error: 'Not signed in' };
 
-function verificationUrl(token: string) {
-    const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
-    return `${base}/verify-email?token=${token}`;
-}
-
-/** Issues a fresh link and emails it. Used at signup and from the banner. */
-export async function sendVerificationEmail(userId?: string): Promise<ActionState> {
-    let id = userId;
-
-    // Called without an id from the banner, where the session is the subject.
-    if (!id) {
-        const session = await getSession();
-        if (!session?.userId) return { success: false, error: 'Not signed in' };
-        id = session.userId as string;
-
-        // Only rate-limited on the self-serve path; the signup path is already
-        // behind the signup limiter.
-        const limit = await checkRateLimit(authLimiter, await getRateLimitIdentifier());
-        if (!limit.success) {
-            return { success: false, error: 'Just sent one. Give it a minute.' };
-        }
+    const limit = await checkRateLimit(authLimiter, await getRateLimitIdentifier());
+    if (!limit.success) {
+        return { success: false, error: 'Just sent one. Give it a minute.' };
     }
 
-    let user;
-    try {
-        user = await prisma.user.findFirst({
-            where: { id, deletedAt: null },
-            select: { id: true, email: true, name: true, emailVerified: true },
-        });
-    } catch (error) {
-        // Same reason as verifyEmail: the column may not exist yet.
-        logger.error('Email verification unavailable', error as Error, {});
-        return { success: false, error: 'Email confirmation is not available yet.' };
-    }
-    if (!user) return { success: false, error: 'Account not found' };
-    if (user.emailVerified) {
-        return { success: true, message: 'That address is already confirmed.' };
-    }
-
-    const token = randomBytes(32).toString('hex');
-    try {
-        // Any outstanding link for this account stops working, so a forwarded
-        // old email cannot be used after a newer one is requested.
-        await prisma.emailVerificationToken.updateMany({
-            where: { userId: user.id, used: false },
-            data: { used: true },
-        });
-        await prisma.emailVerificationToken.create({
-            data: {
-                token,
-                userId: user.id,
-                expiresAt: new Date(Date.now() + TOKEN_HOURS * 60 * 60 * 1000),
-            },
-        });
-    } catch (error) {
-        logger.error('Could not issue a verification token', error as Error, { userId: user.id });
-        return { success: false, error: 'Email confirmation is not available yet.' };
-    }
-
-    const url = verificationUrl(token);
-
-    try {
-        await sendEmail({
-            to: user.email,
-            subject: 'Confirm your email for Campus Connect',
-            text: `Hello ${user.name},\n\nConfirm your email address by opening this link:\n\n${url}\n\nIt works once and expires in ${TOKEN_HOURS} hours. If you did not sign up, ignore this — nothing will happen.\n\nCampus Connect`,
-            html: `<p>Hello ${user.name},</p><p>Confirm your email address:</p><p><a href="${url}">${url}</a></p><p>It works once and expires in ${TOKEN_HOURS} hours. If you did not sign up, ignore this — nothing will happen.</p><p>Campus Connect</p>`,
-        });
-    } catch (error) {
-        logger.error('Failed to send verification email', error as Error, { userId: user.id });
-        return { success: false, error: 'Could not send the email just now. Try again shortly.' };
-    }
-
-    return { success: true, message: `Sent. Check ${user.email}.` };
+    return issueVerificationEmail(session.userId as string);
 }
 
 /** Consumes a link. Returns why it failed, because the reasons differ. */

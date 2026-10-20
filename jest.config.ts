@@ -14,6 +14,8 @@ const config: Config = {
     setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
+        // The real module throws outside a React Server Component build.
+        '^server-only$': '<rootDir>/node_modules/server-only/empty.js',
     }
 };
 

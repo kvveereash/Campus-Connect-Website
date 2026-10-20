@@ -458,7 +458,12 @@ export async function getUserCreatedEvents(userId: string) {
     }
 }
 
-export async function getUserRegisteredEvents(userId: string) {
+/** The signed-in user's registrations. Takes no id, so it cannot list anyone else's. */
+export async function getUserRegisteredEvents() {
+    const session = await getSession();
+    if (!session?.userId) return [];
+    const userId = session.userId as string;
+
     try {
         const registrations = await prisma.eventRegistration.findMany({
             where: { userId },

@@ -175,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Server action
         try {
-            await toggleCollegeFollow(user.id, collegeId);
+            await toggleCollegeFollow(collegeId);
         } catch (err) {
             // Revert on error
             setUser({ ...user, followedColleges: currentFollowed });

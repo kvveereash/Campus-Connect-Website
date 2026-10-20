@@ -75,8 +75,8 @@ export async function signup(prevState: ActionState | null, formData: FormData):
            and a user with no idea whether to try again. The address can be
            confirmed later from settings. */
         try {
-            const { sendVerificationEmail } = await import('@/lib/actions/email-verification');
-            await sendVerificationEmail(newUser.id);
+            const { issueVerificationEmail } = await import('@/lib/email-verification');
+            await issueVerificationEmail(newUser.id);
         } catch (error) {
             logger.error('Signup succeeded but verification email failed', error as Error, {
                 userId: newUser.id,
@@ -477,7 +477,15 @@ export async function updateUserProfile(input: UpdateUserProfileInput) {
 }
 
 // Moving this here as it updates user relations
-export async function toggleCollegeFollow(userId: string, collegeId: string) {
+export async function toggleCollegeFollow(collegeId: string) {
+    // The follower is always the signed-in user. This used to take a userId
+    // argument and trust it, so anyone could change anyone's follows.
+    const session = await getSession();
+    if (!session || !session.userId) {
+        throw new Error('Unauthorized');
+    }
+    const userId = session.userId as string;
+
     try {
         const existingFollow = await prisma.user.findFirst({
             where: {

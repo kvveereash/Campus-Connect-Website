@@ -37,6 +37,7 @@
     "recharts": "^3.6.0",
     "resend": "^6.9.1",
     "sanitize-html": "^2.17.0",
+    "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "stripe": "^20.2.0",
     "tailwind-merge": "^3.4.0",
