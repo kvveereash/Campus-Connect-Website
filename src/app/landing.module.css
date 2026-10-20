@@ -172,35 +172,35 @@
     margin: 64px auto 0;
     padding: 12px;
     border-radius: 28px;
-    /* A dithered blue frame: two offset dot screens over the accent. */
+    /* The inverse of the board inside it: a white mount screened with
+       blue dots, so the frame and the board read as one object. */
     background:
-        radial-gradient(rgba(255, 255, 255, 0.5) 1.1px, transparent 1.5px) 0 0 / 7px 7px,
-        radial-gradient(rgba(255, 255, 255, 0.28) 1px, transparent 1.4px) 3.5px 3.5px / 7px 7px,
-        var(--color-accent);
+        radial-gradient(rgba(47, 59, 255, 0.55) 1.1px, transparent 1.5px) 0 0 / 7px 7px,
+        radial-gradient(rgba(47, 59, 255, 0.25) 1px, transparent 1.4px) 3.5px 3.5px / 7px 7px,
+        var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    box-shadow: 0 40px 80px -40px rgba(31, 41, 217, 0.45);
 }
 
-/* The board: cork-warm paper with the dot grid, so pinned photos and
-   cards read as things stuck to something. */
+/* The board, in the site's own colours: deep campus blue, a violet
+   depth in the lower left, a marker-yellow glow top right where the
+   photos are, and a white dot grid. White cards and the yellow sticky
+   note pop against it; nothing on it is a colour the site does not use
+   elsewhere. */
 .canvas {
     position: relative;
     aspect-ratio: 1000 / 540;
     border-radius: 18px;
-    /* A soft wash of the category colours under the dot grid, each one
-       sitting roughly behind the card it belongs to: blue under the
-       event, violet under the match, green under the club, pink and
-       yellow around the photos. */
-    background-color: #f3efe6;
+    background-color: #2733e6;
     background-image:
-        var(--dot-grid),
-        radial-gradient(44% 62% at 16% 32%, rgba(47, 59, 255, 0.42), transparent 70%),
-        radial-gradient(40% 52% at 56% 18%, rgba(122, 60, 255, 0.4), transparent 70%),
-        radial-gradient(40% 52% at 56% 82%, rgba(18, 161, 80, 0.38), transparent 70%),
-        radial-gradient(30% 50% at 90% 22%, rgba(255, 214, 10, 0.75), transparent 70%),
-        radial-gradient(30% 45% at 88% 86%, rgba(232, 69, 126, 0.42), transparent 70%),
-        radial-gradient(30% 40% at 12% 88%, rgba(240, 106, 0, 0.36), transparent 70%);
-    background-size: var(--dot-grid-size), 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+        radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1.3px),
+        radial-gradient(42% 55% at 92% 8%, rgba(255, 228, 92, 0.42), transparent 70%),
+        radial-gradient(55% 70% at 4% 100%, rgba(122, 60, 255, 0.75), transparent 70%),
+        radial-gradient(60% 60% at 50% 40%, rgba(84, 98, 255, 0.55), transparent 75%),
+        linear-gradient(140deg, #3341ff 0%, #2632e6 45%, #1a22b0 100%);
+    background-size: var(--dot-grid-size), 100% 100%, 100% 100%, 100% 100%, 100% 100%;
     overflow: hidden;
-    box-shadow: inset 0 0 0 1px rgba(17, 17, 20, 0.06), inset 0 30px 60px -40px rgba(17, 17, 20, 0.2);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), inset 0 -60px 90px -50px rgba(8, 10, 70, 0.55);
 }
 
 .wires {
@@ -214,7 +214,7 @@
 }
 
 .wires path {
-    stroke: var(--color-accent);
+    stroke: var(--color-marker);
     stroke-width: 1.8;
     stroke-dasharray: 5 6;
     vector-effect: non-scaling-stroke;
@@ -233,12 +233,13 @@
     transform: translate(-50%, -50%);
     padding: 3px 8px;
     border-radius: 6px;
-    background: var(--color-accent);
-    color: var(--color-paper);
+    background: var(--color-marker);
+    color: var(--color-obsidian);
     font-family: var(--font-mono);
     font-size: 11px;
+    font-weight: 500;
     white-space: nowrap;
-    box-shadow: 0 4px 10px -4px rgba(47, 59, 255, 0.6);
+    box-shadow: 0 6px 14px -6px rgba(0, 0, 40, 0.6);
 }
 
 /* ── Pinned photos ── */
@@ -249,7 +250,7 @@
     padding: 7px 7px 0;
     background: #fff;
     border-radius: 3px;
-    box-shadow: 0 1px 2px rgba(17, 17, 20, 0.12), 0 14px 28px -14px rgba(17, 17, 20, 0.45);
+    box-shadow: 0 1px 2px rgba(0, 0, 40, 0.2), 0 18px 32px -14px rgba(0, 0, 40, 0.6);
 }
 
 .polaroidPhoto {
@@ -344,8 +345,8 @@
     top: 89%;
     padding: 7px 12px;
     border-radius: var(--radius-pill);
-    background: var(--color-obsidian);
-    color: var(--color-paper);
+    background: var(--color-paper);
+    color: var(--color-obsidian);
     font-size: 13px;
     font-weight: 600;
     transform: rotate(-4deg);
@@ -359,8 +360,8 @@
     padding: 14px;
     border-radius: 14px;
     background: var(--color-paper);
-    border: 1px solid var(--border-hairline);
-    box-shadow: var(--shadow-float);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 1px 2px rgba(0, 0, 40, 0.18), 0 22px 40px -18px rgba(0, 0, 40, 0.65);
     text-align: left;
     animation: bob 6s ease-in-out infinite;
 }
