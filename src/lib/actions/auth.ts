@@ -7,6 +7,8 @@ import { createSession, deleteSession, getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
 import { authLimiter, signupLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
+import { Prisma } from '@prisma/client';
+import { updateUserProfileSchema, type UpdateUserProfileInput } from '@/lib/schemas';
 
 export async function signup(prevState: ActionState | null, formData: FormData): Promise<ActionState> {
     const name = formData.get('name') as string;
@@ -354,27 +356,19 @@ export async function getSessionUser() {
     }
 }
 
-export async function updateUserProfile(data: {
-    name?: string;
-    department?: string;
-    year?: string;
-    bio?: string;
-    avatar?: string;
-    resumeUrl?: string;
-    skills?: string[];
-    interests?: string[];
-    achievements?: any[];
-    projects?: any[];
-    portfolioLinks?: any[];
-    collegeId?: string;
-    customCollegeName?: string;
-}) {
+export async function updateUserProfile(input: UpdateUserProfileInput) {
     const session = await getSession();
     if (!session || !session.userId) {
         return { success: false, error: 'Unauthorized' };
     }
 
     const userId = session.userId as string;
+
+    const parsed = updateUserProfileSchema.safeParse(input);
+    if (!parsed.success) {
+        return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid profile data' };
+    }
+    const data = parsed.data;
 
     try {
         // OPTIMIZATION: Use a single transaction for all updates
@@ -404,14 +398,23 @@ export async function updateUserProfile(data: {
             }
 
             // 1. Separate scalar updates and relation updates
-            const { skills, interests, achievements, projects, portfolioLinks, collegeId, customCollegeName, ...scalarData } = data;
+            const { skills, interests, achievements, projects, portfolioLinks } = data;
 
-            // 2. Build the complete update object
-            const updateData: any = { ...scalarData };
+            // 2. Build the update field by field. Never spread the input here:
+            //    that is how role, email and password used to get through.
+            const updateData: Prisma.UserUpdateInput = {};
+            if (data.name !== undefined) updateData.name = data.name;
+            if (data.bio !== undefined) updateData.bio = data.bio;
+            if (data.department !== undefined) updateData.department = data.department;
+            if (data.year !== undefined) updateData.year = data.year;
+            if (data.avatar !== undefined) updateData.avatar = data.avatar;
+            if (data.resumeUrl !== undefined) updateData.resumeUrl = data.resumeUrl;
             if (achievements) updateData.achievements = JSON.stringify(achievements);
             if (projects) updateData.projects = JSON.stringify(projects);
             if (portfolioLinks) updateData.portfolioLinks = JSON.stringify(portfolioLinks);
-            if (finalCollegeId) updateData.collegeId = finalCollegeId;
+            if (finalCollegeId && finalCollegeId !== 'other') {
+                updateData.college = { connect: { id: finalCollegeId } };
+            }
 
             // 3. Handle skills - clear and set in one update
             if (skills !== undefined) {
@@ -436,7 +439,7 @@ export async function updateUserProfile(data: {
             }
 
             // Second update: Connect skills and interests (if provided)
-            const connectData: any = {};
+            const connectData: Prisma.UserUpdateInput = {};
 
             if (skills && skills.length > 0) {
                 connectData.skills = {
