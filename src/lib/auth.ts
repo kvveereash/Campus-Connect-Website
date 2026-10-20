@@ -22,7 +22,7 @@ export async function getSession() {
 
         const user = await prisma.user.findUnique({
             where: { id: payload.userId as string },
-            select: { id: true, name: true, email: true, role: true, avatar: true }
+            select: { id: true, name: true, email: true, role: true, avatar: true, collegeId: true }
         });
 
         if (!user) return null;

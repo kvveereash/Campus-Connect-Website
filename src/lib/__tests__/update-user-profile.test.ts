@@ -83,4 +83,23 @@ describe('updateUserProfile', () => {
         const result = await updateUserProfile({ name: 'Ada Lovelace' });
         expect(result).toEqual({ success: false, error: 'Unauthorized' });
     });
+
+    it('stops a college admin moving to another college', async () => {
+        mockGetSession.mockResolvedValue({
+            userId: 'user-1',
+            user: { id: 'user-1', role: 'COLLEGE_ADMIN', collegeId: 'college-a' },
+        });
+        const result = await updateUserProfile({ collegeId: 'college-b' });
+        expect(result.success).toBe(false);
+        expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it('lets a college admin save their profile with their own college', async () => {
+        mockGetSession.mockResolvedValue({
+            userId: 'user-1',
+            user: { id: 'user-1', role: 'COLLEGE_ADMIN', collegeId: 'college-a' },
+        });
+        const result = await updateUserProfile({ name: 'Ada Lovelace', collegeId: 'college-a' });
+        expect(result.success).toBe(true);
+    });
 });

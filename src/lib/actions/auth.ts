@@ -370,6 +370,15 @@ export async function updateUserProfile(input: UpdateUserProfileInput) {
     }
     const data = parsed.data;
 
+    /* A college admin's authority over a college page comes from their
+       collegeId (see updateCollegeAction), so letting them change it here
+       would let them adopt, and then edit, any college on the site. */
+    const changesCollege = (data.collegeId !== undefined || data.customCollegeName !== undefined)
+        && data.collegeId !== session.user?.collegeId;
+    if (changesCollege && session.user?.role === 'COLLEGE_ADMIN') {
+        return { success: false, error: 'College admins cannot change their college. Ask a site admin.' };
+    }
+
     try {
         // OPTIMIZATION: Use a single transaction for all updates
         await prisma.$transaction(async (tx) => {
