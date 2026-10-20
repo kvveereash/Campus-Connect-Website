@@ -1,5 +1,6 @@
 import prisma from '@/lib/db';
-import { pusherServer } from '@/lib/pusher';
+import { broadcast } from '@/lib/pusher-server';
+import { userChannel } from '@/lib/pusher-channels';
 import { Prisma } from '@prisma/client';
 
 export async function createNotification(
@@ -30,10 +31,8 @@ export async function createNotification(
             }
         });
 
-        // 2. Trigger Pusher
-        // Channel: user-{recipientId}
-        // Event: notification:new
-        await pusherServer.trigger(`user-${recipientId}`, 'notification:new', notification);
+        // 2. Realtime, on the recipient's private channel (best effort)
+        await broadcast(userChannel(recipientId), 'notification:new', notification);
 
         return { success: true, notification };
 

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { getMessages, sendMessage, getConversationDetails, triggerTyping, markAsRead, toggleReaction } from '@/lib/actions/chat';
-import { pusherClient } from '@/lib/pusher';
+import { pusherClient } from '@/lib/pusher-client';
+import { chatChannel } from '@/lib/pusher-channels';
 import styles from './Chat.module.css';
 import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
@@ -36,7 +37,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     useEffect(() => {
         if (!conversationId) return;
 
-        const channel = pusherClient.subscribe(`chat-${conversationId}`);
+        const channel = pusherClient.subscribe(chatChannel(conversationId));
 
         channel.bind('typing', (data: { userId: string }) => {
             if (data.userId !== user?.id) {
@@ -71,7 +72,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         markAsRead(conversationId);
 
         return () => {
-            pusherClient.unsubscribe(`chat-${conversationId}`);
+            pusherClient.unsubscribe(chatChannel(conversationId));
         };
     }, [conversationId, user?.id]);
 

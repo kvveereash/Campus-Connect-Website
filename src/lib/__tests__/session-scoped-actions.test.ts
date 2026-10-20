@@ -20,7 +20,7 @@ const mockDb = {
 // A getter, because the imports below are hoisted above mockDb's initialiser.
 jest.mock('@/lib/db', () => ({ __esModule: true, get default() { return mockDb; } }));
 jest.mock('@/lib/auth', () => ({ getSession: () => mockGetSession() }));
-jest.mock('@/lib/pusher', () => ({ pusherServer: { trigger: (...a: unknown[]) => mockTrigger(...a) } }));
+jest.mock('@/lib/pusher-server', () => ({ broadcast: (...a: unknown[]) => mockTrigger(...a) }));
 jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }));
 jest.mock('@/lib/rate-limit', () => ({
     messageLimiter: undefined,
