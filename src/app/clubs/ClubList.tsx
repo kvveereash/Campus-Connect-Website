@@ -70,7 +70,9 @@ export default function ClubList({ initialClubs, user, joinedClubIds }: ClubList
             <header className={styles.masthead}>
                 <div>
                     <p className={styles.label}>Societies</p>
-                    <h1 className={styles.title}>Find the people already doing it.</h1>
+                    <h1 className={styles.title}>
+                        Find the people <mark>already doing it.</mark>
+                    </h1>
                 </div>
                 <span className={styles.count}>
                     {initialClubs.length} clubs · {collegeCount} colleges

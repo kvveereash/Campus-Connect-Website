@@ -1,543 +1,434 @@
-/* Navbar.module.css */
-
+/* ── Navbar ────────────────────────────────────────────────────
+   Sits on the canvas, not over it. Until the page scrolls it is part
+   of the board; once content passes beneath, it takes a frosted
+   ground and a hairline so the two never blur together.
+   ------------------------------------------------------------- */
 .navbar {
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: 100;
     width: 100%;
-}
-
-/* On the landing page the header floats over the hero rather than
-   occupying space above it. */
-.navbarFloating {
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-/* The header is a transparent bar, not a container. No fill, no border,
-   no shadow — it stays invisible until content scrolls behind it, which
-   is what keeps the page reading as one surface rather than a pill
-   stuck on top of a document. */
-.navContainer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 24px;
-
-    max-width: 1078px;
-    margin: 0 auto;
-    height: 66px;
-    padding: 0 clamp(20px, 5vw, 40px);
-
     background: transparent;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-
+    border-bottom: 1px solid transparent;
     transition: background-color var(--duration-base) var(--ease-glide),
                 border-color var(--duration-base) var(--ease-glide);
 }
 
-.navContainer:hover {
-    transform: none;
-    box-shadow: none;
+.navbarScrolled {
+    background: rgba(245, 244, 240, 0.82);
+    border-bottom-color: var(--border-hairline);
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    backdrop-filter: saturate(160%) blur(14px);
 }
 
-/* Once content is behind it, a hairline and a wash of paper keep the
-   links legible without turning the header into an object. */
-.navContainerScrolled {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    background: rgba(255, 255, 255, 0.86);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-bottom: 1px solid var(--border-hairline);
-    box-shadow: none;
-}
-
-.navContainerScrolled:hover {
-    transform: translateX(-50%);
-    box-shadow: none;
-}
-
-/* Wordmark sits at reading weight. Bold here would compete with the
-   page's own headlines. */
-.logo {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    color: var(--color-obsidian);
-    white-space: nowrap;
-}
-
-.navLinks {
-    display: flex;
-    align-items: center;
-    gap: 28px;
-}
-
-.navLink {
-    position: relative;
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-felt);
-    transition: color var(--duration-base) var(--ease-glide);
-}
-
-.navLink:hover {
-    color: var(--color-obsidian);
-}
-
-.active {
-    color: var(--color-obsidian);
-}
-
-/* A dot rather than an underline — quieter, and it does not fight the
-   letter-spacing. */
-.active::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: -8px;
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: currentColor;
-    transform: translateX(-50%);
-}
-
-.navActions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.searchButton {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-pill);
-    color: var(--color-felt);
-    cursor: pointer;
-    transition: color var(--duration-base) var(--ease-glide);
-}
-
-.searchButton:hover {
-    color: var(--color-obsidian);
-}
-
-.userMenu {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--color-obsidian);
-    /* Lilac background */
-    /* Paper on ink. Was --color-forest, an alias of --color-obsidian, so
-       this rendered the same shade as its own background. */
-    color: var(--color-paper);
-    /* Dark text */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    box-shadow: none;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.logoutBtn {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    font: inherit;
-    color: var(--text-secondary);
-    transition: color 0.2s;
-    font-size: 0.9rem;
-}
-
-.logoutBtn:hover {
-    color: var(--error-color);
-    /* Assuming error color exists, otherwise red */
-}
-
-/* Mobile Responsiveness */
-.mobileToggle {
-    display: none;
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    cursor: pointer;
-    padding: 0;
-}
-
-.mobileMenu {
-    position: absolute;
-    top: calc(100% + 1rem);
-    /* Push it down a bit */
-    left: 1rem;
-    right: 1rem;
-    padding: 1.5rem;
-    background: var(--color-cream);
-    border: 1px solid var(--border-color);
-    border-radius: 0px;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    box-shadow: none;
-    z-index: 1000;
-    animation: slideDown 0.3s ease-out;
-    pointer-events: auto;
-}
-
-.mobileMenuLink {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--text-primary);
-    text-decoration: none;
+.navContainer {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 24px;
+    height: 64px;
+    flex: none;
 }
 
-.mobileMenuLink:hover {
-    color: var(--secondary-color);
-}
-
-.exploreSection {
-    padding: 0.5rem 0;
-    border-top: 1px solid var(--border-color);
-    margin-top: 0.5rem;
-}
-
-.exploreTitle {
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-}
-
-.exploreLinks {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@media (max-width: 900px) {
-    .navContainer {
-        width: 90%;
-        /* adaptive width on smaller screens */
-        padding: 0.75rem 1.5rem;
-    }
-
-    .logo {
-        font-size: 1.25rem;
-    }
-
-    .navLinks {
-        display: none;
-        /* simple hiding for now */
-    }
-
-    .mobileToggle {
-        display: flex;
-    }
-}
-
-/* Large screen optimizations */
-/* Phones. The bar carried the wordmark, search, the login pill and the
-   menu toggle at desktop sizes: 162 + 176 + 48 of padding = 386px inside
-   a 375px screen, so the toggle hung off the right edge and could not be
-   tapped. Everything tightens rather than disappearing — the menu is the
-   only way to reach half the site from a phone, and the login pill the
-   only way to sign in. */
-@media (max-width: 560px) {
-    .navContainer {
-        width: 100%;
-        padding: 0.75rem 1rem;
-    }
-
-    .logo {
-        font-size: 1.0625rem;
-        letter-spacing: -0.01em;
-    }
-
-    .navActions {
-        gap: 0.625rem;
-    }
-
-    .searchButton {
-        width: 28px;
-        height: 28px;
-    }
-
-    .loginBtn {
-        padding: 7px 16px;
-        font-size: 10px;
-    }
-}
-
-@media (min-width: 1200px) {
-    .navContainer {
-        max-width: 1000px;
-    }
-}
-
-@media (min-width: 1400px) {
-    .navContainer {
-        max-width: 1100px;
-        padding: 0.85rem 2.5rem;
-    }
-
-    .navLinks {
-        gap: 2.5rem;
-    }
-}
-
-@media (min-width: 1600px) {
-    .navContainer {
-        max-width: 1200px;
-        padding: 1rem 3rem;
-    }
-
-    .logo {
-        font-size: 1.6rem;
-    }
-
-    .navLink {
-        font-size: 1rem;
-    }
-}
-
-/* --- Dropdown Styles (Tabbed Interaction) --- */
-
-.dropdownContainer {
-    position: relative;
-    height: 100%;
-    display: flex;
+/* ── Logo ── */
+.logo {
+    display: inline-flex;
     align-items: center;
+    gap: 10px;
+    color: var(--color-obsidian);
+    flex-shrink: 0;
 }
 
-.dropdownTrigger {
-    background: transparent;
-    border: 1px solid transparent;
-    cursor: pointer;
+.logoMark {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: var(--color-obsidian);
+    color: var(--color-marker);
+}
+
+.logoText {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.03em;
+}
+
+/* ── Primary links ── */
+.navLinks {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 0.95rem;
+    padding: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.navLink,
+.dropdownTrigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: 12px;
     font-weight: 500;
-    color: var(--text-secondary);
-    padding: 0.5rem 1rem;
-    border-radius: 75px;
-    /* Default Pill State */
-    transition: all 0.2s var(--ease-glide);
-    font-family: var(--font-sans);
-    position: relative;
-    z-index: 102;
-    /* Above the menu */
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--color-inkstone);
+    background: transparent;
+    transition: background-color var(--duration-micro) var(--ease-glide),
+                color var(--duration-micro) var(--ease-glide);
 }
 
-.dropdownTrigger:hover {
-    color: var(--text-primary);
-    background: rgba(0, 0, 0, 0.03);
-}
-
-/* Open State - The "Tab" Look */
+.navLink:hover,
+.dropdownTrigger:hover,
 .dropdownTriggerOpen {
-    background: #ffffff;
-    color: var(--color-forest);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid #ffffff;
-    /* Hide bottom border to merge */
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    box-shadow: none;
-    transform: translateY(1px);
-    /* Push down slightly to overlap border */
+    background: var(--color-slate);
+    color: var(--color-obsidian);
 }
 
-.dropdownTriggerOpen:hover {
-    background: #ffffff;
+.active,
+.active:hover {
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.navMark {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.chevron {
+    transition: transform var(--duration-micro) var(--ease-glide);
+}
+
+.dropdownTriggerOpen .chevron {
+    transform: rotate(180deg);
+}
+
+/* ── Explore dropdown ── */
+.dropdownContainer {
+    position: relative;
 }
 
 .dropdownMenu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 340px;
+    padding: 6px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-float);
+    animation: menuIn var(--duration-micro) var(--ease-glide) both;
+}
+
+/* The gap between trigger and menu is hover-dead without this bridge. */
+.dropdownMenu::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 0;
     right: 0;
-    /* Align right or adjust based on layout */
-    width: 260px;
-    background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0px;
-    /* Important: Top right radius 0 if trigger is right aligned, or custom radius hack */
-    border-top-right-radius: 0;
-    padding: 1rem;
-    box-shadow: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    z-index: 101;
-    animation: fadeIn 0.2s ease-out;
+    height: 12px;
+}
+
+@keyframes menuIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -4px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
 }
 
 .dropdownItem {
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 12px;
-    border-radius: 0px;
-    text-decoration: none;
-    color: var(--text-secondary);
-    transition: all 0.2s var(--ease-glide);
+    padding: 10px 12px;
+    border-radius: 10px;
+    transition: background-color var(--duration-micro) var(--ease-glide);
 }
 
 .dropdownItem:hover {
-    background: var(--color-cream);
-    color: var(--color-forest);
+    background: var(--color-canvas);
 }
 
 .dropdownIcon {
-    margin-top: 2px;
-    color: var(--text-secondary);
-}
-
-.dropdownItem:hover .dropdownIcon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: var(--color-canvas);
+    border: 1px solid var(--border-hairline);
     color: var(--color-obsidian);
 }
 
 .dropdownText {
     display: flex;
     flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 }
 
 .dropdownTitle {
+    font-size: 14px;
     font-weight: 600;
-    font-family: var(--font-sans);
-    color: var(--color-forest);
-    font-size: 0.95rem;
+    color: var(--color-obsidian);
 }
 
 .dropdownDesc {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-top: 2px;
+    font-size: 13px;
     line-height: 1.4;
+    color: var(--color-felt);
 }
 
-/* Premium Login Button */
-/* Ghost pill, not a filled block. The system's only solid action is
-   reserved for genuinely terminal moments; a header sign-in is not one,
-   and a black slab here pulls the eye away from the page itself. */
+/* ── Right-hand actions ── */
+.navActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.searchButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 8px 0 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    color: var(--color-felt);
+    font-size: 13px;
+    transition: border-color var(--duration-micro) var(--ease-glide),
+                color var(--duration-micro) var(--ease-glide);
+}
+
+.searchButton:hover {
+    border-color: var(--border-strong);
+    color: var(--color-obsidian);
+}
+
+.kbd {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--color-canvas);
+    border: 1px solid var(--border-hairline);
+    color: var(--color-ash);
+}
+
+.authPair {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.userPlaceholder {
+    width: 150px;
+    height: 36px;
+}
+
 .loginBtn {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    padding: 8px 22px;
-    font-family: var(--font-sans);
-    font-weight: 400;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-obsidian);
-    background: transparent;
-    border: 1px solid var(--color-obsidian);
+    height: 36px;
+    padding: 0 14px;
     border-radius: var(--radius-pill);
-    text-decoration: none;
-    cursor: pointer;
-    white-space: nowrap;
-    box-shadow: none;
-    transition: letter-spacing var(--duration-base) var(--ease-glide),
-                background-color var(--duration-base) var(--ease-glide),
-                color var(--duration-base) var(--ease-glide);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-obsidian);
+    transition: background-color var(--duration-micro) var(--ease-glide);
 }
 
 .loginBtn:hover {
-    letter-spacing: 0.16em;
-    box-shadow: none;
-    transform: none;
+    background: var(--color-slate);
 }
 
-.loginBtn:active {
-    transform: translateY(0) scale(0.98);
-    box-shadow: none;
+.joinBtn {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    transition: background-color var(--duration-micro) var(--ease-glide);
 }
 
-/* ------------------------------------------------------------------
-   Over the dark hero: no fill, no border, light type. The header stays
-   invisible until content scrolls behind it. Compound selectors so this
-   wins over .navContainer and its scrolled variant.
-   ------------------------------------------------------------------ */
-.navContainer.navOverHero {
-    background: transparent;
-    border-color: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    color: #ffffff;
+.joinBtn:hover {
+    background: var(--color-accent);
 }
 
-.navContainer.navOverHero:hover {
-    transform: none;
+.userMenu {
+    display: flex;
+    align-items: center;
 }
 
-.navContainer.navOverHero .logo,
-.navContainer.navOverHero .navLink,
-.navContainer.navOverHero a,
-.navContainer.navOverHero button {
-    color: #ffffff;
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--color-marker);
+    color: var(--color-obsidian);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    border: 1px solid var(--border-hairline);
 }
 
-.navContainer.navOverHero .navLink:hover,
-.navContainer.navOverHero a:hover {
-    color: rgba(255, 255, 255, 0.72);
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.navContainer.navOverHero .loginBtn {
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.4);
+/* ── Mobile ── */
+.mobileToggle {
+    display: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    color: var(--color-obsidian);
 }
 
-.navContainer.navOverHero .loginBtn:hover {
-    border-color: rgba(255, 255, 255, 0.85);
+.mobileMenu {
+    display: none;
 }
 
-.navContainer.navOverHero .searchButton {
-    color: rgba(255, 255, 255, 0.72);
+.exploreSection {
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-hairline);
 }
 
-.navContainer.navOverHero .searchButton:hover {
-    color: #ffffff;
+.exploreTitle {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    padding: 0 12px 6px;
+}
+
+.exploreLinks {
+    display: flex;
+    flex-direction: column;
+}
+
+.mobileMenuLink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-obsidian);
+}
+
+.mobileMenuLink:hover {
+    background: var(--color-canvas);
+}
+
+@media (max-width: 1024px) {
+    .searchText,
+    .kbd {
+        display: none;
+    }
+
+    .searchButton {
+        width: 36px;
+        padding: 0;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 860px) {
+    .navLinks {
+        display: none;
+    }
+
+    .mobileToggle {
+        display: grid;
+    }
+
+    .loginBtn {
+        display: none;
+    }
+
+    .userPlaceholder {
+        width: 90px;
+    }
+
+    .mobileMenu {
+        display: block;
+        position: absolute;
+        top: 100%;
+        left: 12px;
+        right: 12px;
+        padding: 8px;
+        background: var(--color-paper);
+        border: 1px solid var(--border-hairline);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-float);
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none;
+        transition: opacity var(--duration-micro) var(--ease-glide),
+                    transform var(--duration-micro) var(--ease-glide);
+    }
+
+    .mobileMenuOpen {
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+    }
+
+    .mobileMenu[hidden] {
+        display: none;
+    }
+}
+
+@media (max-width: 400px) {
+    .logoText {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dropdownMenu {
+        animation: none;
+    }
+
+    .mobileMenu {
+        transition: none;
+    }
 }

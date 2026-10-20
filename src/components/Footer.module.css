@@ -1,162 +1,157 @@
-/* ============================================================
-   FOOTER — the one inverted surface on the site
-   This sheet never left the previous palette, and the token
-   rename turned two of its rules invisible:
-
-     .logo        color: var(--color-obsidian)  -> black on black,
-                  so the "Campus Connect" wordmark could not be seen
-                  at all, only the black band where it sat.
-     .links:hover color: var(--color-obsidian)  -> every footer link
-                  disappeared at the moment you pointed at it.
-
-   The rest was old-palette debris: cream at 80% opacity, a mint
-   heading, weights of 600 and 700, a 2.5rem corner radius and a
-   translateX nudge on hover. The footer is simply the system
-   inverted — paper on obsidian — so it is written that way.
-   ============================================================ */
-
+/* ── Footer ────────────────────────────────────────────────────
+   The last card on the board: an ink sheet with the index of the
+   site, and the name set large enough to be the full stop.
+   ------------------------------------------------------------- */
 .footer {
-    background-color: var(--color-obsidian);
-    color: var(--color-paper);
-    padding-top: clamp(56px, 8vw, 96px);
-    margin-top: clamp(64px, 10vw, 128px);
-    position: relative;
-    border-radius: var(--radius-card);
+    margin-top: 96px;
+    padding-bottom: 16px;
 }
 
 .footerContainer {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: clamp(32px, 4vw, 72px);
-    padding-bottom: clamp(48px, 6vw, 80px);
-    max-width: 1600px;
-    margin: 0 auto;
-    padding-left: clamp(24px, 3vw, 64px);
-    padding-right: clamp(24px, 3vw, 64px);
+    flex: none;
 }
 
-.column {
+.sheet {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    padding: 48px 48px 20px;
+    container-type: inline-size;
+}
+
+.top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr);
+    gap: 48px;
+}
+
+.intro {
     display: flex;
     flex-direction: column;
-    min-width: 0;
-}
-
-/* Paper, not ink. This is the rule that was invisible. */
-.logo {
-    font-family: var(--font-display);
-    font-weight: 300;
-    font-size: clamp(1.75rem, 3.4vw, 2.4375rem);
-    line-height: 1.06;
-    letter-spacing: -0.03em;
-    color: var(--color-paper);
-    margin: 0 0 20px;
+    align-items: flex-start;
+    gap: 20px;
 }
 
 .tagline {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 1.58;
-    color: rgba(255, 255, 255, 0.62);
-    max-width: 34ch;
-    margin: 0;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    max-width: 22ch;
 }
 
-/* Was --color-mint at weight 700. Same eyebrow treatment as every
-   section label on the site, in paper at a readable strength. */
+.cta {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: var(--radius-pill);
+    background: var(--color-marker);
+    color: var(--color-obsidian);
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform var(--duration-micro) var(--ease-glide);
+}
+
+.cta:hover {
+    transform: translateY(-1px);
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
 .heading {
+    font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0.16em;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.55);
-    margin: 0 0 20px;
+    margin-bottom: 14px;
 }
 
 .links {
     list-style: none;
-    padding: 0;
-    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .links a {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.78);
-    text-decoration: none;
-    transition: color var(--duration-base) var(--ease-glide);
+    color: rgba(255, 255, 255, 0.86);
+    transition: color var(--duration-micro) var(--ease-glide);
 }
 
-/* Brighter on hover, not darker. */
 .links a:hover {
-    color: var(--color-paper);
+    color: var(--color-marker);
 }
 
-/* The policy row. Small, quiet, and the same paper-on-ink treatment as the
-   links above — these are for the person who came looking, not for anyone
-   browsing. */
+.wordmark {
+    margin: 56px 0 8px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    /* Sized to the sheet, so the name always spans it edge to edge. */
+    font-size: 13.4cqi;
+    line-height: 0.85;
+    letter-spacing: -0.055em;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.08);
+    user-select: none;
+}
+
+.bottomBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-on-dark);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
 .legalLinks {
     display: flex;
-    flex-wrap: wrap;
     gap: 20px;
-}
-
-.legalLinks a {
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
-    text-decoration: none;
-    transition: color var(--duration-base) var(--ease-glide);
 }
 
 .legalLinks a:hover {
     color: var(--color-paper);
 }
 
-.bottomBar {
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-.bottomBarContent {
-    padding: 24px 24px 40px;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.42);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-@media (max-width: 768px) {
-    .footerContainer {
-        grid-template-columns: 1fr 1fr;
-        gap: 36px 24px;
-        text-align: left;
-    }
-
-    .column:first-child {
-        grid-column: 1 / -1;
-    }
-
-    .tagline {
-        max-width: 100%;
-    }
-}
-
-@media (max-width: 460px) {
-    .footerContainer {
+@media (max-width: 900px) {
+    .top {
         grid-template-columns: 1fr;
+        gap: 36px;
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .links a,
-    .legalLinks a {
-        transition: none;
+@media (max-width: 600px) {
+    .sheet {
+        padding: 32px 22px 18px;
+        border-radius: 20px;
+    }
+
+    .columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        row-gap: 28px;
+    }
+
+    .bottomBar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .legalLinks {
+        flex-wrap: wrap;
+        gap: 14px;
     }
 }

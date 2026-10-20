@@ -1,6 +1,6 @@
 import { getUpcomingEvents } from '@/lib/actions';
 import { getLandingStats, getCategoryBand, getFeaturedClubs } from '@/lib/actions/landing';
-import LandingClient from './LandingClient';
+import Landing from './Landing';
 
 // The landing page reflects live counts and the next events, so it is rendered
 // per request rather than served as a build-time snapshot.
@@ -18,7 +18,7 @@ export default async function LandingPage() {
     ]);
 
     return (
-        <LandingClient
+        <Landing
             initialEvents={events}
             stats={stats}
             categories={categories}
@@ -26,7 +26,8 @@ export default async function LandingPage() {
             marquee={marqueeEvents.map((e) => ({
                 id: e.id,
                 label: e.title,
-                meta: new Date(e.date).toLocaleDateString('en-US', {
+                meta: new Date(e.date).toLocaleDateString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
                     day: 'numeric',
                     month: 'short',
                 }),

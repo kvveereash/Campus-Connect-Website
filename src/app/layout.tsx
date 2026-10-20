@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Bricolage_Grotesque, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChromeGate from "@/components/ChromeGate";
@@ -17,10 +17,17 @@ import SWRegister from "@/components/SWRegister"; // Added
 import { GlobalNotificationListener } from "@/components/chat/GlobalNotificationListener";
 import { CommandPalette } from "@/components/CommandPalette";
 
-// Inter is the only face any stylesheet references. Outfit, Fraunces, Archivo
-// and DM_Sans were each being downloaded on every page load with zero CSS
-// referring to them.
+// Three faces, each with one job. Inter carries reading text and controls.
+// Bricolage Grotesque is the display voice — a grotesk with enough character
+// to sound like students rather than a bank. Geist Mono is for labels, dates
+// and counts: the small print of a noticeboard.
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  display: "swap",
+});
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://campusconnect2026.netlify.app'),
@@ -59,7 +66,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: '#0f172a',
+  themeColor: '#f5f4f0',
 };
 
 export default function RootLayout({
@@ -68,7 +75,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${bricolage.variable} ${geistMono.variable}`}
+    >
       <body>
         <SWRegister /> {/* Added Service Worker Registration */}
         <ThemeProvider
