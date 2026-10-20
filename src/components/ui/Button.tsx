@@ -5,6 +5,10 @@ import Link from 'next/link';
 import { motion, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import styles from './Button.module.css';
 
+// Created once. Calling motion.create inside the component made a new
+// component type on every render, so every button-link remounted each time.
+const MotionLink = motion.create(Link);
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
     size?: 'sm' | 'md' | 'lg';
@@ -85,7 +89,6 @@ export default function Button({
     };
 
     if (href) {
-        const MotionLink = motion.create(Link);
         return (
             <MotionLink
                 href={href}

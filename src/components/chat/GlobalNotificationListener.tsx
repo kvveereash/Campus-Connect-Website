@@ -22,7 +22,9 @@ export function GlobalNotificationListener() {
     // effect. It used to depend on pathname, and its cleanup unsubscribed the
     // channel on every navigation, taking NotificationBell's binding with it.
     const pathnameRef = useRef(pathname);
-    pathnameRef.current = pathname;
+    useEffect(() => {
+        pathnameRef.current = pathname;
+    }, [pathname]);
 
     useEffect(() => {
         if (!user?.id) return;

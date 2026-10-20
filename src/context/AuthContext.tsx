@@ -12,7 +12,7 @@ interface AuthContextType {
     registerForEvent: (eventId: string) => void;
     toggleFollow: (collegeId: string) => void;
     toggleFollowUser: (userId: string) => void;
-    updateProfile: (updates: Partial<User> & { customCollegeName?: string }) => void;
+    updateProfile: (updates: Partial<User> & { customCollegeName?: string }) => Promise<boolean>;
     refreshUser: () => Promise<void>;
     isAuthenticated: boolean;
     isLoading: boolean;
@@ -193,8 +193,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({ ...user, following: newFollowing });
     };
 
-    const updateProfile = async (updates: Partial<User> & { customCollegeName?: string }) => {
-        if (user) {
+    /* Resolves true once the server has saved the change. Callers used to
+       announce success straight away, and a rejected save left the unsaved
+       values on screen until a reload; now the screen is put back and the
+       server's reason is shown. */
+    const updateProfile = async (updates: Partial<User> & { customCollegeName?: string }): Promise<boolean> => {
+        if (!user) return false;
+        const previous = user;
+        {
             setUser({ ...user, ...updates });
             try {
                 const { updateUserProfile } = await import('@/lib/actions');
@@ -205,10 +211,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (updates[key] !== undefined) payload[key] = updates[key];
                 }
                 const result = await updateUserProfile(payload);
-                if (!result.success) throw new Error(result.error);
+                if (!result.success) {
+                    setUser(previous);
+                    toast.error(result.error || 'Failed to save changes');
+                    return false;
+                }
+                return true;
             } catch (error) {
                 console.error("Failed to sync profile update", error);
+                setUser(previous);
                 toast.error("Failed to save changes");
+                return false;
             }
         }
     };

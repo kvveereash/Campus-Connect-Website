@@ -15,7 +15,7 @@ import Input from '@/components/ui/Input';
 
 interface ProfessionalTabProps {
     user: User;
-    updateProfile: (data: Partial<User>) => void;
+    updateProfile: (data: Partial<User>) => Promise<boolean>;
 }
 
 // Validation Schemas
@@ -79,8 +79,9 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             // validating file type (basic)
             if (file.type === "application/pdf" || file.name.endsWith('.pdf') || file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
                 // We'll store the filename as the URL for this demo since we don't have real storage
-                updateProfile({ resumeUrl: file.name });
-                toast.success(`Resume "${file.name}" updated successfully!`);
+                void updateProfile({ resumeUrl: file.name }).then((saved) => {
+                    if (saved) toast.success(`Resume "${file.name}" updated successfully!`);
+                });
             } else {
                 toast.error("Please upload a PDF or Word document.");
             }
@@ -94,18 +95,20 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             ...data
         };
         const currentAchievements = user?.achievements || [];
-        updateProfile({ achievements: [...currentAchievements, achievement] });
+        void updateProfile({ achievements: [...currentAchievements, achievement] }).then((saved) => {
+            if (saved) toast.success("Achievement added!");
+        });
         setIsAchievementModalOpen(false);
         achievementForm.reset();
-        toast.success("Achievement added!");
     };
 
     const onSkillSubmit = (data: SkillForm) => {
         const currentSkills = user.skills || [];
         if (!currentSkills.includes(data.skill.trim())) {
-            updateProfile({ skills: [...currentSkills, data.skill.trim()] });
+            void updateProfile({ skills: [...currentSkills, data.skill.trim()] }).then((saved) => {
+                if (saved) toast.success("Skill added!");
+            });
             skillForm.reset();
-            toast.success("Skill added!");
         } else {
             toast.error("Skill already exists!");
         }
@@ -113,7 +116,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
 
     const handleDeleteSkill = (skillToDelete: string) => {
         const currentSkills = user.skills || [];
-        updateProfile({ skills: currentSkills.filter(s => s !== skillToDelete) });
+        void updateProfile({ skills: currentSkills.filter(s => s !== skillToDelete) });
     };
 
     const onProjectSubmit = (data: ProjectForm) => {
@@ -124,10 +127,11 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             link: data.link
         };
         const currentProjects = user.projects || [];
-        updateProfile({ projects: [...currentProjects, project] });
+        void updateProfile({ projects: [...currentProjects, project] }).then((saved) => {
+            if (saved) toast.success("Project added!");
+        });
         setIsProjectModalOpen(false);
         projectForm.reset();
-        toast.success("Project added!");
     };
 
     const onLinkSubmit = (data: LinkForm) => {
@@ -137,10 +141,11 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             url: data.url
         };
         const currentLinks = user.portfolioLinks || [];
-        updateProfile({ portfolioLinks: [...currentLinks, link] });
+        void updateProfile({ portfolioLinks: [...currentLinks, link] }).then((saved) => {
+            if (saved) toast.success("Link added!");
+        });
         setIsLinkModalOpen(false);
         linkForm.reset();
-        toast.success("Link added!");
     };
 
     return (

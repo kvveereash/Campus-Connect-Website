@@ -210,10 +210,23 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                 [postId]: prev[postId].filter(c => c.id !== tempId)
             }));
             setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: Math.max(0, (p.comments || 0) - 1) } : p));
+            return;
+        }
+
+        // Swap the optimistic comment for the saved one. It kept its temp id,
+        // so deleting a comment you had just posted failed until a reload.
+        const saved = await getPostComments(postId);
+        if (saved.success && saved.data) {
+            const formatted = saved.data.map((c: any) => ({
+                ...c,
+                timestamp: new Date(c.timestamp).toISOString()
+            }));
+            setComments(prev => ({ ...prev, [postId]: formatted }));
         }
     };
 
     const handleDeleteComment = async (commentId: string, postId: string) => {
+        if (commentId.startsWith('temp-')) return; // still saving
         if (!confirm("Delete comment?")) return;
 
         const previousComments = comments[postId] || [];

@@ -14,7 +14,7 @@ interface EditProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
     user: User;
-    updateProfile: (data: Partial<User> & { customCollegeName?: string }) => void;
+    updateProfile: (data: Partial<User> & { customCollegeName?: string }) => Promise<boolean>;
 }
 
 const profileSchema = z.object({
@@ -72,13 +72,14 @@ export default function EditProfileModal({ isOpen, onClose, user, updateProfile 
         const skillsArray = formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(Boolean) : [];
         const interestsArray = formData.interests ? formData.interests.split(',').map(s => s.trim()).filter(Boolean) : [];
 
-        updateProfile({
+        void updateProfile({
             ...formData,
             skills: skillsArray,
             interests: interestsArray,
             customCollegeName: isCustomCollege ? formData.customCollegeName : undefined
+        }).then((saved) => {
+            if (saved) toast.success("Profile updated!");
         });
-        toast.success("Profile updated!");
         onClose();
     };
 

@@ -112,12 +112,25 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         return () => clearInterval(interval);
     }, [conversationId]);
 
-    // Scroll to bottom on updates
+    // Scroll to the bottom when a message arrives, not on every poll. The poll
+    // replaces the array every 3s, and scrolling on each one made it
+    // impossible to scroll up and read history. Someone reading older
+    // messages is left where they are unless the new message is their own.
+    const lastSeenRef = useRef('');
     useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        const box = scrollRef.current;
+        if (!box) return;
+        const last = messages[messages.length - 1];
+        const key = `${messages.length}:${last?.id ?? ''}`;
+        if (key === lastSeenRef.current) return;
+        const firstLoad = lastSeenRef.current === '' || lastSeenRef.current.startsWith('0:');
+        lastSeenRef.current = key;
+
+        const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 150;
+        if (firstLoad || nearBottom || last?.senderId === user?.id) {
+            box.scrollTop = box.scrollHeight;
         }
-    }, [messages]);
+    }, [messages, user?.id]);
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -172,15 +185,17 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             <div className={styles.chatHeader}>
                 {onBack && <button className={styles.backBtn} onClick={onBack}>←</button>}
                 <div
-                    style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
-                    onClick={() => setShowDetails(true)}
-                    title="View Details"
+                    style={{ display: 'flex', flexDirection: 'column', cursor: details?.isGroup ? 'pointer' : 'default' }}
+                    // Group info only: for a direct message it showed "Group
+                    // Chat" with a Leave button, and leaving a DM stranded it.
+                    onClick={() => details?.isGroup && setShowDetails(true)}
+                    title={details?.isGroup ? 'View Details' : undefined}
                 >
                     <h3 style={{ fontSize: '1.1rem', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {details?.isGroup ? (details.name || 'Group Chat') : (
                             details?.participants?.find((p: any) => p.userId !== user?.id)?.user.name || 'Chat'
                         )}
-                        <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>ⓘ</span>
+                        {details?.isGroup && <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>ⓘ</span>}
                     </h3>
                     <span style={{ fontSize: '0.8rem', color: '#a1a1aa', fontWeight: 500 }}>
                         {details ? (

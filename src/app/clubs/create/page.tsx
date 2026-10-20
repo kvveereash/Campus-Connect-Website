@@ -48,7 +48,10 @@ export default function CreateClubPage() {
     };
 
     const handleImageChange = (url: string) => {
-        setFormData(prev => ({ ...prev, logo: url }));
+        // "Remove image" sends '', which the schema rejects as an invalid URL,
+        // so removing a logo blocked creating the club. Fall back to the
+        // placeholder the schema accepts.
+        setFormData(prev => ({ ...prev, logo: url || '/club-logo-placeholder.png' }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
