@@ -2,11 +2,33 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 
-const secretKey = process.env.JWT_SECRET || 'fallback-secret-key-for-dev-only';
-if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-    console.error('WARNING: JWT_SECRET is not defined in environment variables');
+const DEV_ONLY_SECRET = 'fallback-secret-key-for-dev-only';
+const MIN_SECRET_LENGTH = 32;
+
+let cachedKey: Uint8Array | null = null;
+
+/**
+ * The HS256 signing key.
+ *
+ * In production a missing or short JWT_SECRET is fatal. It used to log a
+ * warning and sign with the fallback string above, which is in the public
+ * repository, so anyone could have minted a session for any user, admin
+ * included. Resolved on first use rather than at import so `next build` can
+ * still load this module; every sign and verify fails closed instead.
+ */
+function getSigningKey(): Uint8Array {
+    if (cachedKey) return cachedKey;
+
+    const secret = process.env.JWT_SECRET;
+    if (process.env.NODE_ENV === 'production') {
+        if (!secret || secret.length < MIN_SECRET_LENGTH) {
+            throw new Error(`JWT_SECRET must be set and at least ${MIN_SECRET_LENGTH} characters in production`);
+        }
+    }
+
+    cachedKey = new TextEncoder().encode(secret || DEV_ONLY_SECRET);
+    return cachedKey;
 }
-const key = new TextEncoder().encode(secretKey);
 
 /**
  * Session payload stored inside the JWT
@@ -24,11 +46,11 @@ export async function encrypt(payload: Record<string, unknown>) {
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime('24h') // Session lasts 24 hours
-        .sign(key);
+        .sign(getSigningKey());
 }
 
 export async function decrypt(input: string): Promise<any> {
-    const { payload } = await jwtVerify(input, key, {
+    const { payload } = await jwtVerify(input, getSigningKey(), {
         algorithms: ['HS256'],
     });
     return payload;
