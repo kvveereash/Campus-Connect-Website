@@ -4,14 +4,14 @@ import prisma from '@/lib/db';
 import { revalidatePath, updateTag, unstable_cache } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
-import { sanitizeRichText } from '@/lib/sanitize';
+import { cleanUserText } from '@/lib/sanitize';
 import { postLimiter, commentLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { AuthenticationError, NotFoundError, ConflictError, AuthorizationError, ErrorHandler } from '@/lib/errors';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
 import { isOk } from '@/lib/api-response';
 
 import { createProtectedAction } from '@/lib/protected-action';
-import { clubSchema, joinClubSchema, leaveClubSchema, deleteClubSchema, clubPostSchema } from '@/lib/schemas';
+import { clubSchema, joinClubSchema, leaveClubSchema, deleteClubSchema, clubPostSchema, commentSchema } from '@/lib/schemas';
 
 // ─────────────────────────────────────────────────
 // Protected Actions (using unified pattern)
@@ -164,6 +164,11 @@ export const deleteClubAction = createProtectedAction(deleteClubSchema, async ({
 
     revalidatePath('/clubs');
     revalidatePath('/profile');
+    // The club lists, the club page and the buzz feed are all unstable_cache
+    // reads; without these the deleted club stayed listed for minutes.
+    updateTag(CACHE_TAGS.CLUBS);
+    updateTag(`club-${clubId}`);
+    updateTag(CACHE_TAGS.EVENTS);
 
     return { message: 'Club deleted successfully' };
 }, {
@@ -182,8 +187,10 @@ export const createClubPostAction = createProtectedAction(clubPostSchema, async 
         throw new AuthorizationError('You must be a member to post.');
     }
 
-    // Sanitize content to prevent XSS
-    const sanitizedContent = sanitizeRichText(content);
+    const sanitizedContent = cleanUserText(content);
+    if (!sanitizedContent && !image) {
+        throw new Error('Post cannot be empty');
+    }
 
     const post = await prisma.post.create({
         data: {
@@ -469,6 +476,11 @@ export async function deleteClubPost(postId: string, clubId: string): Promise<Ac
 }
 
 export async function editClubPost(postId: string, clubId: string, newContent: string): Promise<ActionState> {
+    const parsed = clubPostSchema.shape.content.safeParse(newContent);
+    if (!parsed.success) {
+        return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid post' };
+    }
+
     try {
         const session = await getSession();
         if (!session || !session.userId) {
@@ -482,15 +494,17 @@ export async function editClubPost(postId: string, clubId: string, newContent: s
             return { success: false, error: 'Only the author can edit this post' };
         }
 
-        const sanitizedContent = sanitizeRichText(newContent);
+        const sanitizedContent = cleanUserText(parsed.data);
+        if (!sanitizedContent) return { success: false, error: 'Post cannot be empty' };
 
         await prisma.post.update({
             where: { id: postId },
             data: { content: sanitizedContent }
         });
 
-        revalidatePath(`/clubs/${clubId}`);
-        updateTag(`club-${clubId}`);
+        // The post's own club, not the one the caller named.
+        revalidatePath(`/clubs/${post.clubId}`);
+        updateTag(`club-${post.clubId}`);
         updateTag(CACHE_TAGS.CLUBS);
         return { success: true, message: 'Post updated' };
     } catch (error) {
@@ -502,6 +516,11 @@ export async function editClubPost(postId: string, clubId: string, newContent: s
 // --- Comments ---
 
 export async function createPostComment(postId: string, content: string): Promise<ActionState> {
+    const parsed = commentSchema.safeParse({ postId, content });
+    if (!parsed.success) {
+        return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid comment' };
+    }
+
     try {
         const session = await getSession();
         if (!session || !session.userId) {
@@ -526,20 +545,22 @@ export async function createPostComment(postId: string, content: string): Promis
 
         if (!post) return { success: false, error: 'Post not found' };
 
-        const sanitizedContent = sanitizeRichText(content);
+        const sanitizedContent = cleanUserText(parsed.data.content);
+        if (!sanitizedContent) return { success: false, error: 'Comment cannot be empty' };
 
-        await prisma.comment.create({
-            data: {
-                content: sanitizedContent,
-                postId,
-                authorId: session.userId
-            }
-        });
-
-        await prisma.post.update({
-            where: { id: postId },
-            data: { comments: { increment: 1 } }
-        });
+        await prisma.$transaction([
+            prisma.comment.create({
+                data: {
+                    content: sanitizedContent,
+                    postId,
+                    authorId: session.userId
+                }
+            }),
+            prisma.post.update({
+                where: { id: postId },
+                data: { comments: { increment: 1 } }
+            }),
+        ]);
 
         // Notify post author
         if (post.authorId !== session.userId) {
@@ -559,7 +580,8 @@ export async function createPostComment(postId: string, content: string): Promis
         return { success: true, message: 'Comment added' };
     } catch (error) {
         console.error('[createPostComment] ERROR:', error);
-        return { success: false, error: `Failed to create comment: ${error instanceof Error ? error.message : String(error)}` };
+        // Not the raw error: that sent Prisma's internals to the browser.
+        return { success: false, error: 'Failed to create comment' };
     }
 }
 
@@ -581,7 +603,8 @@ export async function getPostComments(postId: string) {
     }
 }
 
-export async function deletePostComment(commentId: string, postId: string): Promise<ActionState> {
+// The second argument is ignored; kept so existing callers still type-check.
+export async function deletePostComment(commentId: string, _postId?: string): Promise<ActionState> {
     try {
         const session = await getSession();
         if (!session || !session.userId) {
@@ -599,12 +622,15 @@ export async function deletePostComment(commentId: string, postId: string): Prom
             return { success: false, error: 'Unauthorized' };
         }
 
-        await prisma.comment.delete({ where: { id: commentId } });
-
-        await prisma.post.update({
-            where: { id: postId },
-            data: { comments: { decrement: 1 } }
-        });
+        // The comment's own post, not the postId the caller sent: trusting
+        // that let anyone push any post's comment count negative.
+        await prisma.$transaction([
+            prisma.comment.delete({ where: { id: commentId } }),
+            prisma.post.update({
+                where: { id: comment.postId },
+                data: { comments: { decrement: 1 } }
+            }),
+        ]);
 
         revalidatePath(`/clubs/${comment.post.clubId}`);
         updateTag(`club-${comment.post.clubId}`);

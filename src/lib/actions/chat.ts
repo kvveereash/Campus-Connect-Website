@@ -11,7 +11,7 @@ import { createProtectedAction } from '@/lib/protected-action';
 import { z } from 'zod';
 import { isOk } from '@/lib/api-response';
 import { messageLimiter } from '@/lib/rate-limit'; // Need to export this from rate-limit if not already
-import { sanitizePlainText } from '@/lib/sanitize';
+import { cleanUserText } from '@/lib/sanitize';
 
 /**
  * Throws unless the user is in the conversation. Every write that names a
@@ -107,7 +107,11 @@ export const sendMessageAction = createProtectedAction(sendMessageSchema, async 
     await assertParticipant(session.userId, data.conversationId);
 
     // Sanitize message content
-    const sanitizedContent = data.content ? sanitizePlainText(data.content) : (data.attachmentType === 'image' ? 'Sent an image' : 'Sent a file');
+    const cleaned = cleanUserText(data.content);
+    if (!cleaned && !data.attachmentUrl) {
+        throw new Error('Empty message');
+    }
+    const sanitizedContent = cleaned || (data.attachmentType === 'image' ? 'Sent an image' : 'Sent a file');
 
     try {
         await prisma.$transaction(async (tx) => {
