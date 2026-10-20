@@ -84,14 +84,8 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
         setStatus('processing_payment');
 
         try {
-            const successUrl = `${window.location.origin}/events/${eventId}?payment=success`;
-            const cancelUrl = `${window.location.origin}/events/${eventId}?payment=cancelled`;
-
-            const result = await createEventPaymentSession(
-                registrationId,
-                successUrl,
-                cancelUrl
-            );
+            // The server decides where Stripe returns to.
+            const result = await createEventPaymentSession(registrationId);
 
             if (result.success) {
                 // Redirect to Stripe Checkout page

@@ -17,24 +17,29 @@ export async function markRegistrationPaid(
     registrationId: string,
     paymentId: string,
     amountPaid: number
-) {
-    try {
-        const registration = await prisma.eventRegistration.update({
+): Promise<{ updated: boolean }> {
+    /* Conditional, so only an unpaid registration becomes PAID. A replayed
+       webhook finds nothing to update instead of rewriting the payment, and a
+       CANCELLED registration is not revived by a late event. Database errors
+       are deliberately not caught: the webhook has to answer 500 so that
+       Stripe retries, rather than 200 and a payment nobody recorded. */
+    const { count } = await prisma.eventRegistration.updateMany({
+        where: { id: registrationId, status: { in: ['PENDING', 'PENDING_PAYMENT'] } },
+        data: {
+            status: 'PAID',
+            paymentId,
+            amountPaid,
+        },
+    });
+
+    if (count > 0) {
+        const registration = await prisma.eventRegistration.findUnique({
             where: { id: registrationId },
-            data: {
-                status: 'PAID',
-                paymentId,
-                amountPaid,
-                updatedAt: new Date()
-            }
+            select: { eventId: true },
         });
-
         revalidatePath('/profile');
-        revalidatePath(`/events/${registration.eventId}`);
-
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to mark registration as paid:', error);
-        return { success: false, error: 'Failed to update registration' };
+        if (registration) revalidatePath(`/events/${registration.eventId}`);
     }
+
+    return { updated: count > 0 };
 }
