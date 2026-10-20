@@ -14,7 +14,7 @@ const mockDb = {
     conversation: { update: jest.fn() },
     reaction: { findUnique: jest.fn(), create: jest.fn(), delete: jest.fn(), findMany: jest.fn() },
     auditLog: { create: jest.fn() },
-    $transaction: jest.fn((fn: (tx: unknown) => unknown) => fn(mockDb)),
+    $transaction: jest.fn((fn: (tx: unknown) => unknown): unknown => fn(mockDb)),
 };
 
 // A getter, because the imports below are hoisted above mockDb's initialiser.
