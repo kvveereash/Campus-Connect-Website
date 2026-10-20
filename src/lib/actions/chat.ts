@@ -52,6 +52,10 @@ export const startConversationAction = createProtectedAction(startConversationSc
     // Check if conversation exists
     const conversations = await prisma.conversation.findMany({
         where: {
+            // Direct messages only: without this, two people who shared any
+            // group chat got the group back, and a "private" message went to
+            // everyone in it.
+            isGroup: false,
             participants: {
                 some: { userId: session.userId }
             }
@@ -85,10 +89,14 @@ export const startConversationAction = createProtectedAction(startConversationSc
 
 // 2. Send Message
 const sendMessageSchema = z.object({
-    conversationId: z.string(),
-    content: z.string(),
-    attachmentUrl: z.string().optional(),
-    attachmentType: z.string().optional()
+    conversationId: z.string().max(50),
+    content: z.string().max(2000, 'Message cannot exceed 2000 characters'),
+    // Our own uploads, or an http(s) link. Any string used to be accepted and
+    // rendered as a "Download File" link.
+    attachmentUrl: z.string().max(2048)
+        .refine((url) => /^\/uploads\/[\w.-]+$/.test(url) || /^https:\/\//i.test(url), 'Invalid attachment')
+        .optional(),
+    attachmentType: z.enum(['image', 'file']).optional()
 });
 
 export const sendMessageAction = createProtectedAction(sendMessageSchema, async (data, session) => {
@@ -173,7 +181,7 @@ export async function startConversation(targetUserId: string): Promise<ActionSta
 }
 
 /** @deprecated Use sendMessageAction */
-export async function sendMessage(conversationId: string, content: string, attachmentUrl?: string, attachmentType?: string): Promise<ActionState> {
+export async function sendMessage(conversationId: string, content: string, attachmentUrl?: string, attachmentType?: 'image' | 'file'): Promise<ActionState> {
     const result = await sendMessageAction({ conversationId, content, attachmentUrl, attachmentType });
     if (isOk(result)) {
         return { success: true, message: 'Sent' };
@@ -529,7 +537,7 @@ export async function searchUsers(query: string) {
         const session = await getSession();
         if (!session?.userId) return [];
 
-        if (!query || query.length < 2) return [];
+        if (!query || query.length < 2 || query.length > 100) return [];
 
         const users = await prisma.user.findMany({
             where: {
@@ -537,7 +545,10 @@ export async function searchUsers(query: string) {
                     {
                         OR: [
                             { name: { contains: query, mode: 'insensitive' } },
-                            { email: { contains: query, mode: 'insensitive' } }
+                            // Whole address only. A substring match let anyone
+                            // confirm or rebuild another user's email a few
+                            // characters at a time.
+                            { email: { equals: query.trim(), mode: 'insensitive' } }
                         ]
                     },
                     { id: { not: session.userId } },
