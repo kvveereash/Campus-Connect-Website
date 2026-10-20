@@ -86,19 +86,52 @@ export async function disconnectDatabase() {
  * Returns latency in ms alongside health boolean
  */
 export async function checkDatabaseHealth(): Promise<boolean> {
+    return (await diagnoseDatabase()).healthy
+}
+
+export type DatabaseFailure =
+    | 'engine-missing'   // Prisma has no query engine for this platform
+    | 'auth-failed'      // wrong user or password in DATABASE_URL
+    | 'unreachable'      // host/port wrong, DNS, IPv6-only host, project paused
+    | 'database-missing' // the database name in the URL does not exist
+    | 'invalid-url'      // DATABASE_URL is not a valid connection string
+    | 'timeout'          // reached nothing in time (often unreachable, or pool exhausted)
+    | 'other'
+
+/**
+ * Health check that says why it failed, in terms safe to show publicly: a
+ * fixed category and Prisma's error code, never the message (which can carry
+ * the host and user). /api/health returns this so a broken deployment can be
+ * diagnosed without access to the host's logs.
+ */
+export async function diagnoseDatabase(): Promise<
+    { healthy: true; latencyMs: number } | { healthy: false; reason: DatabaseFailure; code?: string }
+> {
     try {
         const start = Date.now()
         await db.$queryRaw`SELECT 1`
-        const latency = Date.now() - start
+        const latencyMs = Date.now() - start
 
-        if (latency > 1000) {
-            console.warn(`[Database] Health check slow: ${latency}ms`)
+        if (latencyMs > 1000) {
+            console.warn(`[Database] Health check slow: ${latencyMs}ms`)
         }
 
-        return true
+        return { healthy: true, latencyMs }
     } catch (error) {
         console.error('[Database] Health check failed:', error)
-        return false
+        const code = (error as { errorCode?: string; code?: string })?.errorCode
+            ?? (error as { code?: string })?.code
+        const message = error instanceof Error ? error.message : ''
+
+        let reason: DatabaseFailure = 'other'
+        if (/Query Engine|query-engine|libquery_engine|binaryTargets/i.test(message)) reason = 'engine-missing'
+        else if (code === 'P1000') reason = 'auth-failed'
+        else if (code === 'P1001' || code === 'P1017') reason = 'unreachable'
+        else if (code === 'P1003') reason = 'database-missing'
+        else if (code === 'P1013') reason = 'invalid-url'
+        else if (code === 'P1002' || code === 'P1008' || code === 'P2024') reason = 'timeout'
+
+        return { healthy: false, reason, code: typeof code === 'string' && /^P\d{4}$/.test(code) ? code : undefined }
     }
 }
 
