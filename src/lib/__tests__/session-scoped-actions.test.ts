@@ -80,6 +80,29 @@ describe('chat membership', () => {
         expect(mockDb.message.create).toHaveBeenCalled();
     });
 
+    it('refuses attachments that did not come through our upload route', async () => {
+        mockDb.conversationParticipant.findUnique.mockResolvedValue({ id: 'p1' });
+        const result = await sendMessageAction({
+            conversationId: 'c1',
+            content: 'see this',
+            attachmentUrl: 'https://evil.example/login',
+            attachmentType: 'file',
+        });
+        expect(result.success).toBe(false);
+        expect(mockDb.message.create).not.toHaveBeenCalled();
+    });
+
+    it('accepts an attachment from our own uploads', async () => {
+        mockDb.conversationParticipant.findUnique.mockResolvedValue({ id: 'p1' });
+        const result = await sendMessageAction({
+            conversationId: 'c1',
+            content: '',
+            attachmentUrl: '/uploads/1767102939801-4042356.png',
+            attachmentType: 'image',
+        });
+        expect(result.success).toBe(true);
+    });
+
     it('refuses typing events for a conversation the caller is not in', async () => {
         mockDb.conversationParticipant.findUnique.mockResolvedValue(null);
         const result = await triggerTypingAction({ conversationId: 'c1' });

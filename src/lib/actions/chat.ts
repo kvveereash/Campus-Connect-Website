@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { ActionState } from '@/types';
 import { broadcast } from '@/lib/pusher-server';
 import { chatChannel } from '@/lib/pusher-channels';
+import { publicObjectUrlPrefix } from '@/lib/storage';
 
 // Start or Get existing conversation with a user
 import { createProtectedAction } from '@/lib/protected-action';
@@ -89,13 +90,21 @@ export const startConversationAction = createProtectedAction(startConversationSc
 });
 
 // 2. Send Message
+function isOwnUpload(url: string): boolean {
+    const name = /^[\w.-]+$/;
+    if (url.startsWith('/uploads/')) return name.test(url.slice('/uploads/'.length));
+    const prefix = publicObjectUrlPrefix();
+    return !!prefix && url.startsWith(prefix) && name.test(url.slice(prefix.length));
+}
+
 const sendMessageSchema = z.object({
     conversationId: z.string().max(50),
     content: z.string().max(2000, 'Message cannot exceed 2000 characters'),
-    // Our own uploads, or an http(s) link. Any string used to be accepted and
-    // rendered as a "Download File" link.
+    // Only files that went through /api/upload: our storage bucket, or
+    // public/uploads in development. Any string used to be accepted and
+    // rendered as a "Download File" link, which made chat a phishing channel.
     attachmentUrl: z.string().max(2048)
-        .refine((url) => /^\/uploads\/[\w.-]+$/.test(url) || /^https:\/\//i.test(url), 'Invalid attachment')
+        .refine(isOwnUpload, 'Invalid attachment')
         .optional(),
     attachmentType: z.enum(['image', 'file']).optional()
 });
