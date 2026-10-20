@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { TeamRequest } from '@/types';
@@ -8,6 +9,7 @@ import { isOk } from '@/lib/api-response';
 
 import { createProtectedAction } from '@/lib/protected-action';
 import { teamRequestSchema } from '@/lib/schemas';
+import { checkRateLimit, commentLimiter, getRateLimitIdentifier, postLimiter } from '@/lib/rate-limit';
 
 // ─────────────────────────────────────────────────
 // Protected Actions (unified pattern)
@@ -34,6 +36,8 @@ export const createTeamRequestAction = createProtectedAction(teamRequestSchema, 
     revalidatePath(`/events/${data.eventId}`);
     return request;
 }, {
+    // Each request is listed publicly on the event page.
+    rateLimiter: postLimiter,
     audit: { action: 'CREATE', entityType: 'TeamRequest', getEntityId: (d) => d.eventId },
 });
 
@@ -108,10 +112,21 @@ export async function updateTeamRequest(id: string, data: Partial<{
             return { success: false, error: 'Unauthorized' };
         }
 
-        const updateData: any = {};
-        if (data.type) updateData.type = data.type;
-        if (data.skills) updateData.skills = JSON.stringify(data.skills);
-        if (data.description) updateData.description = data.description;
+        // Validated like a new request. Unchecked, `skills: "abc"` was stored
+        // and TeamRequestCard's skills.map() then crashed the event page's
+        // team section for every visitor.
+        const parsed = teamRequestSchema
+            .pick({ type: true, skills: true, description: true })
+            .partial()
+            .safeParse(data);
+        if (!parsed.success) {
+            return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid request' };
+        }
+
+        const updateData: Prisma.TeamRequestUpdateInput = {};
+        if (parsed.data.type) updateData.type = parsed.data.type;
+        if (parsed.data.skills) updateData.skills = JSON.stringify(parsed.data.skills);
+        if (parsed.data.description) updateData.description = parsed.data.description;
 
         await prisma.teamRequest.update({ where: { id }, data: updateData });
 
@@ -162,6 +177,12 @@ export async function connectToTeamRequest(requestId: string) {
 
         if (request.creatorId === session.userId) {
             return { success: false, error: 'Cannot connect to your own request' };
+        }
+
+        // Throttled, so a script cannot flood the creator with notifications.
+        const limit = await checkRateLimit(commentLimiter, `${getRateLimitIdentifier(session.userId as string)}:team-connect`);
+        if (!limit.success) {
+            return { success: false, error: 'Slow down. Try again in a minute.' };
         }
 
         const { createNotification } = await import('@/lib/notification-helper');
