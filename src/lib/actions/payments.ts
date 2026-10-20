@@ -112,50 +112,6 @@ export async function createEventPaymentSession(
 }
 
 /**
- * Mark a registration as paid
- * 
- * ⚠️ INTERNAL USE ONLY - Called exclusively from Stripe webhook handler
- * This function intentionally has no auth check since it's called from
- * the webhook which verifies the signature instead.
- * 
- * DO NOT EXPORT THIS FUNCTION TO CLIENT COMPONENTS
- */
-export async function markRegistrationPaid(
-    registrationId: string,
-    paymentId: string,
-    amountPaid: number,
-    _internalCallerToken?: string // Optional: Add webhook verification token
-) {
-    // Guard: Ensure this is only called server-side
-    // 'use server' at top of file already prevents direct client calls,
-    // but this adds defense-in-depth for any internal misuse
-    if (typeof window !== 'undefined') {
-        console.error('[SECURITY] markRegistrationPaid called from client context');
-        return { success: false, error: 'Invalid call context' };
-    }
-
-    try {
-        const registration = await prisma.eventRegistration.update({
-            where: { id: registrationId },
-            data: {
-                status: 'PAID',
-                paymentId,
-                amountPaid,
-                updatedAt: new Date()
-            }
-        });
-
-        revalidatePath('/profile');
-        revalidatePath(`/events/${registration.eventId}`);
-
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to mark registration as paid:', error);
-        return { success: false, error: 'Failed to update registration' };
-    }
-}
-
-/**
  * Get user's pending payments
  */
 const getUserPendingPaymentsSchema = z.object({});

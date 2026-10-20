@@ -1,4 +1,8 @@
-'use server';
+/* Not 'use server'. With that directive every export here was a server
+   action, so getRecentAuditLogs handed the audit log (actor names and email
+   addresses) to anyone who called it, and audit() let anyone write entries.
+   These are helpers for other server code only. */
+import 'server-only';
 
 import prisma from '@/lib/db';
 import { logger } from '@/lib/logger';

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/lib/stripe';
-import { markRegistrationPaid } from '@/lib/actions/payments';
+import { markRegistrationPaid } from '@/lib/payments';
 import Stripe from 'stripe';
 
 /**

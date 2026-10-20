@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { Event as PrismaEvent, Badge, Prisma } from '@prisma/client';
+import { Event as PrismaEvent, Prisma } from '@prisma/client';
 import { revalidatePath, updateTag } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { unstable_cache } from 'next/cache';
@@ -11,6 +11,7 @@ import { createProtectedAction } from '@/lib/protected-action';
 import { eventSchema, updateEventSchema, joinEventSchema } from '@/lib/schemas';
 import { createNotification } from '@/lib/notification-helper';
 import { audit } from '@/lib/audit';
+import { checkAndAwardBadges } from '@/lib/badges';
 import { eventLimiter } from '@/lib/rate-limit';
 
 export type EventWithRelations = PrismaEvent & {
@@ -25,69 +26,6 @@ export type EventWithRelations = PrismaEvent & {
         logo: string | null;
     } | null;
 };
-
-// ─────────────────────────────────────────────────
-// Badge Helper (internal, no auth needed)
-// ─────────────────────────────────────────────────
-
-export async function checkAndAwardBadges(userId: string, eventCategory: string) {
-    const badgesEarned: Badge[] = [];
-
-    try {
-        const [
-            registrationCount,
-            hostedEventCount,
-            existingUserBadges,
-            allBadges
-        ] = await Promise.all([
-            prisma.eventRegistration.count({ where: { userId } }),
-            eventCategory === 'HOST_EVENT'
-                ? prisma.event.count({ where: { creatorId: userId } })
-                : Promise.resolve(0),
-            prisma.userBadge.findMany({
-                where: { userId },
-                select: { badge: { select: { name: true, id: true } } }
-            }),
-            prisma.badge.findMany({
-                where: {
-                    name: { in: ['Social Butterfly', 'Code Ninja', 'Event Planner'] }
-                }
-            })
-        ]);
-
-        const earnedBadgeNames = new Set(existingUserBadges.map(ub => ub.badge.name));
-        const badgeMap = new Map(allBadges.map(b => [b.name, b]));
-        const badgesToAward: { userId: string; badgeId: string }[] = [];
-
-        if (registrationCount >= 5 && !earnedBadgeNames.has('Social Butterfly')) {
-            const badge = badgeMap.get('Social Butterfly');
-            if (badge) { badgesToAward.push({ userId, badgeId: badge.id }); badgesEarned.push(badge); }
-        }
-
-        if (eventCategory === 'Hackathon' && !earnedBadgeNames.has('Code Ninja')) {
-            const badge = badgeMap.get('Code Ninja');
-            if (badge) { badgesToAward.push({ userId, badgeId: badge.id }); badgesEarned.push(badge); }
-        }
-
-        if (eventCategory === 'HOST_EVENT' && hostedEventCount >= 1 && !earnedBadgeNames.has('Event Planner')) {
-            const badge = badgeMap.get('Event Planner');
-            if (badge) { badgesToAward.push({ userId, badgeId: badge.id }); badgesEarned.push(badge); }
-        }
-
-        if (badgesToAward.length > 0) {
-            await prisma.userBadge.createMany({
-                data: badgesToAward,
-                skipDuplicates: true
-            });
-        }
-
-        return badgesEarned;
-
-    } catch (error) {
-        console.error('Error awarding badges:', error);
-        return [];
-    }
-}
 
 // ─────────────────────────────────────────────────
 // Protected Actions (unified pattern)
