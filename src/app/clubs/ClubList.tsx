@@ -1,11 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { resolveClubImage } from '@/lib/college-images';
+import { useAuth } from '@/context/AuthContext';
+import { getPostableClubs } from '@/lib/actions/buzz';
 import styles from './clubs.module.css';
 
 interface Club {
@@ -23,8 +25,6 @@ interface Club {
 
 interface ClubListProps {
     initialClubs: Club[];
-    user: { id: string; name: string } | null;
-    joinedClubIds: string[];
 }
 
 const rise = {
@@ -38,9 +38,24 @@ const rise = {
 
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } };
 
-export default function ClubList({ initialClubs, user, joinedClubIds }: ClubListProps) {
+export default function ClubList({ initialClubs }: ClubListProps) {
+    const { user } = useAuth();
     const [category, setCategory] = useState('All');
     const [mineOnly, setMineOnly] = useState(false);
+
+    // Your memberships are per person, so they are fetched here rather than
+    // baked into the cached page.
+    const [joinedClubIds, setJoinedClubIds] = useState<string[]>([]);
+    useEffect(() => {
+        if (!user) return;
+        let alive = true;
+        getPostableClubs().then((clubs) => {
+            if (alive) setJoinedClubIds(clubs.map((c) => c.id));
+        });
+        return () => {
+            alive = false;
+        };
+    }, [user]);
 
     /**
      * Filters are built from the clubs themselves and carry counts, so a

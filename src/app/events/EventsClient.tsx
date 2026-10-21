@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
@@ -16,13 +16,34 @@ interface EventsClientProps {
     initialEvents: EventWithRelations[];
 }
 
-export default function EventsClient({ initialEvents }: EventsClientProps) {
+/** What the board needs from the URL: just the category, read-only. */
+type Params = { get(name: string): string | null; toString(): string } | null;
+
+/**
+ * The page is served from the CDN, so it is built without a URL. The board
+ * is rendered once with no category for that cached HTML (the Suspense
+ * fallback, so the list is in the page source and on screen at first paint),
+ * then again with the URL's ?category= once the browser has it.
+ */
+export default function EventsClient(props: EventsClientProps) {
+    return (
+        <Suspense fallback={<EventsBoard {...props} searchParams={null} />}>
+            <EventsWithParams {...props} />
+        </Suspense>
+    );
+}
+
+function EventsWithParams(props: EventsClientProps) {
     const searchParams = useSearchParams();
+    return <EventsBoard {...props} searchParams={searchParams} />;
+}
+
+function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { searchParams: Params }) {
     const pathname = usePathname();
     const { replace } = useRouter();
     const railRef = useRef<HTMLElement>(null);
 
-    const activeCategory = searchParams.get('category') || 'All';
+    const activeCategory = searchParams?.get('category') || 'All';
     const [activeTime, setActiveTime] = useState<TimeFilter>('Any');
 
     /**
@@ -72,7 +93,7 @@ export default function EventsClient({ initialEvents }: EventsClientProps) {
     const groups = useMemo(() => groupByProximity(listed), [listed]);
 
     const setCategory = (category: string) => {
-        const params = new URLSearchParams(searchParams);
+        const params = new URLSearchParams(searchParams?.toString() ?? '');
         if (category === 'All') params.delete('category');
         else params.set('category', category);
         replace(`${pathname}?${params.toString()}`, { scroll: false });

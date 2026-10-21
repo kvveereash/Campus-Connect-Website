@@ -2,10 +2,6 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 
 /**
  * The site's one scroll reveal, for every page but home (which has its own
@@ -16,14 +12,37 @@ gsap.registerPlugin(ScrollTrigger);
  * Only children that are below the fold when they appear are hidden, so
  * nothing on screen at load ever blinks out and back. Lists that load or
  * filter on the client are picked up as their rows arrive.
+ *
+ * GSAP is imported here on demand, after the page is interactive and only on
+ * pages that have something to reveal, so it never sits in the first load.
  */
 export default function ScrollReveal() {
     const pathname = usePathname();
 
     useEffect(() => {
         if (pathname === '/') return;
+        if (!document.querySelector('[data-reveal-group]')) return;
 
-        const mm = gsap.matchMedia();
+        let mm: gsap.MatchMedia | null = null;
+        let cancelled = false;
+        Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).then(([{ gsap }, { ScrollTrigger }]) => {
+            if (cancelled) return;
+            gsap.registerPlugin(ScrollTrigger);
+            mm = gsap.matchMedia();
+            start(gsap, ScrollTrigger, mm);
+        });
+
+        return () => {
+            cancelled = true;
+            mm?.revert();
+        };
+    }, [pathname]);
+
+    return null;
+}
+
+function start(gsap: typeof import('gsap').gsap, ScrollTrigger: typeof import('gsap/ScrollTrigger').ScrollTrigger, mm: gsap.MatchMedia) {
+    {
         mm.add('(prefers-reduced-motion: no-preference)', () => {
             const seen = new WeakSet<Element>();
             let triggers: ScrollTrigger[] = [];
@@ -80,9 +99,5 @@ export default function ScrollReveal() {
                 if (frame) cancelAnimationFrame(frame);
             };
         });
-
-        return () => mm.revert();
-    }, [pathname]);
-
-    return null;
+    }
 }

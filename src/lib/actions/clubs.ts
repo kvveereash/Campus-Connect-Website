@@ -206,6 +206,7 @@ export const createClubPostAction = createProtectedAction(clubPostSchema, async 
     });
 
     revalidatePath(`/clubs/${clubId}`);
+    revalidatePath('/buzz');
     updateTag(`club-${clubId}`);
     updateTag(CACHE_TAGS.CLUBS);
 

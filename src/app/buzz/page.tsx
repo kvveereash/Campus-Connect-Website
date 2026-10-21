@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { getSession } from '@/lib/auth';
-import { getBuzzFeed, getPostableClubs } from '@/lib/actions/buzz';
+import { getBuzzFeed } from '@/lib/actions/buzz';
 import BuzzClient from './BuzzClient';
 
 export const metadata: Metadata = {
@@ -8,22 +7,15 @@ export const metadata: Metadata = {
     description: 'What clubs across campus are posting right now.',
 };
 
-// The feed changes as people post, so render it per request rather than
-// serving a cached snapshot.
-export const dynamic = 'force-dynamic';
+// The same feed for everyone, so it is served from the CDN and rebuilt at most
+// every 30 seconds; a new post refreshes it straight away. The one per-person
+// part, which clubs you can post to, is fetched by the browser.
+export const revalidate = 30;
 
 export default async function BuzzPage() {
-    const session = await getSession();
+    // Topics are derived by the client from the feed it already has, so they
+    // always match what clicking one reveals.
+    const posts = await getBuzzFeed();
 
-    // Topics used to be a third query that grouped *clubs* by category, then
-    // got rendered as filters over *posts* — so the numbers never matched what
-    // clicking one revealed. The client derives them from the feed it already
-    // has, which is both correct and one less round trip on a page that cannot
-    // be cached.
-    const [posts, myClubs] = await Promise.all([
-        getBuzzFeed(),
-        session?.userId ? getPostableClubs() : Promise.resolve([]),
-    ]);
-
-    return <BuzzClient posts={posts} myClubs={myClubs} />;
+    return <BuzzClient posts={posts} />;
 }

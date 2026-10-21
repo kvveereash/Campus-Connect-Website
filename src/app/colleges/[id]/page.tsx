@@ -2,6 +2,14 @@ import { notFound } from 'next/navigation';
 import { getCollegeById, getEventsByHost } from '@/lib/actions';
 import CollegeClient from './CollegeClient';
 
+// Nothing on a college page depends on who is looking (following is handled
+// in the browser), so each one is rendered on first visit, served from the
+// CDN, and rebuilt at most every five minutes.
+export const revalidate = 300;
+export function generateStaticParams() {
+    return [];
+}
+
 export default async function CollegePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 

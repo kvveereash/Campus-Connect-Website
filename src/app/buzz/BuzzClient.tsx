@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -8,14 +8,13 @@ import { toast } from 'sonner';
 import { ArrowUp, Heart, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { createClubPost, getPostComments, createPostComment } from '@/lib/actions/clubs';
-import type { BuzzPost } from '@/lib/actions/buzz';
+import { getPostableClubs, type BuzzPost } from '@/lib/actions/buzz';
 import styles from './buzz.module.css';
 import Reveal from '@/components/Reveal';
 import { formatIST } from '@/lib/format';
 
 interface Props {
     posts: BuzzPost[];
-    myClubs: { id: string; name: string }[];
 }
 
 interface Comment {
@@ -29,13 +28,28 @@ interface Comment {
 
 const MAX_POST = 1000;
 
-export default function BuzzClient({ posts, myClubs }: Props) {
+export default function BuzzClient({ posts }: Props) {
     const router = useRouter();
     const { user } = useAuth();
     const [isPending, startTransition] = useTransition();
 
     const [content, setContent] = useState('');
-    const [clubId, setClubId] = useState(myClubs[0]?.id ?? '');
+    // Which clubs you can post to is per person, so it is fetched here rather
+    // than baked into the cached page.
+    const [myClubs, setMyClubs] = useState<{ id: string; name: string }[]>([]);
+    const [clubId, setClubId] = useState('');
+    useEffect(() => {
+        if (!user) return;
+        let alive = true;
+        getPostableClubs().then((clubs) => {
+            if (!alive) return;
+            setMyClubs(clubs);
+            setClubId((current) => current || clubs[0]?.id || '');
+        });
+        return () => {
+            alive = false;
+        };
+    }, [user]);
     const [activeTopic, setActiveTopic] = useState('All');
 
     const [openComments, setOpenComments] = useState<string | null>(null);

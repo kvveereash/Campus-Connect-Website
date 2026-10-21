@@ -14,13 +14,18 @@ const MEMBERS_SHOWN = 12;
 
 export default async function ClubDetailsPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
-    const club = await getClubDetails(params.id);
+    // Three independent reads, made together: one after another they were
+    // three round trips to a database on another continent.
+    const [club, session, posts] = await Promise.all([
+        getClubDetails(params.id),
+        getSession(),
+        getClubPosts(params.id),
+    ]);
 
     if (!club) {
         notFound();
     }
 
-    const session = await getSession();
     /* These read `m.user.id`, not `m.userId`. The query selects the member row
        without its userId column, so the old `(m: any) => m.userId === ...`
        compared undefined against the session on every render: isMember and
@@ -35,7 +40,6 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
         session?.userId && club.members.some((m) => m.user.id === session.userId)
     );
 
-    const posts = await getClubPosts(club.id);
 
     /* Every club used to render the same stock banner photograph and, when it
        had no logo, one of six stock images picked by character code — so two

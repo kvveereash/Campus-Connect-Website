@@ -7,20 +7,18 @@ export const metadata: Metadata = {
   description: 'Explore hackathons, fests, workshops, and cultural events happening across colleges.',
 };
 
-export default async function EventsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
-  const unresolvedParams = await searchParams;
-  const search = (unresolvedParams?.search as string) || '';
+// Served from the CDN and rebuilt at most once a minute; publishing an event
+// revalidates the events tag straight away. Nothing here depends on who is
+// asking, so nothing needs to render per request.
+export const revalidate = 60;
 
+export default async function EventsPage() {
   // Deliberately not passing `category` to the query. The filter rail shows a
   // count beside every category, and those counts have to describe the whole
   // set — filtering server-side first would collapse every count to the
   // selected category. The client applies the category from the URL instead,
   // which also keeps ?category= links shareable.
-  const events = await getAllEvents({ search });
+  const events = await getAllEvents();
 
   return <EventsClient initialEvents={events} />;
 }

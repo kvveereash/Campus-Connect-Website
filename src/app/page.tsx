@@ -3,9 +3,10 @@ import { getLandingStats, getCategoryBand, getFeaturedClubs } from '@/lib/action
 import { getAllColleges } from '@/lib/actions/colleges';
 import Landing from './Landing';
 
-// The landing page reflects live counts and the next events, so it is rendered
-// per request rather than served as a build-time snapshot.
-export const dynamic = 'force-dynamic';
+// Served from the CDN and rebuilt in the background at most once a minute,
+// so live counts and the next events stay current without every visit
+// waiting on the database (which is a continent away from the functions).
+export const revalidate = 60;
 
 export default async function LandingPage() {
     // Eight for the hero deck and the week rail, a longer run for the

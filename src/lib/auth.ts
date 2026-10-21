@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { decrypt } from './auth-edge';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/db';
@@ -12,7 +13,13 @@ export * from './auth-edge';
  * 
  * ⚠️ NODE.JS RUNTIME ONLY (Uses Prisma)
  */
-export async function getSession() {
+export const getSession = cache(getSessionUncached);
+
+/* Wrapped in React's cache() above: a page, its layout and every server
+   action they call ask for the session separately, and each ask was a user
+   lookup in a database a continent away from the functions. Now the first
+   ask in a request does the lookup and the rest share its answer. */
+async function getSessionUncached() {
     const cookieStore = await cookies();
     const session = cookieStore.get('session')?.value;
     if (!session) return null;
