@@ -5,7 +5,7 @@ import { revalidatePath, updateTag } from 'next/cache';
 import bcrypt from 'bcryptjs';
 import { createSession, deleteSession, getSession, passwordVersion } from '@/lib/auth';
 import { ActionState } from '@/types';
-import { authLimiter, signupLimiter, loginIpLimiter, signupIpLimiter, getClientIp, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
+import { authLimiter, signupLimiter, loginIpLimiter, signupIpLimiter, eventLimiter, getClientIp, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { Prisma } from '@prisma/client';
 import { updateUserProfileSchema, type UpdateUserProfileInput } from '@/lib/schemas';
@@ -380,6 +380,10 @@ export async function updateUserProfile(input: UpdateUserProfileInput) {
             let finalCollegeId = data.collegeId;
 
             if (data.customCollegeName && (!data.collegeId || data.collegeId === 'other')) {
+                // New colleges go live immediately, so bound how fast anyone
+                // can add them (a script could otherwise fill /colleges).
+                const limit = await checkRateLimit(eventLimiter, `${getRateLimitIdentifier(userId)}:new-college`);
+                if (!limit.success) throw new Error('RATE_LIMITED');
                 const normalizedName = data.customCollegeName.trim();
                 const existing = await tx.college.findFirst({
                     where: { name: normalizedName }
@@ -476,6 +480,9 @@ export async function updateUserProfile(input: UpdateUserProfileInput) {
         return { success: true };
 
     } catch (error) {
+        if (error instanceof Error && error.message === 'RATE_LIMITED') {
+            return { success: false, error: 'Too many new colleges added. Try again later.' };
+        }
         console.error('Failed to update profile:', error);
         return { success: false, error: 'Failed to update profile' };
     }

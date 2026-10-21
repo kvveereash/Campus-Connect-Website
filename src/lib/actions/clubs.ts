@@ -5,7 +5,7 @@ import { revalidatePath, updateTag, unstable_cache } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
 import { cleanUserText } from '@/lib/sanitize';
-import { postLimiter, commentLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
+import { postLimiter, commentLimiter, eventLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { AuthenticationError, NotFoundError, ConflictError, AuthorizationError, ErrorHandler } from '@/lib/errors';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
 import { isOk } from '@/lib/api-response';
@@ -83,6 +83,8 @@ export const createClubAction = createProtectedAction(clubSchema, async (data, s
     updateTag(CACHE_TAGS.CLUBS);
     return club;
 }, {
+    // Also bounds how fast anyone can add colleges through "my college is not listed".
+    rateLimiter: eventLimiter,
     audit: { action: 'CREATE', entityType: 'Club', getEntityId: () => 'new' },
 });
 
@@ -431,6 +433,26 @@ export async function getClubDetails(clubId: string) {
     }
 }
 
+/**
+ * Whether the signed-in viewer may see a club's content: anyone for an
+ * approved, live club; members and site admins otherwise. The club page
+ * already gated this, but its posts and comments were readable (and
+ * commentable) directly by id for pending, rejected and deleted clubs.
+ */
+async function canViewClub(clubId: string): Promise<boolean> {
+    const club = await prisma.club.findUnique({ where: { id: clubId }, select: { verified: true, deletedAt: true } });
+    if (!club || club.deletedAt) return false;
+    if (club.verified) return true;
+    const session = await getSession();
+    if (!session?.userId) return false;
+    if (session.user?.role === 'ADMIN') return true;
+    const member = await prisma.clubMember.findUnique({
+        where: { userId_clubId: { userId: session.userId as string, clubId } },
+        select: { id: true },
+    });
+    return !!member;
+}
+
 async function _clubPosts(clubId: string) {
     // No try/catch in here: an error caught inside unstable_cache returns []
     // and the cache keeps that empty feed for the whole TTL after one blip.
@@ -458,6 +480,7 @@ async function _clubPosts(clubId: string) {
  */
 export async function getClubPosts(clubId: string) {
     try {
+        if (!(await canViewClub(clubId))) return [];
         return await unstable_cache(() => _clubPosts(clubId), [`club-posts-${clubId}`], {
             tags: [CACHE_TAGS.CLUBS, `club-${clubId}`],
             revalidate: CACHE_TTL.CLUBS_DETAIL,
@@ -575,7 +598,7 @@ export async function createPostComment(postId: string, content: string): Promis
             include: { club: true }
         });
 
-        if (!post) return { success: false, error: 'Post not found' };
+        if (!post || !(await canViewClub(post.clubId))) return { success: false, error: 'Post not found' };
 
         const sanitizedContent = cleanUserText(parsed.data.content);
         if (!sanitizedContent) return { success: false, error: 'Comment cannot be empty' };
@@ -619,6 +642,9 @@ export async function createPostComment(postId: string, content: string): Promis
 
 export async function getPostComments(postId: string) {
     try {
+        const post = await prisma.post.findUnique({ where: { id: postId }, select: { clubId: true } });
+        if (!post || !(await canViewClub(post.clubId))) return { success: false, error: 'Post not found' };
+
         const comments = await prisma.comment.findMany({
             where: { postId },
             include: {

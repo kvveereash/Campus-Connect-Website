@@ -4,7 +4,7 @@ import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { authLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
-import { issueVerificationEmail } from '@/lib/email-verification';
+import { hashVerificationToken, issueVerificationEmail } from '@/lib/email-verification';
 import type { ActionState } from '@/types';
 
 /**
@@ -54,7 +54,7 @@ export async function verifyEmail(
     let row;
     try {
         row = await prisma.emailVerificationToken.findUnique({
-            where: { token },
+            where: { token: hashVerificationToken(token) },
             select: {
                 id: true,
                 used: true,

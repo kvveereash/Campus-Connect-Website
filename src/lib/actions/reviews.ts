@@ -91,7 +91,8 @@ export async function addEventReview(
 export async function getEventReviews(eventId: string) {
     try {
         const reviews = await prisma.eventReview.findMany({
-            where: { eventId },
+            // Public read: only for approved, live events.
+            where: { eventId, event: { verified: true, deletedAt: null } },
             include: {
                 user: {
                     select: {

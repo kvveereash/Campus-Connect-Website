@@ -124,15 +124,20 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
             }
         });
 
-        await tx.event.update({
-            where: { id: eventId },
-            data: { registrationCount: { increment: 1 } }
-        });
+        // A paid event counts the place, and awards badges, once it is paid
+        // (markRegistrationPaid). Counting at join let anyone collect badges
+        // and inflate attendance by joining paid events and never paying.
+        if (event.price <= 0) {
+            await tx.event.update({
+                where: { id: eventId },
+                data: { registrationCount: { increment: 1 } }
+            });
+        }
 
         return reg;
     });
 
-    const earnedBadges = await checkAndAwardBadges(userId, event.category);
+    const earnedBadges = event.price > 0 ? [] : await checkAndAwardBadges(userId, event.category);
 
     if (event.creatorId && event.creatorId !== userId) {
         await createNotification(

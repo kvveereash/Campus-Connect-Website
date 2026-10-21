@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import prisma from '@/lib/db';
 import { sendEmail } from '@/lib/email';
 import { logger } from '@/lib/logger';
@@ -8,6 +8,10 @@ import { escapeHtml } from '@/lib/sanitize';
 import type { ActionState } from '@/types';
 
 const TOKEN_HOURS = 24;
+
+export function hashVerificationToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+}
 
 function verificationUrl(token: string) {
     const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
@@ -48,7 +52,8 @@ export async function issueVerificationEmail(userId: string): Promise<ActionStat
         });
         await prisma.emailVerificationToken.create({
             data: {
-                token,
+                // Stored as a hash; the emailed link carries the raw token.
+                token: hashVerificationToken(token),
                 userId: user.id,
                 expiresAt: new Date(Date.now() + TOKEN_HOURS * 60 * 60 * 1000),
             },

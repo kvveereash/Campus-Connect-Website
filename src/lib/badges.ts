@@ -20,7 +20,8 @@ export async function checkAndAwardBadges(userId: string, eventCategory: string)
             existingUserBadges,
             allBadges
         ] = await Promise.all([
-            prisma.eventRegistration.count({ where: { userId } }),
+            // Places actually held: unpaid and cancelled registrations do not count.
+            prisma.eventRegistration.count({ where: { userId, status: { in: ['PAID', 'COMPLETED'] } } }),
             eventCategory === 'HOST_EVENT'
                 ? prisma.event.count({ where: { creatorId: userId } })
                 : Promise.resolve(0),

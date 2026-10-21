@@ -2,6 +2,7 @@ import 'server-only';
 
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { checkAndAwardBadges } from '@/lib/badges';
 
 /**
  * Mark a registration as paid.
@@ -35,10 +36,18 @@ export async function markRegistrationPaid(
     if (count > 0) {
         const registration = await prisma.eventRegistration.findUnique({
             where: { id: registrationId },
-            select: { eventId: true },
+            select: { eventId: true, userId: true, event: { select: { category: true } } },
         });
+        if (registration) {
+            // The place now counts, and only now can it earn badges.
+            await prisma.event.update({
+                where: { id: registration.eventId },
+                data: { registrationCount: { increment: 1 } },
+            });
+            await checkAndAwardBadges(registration.userId, registration.event.category);
+            revalidatePath(`/events/${registration.eventId}`);
+        }
         revalidatePath('/profile');
-        if (registration) revalidatePath(`/events/${registration.eventId}`);
     }
 
     return { updated: count > 0 };

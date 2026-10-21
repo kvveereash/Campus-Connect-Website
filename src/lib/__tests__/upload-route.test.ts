@@ -27,10 +27,10 @@ const fetchMock = jest.fn();
 function upload(file: File | null): NextRequest {
     const form = new FormData();
     if (file) form.set('file', file);
-    return { formData: async () => form } as unknown as NextRequest;
+    return { formData: async () => form, headers: new Headers() } as unknown as NextRequest;
 }
 
-const png = () => new File([new Uint8Array([137, 80, 78, 71])], 'photo.png', { type: 'image/png' });
+const png = () => new File([new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0])], 'photo.png', { type: 'image/png' });
 
 function configureStorage() {
     env.SUPABASE_URL = 'https://abc.supabase.co/';
@@ -122,6 +122,13 @@ describe('POST /api/upload validation', () => {
         configureStorage();
         const big = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'big.png', { type: 'image/png' });
         expect((await POST(upload(big))).status).toBe(413);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('rejects content that does not match its claimed type', async () => {
+        configureStorage();
+        const fake = new File(['<html><script>alert(1)</script></html>'], 'x.png', { type: 'image/png' });
+        expect((await POST(upload(fake))).status).toBe(400);
         expect(fetchMock).not.toHaveBeenCalled();
     });
 

@@ -31,8 +31,10 @@ export interface SearchResults {
  * attempt at the first bug looks like.
  */
 export async function globalSearch(query: string): Promise<SearchResults> {
-    const term = query.trim();
-    if (term.length < 2) {
+    // A public endpoint: anything may arrive here, and a huge term runs three
+    // ILIKE scans.
+    const term = typeof query === 'string' ? query.trim() : '';
+    if (term.length < 2 || term.length > 100) {
         return { users: [], events: [], clubs: [] };
     }
 
