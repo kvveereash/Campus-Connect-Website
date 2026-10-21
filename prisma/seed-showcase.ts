@@ -106,7 +106,7 @@ const EVENTS: EventSeed[] = [
         title: 'CTF Night: Capture the Flag',
         description: 'Beginner-friendly security CTF. Crypto, web and forensics challenges, with walkthroughs at midnight for anyone stuck.',
         date: at(4, 20), venue: 'Computer Centre, Lab 2', category: 'Hackathon', price: 0,
-        thumbnail: null, club: 'CodeCraft Society',
+        thumbnail: photo('1550751827-4bd374c3f58b'), club: 'CodeCraft Society',
         college: 'Indian Institute of Technology, Mumbai', creator: 'Aditya Rao',
     },
     {
@@ -120,21 +120,21 @@ const EVENTS: EventSeed[] = [
         title: 'Intro to Rust',
         description: 'Ownership and borrowing without the tears. Two hours, live coding, no prior systems experience needed.',
         date: at(11, 17, 30), venue: 'Seminar Room 3', category: 'Workshop', price: 99,
-        thumbnail: null, club: 'CodeCraft Society',
+        thumbnail: photo('1515879218367-8466d910aaa4'), club: 'CodeCraft Society',
         college: 'Indian Institute of Technology, Mumbai', creator: 'Aditya Rao',
     },
     {
         title: 'Inter-College Football Finals',
         description: 'North Campus vs. the rest. Final of the winter league; bring your loudest friends.',
         date: at(6, 16), venue: 'University Stadium, North Campus', category: 'Sports', price: 0,
-        thumbnail: null, club: null,
+        thumbnail: photo('1745997645080-941f962f1392'), club: null,
         college: 'Delhi University — North Campus', creator: 'Rohan Gupta',
     },
     {
         title: 'T20 Night: Campus Cricket League',
         description: 'Floodlit T20 between hostel teams. Register as a team or come watch; the canteen stays open till the last over.',
         date: at(13, 18, 30), venue: 'Main Ground, Manipal', category: 'Sports', price: 50,
-        thumbnail: null, club: null,
+        thumbnail: photo('1675693303492-9a5bc898bf94'), club: null,
         college: 'Manipal Academy of Higher Education', creator: 'Meera Joshi',
     },
     {
