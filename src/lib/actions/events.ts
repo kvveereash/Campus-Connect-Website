@@ -483,16 +483,23 @@ export async function getEventById(id: string) {
     }
 }
 
+async function _eventsByHost(hostCollegeId: string): Promise<EventWithRelations[]> {
+    return prisma.event.findMany({
+        where: { hostCollegeId, date: { gte: new Date() }, verified: true, deletedAt: null },
+        orderBy: { date: 'asc' },
+        take: 60,
+        include: {
+            hostCollege: { select: { id: true, name: true, logo: true } },
+        },
+    });
+}
+
 export async function getEventsByHost(hostCollegeId: string): Promise<EventWithRelations[]> {
     try {
-        const events = await prisma.event.findMany({
-            where: { hostCollegeId, date: { gte: new Date() }, verified: true, deletedAt: null },
-            orderBy: { date: 'asc' },
-            include: {
-                hostCollege: { select: { id: true, name: true, logo: true } },
-            },
-        });
-        return events;
+        return await unstable_cache(() => _eventsByHost(hostCollegeId), [`events-by-host-${hostCollegeId}`], {
+            tags: [CACHE_TAGS.EVENTS],
+            revalidate: CACHE_TTL.EVENTS_LIST,
+        })();
     } catch (error) {
         console.error('Failed to fetch host events:', error);
         return [];

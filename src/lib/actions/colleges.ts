@@ -129,40 +129,49 @@ export async function getAllColleges() {
     }
 }
 
+async function _getCollegeById(id: string) {
+    // Find by ID, if not valid CUID, this might throw or return null
+    const college = await prisma.college.findUnique({
+        where: { id },
+        include: {
+            // Approved, live clubs only, and only the fields the page shows.
+            // This passed every club row to the client, so a college page
+            // listed unapproved, rejected and deleted clubs along with
+            // their rejection reasons.
+            clubs: {
+                where: { verified: true, deletedAt: null },
+                select: {
+                    id: true,
+                    name: true,
+                    logo: true,
+                    category: true,
+                    description: true,
+                    _count: {
+                        select: { members: true }
+                    }
+                }
+            },
+            events: {
+                where: { date: { gte: new Date() }, verified: true, deletedAt: null },
+                orderBy: { date: 'asc' },
+                take: 5
+            },
+            _count: {
+                select: { students: { where: { deletedAt: null } } }
+            }
+        }
+    });
+    return college;
+}
+
+/* Cached and tagged by everything it lists (clubs, events), so any write to
+   those refreshes it. Uncached, a college page took about 4.5s. */
 export async function getCollegeById(id: string) {
     try {
-        // Find by ID, if not valid CUID, this might throw or return null
-        const college = await prisma.college.findUnique({
-            where: { id },
-            include: {
-                // Approved, live clubs only, and only the fields the page shows.
-                // This passed every club row to the client, so a college page
-                // listed unapproved, rejected and deleted clubs along with
-                // their rejection reasons.
-                clubs: {
-                    where: { verified: true, deletedAt: null },
-                    select: {
-                        id: true,
-                        name: true,
-                        logo: true,
-                        category: true,
-                        description: true,
-                        _count: {
-                            select: { members: true }
-                        }
-                    }
-                },
-                events: {
-                    where: { date: { gte: new Date() }, verified: true, deletedAt: null },
-                    orderBy: { date: 'asc' },
-                    take: 5
-                },
-                _count: {
-                    select: { students: { where: { deletedAt: null } } }
-                }
-            }
-        });
-        return college;
+        return await unstable_cache(() => _getCollegeById(id), [`college-detail-${id}`], {
+            tags: [CACHE_TAGS.COLLEGES, CACHE_TAGS.CLUBS, CACHE_TAGS.EVENTS],
+            revalidate: CACHE_TTL.COLLEGES,
+        })();
     } catch (error) {
         console.error('Failed to get college by id:', error);
         return null;

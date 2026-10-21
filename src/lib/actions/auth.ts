@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import bcrypt from 'bcryptjs';
 import { createSession, deleteSession, getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
@@ -487,6 +487,8 @@ export async function updateUserProfile(input: UpdateUserProfileInput) {
         });
 
         revalidatePath('/profile');
+        // The public profile page is cached per user.
+        updateTag(`user-${userId}`);
         return { success: true };
 
     } catch (error) {
