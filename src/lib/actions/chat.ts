@@ -12,7 +12,7 @@ import { publicObjectUrlPrefix } from '@/lib/storage';
 import { createProtectedAction } from '@/lib/protected-action';
 import { z } from 'zod';
 import { isOk } from '@/lib/api-response';
-import { messageLimiter } from '@/lib/rate-limit'; // Need to export this from rate-limit if not already
+import { messageLimiter, postLimiter } from '@/lib/rate-limit'; // Need to export this from rate-limit if not already
 import { cleanUserText } from '@/lib/sanitize';
 
 /**
@@ -33,8 +33,10 @@ async function assertParticipant(userId: string, conversationId: string) {
 // ─────────────────────────────────────────────────
 
 // 1. Start Conversation
+const ID = z.string().min(1).max(50);
+
 const startConversationSchema = z.object({
-    targetUserId: z.string()
+    targetUserId: ID
 });
 
 export const startConversationAction = createProtectedAction(startConversationSchema, async (data, session) => {
@@ -45,7 +47,8 @@ export const startConversationAction = createProtectedAction(startConversationSc
     // Verify users exist
     const [currentUser, targetUser] = await Promise.all([
         prisma.user.findUnique({ where: { id: session.userId } }),
-        prisma.user.findUnique({ where: { id: data.targetUserId } })
+        // Not a deleted account.
+        prisma.user.findFirst({ where: { id: data.targetUserId, deletedAt: null } })
     ]);
 
     if (!currentUser) throw new Error('Current user not found');
@@ -159,7 +162,7 @@ export const sendMessageAction = createProtectedAction(sendMessageSchema, async 
 
 // 3. Mark as Read
 const markAsReadSchema = z.object({
-    conversationId: z.string()
+    conversationId: ID
 });
 
 export const markAsReadAction = createProtectedAction(markAsReadSchema, async (data, session) => {
@@ -315,17 +318,26 @@ export async function getMessages(conversationId: string) {
 }
 
 // 4. Create Group Conversation
+// Bounded: with no limits anyone could put thousands of users into a group
+// with a megabyte-long name, and keep messaging all of them.
 const createGroupConversationSchema = z.object({
-    name: z.string(),
-    participantIds: z.array(z.string())
+    name: z.string().trim().min(1, 'Group name required').max(100, 'Group name is too long'),
+    participantIds: z.array(ID).min(1, 'Select at least one member').max(49, 'A group can have at most 50 people')
 });
 
 export const createGroupConversationAction = createProtectedAction(createGroupConversationSchema, async (data, session) => {
     if (!data.name.trim()) throw new Error('Group name required');
     if (data.participantIds.length === 0) throw new Error('Select at least one member');
 
+    // Only live accounts can be added.
+    const members = await prisma.user.findMany({
+        where: { id: { in: data.participantIds }, deletedAt: null },
+        select: { id: true },
+    });
+    if (members.length === 0) throw new Error('Select at least one member');
+
     // Add creator to participants
-    const allParticipants = [...new Set([...data.participantIds, session.userId])];
+    const allParticipants = [...new Set([...members.map((m) => m.id), session.userId])];
 
     const group = await prisma.conversation.create({
         data: {
@@ -342,11 +354,13 @@ export const createGroupConversationAction = createProtectedAction(createGroupCo
 
     revalidatePath('/messages');
     return group.id;
+}, {
+    rateLimiter: postLimiter,
 });
 
 // 5. Leave Group
 const leaveGroupSchema = z.object({
-    conversationId: z.string()
+    conversationId: ID
 });
 
 export const leaveGroupAction = createProtectedAction(leaveGroupSchema, async (data, session) => {
@@ -363,8 +377,8 @@ export const leaveGroupAction = createProtectedAction(leaveGroupSchema, async (d
 
 // 6. Add Member to Group
 const addMemberToGroupSchema = z.object({
-    conversationId: z.string(),
-    userId: z.string()
+    conversationId: ID,
+    userId: ID
 });
 
 export const addMemberToGroupAction = createProtectedAction(addMemberToGroupSchema, async (data, session) => {
@@ -420,7 +434,7 @@ export const updatePresenceAction = createProtectedAction(updatePresenceSchema, 
 
 // 8. Trigger Typing
 const triggerTypingSchema = z.object({
-    conversationId: z.string()
+    conversationId: ID
 });
 
 export const triggerTypingAction = createProtectedAction(triggerTypingSchema, async (data, session) => {
@@ -434,8 +448,9 @@ export const triggerTypingAction = createProtectedAction(triggerTypingSchema, as
 
 // 9. Toggle Reaction
 const toggleReactionSchema = z.object({
-    messageId: z.string(),
-    emoji: z.string()
+    messageId: ID,
+    // An emoji, not a stored-and-broadcast string of any length.
+    emoji: z.string().min(1).max(16)
 });
 
 export const toggleReactionAction = createProtectedAction(toggleReactionSchema, async (data, session) => {

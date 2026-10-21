@@ -6,9 +6,11 @@ const securityHeaders = [
     key: 'X-DNS-Prefetch-Control',
     value: 'on'
   },
+  // '0', not '1; mode=block': the old XSS auditor is gone from browsers and
+  // its blocking mode could itself be abused to break pages.
   {
     key: 'X-XSS-Protection',
-    value: '1; mode=block'
+    value: '0'
   },
   {
     key: 'X-Frame-Options',
@@ -20,18 +22,48 @@ const securityHeaders = [
   },
   {
     key: 'Referrer-Policy',
-    value: 'origin-when-cross-origin'
+    value: 'strict-origin-when-cross-origin'
   },
   {
     key: 'Permissions-Policy',
     value: 'camera=(), microphone=(), geolocation=()'
+  },
+  {
+    key: 'Cross-Origin-Opener-Policy',
+    value: 'same-origin'
+  },
+  /* A Content-Security-Policy limits the damage of any future XSS bug. It is
+     sent as Report-Only first: browsers log violations in the console but
+     block nothing, so a missed source cannot break the site. Once the console
+     stays clean, rename the key to 'Content-Security-Policy' to enforce it.
+     'unsafe-inline' in script-src is needed for Next's inline bootstrap and
+     theme scripts (a nonce would force every page to render dynamically). */
+  {
+    key: 'Content-Security-Policy-Report-Only',
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://ui-avatars.com",
+      "font-src 'self'",
+      "connect-src 'self' https://*.pusher.com wss://*.pusher.com",
+      "worker-src 'self'",
+      "manifest-src 'self'",
+      "frame-src 'none'",
+      "frame-ancestors 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ')
   },
 ];
 
 function supabaseImagePattern() {
   try {
     const url = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL) : null;
-    if (!url || url.hostname.endsWith('.supabase.co')) return [];
+    if (!url) {
+      return [{ protocol: 'https' as const, hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' }];
+    }
     return [{
       protocol: url.protocol.replace(':', '') as 'http' | 'https',
       hostname: url.hostname,
@@ -48,12 +80,10 @@ function supabaseImagePattern() {
 // code reads process.env at runtime on Netlify already — set the values in the
 // Netlify dashboard (Site settings → Environment variables) instead.
 const nextConfig: NextConfig = {
+  // No 'X-Powered-By: Next.js' header: it only tells a scanner what to try.
+  poweredByHeader: false,
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-      },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
@@ -62,13 +92,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'ui-avatars.com',
       },
-      // Uploaded files (src/lib/storage.ts), public buckets only.
-      {
-        protocol: 'https',
-        hostname: '*.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
-      // A custom or self-hosted Supabase domain, read from the build env.
+      // Uploaded files (src/lib/storage.ts): only our own project's public
+      // buckets. '*.supabase.co' let any Supabase project's images through
+      // our image optimiser. Falls back to the wildcard only if SUPABASE_URL
+      // is missing at build time.
       ...supabaseImagePattern(),
     ],
     // Image optimization settings

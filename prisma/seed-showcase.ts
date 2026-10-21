@@ -39,7 +39,7 @@ const at = (days: number, hour: number, minute = 0) => {
     d.setUTCHours(hour - 5, minute - 30, 0, 0);
     return d;
 };
-const photo = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=75`;
+const photo = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=2000&q=85`;
 
 const STUDENTS = [
     { name: 'Aditya Rao', email: 'aditya@iitmumbai.edu', college: 'Indian Institute of Technology, Mumbai', department: 'Computer Science', year: '2nd Year', bio: 'Backend dev. Rust on weekends.' },
@@ -92,7 +92,7 @@ const EVENTS: EventSeed[] = [
         title: 'Hack the Monsoon',
         description: 'A 24-hour hackathon on one theme: things that break when it rains. Teams of up to four, mentors on call through the night, and dinner, midnight Maggi and breakfast on us.',
         date: at(9, 9), venue: 'Lecture Hall Complex, IIT Bombay', category: 'Hackathon', price: 0,
-        thumbnail: '/images/events/hack-the-monsoon.jpg', club: 'CodeCraft Society',
+        thumbnail: photo('1522071820081-009f0129c71c'), club: 'CodeCraft Society',
         college: 'Indian Institute of Technology, Mumbai', creator: 'Rahul Sharma',
     },
     {
@@ -134,7 +134,7 @@ const EVENTS: EventSeed[] = [
         title: 'T20 Night: Campus Cricket League',
         description: 'Floodlit T20 between hostel teams. Register as a team or come watch; the canteen stays open till the last over.',
         date: at(13, 18, 30), venue: 'Main Ground, Manipal', category: 'Sports', price: 50,
-        thumbnail: null, club: null,
+        thumbnail: photo('1675693303492-9a5bc898bf94'), club: null,
         college: 'Manipal Academy of Higher Education', creator: 'Meera Joshi',
     },
     {
@@ -148,7 +148,7 @@ const EVENTS: EventSeed[] = [
         title: 'Flavours of India Food Fest',
         description: 'Thirty stalls run by students from twenty states. Coupons at the gate; proceeds go to the campus scholarship fund.',
         date: at(19, 12), venue: 'Central Block Lawns', category: 'Cultural', price: 150,
-        thumbnail: photo('1661534424056-6589e239546b'), club: null,
+        thumbnail: photo('1589778655375-3e622a9fc91c'), club: null,
         college: 'Christ University, Bangalore', creator: 'Karthik Nair',
     },
     {

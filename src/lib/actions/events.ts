@@ -124,15 +124,20 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
             }
         });
 
-        await tx.event.update({
-            where: { id: eventId },
-            data: { registrationCount: { increment: 1 } }
-        });
+        // A paid event counts the place, and awards badges, once it is paid
+        // (markRegistrationPaid). Counting at join let anyone collect badges
+        // and inflate attendance by joining paid events and never paying.
+        if (event.price <= 0) {
+            await tx.event.update({
+                where: { id: eventId },
+                data: { registrationCount: { increment: 1 } }
+            });
+        }
 
         return reg;
     });
 
-    const earnedBadges = await checkAndAwardBadges(userId, event.category);
+    const earnedBadges = event.price > 0 ? [] : await checkAndAwardBadges(userId, event.category);
 
     if (event.creatorId && event.creatorId !== userId) {
         await createNotification(
@@ -483,16 +488,23 @@ export async function getEventById(id: string) {
     }
 }
 
+async function _eventsByHost(hostCollegeId: string): Promise<EventWithRelations[]> {
+    return prisma.event.findMany({
+        where: { hostCollegeId, date: { gte: new Date() }, verified: true, deletedAt: null },
+        orderBy: { date: 'asc' },
+        take: 60,
+        include: {
+            hostCollege: { select: { id: true, name: true, logo: true } },
+        },
+    });
+}
+
 export async function getEventsByHost(hostCollegeId: string): Promise<EventWithRelations[]> {
     try {
-        const events = await prisma.event.findMany({
-            where: { hostCollegeId, date: { gte: new Date() }, verified: true, deletedAt: null },
-            orderBy: { date: 'asc' },
-            include: {
-                hostCollege: { select: { id: true, name: true, logo: true } },
-            },
-        });
-        return events;
+        return await unstable_cache(() => _eventsByHost(hostCollegeId), [`events-by-host-${hostCollegeId}`], {
+            tags: [CACHE_TAGS.EVENTS],
+            revalidate: CACHE_TTL.EVENTS_LIST,
+        })();
     } catch (error) {
         console.error('Failed to fetch host events:', error);
         return [];

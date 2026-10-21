@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { createHash } from 'crypto';
 import { decrypt } from './auth-edge';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/db';
@@ -13,6 +14,21 @@ export * from './auth-edge';
  * 
  * ⚠️ NODE.JS RUNTIME ONLY (Uses Prisma)
  */
+/**
+ * A short fingerprint of a user's password hash, carried in their session.
+ *
+ * Sessions are stateless JWTs that live for a day, so changing or resetting
+ * a password used to leave every other signed-in device signed in: someone
+ * with a stolen cookie kept access after the owner reset the password to get
+ * rid of them. The hash changes whenever the password does, so a token minted
+ * before that no longer matches and getSession refuses it. Not reversible: a
+ * slice of a SHA-256 of a bcrypt hash.
+ */
+export function passwordVersion(passwordHash: string | null | undefined): string {
+    if (!passwordHash) return '';
+    return createHash('sha256').update(passwordHash).digest('hex').slice(0, 16);
+}
+
 export const getSession = cache(getSessionUncached);
 
 /* Wrapped in React's cache() above: a page, its layout and every server
@@ -29,7 +45,7 @@ async function getSessionUncached() {
 
         const user = await prisma.user.findUnique({
             where: { id: payload.userId as string },
-            select: { id: true, name: true, email: true, role: true, avatar: true, collegeId: true, deletedAt: true }
+            select: { id: true, name: true, email: true, role: true, avatar: true, collegeId: true, deletedAt: true, password: true }
         });
 
         // A deleted account's sessions on other devices end here. deleteAccount
@@ -37,7 +53,10 @@ async function getSessionUncached() {
         // stays valid for up to a day.
         if (!user || user.deletedAt) return null;
 
-        const { deletedAt: _deletedAt, ...sessionUser } = user;
+        // Signed in before the password last changed: this session is over.
+        if (payload.pv !== passwordVersion(user.password)) return null;
+
+        const { deletedAt: _deletedAt, password: _password, ...sessionUser } = user;
         return { ...payload, user: sessionUser };
     } catch (error) {
         return null;

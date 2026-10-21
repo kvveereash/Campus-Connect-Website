@@ -33,6 +33,28 @@ const ALLOWED_TYPES: Record<string, string> = {
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
 };
 
+const startsWith = (buf: Buffer, bytes: number[], offset = 0) =>
+    bytes.every((b, i) => buf[offset + i] === b);
+
+/** Magic-number check for each allowed type. */
+function contentMatchesType(buf: Buffer, type: string): boolean {
+    switch (type) {
+        case 'image/jpeg': return startsWith(buf, [0xff, 0xd8, 0xff]);
+        case 'image/png': return startsWith(buf, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+        case 'image/gif': return buf.subarray(0, 6).toString('ascii').startsWith('GIF8');
+        case 'image/webp':
+            return buf.subarray(0, 4).toString('ascii') === 'RIFF' && buf.subarray(8, 12).toString('ascii') === 'WEBP';
+        case 'application/pdf': return buf.subarray(0, 5).toString('ascii') === '%PDF-';
+        case 'application/msword': return startsWith(buf, [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return startsWith(buf, [0x50, 0x4b, 0x03, 0x04]);
+        case 'text/plain':
+            // Text, not markup or binary: no NUL bytes and no HTML tags up front.
+            return !buf.includes(0) && !/^\s*</.test(buf.subarray(0, 512).toString('utf8'));
+        default: return false;
+    }
+}
+
 export async function POST(request: NextRequest) {
     // 1. Authentication — uploads write to disk, so never allow anonymous callers.
     const session = await getSession();
@@ -50,6 +72,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
             { success: false, error: 'Too many uploads. Please try again later.' },
             { status: 429 }
+        );
+    }
+
+    // Refuse an oversized body before parsing it into memory.
+    const declared = Number(request.headers.get('content-length') || 0);
+    if (declared > MAX_FILE_SIZE + 64 * 1024) {
+        return NextResponse.json(
+            { success: false, error: 'File is too large. Maximum size is 5MB.' },
+            { status: 413 }
         );
     }
 
@@ -85,6 +116,15 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    // The type above is whatever the browser claimed. Check the file's first
+    // bytes agree, so arbitrary content cannot be stored labelled as an image.
+    if (!contentMatchesType(buffer, file.type)) {
+        return NextResponse.json(
+            { success: false, error: 'That file does not look like the type it claims to be.' },
+            { status: 400 }
+        );
+    }
 
     // 5. Build the filename ourselves. A random name plus a known-good extension
     //    means a hostile upload cannot pick its own path or its own file type.

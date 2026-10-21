@@ -3,7 +3,7 @@
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
-import { deleteSession, getSession } from '@/lib/auth';
+import { createSession, deleteSession, getSession, passwordVersion } from '@/lib/auth';
 import { authLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import type { ActionState } from '@/types';
@@ -43,7 +43,7 @@ export async function changePassword(
 
     const user = await prisma.user.findFirst({
         where: { id: session.userId as string, deletedAt: null },
-        select: { id: true, password: true },
+        select: { id: true, password: true, role: true, name: true, email: true },
     });
     if (!user?.password) return { success: false, error: 'Account not found' };
 
@@ -53,21 +53,26 @@ export async function changePassword(
         return { success: false, error: 'That is not your current password.' };
     }
 
+    const newHash = await bcrypt.hash(newPassword, 12);
     await prisma.user.update({
         where: { id: user.id },
-        data: { password: await bcrypt.hash(newPassword, 12) },
+        data: { password: newHash },
+    });
+
+    // Every other device's session carried the old password's fingerprint and
+    // is now refused by getSession; give this device a fresh one.
+    await createSession(user.id, {
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        passwordVersion: passwordVersion(newHash),
     });
 
     logger.auth('password_changed', user.id, {});
 
     return {
         success: true,
-        /* Worth saying plainly. Sessions here are stateless JWTs, so changing
-           the password cannot invalidate one already issued to another device
-           — there is no server-side list of sessions to revoke. Claiming
-           otherwise would be the more comfortable lie. */
-        message:
-            'Password changed. Any other device already signed in stays signed in until its session expires.',
+        message: 'Password changed. You have been signed out on every other device.',
     };
 }
 

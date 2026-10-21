@@ -20,7 +20,7 @@ jest.mock('@/lib/auth', () => ({
     createSession: jest.fn(),
     deleteSession: jest.fn(),
 }));
-jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }));
+jest.mock('next/cache', () => ({ revalidatePath: jest.fn(), updateTag: jest.fn() }));
 jest.mock('@/lib/rate-limit', () => ({}));
 
 // Imported after the mocks so the action picks them up.

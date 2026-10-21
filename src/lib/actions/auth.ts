@@ -1,34 +1,63 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import bcrypt from 'bcryptjs';
-import { createSession, deleteSession, getSession } from '@/lib/auth';
+import { createSession, deleteSession, getSession, passwordVersion } from '@/lib/auth';
 import { ActionState } from '@/types';
-import { authLimiter, signupLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
+import { authLimiter, signupLimiter, loginIpLimiter, signupIpLimiter, eventLimiter, getClientIp, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { Prisma } from '@prisma/client';
 import { updateUserProfileSchema, type UpdateUserProfileInput } from '@/lib/schemas';
+import { z } from 'zod';
+
+/* The signup form enforces these in the browser, but the action is a public
+   endpoint: it used to accept a 1-character password and a name of any length
+   (and the name goes into emails). 72 is bcrypt's input limit. */
+const signupSchema = z.object({
+    name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long'),
+    email: z.string().trim().toLowerCase().max(254).email('Enter a valid email address'),
+    password: z.string().min(8, 'Use at least 8 characters').max(72, 'Use at most 72 characters'),
+    department: z.string().trim().max(100).optional(),
+    year: z.string().trim().max(20).optional(),
+});
+
+// Compared against when an address has no account, so a wrong address takes
+// as long as a wrong password and response time does not reveal who exists.
+// A bcrypt hash (cost 12) of a random throwaway string, precomputed so module
+// load does not pay for hashing. It guards nothing; it only costs the same time.
+const DUMMY_HASH = '$2b$12$lAZnhoTl8r7ZQnw71cWsXeA0vZk9MiFbPy4FPQqCR..2LDImS0p2S';
 
 export async function signup(prevState: ActionState | null, formData: FormData): Promise<ActionState> {
-    const name = formData.get('name') as string;
-    // Stored lower-cased so the same inbox cannot hold two accounts, and so
-    // password reset (which looks addresses up lower-cased) can find it.
-    const email = ((formData.get('email') as string) || '').trim().toLowerCase();
-    const password = formData.get('password') as string;
-    const department = (formData.get('department') as string) || 'General';
-    const year = (formData.get('year') as string) || '1st Year';
-
-    if (!email || !password || !name) {
-        return { success: false, error: 'Missing required fields' };
+    const field = (key: string) => {
+        const value = formData.get(key);
+        return typeof value === 'string' && value !== '' ? value : undefined;
+    };
+    const parsed = signupSchema.safeParse({
+        name: field('name') ?? '',
+        // Stored lower-cased so the same inbox cannot hold two accounts, and so
+        // password reset (which looks addresses up lower-cased) can find it.
+        email: field('email') ?? '',
+        password: field('password') ?? '',
+        department: field('department'),
+        year: field('year'),
+    });
+    if (!parsed.success) {
+        return { success: false, error: parsed.error.issues[0]?.message ?? 'Missing required fields' };
     }
+    const { name, email, password } = parsed.data;
+    const department = parsed.data.department || 'General';
+    const year = parsed.data.year || '1st Year';
 
     try {
-        // Rate limiting: 3 signups per hour per IP/email
-        const identifier = getRateLimitIdentifier(undefined, email);
-        const rateLimit = await checkRateLimit(signupLimiter, identifier);
+        // Per address (3 an hour) and per client IP (20 an hour).
+        const ip = await getClientIp();
+        const [rateLimit, ipLimit] = await Promise.all([
+            checkRateLimit(signupLimiter, `email:${email}`),
+            checkRateLimit(signupIpLimiter, getRateLimitIdentifier(undefined, ip)),
+        ]);
 
-        if (!rateLimit.success) {
+        if (!rateLimit.success || !ipLimit.success) {
             const resetTime = rateLimit.reset.toLocaleTimeString();
             return {
                 success: false,
@@ -71,6 +100,7 @@ export async function signup(prevState: ActionState | null, formData: FormData):
             role: 'USER',
             name: newUser.name,
             email: newUser.email,
+            passwordVersion: passwordVersion(hashedPassword),
         });
 
         logger.auth('signup', newUser.id, { email, department, year, collegeId: defaultCollege.id });
@@ -100,31 +130,38 @@ export async function signup(prevState: ActionState | null, formData: FormData):
 }
 
 export async function login(prevState: ActionState | null, formData: FormData): Promise<ActionState> {
-    const email = ((formData.get('email') as string) || '').trim().toLowerCase();
-    const password = formData.get('password') as string;
+    const rawEmail = formData.get('email');
+    const rawPassword = formData.get('password');
+    const email = (typeof rawEmail === 'string' ? rawEmail : '').trim().toLowerCase();
+    const password = typeof rawPassword === 'string' ? rawPassword : '';
 
-    console.log('[LOGIN] Starting login for:', email);
-
-    if (!email || !password) {
-        console.log('[LOGIN] Missing credentials');
+    if (!email || !password || email.length > 254 || password.length > 200) {
         return { success: false, error: 'Missing email or password' };
     }
 
     try {
-        // Rate limiting: 5 attempts per 15 minutes per email
-        const identifier = getRateLimitIdentifier(undefined, email);
-        const rateLimit = await checkRateLimit(authLimiter, identifier);
+        /* Two limits. Per client IP (30 per 15 min) stops one machine trying a
+           password against many addresses. Per IP *and* address (5 per 15 min)
+           stops guessing one account. Keying the second on the address alone,
+           as this did, let anyone lock any student out by failing five times
+           with their email, so the old account-wide lockout is gone too: it
+           was the same denial of service with a database write. */
+        const ip = await getClientIp();
+        const ipKey = getRateLimitIdentifier(undefined, ip);
+        const [ipLimit, accountLimit] = await Promise.all([
+            checkRateLimit(loginIpLimiter, ipKey),
+            checkRateLimit(authLimiter, `${ipKey}:email:${email}`),
+        ]);
+        const blocked = !ipLimit.success ? ipLimit : !accountLimit.success ? accountLimit : null;
 
-        if (!rateLimit.success) {
-            logger.rateLimit('login', identifier, true, { email });
-            const resetTime = rateLimit.reset.toLocaleTimeString();
+        if (blocked) {
+            logger.rateLimit('login', ipKey, true, { email });
             return {
                 success: false,
-                error: `Too many login attempts. Please try again at ${resetTime}.`
+                error: `Too many login attempts. Please try again at ${blocked.reset.toLocaleTimeString()}.`
             };
         }
 
-        console.log('[LOGIN] Finding user...');
         /* deletedAt: null is load-bearing.
            This was findUnique({ where: { email } }) with no such check, so a
            soft-deleted account could still sign in — which would have made the
@@ -132,72 +169,21 @@ export async function login(prevState: ActionState | null, formData: FormData): 
         const user = await prisma.user.findFirst({
             where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null }
         });
-        if (!user || !user.password) {
-            console.log('[LOGIN] User not found or no password');
-            return { success: false, error: 'Invalid credentials' };
-        }
 
-        // Check if account is locked
-        if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-            logger.auth('login_blocked', user.id, { email, reason: 'account_locked' });
-            // Worded like the rate limiter's reply, which every address gets,
-            // so the response does not reveal that this account exists.
-            return {
-                success: false,
-                error: `Too many login attempts. Please try again at ${new Date(user.lockedUntil).toLocaleTimeString()}.`
-            };
-        }
+        // Always run one bcrypt comparison, so an unknown address is not
+        // answered measurably faster than a wrong password.
+        const passwordMatch = await bcrypt.compare(password, user?.password || DUMMY_HASH);
 
-        console.log('[LOGIN] User found:', user.id);
-        console.log('[LOGIN] Comparing password...');
-        const passwordMatch = await bcrypt.compare(password, user.password);
-
-        if (!passwordMatch) {
-            console.log('[LOGIN] Password mismatch');
-
-            // Track failed attempt using LoginAttempt model
-            const recentFailures = await prisma.loginAttempt.count({
-                where: {
-                    email,
-                    success: false,
-                    createdAt: {
-                        gte: new Date(Date.now() - 15 * 60 * 1000) // Last 15 minutes
-                    }
-                }
-            });
-
-            // Record this failed attempt
+        if (!user || !user.password || !passwordMatch) {
+            // Kept for monitoring; it no longer locks the account.
             await prisma.loginAttempt.create({
-                data: {
-                    id: crypto.randomUUID(),
-                    email,
-                    success: false,
-                    createdAt: new Date()
-                }
-            });
-
-            // Lock account after 5 failed attempts in 15 minutes
-            const LOCKOUT_THRESHOLD = 5;
-            const LOCKOUT_DURATION_MINUTES = 15;
-
-            if (recentFailures + 1 >= LOCKOUT_THRESHOLD) {
-                await prisma.user.update({
-                    where: { id: user.id },
-                    data: {
-                        lockedUntil: new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000)
-                    }
-                });
-                logger.auth('account_locked', user.id, { email, failedAttempts: recentFailures + 1 });
-                // Same answer as any wrong password: announcing the lock here
-                // told a caller the address belonged to a real account.
-                return { success: false, error: 'Invalid credentials' };
-            }
-
-            logger.auth('failed', user.id, { email, reason: 'invalid_password', failedAttempts: recentFailures + 1 });
+                data: { id: crypto.randomUUID(), email, success: false, createdAt: new Date() }
+            }).catch(() => undefined);
+            if (user) logger.auth('failed', user.id, { email, reason: 'invalid_password' });
             return { success: false, error: 'Invalid credentials' };
         }
 
-        // Clear any existing lock on successful login
+        // Clear a lock left over from the old lockout scheme.
         if (user.lockedUntil) {
             await prisma.user.update({
                 where: { id: user.id },
@@ -205,20 +191,18 @@ export async function login(prevState: ActionState | null, formData: FormData): 
             });
         }
 
-        console.log('[LOGIN] Password matched! Creating session...');
         await createSession(user.id, {
             role: user.role,
             name: user.name,
             email: user.email,
+            passwordVersion: passwordVersion(user.password),
         });
-        console.log('[LOGIN] Session created successfully!');
 
         logger.auth('login', user.id, { email });
 
         return { success: true, message: 'Logged in successfully' };
 
     } catch (error) {
-        console.error('[LOGIN] ERROR:', error);
         logger.error('Login failed', error as Error, { email });
         return { success: false, error: 'Something went wrong during login' };
     }
@@ -396,6 +380,10 @@ export async function updateUserProfile(input: UpdateUserProfileInput) {
             let finalCollegeId = data.collegeId;
 
             if (data.customCollegeName && (!data.collegeId || data.collegeId === 'other')) {
+                // New colleges go live immediately, so bound how fast anyone
+                // can add them (a script could otherwise fill /colleges).
+                const limit = await checkRateLimit(eventLimiter, `${getRateLimitIdentifier(userId)}:new-college`);
+                if (!limit.success) throw new Error('RATE_LIMITED');
                 const normalizedName = data.customCollegeName.trim();
                 const existing = await tx.college.findFirst({
                     where: { name: normalizedName }
@@ -487,9 +475,14 @@ export async function updateUserProfile(input: UpdateUserProfileInput) {
         });
 
         revalidatePath('/profile');
+        // The public profile page is cached per user.
+        updateTag(`user-${userId}`);
         return { success: true };
 
     } catch (error) {
+        if (error instanceof Error && error.message === 'RATE_LIMITED') {
+            return { success: false, error: 'Too many new colleges added. Try again later.' };
+        }
         console.error('Failed to update profile:', error);
         return { success: false, error: 'Failed to update profile' };
     }

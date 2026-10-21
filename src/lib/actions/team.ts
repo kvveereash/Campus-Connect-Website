@@ -22,6 +22,10 @@ export const createTeamRequestAction = createProtectedAction(teamRequestSchema, 
 
     if (!user) throw new Error('User not found');
 
+    // Only on live, approved events (deleted and pending ones accepted posts).
+    const event = await prisma.event.findFirst({ where: { id: data.eventId, verified: true, deletedAt: null }, select: { id: true } });
+    if (!event) throw new Error('Event not found');
+
     const request = await prisma.teamRequest.create({
         data: {
             eventId: data.eventId,
@@ -70,7 +74,8 @@ export async function createTeamRequest(data: {
 export async function getTeamRequestsByEvent(eventId: string) {
     try {
         const requests = await prisma.teamRequest.findMany({
-            where: { eventId },
+            // Public read: only for approved, live events.
+            where: { eventId, event: { verified: true, deletedAt: null } },
             orderBy: { createdAt: 'desc' },
             include: {
                 creator: {

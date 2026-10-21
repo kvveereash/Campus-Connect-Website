@@ -213,7 +213,6 @@ const EXAMPLE_EVENT_PHOTOS: Record<string, string> = {
     'ctf night: capture the flag': '/images/events/ctf-night.jpg',
     'figma to production: ui sprint': '/images/events/figma-ui-sprint.jpg',
     'inter-college football finals': '/images/events/football-finals.jpg',
-    'hack the monsoon': '/images/events/hack-the-monsoon.jpg',
     'intro to rust': '/images/events/intro-to-rust.jpg',
 };
 

@@ -79,6 +79,12 @@ export const authLimiter = defineLimiter(5, '15 m', 'ratelimit:auth');
 // Signup: 3 attempts per hour (prevent spam accounts)
 export const signupLimiter = defineLimiter(3, '1 h', 'ratelimit:signup');
 
+// Per client IP, alongside the per-address limits above: without these, one
+// machine could try a password against every address (one attempt each) or
+// create unlimited accounts. Generous, because a campus shares few IPs.
+export const loginIpLimiter = defineLimiter(30, '15 m', 'ratelimit:login-ip');
+export const signupIpLimiter = defineLimiter(20, '1 h', 'ratelimit:signup-ip');
+
 // Messages: 10 per minute (prevent chat spam)
 export const messageLimiter = defineLimiter(10, '1 m', 'ratelimit:message');
 

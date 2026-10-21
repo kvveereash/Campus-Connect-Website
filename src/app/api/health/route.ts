@@ -34,8 +34,7 @@ export async function GET() {
             return NextResponse.json({
                 status: 'unhealthy',
                 timestamp: new Date().toISOString(),
-                uptime: process.uptime(),
-                checks: {
+                    checks: {
                     database: db.healthy
                         ? { status: 'healthy' }
                         : { status: 'unhealthy', reason: db.reason, code: db.code },
@@ -48,9 +47,6 @@ export async function GET() {
         return NextResponse.json({
             status: redisHealthy ? 'healthy' : 'degraded',
             timestamp: new Date().toISOString(),
-            uptime: process.uptime(),
-            version: process.env.npm_package_version || '0.1.0',
-            environment: process.env.NODE_ENV || 'development',
             checks: {
                 database: { status: 'healthy' },
                 redis: { status: redisHealthy ? 'healthy' : 'degraded', critical: false },
@@ -63,8 +59,6 @@ export async function GET() {
         return NextResponse.json({
             status: 'unhealthy',
             timestamp: new Date().toISOString(),
-            uptime: process.uptime(),
-            error: error instanceof Error ? error.message : 'Unknown error',
             checks: {
                 database: { status: 'unknown' },
                 redis: { status: 'unknown' },

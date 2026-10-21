@@ -5,6 +5,7 @@ generator client {
   // run on Amazon Linux with OpenSSL 3. With only "native", the deployed
   // function had no engine it could load, and every query failed.
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {

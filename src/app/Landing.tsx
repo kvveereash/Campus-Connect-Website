@@ -45,7 +45,7 @@ const priceLabel = (price: number) => (price > 0 ? `₹${price.toLocaleString('e
 
 /** Used for the hero deck only when there are fewer real events than cards. */
 const FALLBACK_DECK = [
-    { title: 'Campus hackathon', category: 'Hackathon', photo: '/images/events/hack-the-monsoon.jpg' },
+    { title: 'Campus hackathon', category: 'Hackathon', photo: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80' },
     { title: 'Cultural night', category: 'Cultural', photo: '/images/campus/cultural-night-lights.jpg' },
     { title: 'Club fair', category: 'Social', photo: '/images/campus/club-fair.jpg' },
     { title: 'Build sprint', category: 'Workshop', photo: '/images/campus/build-sprint.jpg' },
