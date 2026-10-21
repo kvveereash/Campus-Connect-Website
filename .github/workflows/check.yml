@@ -1,0 +1,43 @@
+# The quality gate from CLAUDE.md, run on every push and pull request:
+# typecheck, the lint ratchet (no new lint errors) and the test suite.
+# The production build runs on Netlify, which holds the secrets it needs.
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Same as production (netlify.toml).
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate the Prisma client
+        run: npx prisma generate
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint ratchet
+        run: npm run lint:ratchet
+
+      - name: Tests
+        run: npm test -- --ci

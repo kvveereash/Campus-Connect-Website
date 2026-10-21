@@ -12,6 +12,10 @@ const config: Config = {
     coverageProvider: 'v8',
     testEnvironment: 'jsdom',
     setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+    // Agent worktrees under .claude/ hold other branches' copies of the
+    // tests; running them here tests code that is not this checkout's.
+    testPathIgnorePatterns: ['/node_modules/', '<rootDir>/.claude/'],
+    modulePathIgnorePatterns: ['<rootDir>/.claude/'],
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
         // The real module throws outside a React Server Component build.
