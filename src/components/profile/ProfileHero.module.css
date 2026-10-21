@@ -1,6 +1,6 @@
 /* ── Profile hero ──────────────────────────────────────────────
-   A white sheet with the person's campus as its cover, tinted into
-   campus blue. The avatar sits on the seam between the two.
+   A white sheet with a campus-blue cover. The avatar sits on the
+   seam between the two.
    ------------------------------------------------------------- */
 .hero {
     position: relative;
@@ -22,17 +22,13 @@
     }
 }
 
+/* The cover is the brand, not a photo: campus blue under a dot screen,
+   with a violet sweep and a warm yellow glow in the far corner. */
 .cover {
     position: relative;
     height: clamp(140px, 18vw, 200px);
+    overflow: hidden;
     background: var(--color-accent);
-}
-
-.cover img {
-    object-fit: cover;
-    filter: grayscale(1) contrast(1.05);
-    mix-blend-mode: multiply;
-    opacity: 0.55;
 }
 
 .coverTint {
@@ -40,7 +36,8 @@
     inset: 0;
     background:
         radial-gradient(rgba(255, 255, 255, 0.28) 1px, transparent 1.4px) 0 0 / 7px 7px,
-        linear-gradient(120deg, rgba(47, 59, 255, 0.55), rgba(122, 60, 255, 0.35) 60%, rgba(255, 228, 92, 0.25));
+        radial-gradient(60% 120% at 92% 10%, rgba(255, 228, 92, 0.35), transparent 60%),
+        linear-gradient(120deg, rgba(47, 59, 255, 0.2), rgba(122, 60, 255, 0.45) 60%, rgba(47, 59, 255, 0.1));
 }
 
 .body {
@@ -319,6 +316,7 @@ a.metaItem:hover {
         height: 96px;
         font-size: 38px;
     }
+
 
     .actions {
         justify-content: flex-start;

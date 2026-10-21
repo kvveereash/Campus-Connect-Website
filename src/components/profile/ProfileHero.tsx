@@ -1,7 +1,5 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { Building2, GraduationCap } from 'lucide-react';
-import { resolveCollegeImage } from '@/lib/college-images';
 import styles from './ProfileHero.module.css';
 
 export interface ProfileStat {
@@ -28,9 +26,8 @@ interface ProfileHeroProps {
 }
 
 /**
- * The top of a profile, yours or anyone's. The cover is the person's own
- * campus, tinted into the brand blue, so a profile says where someone is
- * from before it says anything else.
+ * The top of a profile, yours or anyone's: a campus-blue cover, the
+ * avatar on its edge, then who they are, their numbers, skills and badges.
  */
 export default function ProfileHero({
     name,
@@ -50,13 +47,6 @@ export default function ProfileHero({
     return (
         <section className={styles.hero}>
             <div className={styles.cover} aria-hidden="true">
-                <Image
-                    src={resolveCollegeImage(college ? { name: college.name } : null)}
-                    alt=""
-                    fill
-                    priority
-                    sizes="(max-width: 1200px) 100vw, 1200px"
-                />
                 <span className={styles.coverTint} />
             </div>
 
