@@ -3,6 +3,7 @@
 import prisma from '@/lib/db';
 import { unstable_cache } from 'next/cache';
 import { CACHE_TAGS } from '@/lib/cache';
+import type { Achievement, PortfolioLink, Project } from '@/types';
 
 const EVENT_CARD = {
     hostCollege: { select: { id: true, name: true, logo: true } },
@@ -84,7 +85,8 @@ async function _loadPublicProfile(userId: string) {
 
     // These three columns hold JSON strings written by the profile editor.
     // A malformed value should degrade to an empty list, not crash the page.
-    const safeParse = (raw: string | null): any[] => {
+    // The editor wrote these shapes; nothing else writes the columns.
+    const safeParse = <T,>(raw: string | null): T[] => {
         if (!raw) return [];
         try {
             const parsed = JSON.parse(raw);
@@ -98,9 +100,9 @@ async function _loadPublicProfile(userId: string) {
     return {
         profile: {
             ...profile,
-            achievements: safeParse(profile.achievements),
-            projects: safeParse(profile.projects),
-            portfolioLinks: safeParse(profile.portfolioLinks),
+            achievements: safeParse<Achievement>(profile.achievements),
+            projects: safeParse<Project>(profile.projects),
+            portfolioLinks: safeParse<PortfolioLink>(profile.portfolioLinks),
             badges: profile.badges.map((ub) => ({ ...ub.badge, dateEarned: ub.dateEarned })),
         },
         registered: registrations.map((r) => r.event),

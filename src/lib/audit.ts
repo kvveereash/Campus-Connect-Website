@@ -4,8 +4,18 @@
    These are helpers for other server code only. */
 import 'server-only';
 
+import type { Prisma } from '@prisma/client';
 import prisma from '@/lib/db';
 import { logger } from '@/lib/logger';
+
+/**
+ * Turns any value into something the audit log's JSON column accepts:
+ * Dates become strings, undefined fields drop out, exactly as they would
+ * in the stored row.
+ */
+export function toAuditJson(value: unknown): Prisma.InputJsonValue {
+    return JSON.parse(JSON.stringify(value ?? null));
+}
 
 /**
  * Audit Log Types
@@ -58,7 +68,7 @@ export async function audit(
     action: AuditAction,
     entityType: AuditEntityType,
     entityId: string,
-    details?: Record<string, any>
+    details?: Prisma.InputJsonObject
 ): Promise<void> {
     try {
         await prisma.auditLog.create({
@@ -168,7 +178,7 @@ export async function auditBatch(
         action: AuditAction;
         entityType: AuditEntityType;
         entityId: string;
-        details?: Record<string, any>;
+        details?: Prisma.InputJsonObject;
     }>
 ): Promise<void> {
     try {

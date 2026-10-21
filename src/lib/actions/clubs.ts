@@ -6,9 +6,10 @@ import { getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
 import { cleanUserText } from '@/lib/sanitize';
 import { postLimiter, commentLimiter, eventLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
-import { AuthenticationError, NotFoundError, ConflictError, AuthorizationError, ErrorHandler } from '@/lib/errors';
+import { NotFoundError, ConflictError, AuthorizationError } from '@/lib/errors';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
-import { isOk } from '@/lib/api-response';
+import { isOk, type ResultData } from '@/lib/api-response';
+import type { Prisma } from '@prisma/client';
 
 import { createProtectedAction } from '@/lib/protected-action';
 import { clubSchema, joinClubSchema, leaveClubSchema, deleteClubSchema, clubPostSchema, commentSchema } from '@/lib/schemas';
@@ -230,7 +231,7 @@ export async function createClub(data: {
     logo: string;
     collegeId?: string;
     newCollegeName?: string;
-}): Promise<ActionState<any>> {
+}): Promise<ActionState<ResultData<typeof createClubAction>>> {
     const result = await createClubAction(data);
     if (!isOk(result)) {
         return { success: false, error: result.error || 'Failed to create club' };
@@ -266,7 +267,11 @@ export async function deleteClub(clubId: string): Promise<ActionState> {
 }
 
 /** @deprecated Use createClubPostAction directly */
-export async function createClubPost(clubId: string, content: string, image?: string): Promise<ActionState<any>> {
+export async function createClubPost(
+    clubId: string,
+    content: string,
+    image?: string
+): Promise<ActionState<ResultData<typeof createClubPostAction>['post']>> {
     const result = await createClubPostAction({ clubId, content, image });
     if (!isOk(result)) {
         return { success: false, error: result.error || 'Failed to create post' };
@@ -281,7 +286,7 @@ export async function createClubPost(clubId: string, content: string, image?: st
 async function _getClubsUncached(filters?: { search?: string; category?: string }) {
     const { search, category } = filters || {};
 
-    const where: any = {};
+    const where: Prisma.ClubWhereInput = {};
 
     if (search) {
         where.OR = [

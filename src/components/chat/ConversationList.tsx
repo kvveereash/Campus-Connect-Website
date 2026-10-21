@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
-import { getConversations } from '@/lib/actions/chat';
+import { getConversations, type ConversationSummary } from '@/lib/actions/chat';
 import { formatIST } from '@/lib/format';
 import ChatAvatar from './ChatAvatar';
 import styles from './Chat.module.css';
@@ -28,7 +28,7 @@ function stamp(value: string | Date) {
 }
 
 export function ConversationList({ activeId, onSelect }: ConversationListProps) {
-    const [conversations, setConversations] = useState<any[]>([]);
+    const [conversations, setConversations] = useState<ConversationSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState('');
     const [filter, setFilter] = useState<Filter>('all');

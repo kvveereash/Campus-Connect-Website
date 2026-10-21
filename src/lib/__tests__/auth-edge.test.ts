@@ -29,10 +29,10 @@ jest.mock('jose', () => {
 const env = process.env as Record<string, string | undefined>;
 const original = { NODE_ENV: env.NODE_ENV, JWT_SECRET: env.JWT_SECRET };
 
-function loadAuthEdge(): typeof import('../auth-edge') {
+async function loadAuthEdge(): Promise<typeof import('../auth-edge')> {
     let mod!: typeof import('../auth-edge');
-    jest.isolateModules(() => {
-        mod = require('../auth-edge');
+    await jest.isolateModulesAsync(async () => {
+        mod = await import('../auth-edge');
     });
     return mod;
 }
@@ -46,19 +46,19 @@ describe('JWT signing key', () => {
     it('refuses to sign in production without JWT_SECRET', async () => {
         env.NODE_ENV = 'production';
         delete env.JWT_SECRET;
-        await expect(loadAuthEdge().encrypt({ userId: 'u' })).rejects.toThrow(/JWT_SECRET/);
+        await expect((await loadAuthEdge()).encrypt({ userId: 'u' })).rejects.toThrow(/JWT_SECRET/);
     });
 
     it('refuses a short JWT_SECRET in production', async () => {
         env.NODE_ENV = 'production';
         env.JWT_SECRET = 'too-short';
-        await expect(loadAuthEdge().encrypt({ userId: 'u' })).rejects.toThrow(/32 characters/);
+        await expect((await loadAuthEdge()).encrypt({ userId: 'u' })).rejects.toThrow(/32 characters/);
     });
 
     it('signs and verifies with a long enough secret in production', async () => {
         env.NODE_ENV = 'production';
         env.JWT_SECRET = 'x'.repeat(32);
-        const { encrypt, decrypt } = loadAuthEdge();
+        const { encrypt, decrypt } = await loadAuthEdge();
         const token = await encrypt({ userId: 'u' });
         await expect(decrypt(token)).resolves.toMatchObject({ userId: 'u' });
     });
@@ -66,10 +66,10 @@ describe('JWT signing key', () => {
     it('does not accept a token signed with the old public fallback in production', async () => {
         env.NODE_ENV = 'development';
         delete env.JWT_SECRET;
-        const forged = await loadAuthEdge().encrypt({ userId: 'admin', role: 'ADMIN' });
+        const forged = await (await loadAuthEdge()).encrypt({ userId: 'admin', role: 'ADMIN' });
 
         env.NODE_ENV = 'production';
         env.JWT_SECRET = 'a-real-secret-that-is-long-enough-1234';
-        await expect(loadAuthEdge().decrypt(forged)).rejects.toThrow();
+        await expect((await loadAuthEdge()).decrypt(forged)).rejects.toThrow();
     });
 });

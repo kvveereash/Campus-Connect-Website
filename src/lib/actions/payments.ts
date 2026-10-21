@@ -1,7 +1,6 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { getSession } from '@/lib/auth';
 import { createCheckoutSession, isStripeConfigured } from '@/lib/stripe';
 import { createProtectedAction } from '@/lib/protected-action';
 import { z } from 'zod';

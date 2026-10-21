@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Command } from 'cmdk';
 import { useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
@@ -12,6 +12,11 @@ import styles from './CommandPalette.module.css';
 
 export function CommandPalette() {
     const { isOpen, setIsOpen } = useCommand();
+    // Mounted only while open, so the search starts empty every time.
+    return isOpen ? <PaletteBody setIsOpen={setIsOpen} /> : null;
+}
+
+function PaletteBody({ setIsOpen }: { setIsOpen: (open: boolean) => void }) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<{
         users: { id: string; name: string; avatar: string | null }[];
@@ -20,11 +25,6 @@ export function CommandPalette() {
     }>({ users: [], events: [], clubs: [] });
 
     const router = useRouter();
-
-    // Reset query when closed
-    useEffect(() => {
-        if (!isOpen) setQuery('');
-    }, [isOpen]);
 
     const fetchResults = useDebouncedCallback(async (term: string) => {
         if (!term) {
@@ -43,8 +43,6 @@ export function CommandPalette() {
         setIsOpen(false);
         router.push(url);
     };
-
-    if (!isOpen) return null;
 
     return (
         <div

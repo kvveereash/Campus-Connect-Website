@@ -49,7 +49,7 @@ export function createCachedAction<T>(
 /**
  * Create a cached action with dynamic key parts (for filters/pagination)
  */
-export function createCachedActionWithArgs<TArgs extends any[], TResult>(
+export function createCachedActionWithArgs<TArgs extends unknown[], TResult>(
     fn: (...args: TArgs) => Promise<TResult>,
     baseKey: string,
     options: {
@@ -75,7 +75,7 @@ export function createCachedActionWithArgs<TArgs extends any[], TResult>(
  * Simple in-memory request-level cache for deduplication
  * Prevents duplicate DB calls within the same request
  */
-const requestCache = new Map<string, Promise<any>>();
+const requestCache = new Map<string, Promise<unknown>>();
 
 export function dedupeRequest<T>(
     key: string,

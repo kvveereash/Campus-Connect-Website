@@ -1,15 +1,16 @@
 'use client';
 
-import { ButtonHTMLAttributes, ReactNode, useRef, useState } from 'react';
+import { ReactNode, useRef, type Ref } from 'react';
 import Link from 'next/link';
-import { motion, useSpring, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useSpring, useMotionValue, type HTMLMotionProps } from 'framer-motion';
 import styles from './Button.module.css';
 
 // Created once. Calling motion.create inside the component made a new
 // component type on every render, so every button-link remounted each time.
 const MotionLink = motion.create(Link);
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children' | 'ref'> {
+    children?: ReactNode;
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
     size?: 'sm' | 'md' | 'lg';
     isLoading?: boolean;
@@ -79,8 +80,7 @@ export default function Button({
         </>
     );
 
-    const motionProps: any = {
-        ref: ref,
+    const shared = {
         className: combinedClassName,
         onMouseMove: handleMouseMove,
         onMouseLeave: handleMouseLeave,
@@ -88,13 +88,10 @@ export default function Button({
         whileTap: { scale: 0.96 },
     };
 
+    // A link takes only what a link can use; the button props are for buttons.
     if (href) {
         return (
-            <MotionLink
-                href={href}
-                {...motionProps}
-                {...(props as any)}
-            >
+            <MotionLink ref={ref as Ref<HTMLAnchorElement>} href={href} {...shared}>
                 {content}
             </MotionLink>
         );
@@ -102,9 +99,10 @@ export default function Button({
 
     return (
         <motion.button
-            {...motionProps}
+            ref={ref as Ref<HTMLButtonElement>}
+            {...shared}
             disabled={disabled || isLoading}
-            {...(props as any)}
+            {...props}
         >
             {content}
         </motion.button>

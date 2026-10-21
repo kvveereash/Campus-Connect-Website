@@ -320,6 +320,9 @@ export async function getSessionUser() {
                                 id: true,
                                 name: true,
                                 logo: true,
+                                description: true,
+                                category: true,
+                                collegeId: true,
                                 createdAt: true,
                                 updatedAt: true
                             }

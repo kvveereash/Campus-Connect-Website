@@ -2,7 +2,7 @@
 import { Users, User } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
-import { getConversationDetails, addMemberToGroup, leaveGroup, searchUsers } from '@/lib/actions/chat';
+import { getConversationDetails, addMemberToGroup, leaveGroup, searchUsers, type ConversationDetails, type UserSearchResult } from '@/lib/actions/chat';
 import styles from './Chat.module.css';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -18,32 +18,39 @@ interface GroupDetailsModalProps {
 export function GroupDetailsModal({ conversationId, onClose }: GroupDetailsModalProps) {
     const { user: currentUser } = useAuth();
     const router = useRouter();
-    const [details, setDetails] = useState<any>(null);
+    const [details, setDetails] = useState<ConversationDetails | null>(null);
     const [loading, setLoading] = useState(true);
 
     // Add Member State
     const [isAdding, setIsAdding] = useState(false);
     const [query, setQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-
-    useEffect(() => {
-        loadDetails();
-    }, [conversationId]);
+    const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
 
     const loadDetails = async () => {
-        setLoading(true);
         const data = await getConversationDetails(conversationId);
         setDetails(data);
         setLoading(false);
     };
+
+    useEffect(() => {
+        let alive = true;
+        getConversationDetails(conversationId).then((data) => {
+            if (!alive) return;
+            setDetails(data);
+            setLoading(false);
+        });
+        return () => {
+            alive = false;
+        };
+    }, [conversationId]);
 
     const handleSearch = async (val: string) => {
         setQuery(val);
         if (val.length >= 2) {
             const users = await searchUsers(val);
             // Filter out existing members
-            const currentMemberIds = details?.participants.map((p: any) => p.userId) || [];
-            const filtered = users.filter((u: any) => !currentMemberIds.includes(u.id));
+            const currentMemberIds = details?.participants.map((p) => p.userId) || [];
+            const filtered = users.filter((u) => !currentMemberIds.includes(u.id));
             setSearchResults(filtered);
         } else {
             setSearchResults([]);
@@ -79,7 +86,7 @@ export function GroupDetailsModal({ conversationId, onClose }: GroupDetailsModal
     if (loading) return null; // Or spinner
     if (!details) return null;
 
-    const myRole = details.participants.find((p: any) => p.userId === currentUser?.id)?.role;
+    const myRole = details.participants.find((p) => p.userId === currentUser?.id)?.role;
     const isAdmin = myRole === 'ADMIN';
 
     return (
@@ -98,7 +105,7 @@ export function GroupDetailsModal({ conversationId, onClose }: GroupDetailsModal
                         <h2 className={styles.groupTitle}>
                             {details.isGroup
                                 ? (details.name || 'Group Chat')
-                                : (details.participants.find((p: any) => p.userId !== currentUser?.id)?.user.name || 'Direct message')}
+                                : (details.participants.find((p) => p.userId !== currentUser?.id)?.user.name || 'Direct message')}
                         </h2>
                         <span className={styles.memberCount}>
                             {details.isGroup ? `${details.participants.length} members` : 'Direct message'}
@@ -146,7 +153,7 @@ export function GroupDetailsModal({ conversationId, onClose }: GroupDetailsModal
                 )}
 
                 <div className={styles.memberList}>
-                    {details.participants.map((p: any) => (
+                    {details.participants.map((p) => (
                         <div key={p.id} className={styles.memberItem}>
                             <div className={styles.memberInfo}>
                                 <div className={styles.tinyAvatar}>

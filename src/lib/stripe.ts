@@ -21,7 +21,9 @@ function getStripeInstance(): Stripe | null {
     }
 
     _stripe = new Stripe(stripeSecretKey, {
-        apiVersion: '2024-12-18.acacia' as any,
+        // Pinned to the version the webhook endpoint was created with; the SDK's
+        // types only list its own latest version, hence the cast to its type.
+        apiVersion: '2024-12-18.acacia' as Stripe.StripeConfig['apiVersion'],
         typescript: true,
     });
 

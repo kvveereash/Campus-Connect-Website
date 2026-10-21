@@ -57,8 +57,8 @@ async function getSessionUncached() {
         if (payload.pv !== passwordVersion(user.password)) return null;
 
         const { deletedAt: _deletedAt, password: _password, ...sessionUser } = user;
-        return { ...payload, user: sessionUser };
-    } catch (error) {
+        return { ...payload, userId: payload.userId, user: sessionUser };
+    } catch {
         return null;
     }
 }

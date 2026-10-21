@@ -151,7 +151,7 @@ export const sendMessageAction = createProtectedAction(sendMessageSchema, async 
 
         revalidatePath(`/messages`);
         return { message: 'Sent' };
-    } catch (error) {
+    } catch {
         // Transaction failed
         throw new Error('Failed to send message');
     }
@@ -306,6 +306,11 @@ export async function getMessages(conversationId: string) {
             include: {
                 sender: {
                     select: { id: true, name: true, avatar: true }
+                },
+                // The same shape the live 'reaction-update' sends. Without it a
+                // reaction showed until the next poll, then disappeared.
+                reactions: {
+                    include: { user: { select: { id: true, name: true } } }
                 }
             }
         });
@@ -597,3 +602,10 @@ export async function searchUsers(query: string) {
         return [];
     }
 }
+
+// Shapes the chat UI works with, inferred from the actions above so they
+// cannot drift from what the server actually sends.
+export type ChatMessage = Awaited<ReturnType<typeof getMessages>>[number];
+export type ConversationDetails = NonNullable<Awaited<ReturnType<typeof getConversationDetails>>>;
+export type ConversationSummary = Awaited<ReturnType<typeof getConversations>>[number];
+export type UserSearchResult = Awaited<ReturnType<typeof searchUsers>>[number];

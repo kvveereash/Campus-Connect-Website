@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { addEventReview, getEventReviews, getUserEventReview, deleteEventReview } from '@/lib/actions/reviews';
 import { toast } from 'sonner';
@@ -73,32 +73,43 @@ export default function EventReviews({ eventId, isPastEvent }: { eventId: string
         r => r.eventId === eventId && (r.status === 'PAID' || r.status === 'COMPLETED')
     );
 
-    // Re-run once the session arrives: on a fresh load `user` is still null on
-    // the first pass, so someone who had already reviewed saw an empty form.
-    useEffect(() => {
-        loadReviews();
-    }, [eventId, user?.id]);
 
-    const loadReviews = async () => {
-        setIsLoading(true);
-        const result = await getEventReviews(eventId);
+    const userId = user?.id;
+
+    /** The event's reviews, and yours if you are signed in. */
+    const fetchReviews = (signedIn: boolean) =>
+        Promise.all([getEventReviews(eventId), signedIn ? getUserEventReview(eventId) : Promise.resolve(null)]);
+
+    // Only calls state setters, which never change, so it is made once.
+    const applyReviews = useCallback(([result, mine]: Awaited<ReturnType<typeof fetchReviews>>) => {
         if (result.success) {
             setReviews(result.reviews as Review[]);
             setAvgRating(result.averageRating);
             setTotalReviews(result.totalReviews);
         }
-
-        // Check user's existing review
-        if (user) {
-            const userResult = await getUserEventReview(eventId);
-            if (userResult.review) {
-                setUserReview(userResult.review as Review);
-                setRating(userResult.review.rating);
-                setComment(userResult.review.comment || '');
-            }
+        if (mine?.review) {
+            setUserReview(mine.review as Review);
+            setRating(mine.review.rating);
+            setComment(mine.review.comment || '');
         }
         setIsLoading(false);
-    };
+    }, []);
+
+    const loadReviews = async () => applyReviews(await fetchReviews(Boolean(userId)));
+
+    // Re-run once the session arrives: on a fresh load `user` is still null on
+    // the first pass, so someone who had already reviewed saw an empty form.
+    useEffect(() => {
+        let alive = true;
+        Promise.all([getEventReviews(eventId), userId ? getUserEventReview(eventId) : Promise.resolve(null)]).then(
+            (data) => {
+                if (alive) applyReviews(data);
+            }
+        );
+        return () => {
+            alive = false;
+        };
+    }, [eventId, userId, applyReviews]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

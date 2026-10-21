@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { getMessages, sendMessage, getConversationDetails, triggerTyping, markAsRead, toggleReaction } from '@/lib/actions/chat';
+import { useCallback, useEffect, useState, useRef } from 'react';
+import { getMessages, sendMessage, getConversationDetails, triggerTyping, markAsRead, toggleReaction, type ChatMessage, type ConversationDetails } from '@/lib/actions/chat';
 import { pusherClient } from '@/lib/pusher-client';
 import { chatChannel } from '@/lib/pusher-channels';
 import styles from './Chat.module.css';
@@ -34,7 +34,7 @@ function dayLabel(d: string | Date) {
 
 export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const { user } = useAuth();
-    const [messages, setMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     // ChatLayout keys this component by conversation, so it starts fresh per chat.
     const [loaded, setLoaded] = useState(false);
     // The clock used for "Online": refreshed with each details poll, not read during render.
@@ -44,13 +44,20 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const [showDetails, setShowDetails] = useState(false);
     const [attachment, setAttachment] = useState<{ url: string, type: 'image' | 'file', name: string } | null>(null);
     const [isUploading, setIsUploading] = useState(false);
-    const [details, setDetails] = useState<any>(null);
+    const [details, setDetails] = useState<ConversationDetails | null>(null);
     const [typingUsers, setTypingUsers] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const fetchMessages = useCallback(async () => {
+        if (!conversationId) return;
+        const data = await getMessages(conversationId);
+        setMessages(data);
+        setLoaded(true);
+    }, [conversationId]);
 
     // Subscribe to Pusher
     useEffect(() => {
@@ -70,7 +77,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         });
 
         // Also bind to new-message to instant update
-        channel.bind('new-message', (data: any) => {
+        channel.bind('new-message', (data: { senderId: string }) => {
             // If I am receiver, trigger markAsRead
             if (data.senderId !== user?.id) {
                 markAsRead(conversationId);
@@ -82,7 +89,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             fetchMessages(); // Update ticks
         });
 
-        channel.bind('reaction-update', (data: any) => {
+        channel.bind('reaction-update', (data: { messageId: string; reactions: ChatMessage['reactions'] }) => {
             setMessages(prev => prev.map(m => m.id === data.messageId ? { ...m, reactions: data.reactions } : m));
         });
 
@@ -92,7 +99,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         return () => {
             pusherClient.unsubscribe(chatChannel(conversationId));
         };
-    }, [conversationId, user?.id]);
+    }, [conversationId, user?.id, fetchMessages]);
 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInput(e.target.value);
@@ -106,12 +113,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         }
     };
 
-    const fetchMessages = async () => {
-        if (!conversationId) return;
-        const data = await getMessages(conversationId);
-        setMessages(data);
-        setLoaded(true);
-    };
 
     useEffect(() => {
         const loadDetails = async () => {
@@ -125,10 +126,19 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     }, [conversationId]);
 
     useEffect(() => {
-        setMessages([]); // clear on switch
-        fetchMessages();
-        const interval = setInterval(fetchMessages, 3000); // Poll every 3s
-        return () => clearInterval(interval);
+        let alive = true;
+        const poll = () =>
+            getMessages(conversationId).then((data) => {
+                if (!alive) return;
+                setMessages(data);
+                setLoaded(true);
+            });
+        poll();
+        const interval = setInterval(poll, 3000); // Poll every 3s
+        return () => {
+            alive = false;
+            clearInterval(interval);
+        };
     }, [conversationId]);
 
     // Scroll to bottom when a message arrives (not on every poll).
@@ -187,7 +197,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     };
 
     const other = details && !details.isGroup
-        ? details.participants.find((p: any) => p.userId !== user?.id)?.user
+        ? details.participants.find((p) => p.userId !== user?.id)?.user
         : null;
     const title = details ? (details.isGroup ? details.name || 'Group chat' : other?.name || 'Chat') : '';
     const online = !!other?.lastSeenAt && now - new Date(other.lastSeenAt).getTime() < 2 * 60 * 1000;
@@ -204,11 +214,11 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const q = searchQuery.trim().toLowerCase();
     const visible = q ? messages.filter((m) => m.content?.toLowerCase().includes(q)) : messages;
 
-    const readByAll = (m: any) =>
+    const readByAll = (m: ChatMessage) =>
         !!details &&
         details.participants
-            .filter((p: any) => p.userId !== user?.id)
-            .every((p: any) => new Date(p.lastReadAt) >= new Date(m.createdAt));
+            .filter((p) => p.userId !== user?.id)
+            .every((p) => new Date(p.lastReadAt) >= new Date(m.createdAt));
 
     return (
         <div className={styles.window}>
@@ -376,7 +386,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
                                     {m.reactions?.length > 0 && (
                                         <div className={styles.reactionRow}>
-                                            {m.reactions.map((r: any) => (
+                                            {m.reactions.map((r) => (
                                                 <span key={r.id} className={styles.reactionItem}>{r.emoji}</span>
                                             ))}
                                         </div>

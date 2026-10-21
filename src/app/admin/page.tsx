@@ -47,7 +47,14 @@ export default async function AdminDashboard() {
     );
 }
 
-function StatCard({ title, value, icon, highlight = false }: any) {
+interface StatCardProps {
+    title: string;
+    value: number | string;
+    icon: React.ReactNode;
+    highlight?: boolean;
+}
+
+function StatCard({ title, value, icon, highlight = false }: StatCardProps) {
     return (
         <div className={`${styles.statCard} ${highlight ? styles.statCardHighlight : ''}`}>
             <div>

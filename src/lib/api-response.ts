@@ -15,6 +15,12 @@ export type ApiResult<T> =
     | { success: true; data: T; message?: string }
     | { success: false; error: string; code?: ApiErrorCode };
 
+/** The data an action returns on success, e.g. ResultData<typeof createClubAction>. */
+export type ResultData<F extends (...args: never[]) => Promise<ApiResult<unknown>>> = Extract<
+    Awaited<ReturnType<F>>,
+    { success: true }
+>['data'];
+
 /**
  * Common error codes for client-side handling
  */

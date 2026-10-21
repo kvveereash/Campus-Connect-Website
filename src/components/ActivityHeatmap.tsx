@@ -1,28 +1,35 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
+
+/** True in the browser, false while rendering on the server. */
+const noop = () => () => {};
+function useIsClient() {
+    return useSyncExternalStore(noop, () => true, () => false);
+}
+
+/** The last 365 days, ending today in the viewer's own time zone. */
+function lastYear(): Date[] {
+    const days: Date[] = [];
+    const start = new Date();
+    start.setFullYear(start.getFullYear() - 1);
+    for (let i = 0; i < 365; i++) {
+        const date = new Date(start);
+        date.setDate(date.getDate() + i);
+        days.push(date);
+    }
+    return days;
+}
 
 interface ActivityHeatmapProps {
     dates: string[]; // Array of ISO date strings
 }
 
 export default function ActivityHeatmap({ dates }: ActivityHeatmapProps) {
-    // Generate last 365 days
-    const [days, setDays] = useState<Date[]>([]);
-
-    useEffect(() => {
-        const d = [];
-        const today = new Date();
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(today.getFullYear() - 1);
-
-        for (let i = 0; i < 365; i++) {
-            const date = new Date(oneYearAgo);
-            date.setDate(date.getDate() + i);
-            d.push(date);
-        }
-        setDays(d);
-    }, []);
+    // Days depend on the viewer's clock and time zone, so they are only
+    // built in the browser: the server's UTC "today" would not match.
+    const isClient = useIsClient();
+    const days = useMemo(() => (isClient ? lastYear() : []), [isClient]);
 
     // Count occurrences per date
     const activityMap = useMemo(() => {

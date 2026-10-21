@@ -4,7 +4,6 @@ import prisma from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { TeamRequest } from '@/types';
 import { isOk } from '@/lib/api-response';
 
 import { createProtectedAction } from '@/lib/protected-action';

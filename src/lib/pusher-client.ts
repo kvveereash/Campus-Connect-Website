@@ -45,6 +45,6 @@ export function getPusherClient(): PusherClient {
 // Kept as a lazy proxy so importing this never connects on its own.
 export const pusherClient = new Proxy({} as PusherClient, {
     get(_, prop) {
-        return (getPusherClient() as any)[prop];
+        return Reflect.get(getPusherClient(), prop);
     },
 });

@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '@/types';
+import type { Achievement, ClubMember, EventRegistration, PortfolioLink, Project, User } from '@/types';
+import type { getSessionUser } from '@/lib/actions';
 import { toggleCollegeFollow } from '@/lib/actions';
 import { toast } from 'sonner';
 
@@ -26,108 +27,104 @@ const PROFILE_FIELDS = [
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+type SessionUser = NonNullable<Awaited<ReturnType<typeof getSessionUser>>>;
+
+/** A date from the server as an ISO string; now, if it is missing or bad. */
+function iso(value: Date | string | null | undefined): string {
+    const d = value ? new Date(value) : null;
+    return d && !isNaN(d.getTime()) ? d.toISOString() : new Date().toISOString();
+}
+
+/** The profile editor's JSON columns arrive parsed; anything else is empty. */
+function list<T>(value: unknown): T[] {
+    return Array.isArray(value) ? (value as T[]) : [];
+}
+
+/** The server's user, in the shape the client components use. */
+function toClientUser(u: SessionUser): User {
+    return {
+        id: u.id,
+        name: u.name || 'User',
+        email: u.email || '',
+        avatar: u.avatar || undefined,
+        role: u.role || 'USER',
+        collegeId: u.collegeId || '',
+        department: u.department || '',
+        year: u.year || '',
+        bio: u.bio || undefined,
+        resumeUrl: u.resumeUrl || undefined,
+        createdAt: iso(u.createdAt),
+        updatedAt: iso(u.updatedAt),
+        lastSeenAt: iso(u.lastSeenAt),
+        badges: u.badges.map((ub) => ({ ...ub.badge, dateEarned: iso(ub.dateEarned) })),
+        registrations: u.registrations.map((r) => ({
+            ...r,
+            userId: u.id,
+            status: r.status as EventRegistration['status'],
+            createdAt: iso(r.createdAt),
+            updatedAt: iso(r.updatedAt),
+        })),
+        followedColleges: u.followedColleges,
+        clubMemberships: u.clubMemberships.map((m) => ({
+            id: `${u.id}:${m.clubId}`,
+            userId: u.id,
+            clubId: m.clubId,
+            role: m.role as ClubMember['role'],
+            joinedAt: iso(m.joinedAt),
+            club: m.club
+                ? {
+                      ...m.club,
+                      logo: m.club.logo ?? undefined,
+                      createdAt: iso(m.club.createdAt),
+                      updatedAt: iso(m.club.updatedAt),
+                  }
+                : undefined,
+        })),
+        joinedClubs: u.clubMemberships.map((m) => m.clubId),
+        skills: u.skills,
+        interests: u.interests,
+        achievements: list<Achievement>(u.achievements),
+        projects: list<Project>(u.projects),
+        portfolioLinks: list<PortfolioLink>(u.portfolioLinks),
+        following: [],
+        college: u.college ?? undefined,
+    };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isInitialized, setIsInitialized] = useState(false);
 
-    const checkSession = async () => {
+    /* Loads the signed-in user, or null. State is set by the callers, in
+       a promise callback, so the effect below never sets state synchronously. */
+    const loadUser = async (): Promise<User | null> => {
         try {
-            // Dynamically import to avoid server-only module issues if any, 
-            // though actions.ts is 'use server' so it's callable from client.
+            // Imported lazily so the provider does not pull every action into
+            // the first bundle.
             const { getSessionUser } = await import('@/lib/actions');
-            const currentUser = await getSessionUser();
-            // Transform backend user to match frontend User type if needed
-            // The frontend User type has specific fields like badges as Array, etc.
-            // Prisma return might need mapping.
-            // For now assuming shapes match close enough or we cast.
-            if (currentUser) {
-                // Ultra-defensive mapping
-                try {
-                    const safeISO = (dateStr: any) => {
-                        if (!dateStr) return new Date().toISOString();
-                        const d = new Date(dateStr);
-                        return !isNaN(d.getTime()) ? d.toISOString() : new Date().toISOString();
-                    };
-
-                    const safeMap = (arr: any, fn: (item: any) => any) => {
-                        return Array.isArray(arr) ? arr.map(fn) : [];
-                    };
-
-                    const mappedUser: User = {
-                        ...currentUser,
-                        // Scalars with defaults
-                        id: currentUser.id || 'unknown',
-                        name: currentUser.name || 'User',
-                        email: currentUser.email || '',
-                        avatar: currentUser.avatar || undefined,
-                        role: currentUser.role || 'USER',
-                        collegeId: currentUser.collegeId || '',
-                        department: currentUser.department || '',
-                        year: currentUser.year || '',
-                        bio: currentUser.bio || undefined,
-                        resumeUrl: currentUser.resumeUrl || undefined,
-
-                        // Dates
-                        createdAt: safeISO(currentUser.createdAt),
-                        updatedAt: safeISO(currentUser.updatedAt),
-                        lastSeenAt: safeISO(currentUser.lastSeenAt),
-
-                        // Relations with safe mapping
-                        badges: safeMap(currentUser.badges, (ub: any) => ({
-                            ...(ub.badge || {}),
-                            dateEarned: safeISO(ub.dateEarned)
-                        })),
-                        registrations: safeMap(currentUser.registrations, (r: any) => ({
-                            ...r,
-                            createdAt: safeISO(r.createdAt),
-                            updatedAt: safeISO(r.updatedAt)
-                        })),
-                        followedColleges: safeMap(currentUser.followedColleges, (c: any) => c.id || c),
-                        clubMemberships: safeMap(currentUser.clubMemberships, (m: any) => ({
-                            ...m,
-                            joinedAt: safeISO(m.joinedAt),
-                            club: m.club ? {
-                                ...m.club,
-                                createdAt: safeISO(m.club.createdAt),
-                                updatedAt: safeISO(m.club.updatedAt)
-                            } : undefined
-                        })),
-                        joinedClubs: safeMap(currentUser.clubMemberships, (m: any) => m.clubId),
-
-                        // Arrays that might be missing in Prisma return but required by User type
-                        skills: safeMap(currentUser.skills, (s: any) => s.name || s),
-                        interests: safeMap(currentUser.interests, (i: any) => i.name || i),
-                        achievements: Array.isArray(currentUser.achievements) ? currentUser.achievements : [],
-                        projects: Array.isArray(currentUser.projects) ? currentUser.projects : [],
-                        portfolioLinks: Array.isArray(currentUser.portfolioLinks) ? currentUser.portfolioLinks : [],
-                        following: [],
-                        college: currentUser.college || undefined
-                    };
-                    setUser(mappedUser);
-                } catch (mapError) {
-                    console.error('CRITICAL: User mapping failed', mapError);
-                    // Fallback to minimal user if essential info exists
-                    if (currentUser?.id) {
-                        setUser({ ...currentUser, id: currentUser.id } as any);
-                    } else {
-                        setUser(null);
-                    }
-                }
-            } else {
-                setUser(null);
-            }
+            const sessionUser = await getSessionUser();
+            return sessionUser ? toClientUser(sessionUser) : null;
         } catch (error) {
             console.error('Session check failed', error);
-            setUser(null);
-        } finally {
-            setIsLoading(false);
-            setIsInitialized(true);
+            return null;
         }
     };
 
+    const applyUser = (next: User | null) => {
+        setUser(next);
+        setIsLoading(false);
+        setIsInitialized(true);
+    };
+
     useEffect(() => {
-        checkSession();
+        let cancelled = false;
+        loadUser().then((next) => {
+            if (!cancelled) applyUser(next);
+        });
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     const login = (userData: User) => {
@@ -146,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!user) return;
         const currentRegistrations = user.registrations || [];
         if (!currentRegistrations.find(r => r.eventId === eventId)) {
-            const newReg: any = {
+            const newReg: EventRegistration = {
                 id: `temp_${Date.now()}`,
                 userId: user.id,
                 eventId,
@@ -176,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Server action
         try {
             await toggleCollegeFollow(collegeId);
-        } catch (err) {
+        } catch {
             // Revert on error
             setUser({ ...user, followedColleges: currentFollowed });
             toast.error("Failed to update follow");
@@ -227,7 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const refreshUser = async () => {
-        await checkSession();
+        applyUser(await loadUser());
     };
 
     return (

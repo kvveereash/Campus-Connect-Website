@@ -6,9 +6,10 @@ import { Check, X, Building2, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import AdminRejectionModal from '@/components/admin/AdminRejectionModal';
 import EmptyState from '@/components/common/EmptyState';
+import type { getPendingContent } from '@/lib/data/admin';
 
 interface VerificationClientProps {
-    initialData: { clubs: any[], events: any[] } | null;
+    initialData: Awaited<ReturnType<typeof getPendingContent>>;
 }
 
 export default function VerificationClient({ initialData }: VerificationClientProps) {
@@ -33,9 +34,9 @@ export default function VerificationClient({ initialData }: VerificationClientPr
             // Remove the item from local state
             if (data) {
                 if (type === 'CLUB') {
-                    setData({ ...data, clubs: data.clubs.filter((c: any) => c.id !== id) });
+                    setData({ ...data, clubs: data.clubs.filter((c) => c.id !== id) });
                 } else {
-                    setData({ ...data, events: data.events.filter((e: any) => e.id !== id) });
+                    setData({ ...data, events: data.events.filter((e) => e.id !== id) });
                 }
             }
         } else {
@@ -55,9 +56,9 @@ export default function VerificationClient({ initialData }: VerificationClientPr
             // Remove the item from local state
             if (data) {
                 if (selectedItem.type === 'CLUB') {
-                    setData({ ...data, clubs: data.clubs.filter((c: any) => c.id !== selectedItem.id) });
+                    setData({ ...data, clubs: data.clubs.filter((c) => c.id !== selectedItem.id) });
                 } else {
-                    setData({ ...data, events: data.events.filter((e: any) => e.id !== selectedItem.id) });
+                    setData({ ...data, events: data.events.filter((e) => e.id !== selectedItem.id) });
                 }
             }
         } else {
@@ -89,7 +90,7 @@ export default function VerificationClient({ initialData }: VerificationClientPr
                         Pending Clubs
                     </h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        {data.clubs.map((club: any) => (
+                        {data.clubs.map((club) => (
                             <VerificationItem
                                 key={club.id}
                                 title={club.name}
@@ -110,11 +111,11 @@ export default function VerificationClient({ initialData }: VerificationClientPr
                         Pending Events
                     </h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        {data.events.map((event: any) => (
+                        {data.events.map((event) => (
                             <VerificationItem
                                 key={event.id}
                                 title={event.title}
-                                subtitle={`Organized by ${event.organizer?.name} • ${event.club?.name || 'Independent'}`}
+                                subtitle={`Organized by ${event.creator?.name ?? 'a deleted account'} • ${event.club?.name || 'Independent'}`}
                                 onApprove={() => handleVerify('EVENT', event.id, true)}
                                 onReject={() => handleVerify('EVENT', event.id, false)}
                             />
@@ -136,7 +137,14 @@ export default function VerificationClient({ initialData }: VerificationClientPr
     );
 }
 
-function VerificationItem({ title, subtitle, onApprove, onReject }: any) {
+interface VerificationItemProps {
+    title: string;
+    subtitle: string;
+    onApprove: () => void;
+    onReject: () => void;
+}
+
+function VerificationItem({ title, subtitle, onApprove, onReject }: VerificationItemProps) {
     return (
         <div style={{
             background: 'rgba(255,255,255,0.03)',

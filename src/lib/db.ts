@@ -52,7 +52,6 @@ const prismaClientSingleton = () => {
     })
 
     // ── Slow Query Detection ──
-    // @ts-ignore - Prisma event typing
     client.$on('query', (e: Prisma.QueryEvent) => {
         if (e.duration > SLOW_QUERY_THRESHOLD_MS) {
             console.warn(
@@ -63,12 +62,10 @@ const prismaClientSingleton = () => {
         }
     })
 
-    // @ts-ignore - Prisma event typing
     client.$on('error', (e: Prisma.LogEvent) => {
         console.error('[Database] ❌ Error:', e.message)
     })
 
-    // @ts-ignore - Prisma event typing
     client.$on('warn', (e: Prisma.LogEvent) => {
         console.warn('[Database] ⚠️ Warning:', e.message)
     })

@@ -36,7 +36,7 @@ export default function EditCollegeModal({ college, onClose }: EditCollegeModalP
             } else {
                 toast.error(result.error || 'Failed to update profile');
             }
-        } catch (error) {
+        } catch {
             toast.error('Something went wrong');
         } finally {
             setIsLoading(false);

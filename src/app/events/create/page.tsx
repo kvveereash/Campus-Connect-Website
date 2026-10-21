@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Briefcase, Calendar, Code, Cpu, DollarSign, Globe, Lock as LockIcon, MapPin, Megaphone, Palette, Sparkles, Trophy, Users, Wrench } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Briefcase, Calendar, Code, Cpu, Globe, Lock as LockIcon, Megaphone, Palette, Sparkles, Trophy, Users, Wrench } from 'lucide-react';
 import { createEvent } from '@/lib/actions';
 import { useAuth } from '@/context/AuthContext';
 import ImageUpload from '@/components/ImageUpload';
@@ -50,11 +50,9 @@ export default function CreateEventPage() {
         price: 0,
     });
 
-    useEffect(() => {
-        if (adminClubs.length > 0 && !formData.clubId) {
-            setFormData(prev => ({ ...prev, clubId: adminClubs[0]?.id || '' }));
-        }
-    }, [user, adminClubs, formData.clubId]);
+    // The club picker defaults to your first club. Derived on each render, so
+    // it is right as soon as your clubs load, without an effect copying it in.
+    const clubId = formData.clubId || adminClubs[0]?.id || '';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -98,7 +96,7 @@ export default function CreateEventPage() {
             const submissionData = {
                 ...formData,
                 date: new Date(formData.date).toISOString(),
-                clubId: formData.clubId,
+                clubId,
                 price: Number(formData.price) || 0,
             };
 
@@ -110,7 +108,7 @@ export default function CreateEventPage() {
             } else {
                 toast.error(result.error || 'Failed to create event');
             }
-        } catch (error) {
+        } catch {
             toast.error('An unexpected error occurred');
         } finally {
             setIsLoading(false);
@@ -118,7 +116,7 @@ export default function CreateEventPage() {
     };
 
     const isDefaultImage = formData.thumbnail === '/event-placeholder.png';
-    const selectedClubName = adminClubs.find(c => c?.id === formData.clubId)?.name;
+    const selectedClubName = adminClubs.find(c => c?.id === clubId)?.name;
 
     return (
         <div className={styles.pageWrapper}>
@@ -240,7 +238,7 @@ export default function CreateEventPage() {
                                     id="clubId"
                                     name="clubId"
                                     className={styles.select}
-                                    value={formData.clubId}
+                                    value={clubId}
                                     onChange={handleChange}
                                     required
                                 >

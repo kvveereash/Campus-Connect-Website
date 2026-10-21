@@ -35,8 +35,8 @@ describe('sanitize utilities', () => {
 
         it('handles empty/null-like inputs gracefully', () => {
             expect(sanitizeRichText('')).toBe('');
-            expect(sanitizeRichText(null as any)).toBe('');
-            expect(sanitizeRichText(undefined as any)).toBe('');
+            expect(sanitizeRichText(null as unknown as string)).toBe('');
+            expect(sanitizeRichText(undefined as unknown as string)).toBe('');
         });
 
         it('preserves allowed link tags with safe href', () => {

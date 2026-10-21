@@ -97,7 +97,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                 toast.error(result.error || 'Failed to create payment session');
                 setStatus('payment_pending');
             }
-        } catch (error) {
+        } catch {
             toast.error('Payment initiation failed');
             setStatus('payment_pending');
         }
@@ -118,7 +118,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
             } else {
                 toast.error(result.error || 'Payment not verified');
             }
-        } catch (error) {
+        } catch {
             toast.error('Failed to verify payment');
         } finally {
             setStatus('idle');
@@ -238,7 +238,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                                     >
                                         
                                     </motion.div>
-                                    <h3 style={{ marginBottom: '0.5rem' }}>You're In!</h3>
+                                    <h3 style={{ marginBottom: '0.5rem' }}>You&rsquo;re in.</h3>
                                     <p style={{ color: 'var(--text-secondary)' }}>
                                         Registration successful. Check your email for details.
                                     </p>

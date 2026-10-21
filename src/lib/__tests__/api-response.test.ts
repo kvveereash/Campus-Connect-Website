@@ -84,7 +84,7 @@ describe('api-response utilities', () => {
 
         it('throws on a failure result', () => {
             const result = fail('Not found');
-            expect(() => unwrap(result as ApiResult<any>)).toThrow('Not found');
+            expect(() => unwrap(result as ApiResult<unknown>)).toThrow('Not found');
         });
     });
 

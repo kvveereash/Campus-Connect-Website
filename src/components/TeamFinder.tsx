@@ -99,7 +99,7 @@ export default function TeamFinder({ eventId }: { eventId: string }) {
                             <select
                                 className={styles.select}
                                 value={type}
-                                onChange={(e) => setType(e.target.value as any)}
+                                onChange={(e) => setType(e.target.value as typeof type)}
                             >
                                 <option value="LOOKING_FOR_TEAM">Looking for a Team</option>
                                 <option value="LOOKING_FOR_MEMBER">Looking for Members</option>

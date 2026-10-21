@@ -1,7 +1,6 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { markRegistrationPaid } from '@/lib/payments';
 

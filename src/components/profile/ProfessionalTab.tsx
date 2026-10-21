@@ -2,7 +2,7 @@
 import { FileText, Trophy, Zap, Rocket, Link2, ArrowUpRight } from 'lucide-react';
 
 import { useState, useRef } from 'react';
-import { User, Achievement } from '@/types';
+import { User, Achievement, Project, PortfolioLink } from '@/types';
 import styles from '@/app/profile/page.module.css';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -91,7 +91,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
 
     const onAchievementSubmit = (data: AchievementForm) => {
         const achievement: Achievement = {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             ...data
         };
         const currentAchievements = user?.achievements || [];
@@ -120,8 +120,8 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
     };
 
     const onProjectSubmit = (data: ProjectForm) => {
-        const project: any = {
-            id: Date.now().toString(),
+        const project: Project = {
+            id: crypto.randomUUID(),
             title: data.title,
             description: data.description,
             link: data.link
@@ -135,8 +135,8 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
     };
 
     const onLinkSubmit = (data: LinkForm) => {
-        const link: any = {
-            id: Date.now().toString(),
+        const link: PortfolioLink = {
+            id: crypto.randomUUID(),
             platform: data.platform,
             url: data.url
         };
@@ -213,7 +213,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
                 </div>
 
                 <div className={styles.achievementList}>
-                    {user.achievements && user.achievements.map((ach: any) => (
+                    {user.achievements && user.achievements.map((ach) => (
                         <div key={ach.id} className={styles.achievementItem}>
                             <div className={styles.achievementHeader}>
                                 <h4 style={{ fontWeight: 600 }}>{ach.title}</h4>
@@ -300,7 +300,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
                     )}
                 </div>
                 <div className={styles.projectList}>
-                    {user.projects && user.projects.map((project: any) => (
+                    {user.projects && user.projects.map((project) => (
                         <div key={project.id} className={styles.projectCard}>
                             <h4 className={styles.projectTitle}>{project.title}</h4>
                             <p className={styles.projectDesc}>{project.description}</p>
@@ -344,7 +344,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
                     )}
                 </div>
                 <div className={styles.portfolioList}>
-                    {user.portfolioLinks && user.portfolioLinks.map((link: any) => (
+                    {user.portfolioLinks && user.portfolioLinks.map((link) => (
                         <div key={link.id} className={styles.portfolioItem}>
                             <div className={styles.linkInfo}>
                                 <span className={styles.platformName}>{link.platform}</span>

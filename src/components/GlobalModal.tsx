@@ -6,7 +6,7 @@ import ShareModal from '@/components/ShareModal';
 export default function GlobalModal() {
     const { activeModal, modalProps, closeModal } = useModal();
 
-    if (!activeModal) return null;
+    if (!activeModal || !modalProps) return null;
 
     return (
         <>

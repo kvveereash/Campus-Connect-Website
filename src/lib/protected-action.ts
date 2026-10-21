@@ -6,8 +6,8 @@ import { AuthenticationError, AuthorizationError, ErrorHandler } from '@/lib/err
 import { logger } from '@/lib/logger';
 import { Ratelimit } from '@upstash/ratelimit';
 import { checkRateLimit, getClientIp, getRateLimitIdentifier } from '@/lib/rate-limit';
-import { audit, AuditAction, AuditEntityType } from '@/lib/audit';
-import { ApiResult, ok, fail, ApiErrorCode } from '@/lib/api-response';
+import { audit, AuditAction, AuditEntityType, toAuditJson } from '@/lib/audit';
+import { ApiResult, ok, fail } from '@/lib/api-response';
 import { validateCsrfSafe } from '@/lib/csrf';
 
 /**
@@ -28,7 +28,7 @@ export interface AuthSession {
 /**
  * Options for protected actions
  */
-export interface ProtectedActionOptions {
+export interface ProtectedActionOptions<TInput = unknown> {
     /** Require the user to have ADMIN role */
     requireAdmin?: boolean;
     /** Custom role check */
@@ -45,10 +45,10 @@ export interface ProtectedActionOptions {
      * If provided, successful and failed attempts will be logged.
      */
     audit?: {
-        action: AuditAction | ((validatedData: any) => AuditAction);
-        entityType: AuditEntityType | ((validatedData: any) => AuditEntityType);
+        action: AuditAction | ((validatedData: TInput) => AuditAction);
+        entityType: AuditEntityType | ((validatedData: TInput) => AuditEntityType);
         /** Function to extract entity ID from the input data */
-        getEntityId?: (input: any) => string;
+        getEntityId?: (input: TInput) => string;
     };
 }
 
@@ -95,7 +95,7 @@ export interface ProtectedActionOptions {
 export function createProtectedAction<TInput, TOutput>(
     schema: z.Schema<TInput>,
     handler: (validatedData: TInput, session: AuthSession) => Promise<TOutput>,
-    options: ProtectedActionOptions = {}
+    options: ProtectedActionOptions<TInput> = {}
 ) {
     return async (input: TInput): Promise<ApiResult<TOutput>> => {
         const startTime = Date.now();
@@ -195,7 +195,7 @@ export function createProtectedAction<TInput, TOutput>(
                     action,
                     entityType,
                     entityId,
-                    { input: validationResult.data }
+                    { input: toAuditJson(validationResult.data) }
                 ).catch((err) => logger.error('Audit log failed', err as Error));
             }
 

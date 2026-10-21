@@ -165,7 +165,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
             const result = await getPostComments(postId);
             setLoadingComments(false);
             if (result.success) {
-                const formattedComments = (result.data || []).map((c: any) => ({
+                const formattedComments = (result.data || []).map((c) => ({
                     ...c,
                     timestamp: new Date(c.timestamp).toISOString()
                 }));
@@ -217,7 +217,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
         // so deleting a comment you had just posted failed until a reload.
         const saved = await getPostComments(postId);
         if (saved.success && saved.data) {
-            const formatted = saved.data.map((c: any) => ({
+            const formatted = saved.data.map((c) => ({
                 ...c,
                 timestamp: new Date(c.timestamp).toISOString()
             }));

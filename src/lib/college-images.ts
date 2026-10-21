@@ -54,13 +54,6 @@ const CLUB_IMAGES = {
     'general':  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800',
 } as const;
 
-/** Clean placeholders for clubs/logos */
-const LOGO_PLACEHOLDERS = [
-    'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100', // Minimal Business
-    'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=100', // Abstract Tech
-    'https://images.unsplash.com/photo-1557683316-973673baf926?w=100', // Blue Gradient
-] as const;
-
 
 export interface PhotoCredit {
     author: string;

@@ -28,7 +28,7 @@ export default function ClubAdminControls({ clubId }: ClubAdminControlsProps) {
                 toast.error(result.error || 'Failed to delete club');
                 setIsDeleting(false);
             }
-        } catch (error) {
+        } catch {
             toast.error('An unexpected error occurred');
             setIsDeleting(false);
         }

@@ -8,6 +8,7 @@ import { unstable_cache } from 'next/cache';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
 import { clampLimit } from '@/lib/pagination';
 import { isOk } from '@/lib/api-response';
+import type { z } from 'zod';
 import { createProtectedAction } from '@/lib/protected-action';
 import { eventSchema, updateEventSchema, joinEventSchema } from '@/lib/schemas';
 import { createNotification } from '@/lib/notification-helper';
@@ -255,9 +256,13 @@ export async function joinEvent(userId: string, eventId: string) {
 }
 
 /** @deprecated Use updateEventAction directly */
-export async function updateEvent(eventId: string, data: Partial<PrismaEvent>) {
-    const safeData: any = { ...data };
-    if (safeData.date instanceof Date) safeData.date = safeData.date.toISOString();
+type EventUpdate = z.input<typeof updateEventSchema>['data'];
+
+export async function updateEvent(eventId: string, data: Omit<EventUpdate, 'date'> & { date?: Date | string }) {
+    const safeData: EventUpdate = {
+        ...data,
+        date: data.date instanceof Date ? data.date.toISOString() : data.date,
+    };
 
     const result = await updateEventAction({ id: eventId, data: safeData });
     if (!isOk(result)) return { success: false, error: result.error || 'Unknown error' };
@@ -306,7 +311,7 @@ export async function getUpcomingEvents(limit: number = 3): Promise<EventWithRel
 // an empty board ("0 upcoming") for the whole TTL. getAllEvents catches.
 async function _allEvents(filters?: { search?: string; category?: string }) {
     const { search, category } = filters || {};
-    const where: any = { date: { gte: new Date() }, verified: true, deletedAt: null };
+    const where: Prisma.EventWhereInput = { date: { gte: new Date() }, verified: true, deletedAt: null };
 
     if (search) {
         where.OR = [
@@ -451,7 +456,7 @@ export async function getUserRegisteredEvents() {
             },
             orderBy: { event: { date: 'desc' } },
         });
-        return registrations.map((r: any) => r.event);
+        return registrations.map((r) => r.event);
     } catch (error) {
         console.error('Failed to fetch user registered events:', error);
         return [];

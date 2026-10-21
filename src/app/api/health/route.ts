@@ -53,7 +53,7 @@ export async function GET() {
             },
             responseTimeMs: responseTime,
         });
-    } catch (error) {
+    } catch {
         const responseTime = Date.now() - startTime;
 
         return NextResponse.json({

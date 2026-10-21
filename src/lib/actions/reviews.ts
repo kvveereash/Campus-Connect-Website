@@ -186,7 +186,7 @@ export async function getUserEventReview(eventId: string) {
         });
 
         return { success: true, review };
-    } catch (error) {
+    } catch {
         return { success: false, review: null };
     }
 }

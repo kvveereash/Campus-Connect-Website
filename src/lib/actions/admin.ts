@@ -1,19 +1,10 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { getSession } from '@/lib/auth';
 import { ActionState } from '@/types';
 import { revalidatePath, updateTag } from 'next/cache';
 import { CACHE_TAGS } from '@/lib/cache';
 import { AuditAction, AuditEntityType } from '@/lib/audit';
-
-// Middleware-like check
-async function isAdmin() {
-    const session = await getSession();
-    return session?.user?.role === 'ADMIN';
-}
-
-
 
 import { createProtectedAction } from '@/lib/protected-action';
 import { z } from 'zod';

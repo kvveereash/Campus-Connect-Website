@@ -39,6 +39,9 @@ export enum ErrorCode {
     UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
+/** Extra facts about an error, for the logs. Values are whatever was known. */
+export type ErrorContext = Record<string, unknown>;
+
 /**
  * Base Application Error
  */
@@ -46,14 +49,14 @@ export class AppError extends Error {
     public readonly code: ErrorCode;
     public readonly statusCode: number;
     public readonly isOperational: boolean;
-    public readonly context?: Record<string, any>;
+    public readonly context?: ErrorContext;
 
     constructor(
         message: string,
         code: ErrorCode = ErrorCode.INTERNAL_ERROR,
         statusCode: number = 500,
         isOperational: boolean = true,
-        context?: Record<string, any>
+        context?: ErrorContext
     ) {
         super(message);
 
@@ -71,7 +74,7 @@ export class AppError extends Error {
  * Authentication Error
  */
 export class AuthenticationError extends AppError {
-    constructor(message: string = 'Authentication failed', context?: Record<string, any>) {
+    constructor(message: string = 'Authentication failed', context?: ErrorContext) {
         super(message, ErrorCode.UNAUTHORIZED, 401, true, context);
     }
 }
@@ -80,7 +83,7 @@ export class AuthenticationError extends AppError {
  * Authorization Error
  */
 export class AuthorizationError extends AppError {
-    constructor(message: string = 'Insufficient permissions', context?: Record<string, any>) {
+    constructor(message: string = 'Insufficient permissions', context?: ErrorContext) {
         super(message, ErrorCode.INSUFFICIENT_PERMISSIONS, 403, true, context);
     }
 }
@@ -89,7 +92,7 @@ export class AuthorizationError extends AppError {
  * Validation Error
  */
 export class ValidationError extends AppError {
-    constructor(message: string, context?: Record<string, any>) {
+    constructor(message: string, context?: ErrorContext) {
         super(message, ErrorCode.VALIDATION_ERROR, 400, true, context);
     }
 }
@@ -98,7 +101,7 @@ export class ValidationError extends AppError {
  * Not Found Error
  */
 export class NotFoundError extends AppError {
-    constructor(resource: string = 'Resource', context?: Record<string, any>) {
+    constructor(resource: string = 'Resource', context?: ErrorContext) {
         super(`${resource} not found`, ErrorCode.NOT_FOUND, 404, true, context);
     }
 }
@@ -107,7 +110,7 @@ export class NotFoundError extends AppError {
  * Conflict Error
  */
 export class ConflictError extends AppError {
-    constructor(message: string = 'Resource already exists', context?: Record<string, any>) {
+    constructor(message: string = 'Resource already exists', context?: ErrorContext) {
         super(message, ErrorCode.ALREADY_EXISTS, 409, true, context);
     }
 }
@@ -116,7 +119,7 @@ export class ConflictError extends AppError {
  * Rate Limit Error
  */
 export class RateLimitError extends AppError {
-    constructor(message: string = 'Rate limit exceeded', resetTime?: Date, context?: Record<string, any>) {
+    constructor(message: string = 'Rate limit exceeded', resetTime?: Date, context?: ErrorContext) {
         super(
             message,
             ErrorCode.RATE_LIMIT_EXCEEDED,
@@ -131,7 +134,7 @@ export class RateLimitError extends AppError {
  * Database Error
  */
 export class DatabaseError extends AppError {
-    constructor(message: string = 'Database operation failed', context?: Record<string, any>) {
+    constructor(message: string = 'Database operation failed', context?: ErrorContext) {
         super(message, ErrorCode.DATABASE_ERROR, 500, false, context);
     }
 }
@@ -140,7 +143,7 @@ export class DatabaseError extends AppError {
  * External Service Error
  */
 export class ExternalServiceError extends AppError {
-    constructor(service: string, message: string, context?: Record<string, any>) {
+    constructor(service: string, message: string, context?: ErrorContext) {
         super(
             `${service} error: ${message}`,
             ErrorCode.EXTERNAL_SERVICE_ERROR,
@@ -158,7 +161,7 @@ export interface ErrorResponse {
     success: false;
     error: string;
     code?: ErrorCode;
-    details?: any;
+    details?: unknown;
     timestamp?: string;
 }
 
@@ -169,7 +172,7 @@ export class ErrorHandler {
     /**
      * Handle error and return user-friendly response
      */
-    static handle(error: unknown, context?: Record<string, any>): ErrorResponse {
+    static handle(error: unknown, context?: ErrorContext): ErrorResponse {
         // Log the error
         if (error instanceof AppError) {
             logger.error(error.message, error, { ...context, ...error.context, code: error.code });
@@ -253,20 +256,4 @@ export class ErrorHandler {
         }
         return false;
     }
-}
-
-/**
- * Async error wrapper for server actions
- */
-export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(
-    fn: T,
-    context?: Record<string, any>
-): T {
-    return (async (...args: Parameters<T>) => {
-        try {
-            return await fn(...args);
-        } catch (error) {
-            return ErrorHandler.handle(error, context);
-        }
-    }) as T;
 }

@@ -97,7 +97,7 @@ export function sanitizeUrl(input: string): string {
  * Sanitize object with multiple fields
  * Useful for sanitizing form data
  */
-export function sanitizeObject<T extends Record<string, any>>(
+export function sanitizeObject<T extends Record<string, unknown>>(
     obj: T,
     fieldConfig: Record<keyof T, 'richText' | 'plainText' | 'url' | 'skip'>
 ): T {
@@ -110,13 +110,13 @@ export function sanitizeObject<T extends Record<string, any>>(
 
         switch (type) {
             case 'richText':
-                sanitized[key as keyof T] = sanitizeRichText(value) as any;
+                sanitized[key as keyof T] = sanitizeRichText(value) as T[keyof T];
                 break;
             case 'plainText':
-                sanitized[key as keyof T] = sanitizePlainText(value) as any;
+                sanitized[key as keyof T] = sanitizePlainText(value) as T[keyof T];
                 break;
             case 'url':
-                sanitized[key as keyof T] = sanitizeUrl(value) as any;
+                sanitized[key as keyof T] = sanitizeUrl(value) as T[keyof T];
                 break;
             case 'skip':
                 // Don't sanitize (for fields like passwords, IDs)

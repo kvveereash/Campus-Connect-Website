@@ -34,7 +34,7 @@ export async function withIdempotency<T>(
 
     try {
         if (isRedisConfiguredFn()) {
-            await (redis as any).setex(idempotencyKey, ttlSeconds, serialized);
+            await redis.setex(idempotencyKey, ttlSeconds, serialized);
         } else {
             await redis.set(idempotencyKey, serialized, { ex: ttlSeconds });
         }

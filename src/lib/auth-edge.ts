@@ -1,4 +1,4 @@
-import { SignJWT, jwtVerify } from 'jose';
+import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 
@@ -49,7 +49,10 @@ export async function encrypt(payload: Record<string, unknown>) {
         .sign(getSigningKey());
 }
 
-export async function decrypt(input: string): Promise<any> {
+/** What a verified session token carries: the standard JWT claims plus ours. */
+export type TokenPayload = JWTPayload & Partial<SessionPayload> & { pv?: string };
+
+export async function decrypt(input: string): Promise<TokenPayload> {
     const { payload } = await jwtVerify(input, getSigningKey(), {
         algorithms: ['HS256'],
     });

@@ -166,7 +166,7 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
                             </div>
                             {user.projects.length > 0 ? (
                                 <div className={styles.projectList}>
-                                    {user.projects.map((p: any, i: number) => (
+                                    {user.projects.map((p, i) => (
                                         <div key={p.id ?? i} className={styles.projectCard}>
                                             <h3 className={styles.projectTitle}>{p.title}</h3>
                                             {p.description && (
@@ -198,7 +198,7 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
                             </div>
                             {user.achievements.length > 0 ? (
                                 <div className={styles.achievementList}>
-                                    {user.achievements.map((a: any, i: number) => (
+                                    {user.achievements.map((a, i) => (
                                         <div key={a.id ?? i} className={styles.achievementItem}>
                                             <div className={styles.achievementHeader}>
                                                 <h3 className={styles.projectTitle}>{a.title}</h3>
@@ -227,7 +227,7 @@ export default function PublicProfileClient({ user, registered, hosted }: Props)
                                     <h2 className={styles.cardTitle}>Links</h2>
                                 </div>
                                 <div className={styles.portfolioList}>
-                                    {user.portfolioLinks.map((l: any, i: number) => (
+                                    {user.portfolioLinks.map((l, i) => (
                                         <div key={l.id ?? i} className={styles.portfolioItem}>
                                             <div className={styles.linkInfo}>
                                                 <span className={styles.platformName}>

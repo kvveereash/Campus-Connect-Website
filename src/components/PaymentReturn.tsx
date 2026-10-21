@@ -37,11 +37,22 @@ export default function PaymentReturn({
     // render. Deciding before it arrived meant registrationId was always
     // undefined, so a returning payer was never verified.
     const { isInitialized } = useAuth();
-    const outcome = params.get('payment');
+    // Read once, on arrival: the effect below takes it out of the address bar.
+    const [outcome] = useState(() => params.get('payment'));
     const handled = useRef(false);
-    const [state, setState] = useState<'idle' | 'checking' | 'paid' | 'pending' | 'cancelled'>(
-        'idle'
-    );
+    // The one thing only Stripe can answer; everything else is known already.
+    const [verified, setVerified] = useState<'paid' | 'pending' | null>(null);
+
+    const state: 'idle' | 'checking' | 'paid' | 'pending' | 'cancelled' =
+        outcome === 'cancelled'
+            ? 'cancelled'
+            : outcome !== 'success'
+              ? 'idle'
+              : !isInitialized
+                ? 'checking'
+                : !registrationId
+                  ? 'pending'
+                  : (verified ?? 'checking');
 
     useEffect(() => {
         if (!outcome || handled.current || !isInitialized) return;
@@ -52,7 +63,6 @@ export default function PaymentReturn({
         const clean = () => router.replace(`/events/${eventId}`, { scroll: false });
 
         if (outcome === 'cancelled') {
-            setState('cancelled');
             toast('Payment cancelled. Nothing was charged.');
             clean();
             return;
@@ -64,27 +74,25 @@ export default function PaymentReturn({
         }
 
         if (!registrationId) {
-            setState('pending');
             clean();
             return;
         }
 
-        setState('checking');
         verifyPaymentStatus(registrationId)
             .then((result) => {
                 if (result.success) {
-                    setState('paid');
+                    setVerified('paid');
                     toast.success('Payment confirmed. You are registered.');
                     router.refresh();
                 } else {
                     // Paid at Stripe but not yet reconciled here. Say so
                     // plainly rather than implying the payment failed.
-                    setState('pending');
+                    setVerified('pending');
                     toast('Payment received. Confirming your place — this can take a moment.');
                 }
             })
             .catch(() => {
-                setState('pending');
+                setVerified('pending');
                 toast('Payment received. We could not confirm it just yet.');
             })
             .finally(clean);

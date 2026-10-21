@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { searchUsers, createGroupConversation } from '@/lib/actions/chat';
+import { searchUsers, createGroupConversation, type UserSearchResult } from '@/lib/actions/chat';
 import styles from './Chat.module.css';
 import Image from 'next/image';
 import { toast } from 'sonner';
@@ -14,8 +14,8 @@ interface CreateGroupModalProps {
 export function CreateGroupModal({ onClose, onGroupCreated }: CreateGroupModalProps) {
     const [name, setName] = useState('');
     const [query, setQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
+    const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<UserSearchResult[]>([]);
     const [creating, setCreating] = useState(false);
 
     const handleSearch = async (val: string) => {
@@ -28,7 +28,7 @@ export function CreateGroupModal({ onClose, onGroupCreated }: CreateGroupModalPr
         }
     };
 
-    const toggleUser = (user: any) => {
+    const toggleUser = (user: UserSearchResult) => {
         if (selectedUsers.some(u => u.id === user.id)) {
             setSelectedUsers(prev => prev.filter(u => u.id !== user.id));
         } else {

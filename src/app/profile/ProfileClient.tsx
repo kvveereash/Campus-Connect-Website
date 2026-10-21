@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useClubs } from '@/context/ClubContext';
 import { getAllColleges } from '@/lib/actions/colleges';
-import { getUserCreatedEvents, getUserRegisteredEvents } from '@/lib/actions/events';
+import { getUserCreatedEvents, getUserRegisteredEvents, type EventWithRelations } from '@/lib/actions/events';
 import { getUserBadges } from '@/lib/actions';
 import ProfileHeader, { BadgeType } from '@/components/profile/ProfileHeader';
 import ProfessionalTab from '@/components/profile/ProfessionalTab';
@@ -17,40 +16,39 @@ import { College } from '@/types';
 import styles from './page.module.css';
 
 type Tab = 'Events' | 'Professional' | 'Network';
+type HostedEvent = Awaited<ReturnType<typeof getUserCreatedEvents>>[number];
 
 export default function ProfileClient() {
     const { user, updateProfile, logout, isLoading, isInitialized } = useAuth();
-    const { clubs } = useClubs();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<Tab>('Events');
     const [isEditOpen, setIsEditOpen] = useState(false);
 
     const [badges, setBadges] = useState<BadgeType[]>([]);
     const [followedColleges, setFollowedColleges] = useState<College[]>([]);
-    const [registeredEvents, setRegisteredEvents] = useState<any[]>([]);
-    const [hostedEvents, setHostedEvents] = useState<any[]>([]);
+    const [registeredEvents, setRegisteredEvents] = useState<EventWithRelations[]>([]);
+    const [hostedEvents, setHostedEvents] = useState<EventWithRelations[]>([]);
     const [isEventsLoading, setIsEventsLoading] = useState(true);
 
     useEffect(() => {
         if (!user) return;
 
-        getUserBadges(user.id).then((fetched: any) => setBadges(fetched));
+        getUserBadges(user.id).then(setBadges);
 
         const followedIds = user.followedColleges || [];
         if (followedIds.length > 0) {
-            getAllColleges().then((colleges: any[]) => {
-                setFollowedColleges(colleges.filter((c: any) => followedIds.includes(c.id)));
+            getAllColleges().then((colleges) => {
+                setFollowedColleges(colleges.filter((c) => followedIds.includes(c.id)));
             });
         }
 
-        const normalise = (e: any) => ({
+        const normalise = (e: HostedEvent): EventWithRelations => ({
             ...e,
             date: new Date(e.date),
             hostCollege: e.hostCollege || { id: 'unknown', name: 'Unknown', logo: '/hero.png' },
             registrationCount: e._count?.registrations ?? 0,
         });
 
-        setIsEventsLoading(true);
         Promise.all([getUserRegisteredEvents(), getUserCreatedEvents(user.id)])
             .then(([registered, created]) => {
                 setRegisteredEvents(registered.map(normalise));
@@ -136,7 +134,7 @@ export default function ProfileClient() {
                 {activeTab === 'Professional' && <ProfessionalTab user={user} updateProfile={updateProfile} />}
 
                 {activeTab === 'Network' && (
-                    <NetworkTab user={user} clubs={clubs} followedColleges={followedColleges} />
+                    <NetworkTab user={user} followedColleges={followedColleges} />
                 )}
             </div>
 

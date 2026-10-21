@@ -3,13 +3,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Building2, Plus, Users } from 'lucide-react';
-import { User, Club, College } from '@/types';
+import { User, College } from '@/types';
 import { resolveClubImage, resolveCollegeImage } from '@/lib/college-images';
 import styles from '@/app/profile/page.module.css';
 
 interface NetworkTabProps {
     user: User;
-    clubs: Club[];
     followedColleges: College[];
 }
 

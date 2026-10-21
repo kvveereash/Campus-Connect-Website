@@ -54,7 +54,8 @@ export function NotificationBell() {
 
         const channel = pusherClient.subscribe(userChannel(user.id));
 
-        const onNotification = (newNotification: any) => {
+        // Pusher delivers JSON, so the date arrives as a string.
+        const onNotification = (newNotification: Omit<Notification, 'createdAt'> & { createdAt: string }) => {
             const parsed = {
                 ...newNotification,
                 createdAt: new Date(newNotification.createdAt)
