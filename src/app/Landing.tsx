@@ -50,17 +50,17 @@ function unsplash(id: string, w: number, h: number) {
 
 /** Used for the hero deck only when there are fewer real events than cards. */
 const FALLBACK_DECK = [
-    { title: 'Campus hackathon', category: 'Hackathon', photo: '1731160807880-daf859b64420' },
+    { title: 'Campus hackathon', category: 'Hackathon', photo: '1522071820081-009f0129c71c' },
     { title: 'Cultural night', category: 'Cultural', photo: '1622831877966-18a6c8731a01' },
     { title: 'Club fair', category: 'Social', photo: '1558023598-0afa967eac90' },
     { title: 'Build sprint', category: 'Workshop', photo: '1682962232755-f1d051ddb638' },
-    { title: 'Fest finale', category: 'Cultural', photo: '1661534424056-6589e239546b' },
+    { title: 'Fest finale', category: 'Cultural', photo: '1711301633355-d10a31380c44' },
 ];
 
 const COLLAGE = [
-    { id: '1661534424056-6589e239546b', caption: 'fest finale', speed: -0.18, cls: 'c1' },
+    { id: '1711301633355-d10a31380c44', caption: 'fest finale', speed: -0.18, cls: 'c1' },
     { id: '1517486808906-6ca8b3f04846', caption: 'between classes', speed: 0.12, cls: 'c2' },
-    { id: '1731160807880-daf859b64420', caption: 'hack week, 3 am', speed: -0.32, cls: 'c3' },
+    { id: '1522071820081-009f0129c71c', caption: 'hack week, 3 am', speed: -0.32, cls: 'c3' },
     { id: '1558023598-0afa967eac90', caption: 'club fair', speed: 0.22, cls: 'c4' },
     { id: '1622831877966-18a6c8731a01', caption: 'cultural night', speed: -0.1, cls: 'c5' },
     { id: '1765572144519-1dc1e6e07bc9', caption: 'orientation week', speed: 0.28, cls: 'c6' },
