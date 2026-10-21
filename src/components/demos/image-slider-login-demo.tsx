@@ -9,6 +9,19 @@ import { login } from "@/lib/actions/auth";
 import { toast } from "sonner";
 import { safeRedirectPath } from "@/lib/utils";
 import styles from "@/app/login/auth.module.css";
+import AuthAside, { type AsideBubble } from '@/components/auth/AuthAside';
+
+/* What lands on the board in a week, all of it in one place. */
+const CAMPUS_ACTIVITY: AsideBubble[] = [
+  { from: 'Hack the Monsoon', text: 'Registrations close Saturday', unread: 3, color: '#7a3cff' },
+  { from: 'CodeCraft Society', text: 'New post: build night Thursday', unread: 2, color: '#2f3bff' },
+  { from: 'Team finder', text: 'Fatima wants you on her team', unread: 1, color: '#12a150' },
+  { from: 'Unplugged: Acoustic Night', text: '3 friends are going', unread: 4, color: '#e8457e' },
+  { from: 'Football Finals', text: 'Mon · University Stadium', unread: 2, color: '#0e8a96' },
+  { from: 'Messages', text: 'Harsh: kickoff call at 9?', unread: 6, color: '#f06a00' },
+  { from: 'Leaderboard', text: 'You moved up to #4', unread: 1, color: '#c98a00' },
+  { from: 'IIT Mumbai', text: '6 events this month', unread: 5, color: '#c2410c' },
+];
 
 export function ImageSliderLoginDemo() {
   const searchParams = useSearchParams();
@@ -55,14 +68,11 @@ export function ImageSliderLoginDemo() {
           to rotate here on a four-second timer; none of them were of this
           campus, and a slideshow is a strange thing to ask someone to watch
           while they type a password. */}
-      <aside className={styles.aside}>
-        <div className={styles.glow} aria-hidden="true" />
-        <span className={styles.wordmark}>Campus Connect</span>
-        <div className={styles.asideBody}>
-          <p className={styles.asideLine}>Everything happening, in one place.</p>
-        </div>
-        <span className={styles.asideNote}>Events · Clubs · Colleges</span>
-      </aside>
+      <AuthAside
+        line={<>Everything happening, <em>in one place.</em></>}
+        note="Events · Clubs · Colleges"
+        bubbles={CAMPUS_ACTIVITY}
+      />
 
       <main className={styles.panel}>
         <div className={styles.form}>

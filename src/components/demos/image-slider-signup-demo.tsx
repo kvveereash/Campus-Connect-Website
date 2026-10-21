@@ -7,6 +7,19 @@ import { Loader2 } from "lucide-react";
 import { signup } from "@/lib/actions/auth";
 import { toast } from "sonner";
 import styles from "@/app/login/auth.module.css";
+import AuthAside, { type AsideBubble } from "@/components/auth/AuthAside";
+
+/* The forty group chats, or eight of them. */
+const GROUP_CHATS: AsideBubble[] = [
+  { from: "CSE 2nd Year Official", text: "Assignment 3 deadline moved?!", unread: 12, color: "#2f3bff" },
+  { from: "Hostel B Wing", text: "who took my maggi", unread: 48, color: "#12a150" },
+  { from: "Fest Volunteers", text: "Need 10 more for stage crew", unread: 7, color: "#e8457e" },
+  { from: "Coding Club", text: "Hackathon reg closes tonight", unread: 3, color: "#7a3cff" },
+  { from: "Placement Cell", text: "Pre-placement talk at 4 pm", unread: 21, color: "#0e8a96" },
+  { from: "Robotics Core Team", text: "Bring the ESP32s tomorrow", unread: 5, color: "#f06a00" },
+  { from: "Dance Crew", text: "Practice moved to 7", unread: 9, color: "#c98a00" },
+  { from: "Class Reps", text: "Fwd: Fwd: Fwd: Notice", unread: 33, color: "#c2410c" },
+];
 
 export function ImageSliderSignupDemo() {
   const [state, formAction, isPending] = useActionState(signup, null);
@@ -26,16 +39,11 @@ export function ImageSliderSignupDemo() {
 
   return (
     <div className={styles.screen}>
-      <aside className={styles.aside}>
-        <div className={styles.glow} aria-hidden="true" />
-        <span className={styles.wordmark}>Campus Connect</span>
-        <div className={styles.asideBody}>
-          <p className={styles.asideLine}>
-            Campus life is spread across forty group chats.
-          </p>
-        </div>
-        <span className={styles.asideNote}>One feed instead</span>
-      </aside>
+      <AuthAside
+        line={<>Campus life is spread across <em>forty group chats.</em></>}
+        note="One feed instead"
+        bubbles={GROUP_CHATS}
+      />
 
       <main className={styles.panel}>
         <div className={styles.form}>
