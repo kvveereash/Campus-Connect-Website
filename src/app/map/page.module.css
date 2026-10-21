@@ -91,7 +91,7 @@
 }
 
 .filterCount {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.08em;
     color: var(--color-ash);
     font-variant-numeric: tabular-nums;
@@ -180,7 +180,7 @@
 }
 
 .rowTag {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;

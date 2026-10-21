@@ -155,3 +155,25 @@
         gap: 14px;
     }
 }
+
+/* On touch screens the policy links and column links get room to be tapped
+   one at a time: 19px-tall text alone is too small a target. */
+@media (pointer: coarse) {
+    .links {
+        gap: 0;
+    }
+
+    .links a {
+        display: inline-block;
+        padding: 8px 0;
+    }
+
+    .legalLinks {
+        flex-wrap: wrap;
+        row-gap: 0;
+    }
+
+    .legalLinks a {
+        padding: 12px 0;
+    }
+}

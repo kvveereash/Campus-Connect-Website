@@ -444,3 +444,17 @@
         transition: none;
     }
 }
+
+/* On touch screens: an invisible box around the link takes the tap, so an
+   18px-tall line of small print is a 44px target without looking any bigger. */
+@media (pointer: coarse) {
+    .quietLink {
+        position: relative;
+    }
+
+    .quietLink::after {
+        content: '';
+        position: absolute;
+        inset: -12px -6px;
+    }
+}

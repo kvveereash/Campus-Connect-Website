@@ -149,7 +149,7 @@
 }
 
 .charCount {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.14em;
     color: var(--color-ash);
     font-variant-numeric: tabular-nums;
@@ -213,7 +213,7 @@
 
 /* The count is data the reader can use before clicking. */
 .topicCount {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.08em;
     color: var(--color-ash);
     font-variant-numeric: tabular-nums;
@@ -389,7 +389,7 @@
 }
 
 .commentStamp {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -528,5 +528,23 @@
     .replySend,
     .figure img {
         transition: none;
+    }
+}
+
+/* On touch screens: an invisible box around the link takes the tap, so an
+   18px-tall line of small print is a 44px target without looking any bigger. */
+@media (pointer: coarse) {
+    .club,
+    .author,
+    .commentToggle {
+        position: relative;
+    }
+
+    .club::after,
+    .author::after,
+    .commentToggle::after {
+        content: '';
+        position: absolute;
+        inset: -13px -4px;
     }
 }

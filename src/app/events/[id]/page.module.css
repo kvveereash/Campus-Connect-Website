@@ -165,7 +165,7 @@
 }
 
 .factKey {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -281,5 +281,86 @@
 
     .back:hover {
         gap: 9px;
+    }
+}
+
+/* On touch screens: an invisible box around the link takes the tap, so an
+   18px-tall line of small print is a 44px target without looking any bigger. */
+@media (pointer: coarse) {
+    .back {
+        position: relative;
+    }
+
+    .back::after {
+        content: '';
+        position: absolute;
+        inset: -13px -8px;
+    }
+}
+
+/* Phones: price and a way to the register button, pinned to the bottom of
+   the screen until the real button scrolls into view. */
+.registerBar {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .registerBar {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        z-index: 90;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 10px 10px 18px;
+        border-radius: var(--radius-pill);
+        border: 1px solid var(--border-hairline);
+        background: var(--color-paper);
+        box-shadow: 0 10px 30px rgba(17, 17, 17, 0.14);
+        transform: translateY(calc(100% + 24px));
+        opacity: 0;
+        pointer-events: none;
+        transition: transform var(--duration-base) var(--ease-glide),
+                    opacity var(--duration-base) var(--ease-glide);
+    }
+
+    .registerBar[data-visible='true'] {
+        transform: none;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .registerBar :global(.btn) {
+        min-height: 44px;
+        padding-inline: 22px;
+    }
+
+    .registerBarText {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+
+    .registerBarText b {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--color-obsidian);
+    }
+
+    .registerBarText span {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--color-felt);
+    }
+}
+
+@media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+    .registerBar {
+        transition: none;
     }
 }
