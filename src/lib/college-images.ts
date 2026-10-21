@@ -200,12 +200,46 @@ export function resolveCollegeImage(
 /**
  * Returns a high-quality event thumbnail based on category and title.
  */
+/**
+ * Photos for the example events (prisma/seed-showcase.ts), stored under
+ * public/images/events and supplied by the site owner. Matched on the exact
+ * title so they ship with the code: the database rows keep whatever
+ * thumbnail they had, and nothing breaks on a deploy that does not have the
+ * files yet. An event anyone else creates keeps its own picture.
+ */
+const EXAMPLE_EVENT_PHOTOS: Record<string, string> = {
+    'freshers welcome mixer': '/images/events/freshers-welcome-mixer.jpg',
+    'unplugged: acoustic night': '/images/events/acoustic-night.jpg',
+    'ctf night: capture the flag': '/images/events/ctf-night.jpg',
+    'figma to production: ui sprint': '/images/events/figma-ui-sprint.jpg',
+    'inter-college football finals': '/images/events/football-finals.jpg',
+    'hack the monsoon': '/images/events/hack-the-monsoon.jpg',
+    'intro to rust': '/images/events/intro-to-rust.jpg',
+};
+
+/** The local photo for one of the example events, or null. */
+export function exampleEventPhoto(title?: string | null): string | null {
+    return (title && EXAMPLE_EVENT_PHOTOS[title.trim().toLowerCase()]) || null;
+}
+
+/** The picture an event should show: its example photo, else its own thumbnail. */
+export function eventPhoto(event: { title?: string | null; thumbnail?: string | null }): string | null {
+    return exampleEventPhoto(event.title) ?? event.thumbnail ?? null;
+}
+
 export function resolveEventImage(
     category?: string | null, 
     thumbnail?: string | null,
     title?: string | null
 ): string {
-    if (thumbnail && !thumbnail.includes('placeholder') && thumbnail.startsWith('http')) {
+    const example = exampleEventPhoto(title);
+    if (example) return example;
+
+    if (
+        thumbnail &&
+        !thumbnail.includes('placeholder') &&
+        (thumbnail.startsWith('http') || thumbnail.startsWith('/'))
+    ) {
         return thumbnail;
     }
 

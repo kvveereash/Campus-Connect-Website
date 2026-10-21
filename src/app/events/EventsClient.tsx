@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { EventWithRelations } from '@/lib/actions';
 import { inkFor, dateParts, groupByProximity } from './press';
+import { eventPhoto } from '@/lib/college-images';
 import styles from './press.module.css';
 
 type TimeFilter = 'Any' | 'This week' | 'This month';
@@ -196,6 +197,7 @@ function initialsOf(title: string) {
 
 function Featured({ event }: { event: EventWithRelations }) {
     const ink = inkFor(event.category);
+    const photo = eventPhoto(event);
     const { month, day, weekday } = dateParts(event.date);
 
     return (
@@ -204,9 +206,9 @@ function Featured({ event }: { event: EventWithRelations }) {
             className={styles.featured}
             style={{ ['--cat' as string]: ink }}
         >
-            {event.thumbnail ? (
+            {photo ? (
                 <Image
-                    src={event.thumbnail}
+                    src={photo}
                     alt=""
                     fill
                     priority
@@ -252,6 +254,7 @@ function Featured({ event }: { event: EventWithRelations }) {
 
 function EventRow({ event }: { event: EventWithRelations }) {
     const ink = inkFor(event.category);
+    const photo = eventPhoto(event);
     const { month, day, weekday } = dateParts(event.date);
     const going = event.registrationCount ?? 0;
 
@@ -288,9 +291,9 @@ function EventRow({ event }: { event: EventWithRelations }) {
             </div>
 
             <div className={styles.cover}>
-                {event.thumbnail ? (
+                {photo ? (
                     <Image
-                        src={event.thumbnail}
+                        src={photo}
                         alt=""
                         fill
                         sizes="132px"

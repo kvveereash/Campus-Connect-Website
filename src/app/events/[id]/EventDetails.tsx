@@ -16,8 +16,10 @@ import { deleteEvent, type EventDetail } from '@/lib/actions/events';
 import styles from './page.module.css';
 import Reveal from '@/components/Reveal';
 import { formatIST } from '@/lib/format';
+import { eventPhoto } from '@/lib/college-images';
 
 export default function EventDetails({ event }: { event: EventDetail }) {
+    const photo = eventPhoto(event);
     const router = useRouter();
     const { user } = useAuth();
     const [armed, setArmed] = useState(false);
@@ -86,10 +88,10 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                 </p>
             </header>
 
-            {event.thumbnail && (
+            {photo && (
                 <div className={styles.hero}>
                     <Image
-                        src={event.thumbnail}
+                        src={photo}
                         alt=""
                         fill
                         priority

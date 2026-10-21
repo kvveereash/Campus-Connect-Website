@@ -43,27 +43,23 @@ function istParts(value: Date | string) {
 
 const priceLabel = (price: number) => (price > 0 ? `₹${price.toLocaleString('en-IN')}` : 'Free');
 
-/** Photography of campus life, from Unsplash (free licence), via next/image. */
-function unsplash(id: string, w: number, h: number) {
-    return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=72`;
-}
-
 /** Used for the hero deck only when there are fewer real events than cards. */
 const FALLBACK_DECK = [
-    { title: 'Campus hackathon', category: 'Hackathon', photo: '1731160807880-daf859b64420' },
-    { title: 'Cultural night', category: 'Cultural', photo: '1622831877966-18a6c8731a01' },
-    { title: 'Club fair', category: 'Social', photo: '1558023598-0afa967eac90' },
-    { title: 'Build sprint', category: 'Workshop', photo: '1682962232755-f1d051ddb638' },
-    { title: 'Fest finale', category: 'Cultural', photo: '1661534424056-6589e239546b' },
+    { title: 'Campus hackathon', category: 'Hackathon', photo: '/images/events/hack-the-monsoon.jpg' },
+    { title: 'Cultural night', category: 'Cultural', photo: '/images/campus/cultural-night-lights.jpg' },
+    { title: 'Club fair', category: 'Social', photo: '/images/campus/club-fair.jpg' },
+    { title: 'Build sprint', category: 'Workshop', photo: '/images/campus/build-sprint.jpg' },
+    { title: 'Fest finale', category: 'Cultural', photo: '/images/campus/fest-confetti.jpg' },
 ];
 
+/** Campus life, in photos supplied by the site owner (public/images/campus). */
 const COLLAGE = [
-    { id: '1661534424056-6589e239546b', caption: 'fest finale', speed: -0.18, cls: 'c1' },
-    { id: '1517486808906-6ca8b3f04846', caption: 'between classes', speed: 0.12, cls: 'c2' },
-    { id: '1731160807880-daf859b64420', caption: 'hack week, 3 am', speed: -0.32, cls: 'c3' },
-    { id: '1558023598-0afa967eac90', caption: 'club fair', speed: 0.22, cls: 'c4' },
-    { id: '1622831877966-18a6c8731a01', caption: 'cultural night', speed: -0.1, cls: 'c5' },
-    { id: '1765572144519-1dc1e6e07bc9', caption: 'orientation week', speed: 0.28, cls: 'c6' },
+    { src: '/images/campus/fest-finale.jpg', caption: 'fest finale', speed: -0.18, cls: 'c1' },
+    { src: '/images/campus/study-break.jpg', caption: 'study break', speed: 0.12, cls: 'c2' },
+    { src: '/images/campus/club-fair.jpg', caption: 'club fair', speed: -0.32, cls: 'c3' },
+    { src: '/images/campus/orientation-week.jpg', caption: 'orientation week', speed: 0.22, cls: 'c4' },
+    { src: '/images/campus/cultural-night.jpg', caption: 'cultural night', speed: -0.1, cls: 'c5' },
+    { src: '/images/campus/between-classes.jpg', caption: 'between classes', speed: 0.28, cls: 'c6' },
 ] as const;
 
 /** Splits a sentence into word spans for the scroll-scrubbed reading. */
@@ -106,7 +102,7 @@ export default function Landing({ events, stats, categories, clubs, marquee, col
             href: '/events',
             title: f.title,
             category: f.category,
-            image: unsplash(f.photo, 560, 700),
+            image: f.photo,
             when: 'Soon',
             price: 'Free',
         };
@@ -504,9 +500,9 @@ export default function Landing({ events, stats, categories, clubs, marquee, col
                     This is what it&rsquo;s <em className={styles.serif}>for.</em>
                 </h2>
                 {COLLAGE.map((p) => (
-                    <figure key={p.id} className={`${styles.photo} ${styles[p.cls]}`} data-speed={p.speed}>
+                    <figure key={p.src} className={`${styles.photo} ${styles[p.cls]}`} data-speed={p.speed}>
                         <span className={styles.photoImg}>
-                            <Image src={unsplash(p.id, 640, 760)} alt="" fill sizes="(max-width: 700px) 45vw, 300px" />
+                            <Image src={p.src} alt={p.caption} fill sizes="(max-width: 700px) 45vw, 300px" />
                         </span>
                         <figcaption>{p.caption}</figcaption>
                     </figure>
