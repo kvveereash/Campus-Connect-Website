@@ -56,7 +56,7 @@
 .dateTab i {
     font-style: normal;
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 11px;
     text-transform: uppercase;
     color: var(--color-ash);
 }

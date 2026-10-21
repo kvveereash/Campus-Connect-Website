@@ -432,3 +432,17 @@
         transition: none;
     }
 }
+
+/* On touch screens: an invisible box around the link takes the tap, so an
+   18px-tall line of small print is a 44px target without looking any bigger. */
+@media (pointer: coarse) {
+    .logo {
+        position: relative;
+    }
+
+    .logo::after {
+        content: '';
+        position: absolute;
+        inset: -7px;
+    }
+}

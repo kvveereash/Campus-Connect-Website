@@ -206,7 +206,7 @@
 }
 
 .eventTag {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -276,7 +276,7 @@
 
 .memberSub {
     margin-top: 2px;
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -375,5 +375,19 @@
 
     .event:hover {
         padding-left: 0;
+    }
+}
+
+/* On touch screens: an invisible box around the link takes the tap, so an
+   18px-tall line of small print is a 44px target without looking any bigger. */
+@media (pointer: coarse) {
+    .back {
+        position: relative;
+    }
+
+    .back::after {
+        content: '';
+        position: absolute;
+        inset: -13px -8px;
     }
 }

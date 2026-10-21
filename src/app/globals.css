@@ -241,6 +241,19 @@ button {
   outline: none;
 }
 
+/* Phones.
+   iOS Safari zooms the whole page into any field set below 16px the moment
+   it is tapped, and leaves it zoomed after. Most of the site's fields are
+   14-15px, so on touch-sized screens they all go to 16px. !important because
+   every field's size lives in its own module, which would otherwise win. */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Lenis smooth scrolling.
    Lenis moves the page with a transform rather than the native scroll, so the
    document must be free to be as tall as its content, and the browser's own

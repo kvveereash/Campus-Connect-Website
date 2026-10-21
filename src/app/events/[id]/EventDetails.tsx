@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,6 +19,8 @@ import Reveal from '@/components/Reveal';
 import { formatIST } from '@/lib/format';
 import { eventPhoto } from '@/lib/college-images';
 
+const noSubscribe = () => () => {};
+
 export default function EventDetails({ event }: { event: EventDetail }) {
     const photo = eventPhoto(event);
     const router = useRouter();
@@ -33,6 +36,42 @@ export default function EventDetails({ event }: { event: EventDetail }) {
     const isPast = when < new Date();
     const host = event.club ?? event.hostCollege;
     const hostHref = event.club ? `/clubs/${event.club.id}` : `/colleges/${event.hostCollege.id}`;
+    const priceText = event.price === 0 ? 'Free' : `₹${event.price.toLocaleString('en-IN')}`;
+
+    /* On a phone the register button sits under the description, a screen
+       or more below the photo. While it is still below the fold, a bar at
+       the bottom of the screen shows the price and takes you to it. It
+       scrolls to the real button rather than copying it, so registering and
+       paying keep one code path. It is rendered into <body>: inside the page
+       it would be pinned to the page's entrance animation (a transform)
+       instead of the screen for the first half second. */
+    const actionsRef = useRef<HTMLDivElement>(null);
+    const [actionsBelow, setActionsBelow] = useState(false);
+    // null during server render and hydration, document.body after.
+    const barRoot = useSyncExternalStore(
+        noSubscribe,
+        () => document.body,
+        () => null,
+    );
+    const canRegister = !isPast && event.verified && !myRegistration;
+
+    useEffect(() => {
+        const el = actionsRef.current;
+        if (!el || !canRegister) return;
+        const observer = new IntersectionObserver(([entry]) => {
+            setActionsBelow(!entry.isIntersecting && entry.boundingClientRect.top > 0);
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [canRegister]);
+
+    const goToRegister = () => {
+        const el = actionsRef.current;
+        if (!el) return;
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+        el.querySelector<HTMLElement>('button, a')?.focus({ preventScroll: true });
+    };
 
     const handleDelete = async () => {
         setDeleting(true);
@@ -62,6 +101,26 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                 <PaymentReturn eventId={event.id} registrationId={myRegistration?.id} />
             </Suspense>
 
+            {canRegister && barRoot && createPortal(
+                <div className={styles.registerBar} data-visible={actionsBelow} aria-hidden={!actionsBelow}>
+                    <p className={styles.registerBarText}>
+                        <b>{priceText}</b>
+                        <span>
+                            {formatIST(when, { weekday: 'short', day: 'numeric', month: 'short' })}
+                        </span>
+                    </p>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={goToRegister}
+                        tabIndex={actionsBelow ? 0 : -1}
+                    >
+                        Register
+                    </button>
+                </div>,
+                barRoot,
+            )}
+
             <Link href="/events" className={styles.back}>
                 <ArrowLeft size={13} aria-hidden="true" />
                 All events
@@ -71,7 +130,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                 <div className={styles.eyebrow}>
                     <span className={styles.eyebrowInk}>{event.category}</span>
                     <span className={styles.eyebrowRule}>/</span>
-                    <span>{event.price === 0 ? 'Free' : `₹${event.price.toLocaleString('en-IN')}`}</span>
+                    <span>{priceText}</span>
                     <span className={styles.eyebrowRule}>/</span>
                     <span>{isPast ? 'Past' : 'Upcoming'}</span>
                     {/* Only the creator ever sees an unverified event. */}
@@ -142,7 +201,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                             </dd>
                         </div>
 
-                        <div className={styles.actions}>
+                        <div className={styles.actions} ref={actionsRef}>
                             {/* The server refuses registration for past and
                                 unapproved events; say so instead of offering a
                                 button that can only fail. */}

@@ -47,7 +47,7 @@
 .date {
     display: block;
     margin-top: 2px;
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -61,7 +61,7 @@
     padding: 5px 14px;
     border-radius: var(--radius-pill);
     border: 1px solid var(--border-hairline);
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -127,7 +127,7 @@
 }
 
 .yours {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
