@@ -22,6 +22,38 @@ const LIMITS = {
     NAME_MAX: 100,
 } as const;
 
+// --- Image URLs ---
+/* Where a user-supplied picture may come from: a path on this site, our own
+   Supabase Storage, or the two stock-image hosts the site already uses.
+   z.string().url() accepted javascript: and data: URLs, and an avatar could
+   point at any server, turning every profile view into a tracking pixel that
+   handed visitors' IP addresses to whoever set it. */
+const IMAGE_HOSTS = ['images.unsplash.com', 'ui-avatars.com'];
+
+function storageHost(): string | null {
+    try {
+        return process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).hostname : null;
+    } catch {
+        return null;
+    }
+}
+
+export function isAllowedImageUrl(value: string): boolean {
+    if (value.startsWith('/')) return !value.startsWith('//') && !value.startsWith('/\\');
+    try {
+        const url = new URL(value);
+        if (url.protocol !== 'https:') return false;
+        if (IMAGE_HOSTS.includes(url.hostname)) return true;
+        const own = storageHost();
+        const isStorage = url.pathname.startsWith('/storage/v1/object/public/');
+        return isStorage && (own ? url.hostname === own : url.hostname.endsWith('.supabase.co'));
+    } catch {
+        return false;
+    }
+}
+
+const imageUrl = z.string().max(LIMITS.URL_MAX, 'Image URL too long').refine(isAllowedImageUrl, 'Use an uploaded image');
+
 // --- Events ---
 export const eventSchema = z.object({
     title: z.string()
@@ -39,9 +71,7 @@ export const eventSchema = z.object({
     category: z.string()
         .min(1, "Category is required")
         .max(50, "Category cannot exceed 50 characters"),
-    thumbnail: z.string()
-        .max(LIMITS.URL_MAX, "Thumbnail URL too long")
-        .optional(),
+    thumbnail: imageUrl.optional(),
     price: z.number()
         .nonnegative("Price cannot be negative")
         .max(100000, "Price seems too high")
@@ -89,11 +119,7 @@ export const clubSchema = z.object({
         .min(3, "College name must be at least 3 characters")
         .max(LIMITS.NAME_MAX, "College name cannot exceed 100 characters")
         .optional(),
-    logo: z.string()
-        .url("Invalid Logo URL")
-        .max(LIMITS.URL_MAX, "Logo URL too long")
-        .optional()
-        .or(z.literal('/club-logo-placeholder.png')),
+    logo: imageUrl.optional(),
 }).refine((data) => data.collegeId || data.newCollegeName, {
     message: "You must select a college or enter a new one",
     path: ["collegeId"],
@@ -116,10 +142,7 @@ export const clubPostSchema = z.object({
     content: z.string()
         .min(1, "Content is required")
         .max(LIMITS.CONTENT_MAX, "Content cannot exceed 10000 characters"),
-    image: z.string()
-        .url("Invalid image URL")
-        .max(LIMITS.URL_MAX, "Image URL too long")
-        .optional(),
+    image: imageUrl.optional(),
 });
 
 // --- Team Requests ---
@@ -188,7 +211,7 @@ export const updateUserProfileSchema = z.object({
     department: z.string().max(100).optional(),
     year: z.string().max(20).optional(),
     // Empty clears it; a leading slash is one of the site's own images.
-    avatar: z.union([httpUrl, z.literal(''), z.string().max(LIMITS.URL_MAX).regex(/^\/(?!\/)/)]).optional(),
+    avatar: z.union([z.literal(''), imageUrl]).optional(),
     // The resume "upload" stores a file name for now, so this is plain text.
     resumeUrl: z.string().max(LIMITS.URL_MAX).optional(),
     skills: z.array(z.string().trim().min(1).max(50)).max(50).optional(),
@@ -233,7 +256,7 @@ export const updateCollegeSchema = z.object({
     collegeId: z.string().min(1),
     name: z.string().max(LIMITS.NAME_MAX, "Name cannot exceed 100 characters").optional(),
     description: z.string().max(LIMITS.DESCRIPTION_MAX, "Description cannot exceed 5000 characters").optional(),
-    logo: z.string().url("Invalid Logo URL").max(LIMITS.URL_MAX, "Logo URL too long").optional(),
+    logo: imageUrl.optional(),
     location: z.string().max(LIMITS.SHORT_TEXT_MAX, "Location cannot exceed 300 characters").optional(),
 });
 

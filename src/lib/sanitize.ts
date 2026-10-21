@@ -77,6 +77,11 @@ export function sanitizeUrl(input: string): string {
         }
     }
 
+    // A leading '//' or '/\' is another host to a browser.
+    if (lowerInput.startsWith('//') || lowerInput.startsWith('/\\')) {
+        return '';
+    }
+
     // Only allow http, https, and mailto
     if (!lowerInput.startsWith('http://') &&
         !lowerInput.startsWith('https://') &&

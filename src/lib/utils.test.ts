@@ -37,6 +37,9 @@ describe('safeRedirectPath', () => {
         'https://evil.com/profile',
         'javascript:alert(1)',
         '/\t/evil.com',
+        '/.//evil.com',
+        '/%2e//evil.com',
+        'https://campus.example//evil.com',
     ])('rejects %s', (value) => {
         expect(safeRedirectPath(value, origin)).toBe('/profile');
     });

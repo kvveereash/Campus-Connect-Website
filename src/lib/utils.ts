@@ -18,7 +18,11 @@ export function safeRedirectPath(value: string | null, origin: string, fallback 
     try {
         const url = new URL(value, origin)
         if (url.origin !== origin) return fallback
-        return `${url.pathname}${url.search}${url.hash}`
+        const path = `${url.pathname}${url.search}${url.hash}`
+        // Same origin is not enough: '/.//evil.com' resolves to the path
+        // '//evil.com', which the browser then treats as another site.
+        if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\')) return fallback
+        return path
     } catch {
         return fallback
     }
