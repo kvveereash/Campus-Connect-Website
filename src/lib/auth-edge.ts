@@ -62,7 +62,7 @@ export async function decrypt(input: string): Promise<any> {
  */
 export async function createSession(
     userId: string,
-    userInfo?: { role?: string; name?: string; email?: string }
+    userInfo?: { role?: string; name?: string; email?: string; passwordVersion?: string }
 ) {
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day
     const session = await encrypt({
@@ -70,6 +70,9 @@ export async function createSession(
         role: userInfo?.role ?? 'USER',
         name: userInfo?.name ?? '',
         email: userInfo?.email ?? '',
+        // Fingerprint of the password hash at sign-in; getSession rejects the
+        // token once the password changes. See passwordVersion in auth.ts.
+        pv: userInfo?.passwordVersion ?? '',
         expires: expires.toISOString(),
     });
 

@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 import prisma from '@/lib/db';
 import { sendEmail } from '@/lib/email';
 import { logger } from '@/lib/logger';
+import { escapeHtml } from '@/lib/sanitize';
 import type { ActionState } from '@/types';
 
 const TOKEN_HOURS = 24;
@@ -64,7 +65,9 @@ export async function issueVerificationEmail(userId: string): Promise<ActionStat
             to: user.email,
             subject: 'Confirm your email for Campus Connect',
             text: `Hello ${user.name},\n\nConfirm your email address by opening this link:\n\n${url}\n\nIt works once and expires in ${TOKEN_HOURS} hours. If you did not sign up, ignore this — nothing will happen.\n\nCampus Connect`,
-            html: `<p>Hello ${user.name},</p><p>Confirm your email address:</p><p><a href="${url}">${url}</a></p><p>It works once and expires in ${TOKEN_HOURS} hours. If you did not sign up, ignore this — nothing will happen.</p><p>Campus Connect</p>`,
+            // Escaped: the name is user-chosen, and unescaped it let anyone put
+            // their own link into a real Campus Connect email.
+            html: `<p>Hello ${escapeHtml(user.name)},</p><p>Confirm your email address:</p><p><a href="${url}">${url}</a></p><p>It works once and expires in ${TOKEN_HOURS} hours. If you did not sign up, ignore this — nothing will happen.</p><p>Campus Connect</p>`,
         });
     } catch (error) {
         logger.error('Failed to send verification email', error as Error, { userId: user.id });
