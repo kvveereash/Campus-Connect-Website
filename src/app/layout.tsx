@@ -7,7 +7,6 @@ import SmoothScroll from "@/components/SmoothScroll";
 import ScrollReveal from "@/components/ScrollReveal";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import { AuthProvider } from "@/context/AuthContext";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 import { ModalProvider } from "@/context/ModalContext";
 import { CommandProvider } from "@/context/CommandContext";
@@ -88,12 +87,6 @@ export default function RootLayout({
     >
       <body>
         <SWRegister /> {/* Added Service Worker Registration */}
-        <ThemeProvider
-          attribute="data-theme"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
           <ModalProvider>
             <AuthProvider>
               <CommandProvider>
@@ -116,7 +109,6 @@ export default function RootLayout({
               </CommandProvider>
             </AuthProvider>
           </ModalProvider>
-        </ThemeProvider>
       </body>
     </html >
   );
