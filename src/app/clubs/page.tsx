@@ -1,4 +1,10 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Clubs',
+    description: 'Student clubs and societies across campus: find one, join it, or start your own.',
+};
 import { getClubs } from '@/lib/actions/clubs';
 import ClubList from './ClubList';
 import ClubListSkeleton from '@/components/ClubListSkeleton';

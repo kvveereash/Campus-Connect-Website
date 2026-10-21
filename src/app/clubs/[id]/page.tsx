@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -11,6 +12,15 @@ import ClubFeed from '@/components/clubs/ClubFeed';
 import { formatIST } from '@/lib/format';
 
 const MEMBERS_SHOWN = 12;
+
+const summary = (text: string) => (text.length > 155 ? `${text.slice(0, 152)}…` : text);
+
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await props.params;
+    const club = await getClubDetails(id);
+    if (!club) return { title: 'Club not found' };
+    return { title: club.name, description: summary(club.description) };
+}
 
 export default async function ClubDetailsPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;

@@ -48,6 +48,8 @@ function supabaseImagePattern() {
 // code reads process.env at runtime on Netlify already — set the values in the
 // Netlify dashboard (Site settings → Environment variables) instead.
 const nextConfig: NextConfig = {
+  // No 'X-Powered-By: Next.js' header: it only tells a scanner what to try.
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       {

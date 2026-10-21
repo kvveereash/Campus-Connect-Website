@@ -1,6 +1,14 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { getCollegeById, getEventsByHost } from '@/lib/actions';
 import CollegeClient from './CollegeClient';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const college = await getCollegeById(id);
+    if (!college) return { title: 'College not found' };
+    return { title: college.name, description: `Clubs and upcoming events at ${college.name}.` };
+}
 
 export default async function CollegePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
