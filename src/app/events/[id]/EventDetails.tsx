@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -17,6 +18,8 @@ import styles from './page.module.css';
 import Reveal from '@/components/Reveal';
 import { formatIST } from '@/lib/format';
 import { eventPhoto } from '@/lib/college-images';
+
+const noSubscribe = () => () => {};
 
 export default function EventDetails({ event }: { event: EventDetail }) {
     const photo = eventPhoto(event);
@@ -39,9 +42,17 @@ export default function EventDetails({ event }: { event: EventDetail }) {
        or more below the photo. While it is still below the fold, a bar at
        the bottom of the screen shows the price and takes you to it. It
        scrolls to the real button rather than copying it, so registering and
-       paying keep one code path. */
+       paying keep one code path. It is rendered into <body>: inside the page
+       it would be pinned to the page's entrance animation (a transform)
+       instead of the screen for the first half second. */
     const actionsRef = useRef<HTMLDivElement>(null);
     const [actionsBelow, setActionsBelow] = useState(false);
+    // null during server render and hydration, document.body after.
+    const barRoot = useSyncExternalStore(
+        noSubscribe,
+        () => document.body,
+        () => null,
+    );
     const canRegister = !isPast && event.verified && !myRegistration;
 
     useEffect(() => {
@@ -90,7 +101,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                 <PaymentReturn eventId={event.id} registrationId={myRegistration?.id} />
             </Suspense>
 
-            {canRegister && (
+            {canRegister && barRoot && createPortal(
                 <div className={styles.registerBar} data-visible={actionsBelow} aria-hidden={!actionsBelow}>
                     <p className={styles.registerBarText}>
                         <b>{priceText}</b>
@@ -106,7 +117,8 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                     >
                         Register
                     </button>
-                </div>
+                </div>,
+                barRoot,
             )}
 
             <Link href="/events" className={styles.back}>
