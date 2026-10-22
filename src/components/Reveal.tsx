@@ -1,7 +1,7 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import styles from './Reveal.module.css';
 
 interface Props {
     children: ReactNode;
@@ -12,43 +12,60 @@ interface Props {
     className?: string;
 }
 
+/** How far into the viewport a block must come before it reveals. */
+const MARGIN = 70;
+
 /**
  * Reveals its children when they scroll into view.
  *
  * A client component so that server-rendered pages — /about, the club
  * detail page — can use it without becoming client components themselves.
  *
- * Two deliberate constraints:
+ * The server HTML is the finished, visible block. Only once the script runs,
+ * and only if the block is still below the fold, is it hidden to wait for
+ * its entrance; a block already on screen is left alone, because hiding it
+ * then would make it blink. So a slow or failed script costs the animation,
+ * never the content.
  *
- * Only ever used below the fold. framer-motion writes its `initial` state
- * into the server HTML, so anything wrapped in this ships invisible until
- * React hydrates. That is the bug that made every page on this site arrive
- * blank until its JavaScript loaded (fixed in f6ac9de by moving the page
- * entrance to CSS). Below the fold the trade is fine — nobody sees it before
- * hydration — but a masthead must never be wrapped in this.
- *
- * `once: true`, so a section reveals the first time it is reached and then
- * stays put. Re-animating on every pass turns a long page into a flicker.
+ * It reveals once, the first time it is reached, and then stays put.
+ * Re-animating on every pass turns a long page into a flicker.
  */
 export default function Reveal({ children, delay = 0, from = 'up', className }: Props) {
-    const reduced = useReducedMotion();
+    const ref = useRef<HTMLDivElement>(null);
 
-    if (reduced) return <div className={className}>{children}</div>;
+    useEffect(() => {
+        const el = ref.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (el.getBoundingClientRect().top < window.innerHeight - MARGIN) return;
+
+        // A data attribute rather than state or a class: React never writes
+        // it, so a re-render cannot undo it, and setting it is not a render.
+        el.dataset.reveal = 'waiting';
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (!entry.isIntersecting) return;
+                el.dataset.reveal = 'shown';
+                observer.disconnect();
+            },
+            { rootMargin: `0px 0px -${MARGIN}px 0px` }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
+    const classes = [styles.reveal, from === 'none' && styles.flat, className]
+        .filter(Boolean)
+        .join(' ');
 
     return (
-        <motion.div
-            className={className}
-            initial={{ opacity: 0, y: from === 'up' ? 22 : 0 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-70px' }}
-            transition={{
-                duration: 1.05,
-                delay,
-                // The system's glide: quick to leave, a long settle.
-                ease: [0.19, 1, 0.22, 1],
-            }}
+        <div
+            ref={ref}
+            className={classes}
+            style={delay ? ({ '--delay': `${delay}s` } as CSSProperties) : undefined}
         >
             {children}
-        </motion.div>
+        </div>
     );
 }

@@ -221,22 +221,6 @@ async function main() {
     }
     console.log(`✅ ${eventTemplates.length} events ready`);
 
-    // ─── Chat Rooms ───
-    const chatRooms = [
-        { name: 'General Chat', type: 'general', description: 'Open chat for all campus students' },
-        { name: 'Tech Talk', type: 'topic', description: 'Discuss technology, coding, and gadgets' },
-        { name: 'Events & Fests', type: 'topic', description: 'Coordinate event plans and share fest updates' },
-        { name: 'Memes & Fun', type: 'topic', description: 'Share campus memes and have fun' },
-    ];
-
-    for (const room of chatRooms) {
-        const existing = await prisma.chatRoom.findFirst({ where: { name: room.name } });
-        if (!existing) {
-            await prisma.chatRoom.create({ data: room });
-        }
-    }
-    console.log('✅ Chat rooms ready');
-
     console.log('\n🎉 Dummy data seeded successfully!');
     console.log('────────────────────────────────');
     console.log(

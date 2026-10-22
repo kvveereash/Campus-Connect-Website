@@ -5,9 +5,11 @@ import { usePathname } from 'next/navigation';
 
 /**
  * The site's one scroll reveal, for every page but home (which has its own
- * choreography in HomeMotion). Mark a list container with
- * `data-reveal-group` and its children rise in, in small staggered batches,
- * as they come into view: event rows, Buzz posts, team-finder cards.
+ * choreography in HomeMotion). Wrap a list in <RevealGroup> and its children
+ * rise in, in small staggered batches, as they come into view: event rows,
+ * Buzz posts, team-finder cards. RevealGroup adds the `data-reveal-group`
+ * marker only after it hydrates, and this waits for the marker to appear, so
+ * GSAP never styles markup React has yet to hydrate.
  *
  * Only children that are below the fold when they appear are hidden, so
  * nothing on screen at load ever blinks out and back. Lists that load or
@@ -21,19 +23,41 @@ export default function ScrollReveal() {
 
     useEffect(() => {
         if (pathname === '/') return;
-        if (!document.querySelector('[data-reveal-group]')) return;
 
         let mm: gsap.MatchMedia | null = null;
         let cancelled = false;
-        Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).then(([{ gsap }, { ScrollTrigger }]) => {
-            if (cancelled) return;
-            gsap.registerPlugin(ScrollTrigger);
-            mm = gsap.matchMedia();
-            start(gsap, ScrollTrigger, mm);
-        });
+        const begin = () => {
+            Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).then(([{ gsap }, { ScrollTrigger }]) => {
+                if (cancelled) return;
+                gsap.registerPlugin(ScrollTrigger);
+                mm = gsap.matchMedia();
+                start(gsap, ScrollTrigger, mm);
+            });
+        };
+
+        // GSAP loads only once a group exists; a list behind Suspense
+        // hydrates after this runs, so wait for its marker.
+        let waiting: MutationObserver | null = null;
+        if (document.querySelector('[data-reveal-group]')) {
+            begin();
+        } else {
+            waiting = new MutationObserver(() => {
+                if (!document.querySelector('[data-reveal-group]')) return;
+                waiting?.disconnect();
+                waiting = null;
+                begin();
+            });
+            waiting.observe(document.querySelector('main') ?? document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['data-reveal-group'],
+            });
+        }
 
         return () => {
             cancelled = true;
+            waiting?.disconnect();
             mm?.revert();
         };
     }, [pathname]);
@@ -92,7 +116,12 @@ function start(gsap: typeof import('gsap').gsap, ScrollTrigger: typeof import('g
 
             setup();
             const observer = new MutationObserver(schedule);
-            observer.observe(document.querySelector('main') ?? document.body, { childList: true, subtree: true });
+            observer.observe(document.querySelector('main') ?? document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['data-reveal-group'],
+            });
 
             return () => {
                 observer.disconnect();

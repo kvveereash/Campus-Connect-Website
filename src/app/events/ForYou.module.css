@@ -1,0 +1,103 @@
+.forYou {
+    margin: 4px 0 8px;
+    animation: arrive var(--duration-slow, 0.4s) var(--ease-glide) backwards;
+}
+
+/* It arrives after the board, so it fades in rather than popping. */
+@keyframes arrive {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+.head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 12px;
+    padding: 28px 0 12px;
+}
+
+.head h2 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-inkstone);
+}
+
+.head span {
+    font-size: 13px;
+    color: var(--color-felt);
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    padding: 16px 16px 14px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    border-top: 3px solid var(--cat);
+    color: inherit;
+    text-decoration: none;
+    transition: transform var(--duration-base) var(--ease-glide),
+                border-color var(--duration-base) var(--ease-glide);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    border-top-color: var(--cat);
+}
+
+.when {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.title {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    color: var(--color-obsidian);
+}
+
+.reason {
+    margin-top: auto;
+    font-size: 13px;
+    color: var(--color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .forYou {
+        animation: none;
+    }
+
+    .card {
+        transition: none;
+    }
+
+    .card:hover {
+        transform: none;
+    }
+}

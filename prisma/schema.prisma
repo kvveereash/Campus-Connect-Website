@@ -1,15 +1,15 @@
 generator client {
-  provider      = "prisma-client-js"
+  provider        = "prisma-client-js"
   // "native" for wherever `prisma generate` runs (a laptop, Netlify's Ubuntu
   // build image), plus the engine Netlify's functions need at runtime: they
   // run on Amazon Linux with OpenSSL 3. With only "native", the deployed
   // function had no engine it could load, and every query failed.
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
   previewFeatures = ["relationJoins"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   // The app's connection: Supabase's transaction-mode pooler, pinned to one
   // connection. Right for serverless request handling, and unusable for
   // migrations — the schema engine needs advisory locks and session state a
@@ -71,30 +71,30 @@ enum ConversationRole {
 }
 
 model User {
-  id                         String                    @id @default(cuid())
-  name                       String
-  email                      String                    @unique
-  password                   String
-  department                 String?
-  year                       String?
-  avatar                     String?
-  createdAt                  DateTime                  @default(now())
-  updatedAt                  DateTime                  @updatedAt
-  lastSeenAt                 DateTime                  @default(now())
-  role                       UserRole                  @default(USER)
-  collegeId                  String?
-  bio                        String?
-  resumeUrl                  String?
-  achievements               String?
-  projects                   String?
-  portfolioLinks             String?
-  lockedUntil                DateTime?
+  id             String     @id @default(cuid())
+  name           String
+  email          String     @unique
+  password       String
+  department     String?
+  year           String?
+  avatar         String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  lastSeenAt     DateTime   @default(now())
+  role           UserRole   @default(USER)
+  collegeId      String?
+  bio            String?
+  resumeUrl      String?
+  achievements   String?
+  projects       String?
+  portfolioLinks String?
+  lockedUntil    DateTime?
   // Null until the address is confirmed. Nullable on purpose: every account
   // that existed before this column did is unverified rather than broken,
   // and nothing about signing in depends on it.
-  emailVerified              DateTime?
-  auditLogs                  AuditLog[]                @relation("AuditActor")
-  messages                   ChatMessage[]
+  emailVerified  DateTime?
+  auditLogs      AuditLog[] @relation("AuditActor")
+
   clubMemberships            ClubMember[]
   comments                   Comment[]
   conversationParticipations ConversationParticipant[]
@@ -108,13 +108,13 @@ model User {
   emailVerificationTokens    EmailVerificationToken[]
   posts                      Post[]
   reactions                  Reaction[]
-  RefreshToken               RefreshToken[]
-  teamRequests               TeamRequest[]
-  college                    College?                  @relation(fields: [collegeId], references: [id])
-  badges                     UserBadge[]
-  followedColleges           College[]                 @relation("FollowedColleges")
-  interests                  Interest[]                @relation("InterestToUser")
-  skills                     Skill[]                   @relation("SkillToUser")
+
+  teamRequests     TeamRequest[]
+  college          College?      @relation(fields: [collegeId], references: [id])
+  badges           UserBadge[]
+  followedColleges College[]     @relation("FollowedColleges")
+  interests        Interest[]    @relation("InterestToUser")
+  skills           Skill[]       @relation("SkillToUser")
 
   deletedAt DateTime?
 
@@ -229,16 +229,18 @@ model EventReview {
 }
 
 model EventRegistration {
-  id         String             @id @default(cuid())
-  userId     String
-  eventId    String
-  status     RegistrationStatus @default(PENDING)
-  paymentId  String?
-  amountPaid Float?
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-  event      Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user       User               @relation(fields: [userId], references: [id])
+  id          String             @id @default(cuid())
+  userId      String
+  eventId     String
+  status      RegistrationStatus @default(PENDING)
+  paymentId   String?
+  amountPaid  Float?
+  // Set when an organiser scans the attendee's ticket at the door.
+  checkedInAt DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  event       Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user        User               @relation(fields: [userId], references: [id])
 
   @@unique([userId, eventId])
   @@index([userId])
@@ -301,30 +303,6 @@ model ClubMember {
   @@unique([userId, clubId])
   @@index([clubId]) // For getClubMembers()
   @@index([userId]) // For getUserMemberships()
-}
-
-model ChatRoom {
-  id           String        @id @default(cuid())
-  name         String
-  type         String
-  description  String?
-  participants Int           @default(0)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  messages     ChatMessage[]
-}
-
-model ChatMessage {
-  id        String   @id @default(cuid())
-  content   String
-  timestamp DateTime @default(now())
-  senderId  String
-  roomId    String
-  room      ChatRoom @relation(fields: [roomId], references: [id])
-  sender    User     @relation(fields: [senderId], references: [id])
-
-  @@index([roomId, timestamp]) // For getMessageHistory()
-  @@index([senderId]) // For getUserMessages()
 }
 
 model Post {
@@ -469,21 +447,4 @@ model LoginAttempt {
   createdAt DateTime @default(now())
 
   @@index([email, createdAt])
-}
-
-model RefreshToken {
-  id        String   @id
-  token     String   @unique
-  userId    String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  family    String
-  revoked   Boolean  @default(false)
-  userAgent String?
-  ip        String?
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([family])
-  @@index([token])
-  @@index([userId])
 }

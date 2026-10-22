@@ -1,0 +1,99 @@
+/* ============================================================
+   ENTRANCES — small mount animations (lists, dialogs, empty
+   states) in CSS rather than a second animation library. CSS
+   starts them at first paint, so a page renders visibly before
+   (and without) its JavaScript.
+
+   Every animation fills `backwards` only: the start state holds
+   through the delay, and once it ends the element carries no
+   transform. A filling transform on an ancestor of fixed or pinned
+   content breaks them (CLAUDE.md, Motion).
+
+   Delays come from `--delay`, set inline by the caller, so one
+   class serves a whole staggered list.
+   ============================================================ */
+
+.rise,
+.slideIn,
+.pop,
+.fade {
+    animation-fill-mode: backwards;
+    animation-delay: var(--delay, 0s);
+}
+
+/* Lists, panels: a short lift into place. */
+.rise {
+    animation-name: rise;
+    animation-duration: 1s;
+    animation-timing-function: var(--ease-glide);
+}
+
+/* Things that arrive from the left edge of a split layout. */
+.slideIn {
+    animation-name: slideIn;
+    animation-duration: var(--duration-slow);
+    animation-timing-function: var(--ease-glide);
+}
+
+/* Dialogs, empty states, badges: settle in from slightly small. */
+.pop {
+    animation-name: pop;
+    animation-duration: var(--duration-base);
+    animation-timing-function: var(--ease-glide);
+}
+
+/* Backdrops. */
+.fade {
+    animation-name: fade;
+    animation-duration: var(--duration-base);
+    animation-timing-function: var(--ease-glide);
+}
+
+/* A busy glyph inside a button. */
+.spin {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-16px);
+    }
+}
+
+@keyframes pop {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+}
+
+@keyframes fade {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rise,
+    .slideIn,
+    .pop,
+    .fade,
+    .spin {
+        animation: none;
+    }
+}

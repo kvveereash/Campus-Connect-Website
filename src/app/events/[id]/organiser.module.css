@@ -1,0 +1,360 @@
+/* The organiser's pages for an event: the door (check-in) and the list. */
+
+.page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) 0 clamp(72px, 10vw, 152px);
+}
+
+.back {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    transition: color var(--duration-base) var(--ease-glide);
+}
+
+.back:hover {
+    color: var(--color-obsidian);
+}
+
+.label {
+    margin: clamp(28px, 5vw, 44px) 0 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+.title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-obsidian);
+    text-wrap: balance;
+}
+
+.lede {
+    margin: 14px 0 0;
+    max-width: 56ch;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--color-felt);
+}
+
+/* ─── Stats ─── */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+    gap: 12px;
+    margin: clamp(28px, 4vw, 40px) 0 0;
+}
+
+.stat {
+    padding: 18px 20px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.stat dt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.stat dd {
+    margin: 10px 0 0;
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat small {
+    margin-left: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--color-felt);
+}
+
+.square {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--mark, var(--color-obsidian));
+}
+
+/* ─── Sign-ups per day ─── */
+
+.chart {
+    margin-top: 12px;
+    padding: 20px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.chartHead {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.bars {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: end;
+    gap: 4px;
+    height: 120px;
+    margin-top: 16px;
+}
+
+.bar {
+    min-height: 2px;
+    border-radius: 4px 4px 1px 1px;
+    background: var(--color-accent);
+}
+
+.bar[data-empty='true'] {
+    background: var(--color-slate);
+}
+
+.axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-ash);
+}
+
+/* ─── Attendee list ─── */
+
+.list {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    overflow: hidden;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+}
+
+.row + .row {
+    border-top: 1px solid var(--border-hairline);
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--color-slate);
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--color-obsidian);
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.who {
+    min-width: 0;
+}
+
+.name {
+    display: block;
+    overflow: hidden;
+    font-weight: 600;
+    color: var(--color-obsidian);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.name:hover {
+    color: var(--color-accent);
+}
+
+.meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--color-felt);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.arrived {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--color-success);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 56px 24px;
+    border-radius: 20px;
+    border: 1px dashed var(--border-strong);
+    background-color: var(--color-paper);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.empty h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.empty p {
+    margin: 0;
+    max-width: 40ch;
+    color: var(--color-felt);
+}
+
+/* ─── The door ─── */
+
+.door {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-top: clamp(24px, 4vw, 36px);
+    padding: clamp(32px, 6vw, 56px) clamp(20px, 5vw, 40px);
+    border-radius: 24px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    text-align: center;
+}
+
+.door[data-state='in'] {
+    border-color: var(--color-success);
+    box-shadow: inset 0 0 0 1px var(--color-success);
+}
+
+.door[data-state='bad'] {
+    border-style: dashed;
+    border-color: var(--border-strong);
+}
+
+.doorAvatar {
+    composes: avatar;
+    width: 88px;
+    height: 88px;
+    font-size: 34px;
+}
+
+.doorName {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+}
+
+.doorNote {
+    margin: 0;
+    max-width: 40ch;
+    color: var(--color-felt);
+}
+
+.doorStatus {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.door[data-state='in'] .doorStatus {
+    color: var(--color-success);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.big {
+    min-width: 220px;
+    min-height: 52px;
+    font-size: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .back {
+        transition: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .row {
+        grid-template-columns: 36px minmax(0, 1fr);
+        row-gap: 8px;
+    }
+
+    .row > :last-child {
+        grid-column: 2;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+.link {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}

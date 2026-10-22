@@ -1,46 +1,43 @@
-'use client';
-
-import { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import styles from './Skeleton.module.css';
 
 interface SkeletonProps {
     width?: string | number;
     height?: string | number;
     borderRadius?: string | number;
+    /** On a dark or blue surface. */
+    onDark?: boolean;
     style?: CSSProperties;
     className?: string;
 }
 
+/** One grey shape standing in for content that is still loading. */
 export default function Skeleton({
     width = '100%',
     height = '1rem',
-    borderRadius = '0.5rem',
+    borderRadius,
+    onDark,
     style,
-    className
+    className,
 }: SkeletonProps) {
     return (
-        <div
-            className={className}
-            style={{
-                width,
-                height,
-                borderRadius,
-                backgroundColor: 'var(--surface-color)',
-                backgroundImage: 'linear-gradient(90deg, var(--surface-color) 0px, var(--border-color) 40px, var(--surface-color) 80px)',
-                backgroundSize: '200% 100%',
-                animation: 'skeleton-shimmer 1.5s infinite linear',
-                ...style
-            }}
-        >
-            <style jsx global>{`
-                @keyframes skeleton-shimmer {
-                    0% {
-                        background-position: -200% 0;
-                    }
-                    100% {
-                        background-position: 200% 0;
-                    }
-                }
-            `}</style>
+        <span
+            aria-hidden="true"
+            className={[styles.bone, onDark && styles.dark, className].filter(Boolean).join(' ')}
+            style={{ width, height, borderRadius, ...style }}
+        />
+    );
+}
+
+/**
+ * Wraps a loading screen: announced once to screen readers as `label`, and
+ * held back for a moment so a fast page never flashes it.
+ */
+export function LoadingRegion({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+    return (
+        <div role="status" aria-live="polite" className={[styles.region, className].filter(Boolean).join(' ')}>
+            <span className={styles.label}>{label}</span>
+            {children}
         </div>
     );
 }

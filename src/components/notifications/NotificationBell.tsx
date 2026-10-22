@@ -170,13 +170,13 @@ export function NotificationBell() {
                                                 />
                                             ) : (
                                                 <div className={styles.placeholderAvatar}>
-                                                    {notification.actor?.name?.[0]?.toUpperCase() || 'S'}
+                                                    {notification.actor?.name?.[0]?.toUpperCase() || 'C'}
                                                 </div>
                                             )}
                                         </div>
                                         <div className={styles.content}>
                                             <p>
-                                                <span className={styles.actorName}>{notification.actor?.name || 'System'}</span>
+                                                <span className={styles.actorName}>{notification.actor?.name || 'Campus Connect'}</span>
                                                 {' '}
                                                 {notification.message}
                                             </p>

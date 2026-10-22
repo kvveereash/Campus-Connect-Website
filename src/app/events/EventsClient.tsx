@@ -7,6 +7,8 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { EventWithRelations } from '@/lib/actions';
 import { inkFor, dateParts, groupByProximity } from './press';
 import { eventPhoto } from '@/lib/college-images';
+import RevealGroup from '@/components/RevealGroup';
+import ForYou from './ForYou';
 import styles from './press.module.css';
 
 type TimeFilter = 'Any' | 'This week' | 'This month';
@@ -177,11 +179,14 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
                 </nav>
 
                 <main>
+                    {/* Only on the unfiltered board: under a filter it would
+                        sit above results it might not belong to. */}
+                    {activeCategory === 'All' && activeTime === 'Any' && <ForYou events={initialEvents} />}
                     {groups.length === 0 ? (
                         <p className={styles.empty}>Nothing matches those filters.</p>
                     ) : (
                         groups.map((group) => (
-                            <section key={group.label} data-reveal-group>
+                            <RevealGroup as="section" key={group.label}>
                                 <div className={styles.groupHead}>
                                     <h2>{group.label}</h2>
                                     <span className={styles.groupCount}>{group.items.length}</span>
@@ -189,7 +194,7 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
                                 {group.items.map((event) => (
                                     <EventRow key={event.id} event={event} />
                                 ))}
-                            </section>
+                            </RevealGroup>
                         ))
                     )}
                 </main>

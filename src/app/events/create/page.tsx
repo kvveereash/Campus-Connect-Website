@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Briefcase, Calendar, Code, Cpu, Globe, Lock as LockIcon, Megaphone, Palette, Sparkles, Trophy, Users, Wrench } from 'lucide-react';
 import { createEvent } from '@/lib/actions';
 import { useAuth } from '@/context/AuthContext';
 import ImageUpload from '@/components/ImageUpload';
 import styles from './page.module.css';
+import entrance from '@/components/entrance.module.css';
 
 /**
  * Matches the categories events actually carry. The previous list offered
@@ -17,6 +17,8 @@ import styles from './page.module.css';
  * app — so an event created here got a category with no ink on the listing
  * and no filter tab to find it under.
  */
+const after = (seconds: number) => ({ '--delay': `${seconds}s` }) as CSSProperties;
+
 const CATEGORIES = [
     { value: 'Technology', Icon: Cpu, label: 'Technology' },
     { value: 'Hackathon', Icon: Code, label: 'Hackathon' },
@@ -121,26 +123,17 @@ export default function CreateEventPage() {
     return (
         <div className={styles.pageWrapper}>
             {/* Back Navigation */}
-            <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
-            >
+            <div className={entrance.slideIn}>
                 <Link href="/events" className={styles.backBtn}>
                     <ArrowLeft size={16} className={styles.backArrow} />
                     Back to Events
                 </Link>
-            </motion.div>
+            </div>
 
             {/* Split Layout */}
             <div className={styles.splitLayout}>
                 {/* Left: Decorative Panel */}
-                <motion.div
-                    className={styles.sidePanel}
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                >
+                <div className={`${styles.sidePanel} ${entrance.slideIn}`}>
                     <div className={styles.sidePanelBg} />
 
                     <div className={styles.sideContent}>
@@ -155,39 +148,24 @@ export default function CreateEventPage() {
                     </div>
 
                     <ul className={styles.featureList}>
-                        <motion.li
-                            className={styles.featureItem}
-                            initial={{ opacity: 0, x: -15 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
+                        <li className={`${styles.featureItem} ${entrance.slideIn}`} style={after(0.3)}>
                             <span className={styles.featureIcon}>
                                 <Megaphone size={16} />
                             </span>
                             Reach thousands of students
-                        </motion.li>
-                        <motion.li
-                            className={styles.featureItem}
-                            initial={{ opacity: 0, x: -15 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.4 }}
-                        >
+                        </li>
+                        <li className={`${styles.featureItem} ${entrance.slideIn}`} style={after(0.4)}>
                             <span className={styles.featureIcon}>
                                 <Users size={16} />
                             </span>
                             Manage registrations easily
-                        </motion.li>
-                        <motion.li
-                            className={styles.featureItem}
-                            initial={{ opacity: 0, x: -15 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.5 }}
-                        >
+                        </li>
+                        <li className={`${styles.featureItem} ${entrance.slideIn}`} style={after(0.5)}>
                             <span className={styles.featureIcon}>
                                 <Calendar size={16} />
                             </span>
                             Auto-sync with campus calendar
-                        </motion.li>
+                        </li>
                     </ul>
 
                     <div className={styles.dotsGrid}>
@@ -195,15 +173,10 @@ export default function CreateEventPage() {
                             <div key={i} className={styles.dot} />
                         ))}
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Right: Form */}
-                <motion.div
-                    className={styles.formPanel}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                >
+                <div className={`${styles.formPanel} ${entrance.rise}`} style={after(0.2)}>
                     <div className={styles.formHeader}>
                         <h1 className={styles.formTitle}>Host an Event</h1>
                         <p className={styles.formSubtitle}>Fill in the details to publish your event</p>
@@ -277,16 +250,15 @@ export default function CreateEventPage() {
                             </label>
                             <div className={styles.categoryGrid}>
                                 {CATEGORIES.map(cat => (
-                                    <motion.button
+                                    <button
                                         key={cat.value}
                                         type="button"
                                         className={`${styles.categoryPill} ${formData.category === cat.value ? styles.categoryPillActive : ''}`}
                                         onClick={() => setFormData(prev => ({ ...prev, category: cat.value }))}
-                                        whileTap={{ scale: 0.95 }}
                                     >
                                         <span className={styles.pillIcon}><cat.Icon size={16} aria-hidden="true" /></span>
                                         {cat.label}
-                                    </motion.button>
+                                    </button>
                                 ))}
                             </div>
                         </div>
@@ -367,12 +339,10 @@ export default function CreateEventPage() {
                         </div>
 
                         {/* Submit */}
-                        <motion.button
+                        <button
                             type="submit"
                             className={styles.submitBtn}
                             disabled={isLoading}
-                            whileHover={!isLoading ? { scale: 1.01 } : {}}
-                            whileTap={!isLoading ? { scale: 0.98 } : {}}
                         >
                             {isLoading ? (
                                 'Creating Event...'
@@ -383,9 +353,9 @@ export default function CreateEventPage() {
                                     <ArrowRight size={18} className={styles.submitIcon} />
                                 </>
                             )}
-                        </motion.button>
+                        </button>
                     </form>
-                </motion.div>
+                </div>
             </div>
         </div>
     );

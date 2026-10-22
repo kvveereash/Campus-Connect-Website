@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import type { LeaderboardUser, LeaderboardClub } from '@/lib/actions/leaderboards';
 import styles from './leaderboards.module.css';
+import entrance from '@/components/entrance.module.css';
 
 interface LeaderboardsData {
     attendees: LeaderboardUser[];
@@ -23,16 +23,9 @@ const TABS: { id: TabId; label: string; description: string; unit: string }[] = 
     { id: 'badges', label: 'Badges', description: 'Most badges earned', unit: 'badges' },
 ];
 
-const rise = {
-    hidden: { opacity: 0, y: 14 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 1.25, ease: [0.19, 1, 0.22, 1] as const },
-    },
-};
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.04 } } };
+// Each row waits its turn; capped so a long board does not keep the last
+// rows blank for seconds.
+const stagger = (i: number) => ({ '--delay': `${Math.min(i, 12) * 0.04}s` }) as CSSProperties;
 
 export default function LeaderboardsClient({ data }: { data: LeaderboardsData }) {
     const [active, setActive] = useState<TabId>('attendees');
@@ -96,15 +89,10 @@ export default function LeaderboardsClient({ data }: { data: LeaderboardsData })
                     </p>
                 </div>
             ) : (
-                <motion.div
-                    className={styles.list}
-                    initial="hidden"
-                    animate="visible"
-                    variants={stagger}
-                    key={active}
-                >
-                    {rows.map((row) => (
-                        <motion.div key={row.id} variants={rise}>
+                // Keyed on the tab so switching boards replays the entrance.
+                <div className={styles.list} key={active}>
+                    {rows.map((row, i) => (
+                        <div key={row.id} className={entrance.rise} style={stagger(i)}>
                             <Link href={row.href} className={styles.row}>
                                 <span
                                     className={`${styles.rank} ${row.rank > 3 ? styles.rankQuiet : ''}`}
@@ -135,9 +123,9 @@ export default function LeaderboardsClient({ data }: { data: LeaderboardsData })
                                     <span className={styles.scoreLabel}>{tab.unit}</span>
                                 </span>
                             </Link>
-                        </motion.div>
+                        </div>
                     ))}
-                </motion.div>
+                </div>
             )}
         </div>
     );

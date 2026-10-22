@@ -364,3 +364,87 @@
         transition: none;
     }
 }
+
+/* ─── Add to calendar ─── */
+
+.calendar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.calendar a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+}
+
+.calendar a:hover {
+    color: var(--color-accent-hover);
+}
+
+/* ─── Ticket ─── */
+
+.ticket {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 22px;
+    padding: 22px 20px 20px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    text-align: center;
+}
+
+.ticket[data-in='true'] {
+    border-color: var(--color-success);
+}
+
+.ticketLabel {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.ticket[data-in='true'] .ticketLabel {
+    color: var(--color-success);
+}
+
+.ticketCode {
+    width: min(100%, 196px);
+    aspect-ratio: 1;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.ticketCode svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.ticketId {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    letter-spacing: 0.24em;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-obsidian);
+}
+
+.ticketNote {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-felt);
+}

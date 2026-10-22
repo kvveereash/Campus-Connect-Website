@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { User } from '@/types';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +6,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ImageUpload';
 import styles from '@/app/profile/page.module.css'; // Reusing styles
+import entrance from '@/components/entrance.module.css';
 import Button from '@/components/ui/Button';
 import { getCollegesList } from '@/lib/actions';
 
@@ -89,13 +89,7 @@ export default function EditProfileModal({ isOpen, onClose, user, updateProfile 
         <div className={styles.modalOverlay} onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
         }}>
-            <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                transition={{ type: "spring", duration: 0.3 }}
-                className={styles.modalContent}
-            >
+            <div className={`${styles.modalContent} ${entrance.pop}`}>
                 <div className={styles.modalHeader}>
                     <h2 className={styles.modalTitle}>Edit Profile</h2>
                     <Button variant="ghost" size="sm" onClick={onClose}>✕</Button>
@@ -233,7 +227,7 @@ export default function EditProfileModal({ isOpen, onClose, user, updateProfile 
                         <Button type="submit">Save Changes</Button>
                     </div>
                 </form>
-            </motion.div>
+            </div>
         </div>
     );
 }

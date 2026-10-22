@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import EventCard from '@/components/EventCard';
 import EventCardSkeleton from '@/components/EventCardSkeleton';
 import type { EventWithRelations } from '@/lib/actions/events';
+import RevealGroup from '@/components/RevealGroup';
 import styles from '@/app/profile/page.module.css';
 
 interface EventSectionProps {
@@ -41,11 +42,11 @@ export default function EventSection({ kicker, title, events, loading, empty, ac
                     <EventCardSkeleton />
                 </div>
             ) : events.length > 0 ? (
-                <div className={styles.eventsGrid} data-reveal-group>
+                <RevealGroup className={styles.eventsGrid}>
                     {events.map((event, i) => (
                         <EventCard key={event.id} event={event} index={i} />
                     ))}
-                </div>
+                </RevealGroup>
             ) : (
                 <div className={`${styles.empty} ${styles.emptyBox}`}>
                     <p className={styles.emptyTitle}>{empty.title}</p>

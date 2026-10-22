@@ -4,7 +4,7 @@ import { FileText, Trophy, Zap, Rocket, Link2, ArrowUpRight } from 'lucide-react
 import { useState, useRef } from 'react';
 import { User, Achievement, Project, PortfolioLink } from '@/types';
 import styles from '@/app/profile/page.module.css';
-import { motion } from 'framer-motion';
+import entrance from '@/components/entrance.module.css';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -149,13 +149,9 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-6"
-        >
+        // The tab panel around this (.content, keyed per tab) already rises
+        // in, so this has no entrance of its own.
+        <div className="space-y-6">
             {/* Resume Section */}
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
@@ -375,11 +371,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             {
                 isAchievementModalOpen && (
                     <div className={styles.modalOverlay}>
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className={styles.modalContent}
-                        >
+                        <div className={`${styles.modalContent} ${entrance.pop}`}>
                             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Add Achievement</h2>
                             <form onSubmit={achievementForm.handleSubmit(onAchievementSubmit)}>
                                 <div className={styles.formGroup}>
@@ -413,7 +405,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
                                     <Button type="submit">Add Achievement</Button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </div>
                     </div>
                 )
             }
@@ -422,11 +414,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             {
                 isProjectModalOpen && (
                     <div className={styles.modalOverlay}>
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className={styles.modalContent}
-                        >
+                        <div className={`${styles.modalContent} ${entrance.pop}`}>
                             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Add Project</h2>
                             <form onSubmit={projectForm.handleSubmit(onProjectSubmit)}>
                                 <div className={styles.formGroup}>
@@ -460,7 +448,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
                                     <Button type="submit">Add Project</Button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </div>
                     </div>
                 )
             }
@@ -469,11 +457,7 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
             {
                 isLinkModalOpen && (
                     <div className={styles.modalOverlay}>
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className={styles.modalContent}
-                        >
+                        <div className={`${styles.modalContent} ${entrance.pop}`}>
                             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>Add Link</h2>
                             <form onSubmit={linkForm.handleSubmit(onLinkSubmit)}>
                                 <div className={styles.formGroup}>
@@ -497,10 +481,10 @@ export default function ProfessionalTab({ user, updateProfile }: ProfessionalTab
                                     <Button type="submit">Add Link</Button>
                                 </div>
                             </form>
-                        </motion.div>
+                        </div>
                     </div>
                 )
             }
-        </motion.div >
+        </div>
     );
 }

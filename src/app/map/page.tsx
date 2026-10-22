@@ -7,7 +7,9 @@ export const metadata: Metadata = {
     description: 'Every venue on campus with something coming up, and what is happening there.',
 };
 
-export const dynamic = 'force-dynamic';
+// Nothing here depends on who is looking, so it is built once and refreshed
+// every minute like /events, instead of a database round trip per visit.
+export const revalidate = 60;
 
 /**
  * This route used to render a drawn campus: five hardcoded zones ("Main

@@ -1,0 +1,39 @@
+/* ============================================================
+   REVEAL — see Reveal.tsx. The block is visible by default; the
+   script marks it `waiting` (hidden) only when it is below the
+   fold, then `shown` when it scrolls in. The entrance fills
+   `backwards`, so once it ends the block carries no transform.
+   ============================================================ */
+
+.reveal[data-reveal='waiting'] {
+    opacity: 0;
+}
+
+.reveal[data-reveal='shown'] {
+    animation: revealUp 1s var(--ease-glide) backwards;
+    animation-delay: var(--delay, 0s);
+}
+
+.flat[data-reveal='shown'] {
+    animation-name: revealFade;
+}
+
+@keyframes revealUp {
+    from {
+        opacity: 0;
+        transform: translateY(22px);
+    }
+}
+
+@keyframes revealFade {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal[data-reveal] {
+        opacity: 1;
+        animation: none;
+    }
+}

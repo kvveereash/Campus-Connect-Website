@@ -10,6 +10,7 @@ import EditCollegeModal from '@/components/colleges/EditCollegeModal';
 import { resolveCollegeImage, resolveClubImage, getCollegePhotoCredit } from '@/lib/college-images';
 import { inkFor } from '@/app/events/press';
 import type { EventWithRelations } from '@/lib/actions';
+import RevealGroup from '@/components/RevealGroup';
 import styles from './page.module.css';
 
 interface CollegeClub {
@@ -153,11 +154,11 @@ export default function CollegeClient({ college, events, clubs, students }: Coll
                 </div>
 
                 {events.length > 0 ? (
-                    <div className={styles.grid} data-reveal-group>
+                    <RevealGroup className={styles.grid}>
                         {events.map((event) => (
                             <EventCard key={event.id} event={event} />
                         ))}
-                    </div>
+                    </RevealGroup>
                 ) : (
                     <div className={styles.empty}>
                         <p className={styles.emptyTitle}>Nothing on the board yet.</p>
@@ -181,7 +182,7 @@ export default function CollegeClient({ college, events, clubs, students }: Coll
                 </div>
 
                 {clubs.length > 0 ? (
-                    <div className={styles.grid} data-reveal-group>
+                    <RevealGroup className={styles.grid}>
                         {clubs.map((club) => (
                             <Link key={club.id} href={`/clubs/${club.id}`} className={styles.clubCard}>
                                 <div className={styles.clubMedia}>
@@ -213,7 +214,7 @@ export default function CollegeClient({ college, events, clubs, students }: Coll
                                 </div>
                             </Link>
                         ))}
-                    </div>
+                    </RevealGroup>
                 ) : (
                     <div className={styles.empty}>
                         <p className={styles.emptyTitle}>No clubs here yet.</p>

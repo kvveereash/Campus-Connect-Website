@@ -103,6 +103,10 @@ export const globalApiLimiter = defineLimiter(100, '1 m', 'ratelimit:api:global'
 // Uploads: 20 per hour (writes to disk — keep it tight)
 export const uploadLimiter = defineLimiter(20, '1 h', 'ratelimit:upload');
 
+// Crash reports from browsers: 20 a minute per IP. Real crashes come one or two
+// at a time; more than this is a loop or someone filling the logs.
+export const clientErrorLimiter = defineLimiter(20, '1 m', 'ratelimit:client-error');
+
 // Sensitive Actions: 10 per hour (profile updates, password changes)
 export const sensitiveActionLimiter = defineLimiter(10, '1 h', 'ratelimit:sensitive');
 

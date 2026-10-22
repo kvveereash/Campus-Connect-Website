@@ -1,9 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import styles from '@/app/profile/page.module.css';
 
-/** The pill segmented control under the hero; the black pill slides between tabs. */
+/** The pill segmented control under the hero; the black pill marks the open tab. */
 export default function ProfileTabs<T extends string>({
     tabs,
     active,
@@ -26,13 +25,7 @@ export default function ProfileTabs<T extends string>({
                     aria-controls={`${t.key.toLowerCase()}-panel`}
                     id={`${t.key.toLowerCase()}-tab`}
                 >
-                    {active === t.key && (
-                        <motion.span
-                            layoutId="profileTabPill"
-                            className={styles.activeTabLine}
-                            transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-                        />
-                    )}
+                    {active === t.key && <span className={styles.activeTabLine} />}
                     {t.label}
                     {typeof t.count === 'number' && <span className={styles.tabCount}>{t.count}</span>}
                 </button>
