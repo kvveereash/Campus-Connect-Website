@@ -32,6 +32,32 @@ describe('ticket tokens', () => {
         },
     );
 
+    describe('with TICKET_SECRET set', () => {
+        const env = process.env as Record<string, string | undefined>;
+        const legacy = ticketToken('cmreg123'); // signed with the session key
+        beforeAll(() => {
+            env.TICKET_SECRET = 'a-separate-ticket-secret-of-32-plus-chars';
+        });
+        afterAll(() => {
+            delete env.TICKET_SECRET;
+        });
+
+        it('signs new tickets with its own key, not the session key', () => {
+            expect(ticketToken('cmreg123')).not.toBe(legacy);
+            expect(readTicketToken(ticketToken('cmreg123'))).toBe('cmreg123');
+        });
+
+        it('still accepts a ticket issued before it was set', () => {
+            expect(readTicketToken(legacy)).toBe('cmreg123');
+        });
+
+        it('ignores a secret too short to be one', () => {
+            env.TICKET_SECRET = 'short';
+            expect(ticketToken('cmreg123')).toBe(legacy);
+            env.TICKET_SECRET = 'a-separate-ticket-secret-of-32-plus-chars';
+        });
+    });
+
     it('puts the token in the check-in link for that event', () => {
         const url = new URL(checkInUrl('cmevent1', 'cmreg123'));
         expect(url.pathname).toBe('/events/cmevent1/check-in');

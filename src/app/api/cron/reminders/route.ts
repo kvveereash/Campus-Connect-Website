@@ -13,7 +13,12 @@ import { GOING } from '@/lib/ticket';
  * every hour with CRON_SECRET; each run finds events starting in the next 24
  * hours and reminds everyone going who has not been reminded yet. "Already
  * reminded" is an existing EVENT_REMINDER notification for that event, so a
- * run that is retried, or overlaps the next one, sends nothing twice.
+ * run that is retried, or overlaps the next one, sends nothing twice: the
+ * check and the insert for each event run in one transaction holding an
+ * advisory lock on that event, so an overlapping run waits, then sees the
+ * rows the first one wrote. (A transaction-scoped lock, because the pooler
+ * hands each transaction its own connection.) Email goes only to the
+ * reminders this run inserted.
  */
 
 const WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -52,23 +57,29 @@ export async function POST(request: Request) {
     let sent = 0;
     for (const event of events) {
         const link = `/events/${event.id}`;
-        const already = await prisma.notification.findMany({
-            where: { type: 'EVENT_REMINDER', link, recipientId: { in: event.registrations.map((r) => r.userId) } },
-            select: { recipientId: true },
-        });
-        const reminded = new Set(already.map((n) => n.recipientId));
-        const due = event.registrations.filter((r) => !reminded.has(r.userId));
-        if (due.length === 0) continue;
-
         const when = `${formatIST(event.date, { weekday: 'long' })} at ${formatIST(event.date, { hour: 'numeric', minute: '2-digit' })}`;
-        await prisma.notification.createMany({
-            data: due.map((r) => ({
-                recipientId: r.userId,
-                type: 'EVENT_REMINDER' as const,
-                message: `reminds you: ${event.title} is ${when}, at ${event.venue}.`,
-                link,
-            })),
+
+        const due = await prisma.$transaction(async (tx) => {
+            await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`event-reminder:${event.id}`}))::text AS locked`;
+            const already = await tx.notification.findMany({
+                where: { type: 'EVENT_REMINDER', link, recipientId: { in: event.registrations.map((r) => r.userId) } },
+                select: { recipientId: true },
+            });
+            const reminded = new Set(already.map((n) => n.recipientId));
+            const fresh = event.registrations.filter((r) => !reminded.has(r.userId));
+            if (fresh.length > 0) {
+                await tx.notification.createMany({
+                    data: fresh.map((r) => ({
+                        recipientId: r.userId,
+                        type: 'EVENT_REMINDER' as const,
+                        message: `reminds you: ${event.title} is ${when}, at ${event.venue}.`,
+                        link,
+                    })),
+                });
+            }
+            return fresh;
         });
+        if (due.length === 0) continue;
         sent += due.length;
 
         // Email is best effort and only once Resend is configured; the in-app
