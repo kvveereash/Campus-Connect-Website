@@ -94,6 +94,35 @@ test('a page that needs an account sends you to log in', async ({ page }) => {
     await expect(page).toHaveURL(/\/login\?redirect=%2Fsettings/);
 });
 
+test('an upcoming event offers its calendar file', async ({ page, request }) => {
+    await page.goto('/events');
+    const href = await firstDetailLink(page, 'events');
+    await page.goto(href);
+    await expect(page.getByRole('link', { name: 'Google Calendar' })).toBeVisible();
+
+    const ics = await request.get(`${href}/calendar.ics`);
+    expect(ics.headers()['content-type']).toContain('text/calendar');
+    expect(await ics.text()).toContain('BEGIN:VEVENT');
+});
+
+test('the organiser pages need an account', async ({ page }) => {
+    await page.goto('/events');
+    const href = await firstDetailLink(page, 'events');
+    await page.goto(`${href}/attendees`);
+    await expect(page).toHaveURL(/\/login\?redirect=/);
+});
+
+test('the app installs: manifest, icons and an offline page', async ({ page, request }) => {
+    const manifest = await (await request.get('/manifest.webmanifest')).json();
+    expect(manifest.display).toBe('standalone');
+    for (const icon of manifest.icons) {
+        const res = await request.get(icon.src);
+        expect(res.headers()['content-type'], icon.src).toBe('image/png');
+    }
+    await page.goto('/offline');
+    await expect(page.getByRole('heading', { name: /offline/ })).toBeVisible();
+});
+
 test('crawlers get robots.txt, a sitemap and a share image', async ({ request }) => {
     const robots = await request.get('/robots.txt');
     expect(await robots.text()).toContain('Sitemap:');

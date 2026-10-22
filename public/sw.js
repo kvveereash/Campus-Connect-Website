@@ -10,13 +10,32 @@
  *  - caches only Next's hashed static assets, which never change under the
  *    same URL, so cache-first is safe for them;
  *  - deletes every cache from an older version when it activates, which is
- *    also what clears the stale "/" left behind by v1.
+ *    also what clears the stale "/" left behind by v1;
+ *  - keeps one page, /offline, with the CSS and scripts it links, and shows
+ *    it when a page cannot be reached at all (v3).
  */
-const CACHE = 'campus-connect-v2';
+const CACHE = 'campus-connect-v3';
+const OFFLINE = '/offline';
+
+/* The offline page plus the hashed files it needs, read out of its HTML, so
+   it renders styled with no network. A failure here only means no offline
+   page; it must not stop the worker installing. */
+async function cacheOfflinePage() {
+    const cache = await caches.open(CACHE);
+    const res = await fetch(OFFLINE, { cache: 'reload' });
+    if (!res.ok) return;
+    const html = await res.clone().text();
+    const assets = [...new Set(html.match(/\/_next\/static\/[^"'\s)]+/g) || [])];
+    await cache.put(OFFLINE, res);
+    await Promise.all(assets.map((a) => cache.add(a).catch(() => {})));
+}
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE).then((cache) => cache.addAll(['/icon.svg', '/manifest.json']))
+        Promise.all([
+            caches.open(CACHE).then((cache) => cache.addAll(['/icon.svg'])),
+            cacheOfflinePage().catch(() => {}),
+        ])
     );
     // Take over from v1 straight away instead of waiting for every tab to close.
     self.skipWaiting();
@@ -54,5 +73,9 @@ self.addEventListener('fetch', (event) => {
             )
         );
     }
-    // Everything else, pages included, goes straight to the network.
+    // A page: always the network, and the offline page only when there is none.
+    if (request.mode === 'navigate') {
+        event.respondWith(fetch(request).catch(() => caches.match(OFFLINE).then((hit) => hit || Response.error())));
+    }
+    // Everything else goes straight to the network.
 });

@@ -13,6 +13,8 @@ import TeamFinder from '@/components/TeamFinder';
 import { TeamProvider } from '@/context/TeamContext';
 import EventReviews from '@/components/EventReviews';
 import PaymentReturn from '@/components/PaymentReturn';
+import EventTicket from '@/components/EventTicket';
+import { googleCalendarUrl } from '@/lib/calendar';
 import { deleteEvent, type EventDetail } from '@/lib/actions/events';
 import styles from './page.module.css';
 import Reveal from '@/components/Reveal';
@@ -183,6 +185,20 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                                         minute: '2-digit',
                                     })}
                                 </small>
+                                {!isPast && event.verified && (
+                                    <span className={styles.calendar}>
+                                        <a
+                                            href={googleCalendarUrl({ ...event, collegeName: event.hostCollege.name })}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Google Calendar
+                                        </a>
+                                        <a href={`/events/${event.id}/calendar.ics`} download>
+                                            Apple, Outlook (.ics)
+                                        </a>
+                                    </span>
+                                )}
                             </dd>
                         </div>
 
@@ -214,8 +230,16 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                             )}
                         </div>
 
+                        <EventTicket eventId={event.id} registered={Boolean(myRegistration)} />
+
                         {isOwner && (
                             <div className={styles.ownerActions}>
+                                <Link
+                                    href={`/events/${event.id}/attendees`}
+                                    className={styles.ownerLink}
+                                >
+                                    Attendees
+                                </Link>
                                 <Link
                                     href={`/events/${event.id}/edit`}
                                     className={styles.ownerLink}

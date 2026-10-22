@@ -8,6 +8,7 @@ import { EventWithRelations } from '@/lib/actions';
 import { inkFor, dateParts, groupByProximity } from './press';
 import { eventPhoto } from '@/lib/college-images';
 import RevealGroup from '@/components/RevealGroup';
+import ForYou from './ForYou';
 import styles from './press.module.css';
 
 type TimeFilter = 'Any' | 'This week' | 'This month';
@@ -178,6 +179,9 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
                 </nav>
 
                 <main>
+                    {/* Only on the unfiltered board: under a filter it would
+                        sit above results it might not belong to. */}
+                    {activeCategory === 'All' && activeTime === 'Any' && <ForYou events={initialEvents} />}
                     {groups.length === 0 ? (
                         <p className={styles.empty}>Nothing matches those filters.</p>
                     ) : (

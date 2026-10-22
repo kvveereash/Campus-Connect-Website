@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith('/admin') ||
         pathname === '/events/create' ||
         pathname === '/clubs/create' ||
-        /^\/events\/[^/]+\/edit$/.test(pathname);
+        /^\/events\/[^/]+\/(edit|check-in|attendees)$/.test(pathname);
 
     if (!isPublicPath && !isApiRoute) {
         const session = await getSessionFromRequest(request);
@@ -69,7 +69,9 @@ export async function middleware(request: NextRequest) {
         // Send anonymous visitors to log in, remembering where they were headed.
         if (isProtectedPath && !session) {
             const loginUrl = new URL('/login', request.url);
-            loginUrl.searchParams.set('redirect', pathname);
+            // With the query: a ticket scanned while signed out (?t=...) must
+            // still be on the door page after logging in.
+            loginUrl.searchParams.set('redirect', pathname + request.nextUrl.search);
 
             /* A session cookie that no longer validates is a different event
                from never having signed in, and it is the more confusing one:
