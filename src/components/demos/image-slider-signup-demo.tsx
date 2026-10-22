@@ -36,14 +36,18 @@ export function ImageSliderSignupDemo() {
   useEffect(() => {
     if (state?.success) {
       toast.success(state.message || "Account created");
-      // Back to the page that asked for an account (an event someone was
-      // registering for), checked the same way the login form checks it;
-      // the events list when they came here on their own.
+      // First the two-question setup (college, interests), which then goes
+      // on to the page that asked for an account (an event someone was
+      // registering for), checked the same way the login form checks it,
+      // or home when they came here on their own.
       // Navigate immediately — refreshUser() can stay pending forever, which
       // used to strand a newly signed-up user on this page. The full load
       // re-creates AuthProvider, so refreshing here first buys nothing.
       // See the login form for why this is not router.replace().
-      window.location.assign(safeRedirectPath(returnTo, window.location.origin, "/events"));
+      const next = safeRedirectPath(returnTo, window.location.origin, "/home");
+      const welcome = new URL("/welcome", window.location.origin);
+      welcome.searchParams.set("redirect", next);
+      window.location.assign(welcome);
     } else if (state?.error) {
       toast.error(state.error);
     }

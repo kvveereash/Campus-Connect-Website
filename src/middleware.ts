@@ -67,6 +67,7 @@ export async function middleware(request: NextRequest) {
         pathname === '/settings' ||
         pathname === '/my-events' ||
         pathname === '/home' ||
+        pathname === '/welcome' ||
         pathname.startsWith('/messages') ||
         pathname.startsWith('/team-finder') ||
         pathname.startsWith('/admin') ||

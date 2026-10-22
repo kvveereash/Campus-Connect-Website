@@ -78,14 +78,9 @@ export async function signup(prevState: ActionState | null, formData: FormData):
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        // Assign a default college
-        const defaultCollege = await prisma.college.findFirst();
-
-        if (!defaultCollege) {
-            logger.error('No college found in database', undefined, { email });
-            return { success: false, error: 'System error: No colleges available. Please contact support.' };
-        }
-
+        // No college yet: the welcome step right after this asks for it.
+        // This used to attach every new student to whichever college the
+        // database listed first, so they saw another campus as "theirs".
         const newUser = await prisma.user.create({
             data: {
                 name,
@@ -93,7 +88,6 @@ export async function signup(prevState: ActionState | null, formData: FormData):
                 password: hashedPassword,
                 department,
                 year,
-                collegeId: defaultCollege.id
             }
         });
 
@@ -104,7 +98,7 @@ export async function signup(prevState: ActionState | null, formData: FormData):
             passwordVersion: passwordVersion(hashedPassword),
         });
 
-        logger.auth('signup', newUser.id, { email, department, year, collegeId: defaultCollege.id });
+        logger.auth('signup', newUser.id, { email, department, year });
 
         /* Send the confirmation link, but do not let it decide whether signup
            succeeded. The account exists and the session is already set; if the
