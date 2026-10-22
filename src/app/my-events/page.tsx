@@ -21,19 +21,32 @@ export default async function MyEventsPage() {
     const session = await getSession();
     if (!session?.userId) redirect('/login?redirect=%2Fmy-events');
 
-    const registrations = await prisma.eventRegistration.findMany({
-        where: {
-            userId: session.userId as string,
-            status: { in: ['PAID', 'COMPLETED', 'PENDING_PAYMENT'] },
-            event: { deletedAt: null },
-        },
-        select: {
-            id: true,
-            status: true,
-            event: { select: ROW_EVENT_SELECT },
-        },
-        orderBy: { event: { date: 'asc' } },
-    });
+    const userId = session.userId as string;
+    const [registrations, saved] = await Promise.all([
+        prisma.eventRegistration.findMany({
+            where: {
+                userId,
+                status: { in: ['PAID', 'COMPLETED', 'PENDING_PAYMENT'] },
+                event: { deletedAt: null },
+            },
+            select: { id: true, status: true, event: { select: ROW_EVENT_SELECT } },
+            orderBy: { event: { date: 'asc' } },
+        }),
+        // Saved ("Interested") and not registered for, still to come.
+        prisma.eventInterest.findMany({
+            where: {
+                userId,
+                event: {
+                    verified: true,
+                    deletedAt: null,
+                    date: { gte: new Date() },
+                    registrations: { none: { userId } },
+                },
+            },
+            select: { id: true, event: { select: ROW_EVENT_SELECT } },
+            orderBy: { event: { date: 'asc' } },
+        }),
+    ]);
 
     const now = new Date();
     const upcoming = registrations.filter((r) => r.event.date >= now);
@@ -76,7 +89,7 @@ export default async function MyEventsPage() {
                 </header>
 
                 <main>
-                    {registrations.length === 0 ? (
+                    {registrations.length === 0 && saved.length === 0 ? (
                         <div className={styles.empty}>
                             <p className={styles.emptyTitle}>Nothing yet</p>
                             <p>Events you register for show up here, with your ticket.</p>
@@ -88,6 +101,17 @@ export default async function MyEventsPage() {
                         <>
                             {section('Finish paying', toPay, 'Payment pending')}
                             {section('Coming up', going)}
+                            {saved.length > 0 && (
+                                <section>
+                                    <div className={styles.groupHead}>
+                                        <h2>Saved</h2>
+                                        <span className={styles.groupCount}>{saved.length}</span>
+                                    </div>
+                                    {saved.map((s) => (
+                                        <EventRow key={s.id} event={s.event} note="Saved" />
+                                    ))}
+                                </section>
+                            )}
                             {upcoming.length === 0 && (
                                 <div className={styles.empty}>
                                     <p className={styles.emptyTitle}>Nothing coming up</p>

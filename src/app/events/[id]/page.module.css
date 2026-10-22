@@ -196,6 +196,17 @@
     gap: 10px;
 }
 
+/* Interested and Share side by side under the register button. */
+.secondaryActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.secondaryActions > * {
+    flex: 1 1 140px;
+}
+
 .ownerActions {
     display: flex;
     flex-wrap: wrap;

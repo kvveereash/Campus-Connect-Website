@@ -44,6 +44,8 @@ beforeEach(() => {
     );
     mockCreateMany.mockResolvedValue({ count: 1 });
     mockSendEmail.mockResolvedValue(undefined);
+    // Each event makes two claims: registrations, then "Interested" saves.
+    mockClaim.mockResolvedValue([]);
 });
 
 afterAll(() => {
@@ -61,11 +63,11 @@ describe('POST /api/cron/reminders', () => {
     });
 
     it('reminds and emails exactly the registrations this run claimed', async () => {
-        mockClaim.mockResolvedValue([{ userId: 'u2' }]);
+        mockClaim.mockResolvedValueOnce([{ userId: 'u2' }]);
 
         const res = await call(`Bearer ${SECRET}`);
         expect(res.status).toBe(200);
-        expect(await res.json()).toEqual({ events: 1, reminders: 1 });
+        expect(await res.json()).toEqual({ events: 1, reminders: 1, saved: 0 });
 
         expect(mockCreateMany).toHaveBeenCalledWith({
             data: [expect.objectContaining({ recipientId: 'u2', type: 'EVENT_REMINDER', link: '/events/ev1' })],
@@ -82,6 +84,24 @@ describe('POST /api/cron/reminders', () => {
         expect(sql).toMatch(/"reminderSentAt" IS NULL/);
         expect(sql).toMatch(/"status" IN \('PAID', 'COMPLETED'\)/);
         expect(sql).toMatch(/RETURNING "userId"/);
+    });
+
+    it('nudges people who saved the event but did not register, in the app only', async () => {
+        mockClaim.mockResolvedValueOnce([]).mockResolvedValueOnce([{ userId: 'u1' }]);
+
+        const res = await call(`Bearer ${SECRET}`);
+        expect(await res.json()).toEqual({ events: 1, reminders: 0, saved: 1 });
+
+        const sql = (mockClaim.mock.calls[1][0] as TemplateStringsArray).join('?');
+        expect(sql).toMatch(/UPDATE "EventInterest"/);
+        expect(sql).toMatch(/"reminderSentAt" IS NULL/);
+        // Registered people already get the ticket reminder; not both.
+        expect(sql).toMatch(/NOT IN \(\s*SELECT "userId" FROM "EventRegistration"/);
+
+        expect(mockCreateMany).toHaveBeenCalledWith({
+            data: [expect.objectContaining({ recipientId: 'u1', message: expect.stringContaining('which you saved') })],
+        });
+        expect(mockSendEmail).not.toHaveBeenCalled();
     });
 
     it('sends nothing twice when two runs overlap: the second claims no one', async () => {

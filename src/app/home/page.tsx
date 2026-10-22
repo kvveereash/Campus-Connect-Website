@@ -28,7 +28,7 @@ export default async function MemberHome() {
     const firstName = (session.user?.name || '').trim().split(/\s+/)[0] || 'there';
     const now = new Date();
 
-    const [mine, nearby, memberships] = await Promise.all([
+    const [mine, nearby, memberships, saved] = await Promise.all([
         prisma.eventRegistration.findMany({
             where: {
                 userId,
@@ -44,8 +44,9 @@ export default async function MemberHome() {
                 verified: true,
                 deletedAt: null,
                 date: { gte: now },
-                // Not ones you are already going to.
+                // Not ones you are already going to, or have saved.
                 registrations: { none: { userId } },
+                interests: { none: { userId } },
                 ...(collegeId ? { hostCollegeId: collegeId } : {}),
             },
             select: ROW_EVENT_SELECT,
@@ -57,6 +58,12 @@ export default async function MemberHome() {
             select: { club: { select: { id: true, name: true } } },
             orderBy: { joinedAt: 'desc' },
             take: 12,
+        }),
+        prisma.eventInterest.findMany({
+            where: { userId, event: { verified: true, deletedAt: null, date: { gte: now } } },
+            select: { id: true, event: { select: ROW_EVENT_SELECT } },
+            orderBy: { event: { date: 'asc' } },
+            take: 4,
         }),
     ]);
 
@@ -120,6 +127,18 @@ export default async function MemberHome() {
                         </div>
                     )}
                 </section>
+
+                {saved.length > 0 && (
+                    <section aria-labelledby="home-saved">
+                        <div className={press.groupHead}>
+                            <h2 id="home-saved">Saved</h2>
+                            <span className={press.groupCount}>{saved.length}</span>
+                        </div>
+                        {saved.map((s) => (
+                            <EventRow key={s.id} event={s.event} note="Saved" />
+                        ))}
+                    </section>
+                )}
 
                 <section aria-labelledby="home-nearby">
                     <div className={press.groupHead}>

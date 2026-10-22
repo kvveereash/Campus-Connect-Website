@@ -100,6 +100,7 @@ model User {
   conversationParticipations ConversationParticipant[]
   createdEvents              Event[]                   @relation("CreatedEvents")
   registrations              EventRegistration[]
+  eventInterests             EventInterest[]
   eventReviews               EventReview[]
   messagesSent               Message[]
   triggeredNotifications     Notification[]            @relation("NotificationActor")
@@ -201,6 +202,7 @@ model Event {
   hostCollege       College             @relation(fields: [hostCollegeId], references: [id])
   registrations     EventRegistration[]
   reviews           EventReview[]
+  interests         EventInterest[]
   teamRequests      TeamRequest[]
 
   deletedAt DateTime?
@@ -226,6 +228,22 @@ model EventReview {
   @@unique([userId, eventId])
   @@index([eventId])
   @@index([userId])
+}
+
+/// "Interested": a one-tap save, lighter than registering. Shown on Home and
+/// My events, and reminded the day before like a registration (claimed
+/// through reminderSentAt the same way).
+model EventInterest {
+  id             String    @id @default(cuid())
+  userId         String
+  eventId        String
+  createdAt      DateTime  @default(now())
+  reminderSentAt DateTime?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
 }
 
 model EventRegistration {
