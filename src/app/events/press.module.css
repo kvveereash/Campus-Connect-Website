@@ -539,6 +539,33 @@
     color: var(--color-felt);
 }
 
+/* "Starts in 40 min", "Tomorrow": worked out in the browser (WhenTag). */
+.whenTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.whenTag[data-now='true'] {
+    background: color-mix(in srgb, var(--color-success) 12%, transparent);
+    color: var(--color-success);
+}
+
+.whenTag[data-now='true']::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
 /* A status the board never shows (My events: "Payment pending"). Marker
    yellow, the page's one highlight. */
 .note {

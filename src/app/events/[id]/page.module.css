@@ -37,6 +37,35 @@
 
 /* Category and price sit on one rule above the title — the same
    eyebrow the listing uses, so the row you clicked reappears here. */
+/* "Starts in 40 min", from WhenTag. Sentence case in the mono eyebrow. */
+.whenTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.whenTag[data-now='true'] {
+    background: color-mix(in srgb, var(--color-success) 12%, transparent);
+    color: var(--color-success);
+}
+
+.whenTag[data-now='true']::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
 .eyebrow {
     display: flex;
     flex-wrap: wrap;

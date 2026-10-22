@@ -1,4 +1,4 @@
-import { cityOf, matchesSearch } from '@/app/events/press';
+import { cityOf, matchesSearch, timeLabel } from '@/app/events/press';
 
 describe('cityOf', () => {
     it('takes the city from "City, State"', () => {
@@ -44,5 +44,28 @@ describe('matchesSearch', () => {
 
     it('matches everything for an empty query', () => {
         expect(matchesSearch(event, '   ')).toBe(true);
+    });
+});
+
+describe('timeLabel', () => {
+    // 22 Oct 2026, 2:00 pm in India.
+    const now = new Date('2026-10-22T08:30:00Z');
+    const at = (minutes: number) => new Date(now.getTime() + minutes * 60000);
+
+    it('says an event is on for three hours after it starts', () => {
+        expect(timeLabel(at(-10), now)).toBe('Happening now');
+        expect(timeLabel(at(-179), now)).toBe('Happening now');
+        expect(timeLabel(at(-181), now)).toBeNull();
+    });
+
+    it('counts down the last hour in minutes, then hours', () => {
+        expect(timeLabel(at(40), now)).toBe('Starts in 40 min');
+        expect(timeLabel(at(180), now)).toBe('In 3 hours');
+    });
+
+    it('names today and tomorrow in Indian time', () => {
+        expect(timeLabel(new Date('2026-10-22T17:00:00Z'), now)).toBe('Today'); // 10:30 pm IST
+        expect(timeLabel(new Date('2026-10-22T19:00:00Z'), now)).toBe('Tomorrow'); // 12:30 am IST, 23rd
+        expect(timeLabel(new Date('2026-10-24T08:30:00Z'), now)).toBeNull();
     });
 });

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { eventPhoto } from '@/lib/college-images';
+import WhenTag from '@/components/WhenTag';
 import { inkFor, dateParts } from './press';
 import styles from './press.module.css';
 
@@ -83,6 +84,7 @@ export default function EventRow({ event, note }: { event: RowEvent; note?: stri
                     <span className={`${styles.price} ${event.price > 0 ? '' : styles.priceFree}`}>
                         {event.price > 0 ? `₹${event.price.toLocaleString('en-IN')}` : 'Free'}
                     </span>
+                    <WhenTag date={event.date} className={styles.whenTag} />
                     {note && <span className={styles.note}>{note}</span>}
                     {/* Zero is not shown — the old card advertised "0 Reg." */}
                     {going > 0 && <span className={styles.going}>{going} going</span>}

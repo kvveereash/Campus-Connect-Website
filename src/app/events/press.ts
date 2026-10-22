@@ -147,3 +147,23 @@ export function matchesSearch(event: Searchable, query: string): boolean {
         .toLowerCase();
     return words.every((w) => haystack.includes(w));
 }
+
+const IST_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
+const HOUR = 60 * 60 * 1000;
+
+/**
+ * "Happening now", "Starts in 40 min", "In 3 hours", "Today", "Tomorrow",
+ * or null when a date says it better. Days are counted in Indian time.
+ * Events have no end time, so "now" lasts three hours from the start.
+ */
+export function timeLabel(start: Date | string, now: Date = new Date()): string | null {
+    const s = new Date(start);
+    const diff = s.getTime() - now.getTime();
+    if (diff <= 0) return diff > -3 * HOUR ? 'Happening now' : null;
+    if (diff < HOUR) return `Starts in ${Math.max(1, Math.round(diff / 60000))} min`;
+    if (diff < 6 * HOUR) return `In ${Math.round(diff / HOUR)} hours`;
+    const day = IST_DAY.format(s);
+    if (day === IST_DAY.format(now)) return 'Today';
+    if (day === IST_DAY.format(new Date(now.getTime() + 24 * HOUR))) return 'Tomorrow';
+    return null;
+}

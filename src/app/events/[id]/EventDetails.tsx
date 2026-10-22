@@ -16,6 +16,7 @@ import PaymentReturn from '@/components/PaymentReturn';
 import EventTicket from '@/components/EventTicket';
 import ShareButton from '@/components/ShareButton';
 import InterestButton from '@/components/InterestButton';
+import WhenTag from '@/components/WhenTag';
 import { googleCalendarUrl } from '@/lib/calendar';
 import { deleteEvent, type EventDetail } from '@/lib/actions/events';
 import styles from './page.module.css';
@@ -151,6 +152,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                     <span>{priceText}</span>
                     <span className={styles.eyebrowRule}>/</span>
                     <span>{isPast ? 'Past' : 'Upcoming'}</span>
+                    <WhenTag date={event.date} className={styles.whenTag} />
                     {/* Only the creator ever sees an unverified event. */}
                     {!event.verified && <span className={styles.pending}>Awaiting approval</span>}
                 </div>
