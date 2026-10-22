@@ -14,6 +14,7 @@ import { TeamProvider } from '@/context/TeamContext';
 import EventReviews from '@/components/EventReviews';
 import PaymentReturn from '@/components/PaymentReturn';
 import EventTicket from '@/components/EventTicket';
+import ShareButton from '@/components/ShareButton';
 import { googleCalendarUrl } from '@/lib/calendar';
 import { deleteEvent, type EventDetail } from '@/lib/actions/events';
 import styles from './page.module.css';
@@ -241,6 +242,13 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                                 <button className="btn btn-outline" disabled>Awaiting approval</button>
                             ) : (
                                 <RegisterButton eventId={event.id} price={event.price || 0} />
+                            )}
+                            {event.verified && (
+                                <ShareButton
+                                    title={event.title}
+                                    text={`${event.title}: ${formatIST(when, { weekday: 'short', day: 'numeric', month: 'short' })}, ${event.venue}.`}
+                                    path={`/events/${event.id}`}
+                                />
                             )}
                         </div>
 
