@@ -1,12 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { Search, ArrowRight } from 'lucide-react';
 import { resolveCollegeImage } from '@/lib/college-images';
 import styles from './colleges.module.css';
+import entrance from '@/components/entrance.module.css';
 
 interface College {
     id: string;
@@ -23,16 +23,9 @@ interface CollegesClientProps {
     initialColleges: College[];
 }
 
-const rise = {
-    hidden: { opacity: 0, y: 16 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 1.25, ease: [0.19, 1, 0.22, 1] as const },
-    },
-};
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.04 } } };
+// Each row waits its turn; capped so a long list does not keep the last
+// rows blank for seconds.
+const stagger = (i: number) => ({ '--delay': `${Math.min(i, 12) * 0.04}s` }) as CSSProperties;
 
 export default function CollegesClient({ initialColleges }: CollegesClientProps) {
     const [query, setQuery] = useState('');
@@ -84,19 +77,14 @@ export default function CollegesClient({ initialColleges }: CollegesClientProps)
                     <p className={styles.emptyText}>Try a different name or city.</p>
                 </div>
             ) : (
-                <motion.div
-                    className={styles.list}
-                    initial="hidden"
-                    animate="visible"
-                    variants={stagger}
-                    key={query}
-                >
-                    {visible.map((college) => (
-                        <motion.div key={college.id} variants={rise}>
+                // Keyed on the search so new results replay the entrance.
+                <div className={styles.list} key={query}>
+                    {visible.map((college, i) => (
+                        <div key={college.id} className={entrance.rise} style={stagger(i)}>
                             <CollegeRow college={college} />
-                        </motion.div>
+                        </div>
                     ))}
-                </motion.div>
+                </div>
             )}
         </div>
     );

@@ -2,10 +2,10 @@
 
 import { Compass } from 'lucide-react';
 
-import { motion } from 'framer-motion';
 import Button from '@/components/ui/Button';
 
 import styles from './EmptyState.module.css';
+import entrance from '@/components/entrance.module.css';
 
 interface EmptyStateProps {
     title: string;
@@ -18,10 +18,8 @@ interface EmptyStateProps {
 
 export default function EmptyState({ title, description, actionLabel, actionLink, onAction, compact = false }: EmptyStateProps) {
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={styles.container}
+        <div
+            className={`${styles.container} ${entrance.pop}`}
             style={{ minHeight: compact ? '250px' : '400px' }}
         >
             <div className={styles.illustration}>
@@ -65,6 +63,6 @@ export default function EmptyState({ title, description, actionLabel, actionLink
                     </Button>
                 )
             )}
-        </motion.div>
+        </div>
     );
 }

@@ -18,8 +18,10 @@
 }
 
 /* ============================================================
-   TABS — a pill segmented control; the black pill slides between
-   tabs (framer-motion moves .activeTabLine).
+   TABS — a pill segmented control; the black pill (.activeTabLine)
+   is rendered inside the open tab and fades in when it moves. It
+   used to slide between tabs, which needed a second animation
+   library on every phone for one pill.
    ============================================================ */
 
 .tabs {
@@ -74,6 +76,14 @@
     z-index: -1;
     border-radius: var(--radius-pill);
     background: var(--color-obsidian);
+    animation: tabPill var(--duration-base) var(--ease-glide) backwards;
+}
+
+@keyframes tabPill {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
 }
 
 .tabCount {
@@ -96,7 +106,10 @@
 
 .content {
     margin-top: 20px;
-    animation: rise 0.5s var(--ease-glide) both;
+    /* `backwards`, not `both`: the panel holds the professional tab's
+       fixed modals, and a filling transform on their ancestor would
+       turn it into their containing block. */
+    animation: rise 0.5s var(--ease-glide) backwards;
 }
 
 @keyframes rise {
@@ -670,7 +683,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .content {
+    .content,
+    .activeTabLine {
         animation: none;
     }
 

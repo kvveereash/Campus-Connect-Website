@@ -2,7 +2,7 @@
 
 import React from 'react';
 import styles from './Badge.module.css';
-import { motion } from 'framer-motion';
+import entrance from './entrance.module.css';
 import { formatIST } from '@/lib/format';
 
 interface BadgeProps {
@@ -19,10 +19,8 @@ export default function Badge({ name, icon, description, earnedDate, className }
         : null;
 
     return (
-        <motion.div
-            className={`${styles.badge} ${className || ''}`}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+        <div
+            className={`${styles.badge} ${entrance.pop} ${className || ''}`}
             data-tooltip={description}
         >
             <div className={styles.iconWrapper}>
@@ -32,6 +30,6 @@ export default function Badge({ name, icon, description, earnedDate, className }
             {formattedDate && (
                 <span className={styles.earnedDate}>Earned {formattedDate}</span>
             )}
-        </motion.div>
+        </div>
     );
 }

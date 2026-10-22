@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit -p .",
     "test": "jest",
     "check": "npm run typecheck && npm run lint:ratchet && npm test && npm run build",
-    "seed:examples": "tsx prisma/seed-examples.ts"
+    "seed:examples": "tsx prisma/seed-examples.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -20,9 +21,7 @@
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.1",
     "bcryptjs": "^3.0.3",
-    "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "framer-motion": "^12.23.26",
     "gsap": "^3.15.0",
     "jose": "^6.1.3",
     "lenis": "^1.3.26",
@@ -30,6 +29,7 @@
     "next": "16.4.2",
     "pusher": "^5.2.0",
     "pusher-js": "^8.4.0",
+    "qrcode": "^1.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.69.0",
@@ -39,17 +39,18 @@
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "stripe": "^20.2.0",
-    "tailwind-merge": "^3.4.0",
     "use-debounce": "^10.0.6",
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sanitize-html": "^2.16.0",

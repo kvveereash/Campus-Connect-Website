@@ -129,24 +129,6 @@ export interface TeamRequest {
   createdAt: string; // ISO Date
 }
 
-export interface ChatRoom {
-  id: string;
-  name: string;
-  type: 'college' | 'topic' | 'private';
-  description?: string;
-  participants?: number;
-}
-
-export interface ChatMessage {
-  id: string;
-  roomId: string;
-  senderId: string;
-  senderName: string;
-  senderAvatar?: string;
-  content: string;
-  timestamp: string;
-  isMe?: boolean;
-}
 export interface Story {
   id: string;
   userId: string;

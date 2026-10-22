@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { resolveClubImage } from '@/lib/college-images';
 import { useAuth } from '@/context/AuthContext';
 import { getPostableClubs } from '@/lib/actions/buzz';
 import styles from './clubs.module.css';
+import entrance from '@/components/entrance.module.css';
 
 interface Club {
     id: string;
@@ -27,16 +27,9 @@ interface ClubListProps {
     initialClubs: Club[];
 }
 
-const rise = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 1.25, ease: [0.19, 1, 0.22, 1] as const },
-    },
-};
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } };
+// Each card waits its turn; capped so a long list does not keep the last
+// cards blank for seconds.
+const stagger = (i: number) => ({ '--delay': `${Math.min(i, 12) * 0.05}s` }) as CSSProperties;
 
 export default function ClubList({ initialClubs }: ClubListProps) {
     const { user } = useAuth();
@@ -157,19 +150,14 @@ export default function ClubList({ initialClubs }: ClubListProps) {
                     </button>
                 </div>
             ) : (
-                <motion.div
-                    className={styles.grid}
-                    initial="hidden"
-                    animate="visible"
-                    variants={stagger}
-                    key={`${category}-${mineOnly}`}
-                >
-                    {visible.map((club) => (
-                        <motion.div key={club.id} variants={rise}>
+                // Keyed on the filter so a new filter replays the entrance.
+                <div className={styles.grid} key={`${category}-${mineOnly}`}>
+                    {visible.map((club, i) => (
+                        <div key={club.id} className={entrance.rise} style={stagger(i)}>
                             <ClubItem club={club} joined={joinedClubIds.includes(club.id)} />
-                        </motion.div>
+                        </div>
                     ))}
-                </motion.div>
+                </div>
             )}
         </div>
     );

@@ -1,11 +1,4 @@
 
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs))
-}
-
 /**
  * A same-origin path to send someone to after sign-in, or the fallback.
  *
