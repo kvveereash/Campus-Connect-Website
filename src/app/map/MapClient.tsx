@@ -5,6 +5,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import Reveal from '@/components/Reveal';
 import { formatIST } from '@/lib/format';
+import VenueMap from './VenueMap';
 
 interface MapEvent {
     id: string;
@@ -30,10 +31,20 @@ export default function MapClient({ events }: { events: MapEvent[] }) {
             .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
     }, [events]);
 
-    const visible =
-        activeCategory === 'All'
-            ? events
-            : events.filter((e) => e.category === activeCategory);
+    const visible = useMemo(
+        () => (activeCategory === 'All' ? events : events.filter((e) => e.category === activeCategory)),
+        [events, activeCategory],
+    );
+
+    /* One pin per college with something coming up, sized by how much. */
+    const mapColleges = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const e of visible) {
+            const name = e.hostCollege?.name;
+            if (name) counts.set(name, (counts.get(name) ?? 0) + 1);
+        }
+        return [...counts].map(([name, n]) => ({ name, events: n }));
+    }, [visible]);
 
     /* Grouped by venue, venues ordered by whichever has something happening
        soonest — the order someone reading this actually cares about. */
@@ -90,6 +101,8 @@ export default function MapClient({ events }: { events: MapEvent[] }) {
                     </button>
                 ))}
             </div>
+
+            {mapColleges.length > 0 && <VenueMap colleges={mapColleges} />}
 
             {venues.length === 0 ? (
                 <div className={styles.empty}>

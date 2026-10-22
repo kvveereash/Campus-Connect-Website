@@ -1,0 +1,16 @@
+.map {
+    position: relative;
+    z-index: 0; /* keeps Leaflet's panes under the sticky navbar */
+    height: 380px;
+    margin: 8px 0 28px;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-hairline);
+    background: var(--color-canvas);
+    overflow: hidden;
+}
+
+@media (max-width: 720px) {
+    .map {
+        height: 280px;
+    }
+}

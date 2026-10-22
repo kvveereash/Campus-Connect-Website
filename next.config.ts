@@ -37,14 +37,15 @@ const securityHeaders = [
      the live site (every resource there is same-origin; images come through
      /_next/image). 'unsafe-inline' in script-src is needed for Next's inline
      bootstrap scripts: a nonce would force every page to render per request.
-     'unsafe-eval' is development only, where React's dev build needs it. */
+     'unsafe-eval' is development only, where React's dev build needs it.
+     tile.openstreetmap.org is the Venues map's tiles (images only). */
   {
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://ui-avatars.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://ui-avatars.com https://tile.openstreetmap.org",
       "font-src 'self'",
       "connect-src 'self' https://*.pusher.com wss://*.pusher.com",
       "worker-src 'self'",

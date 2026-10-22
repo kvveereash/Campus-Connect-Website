@@ -1,3 +1,4 @@
+import { collegeCoords } from '@/lib/college-coords';
 import { cityOf, matchesSearch, timeLabel } from '@/app/events/press';
 
 describe('cityOf', () => {
@@ -67,5 +68,18 @@ describe('timeLabel', () => {
         expect(timeLabel(new Date('2026-10-22T17:00:00Z'), now)).toBe('Today'); // 10:30 pm IST
         expect(timeLabel(new Date('2026-10-22T19:00:00Z'), now)).toBe('Tomorrow'); // 12:30 am IST, 23rd
         expect(timeLabel(new Date('2026-10-24T08:30:00Z'), now)).toBeNull();
+    });
+});
+
+describe('collegeCoords', () => {
+    it('finds a college however its name is punctuated', () => {
+        expect(collegeCoords('Indian Institute of Technology, Mumbai')).toEqual([19.1334, 72.9133]);
+        expect(collegeCoords('BITS Pilani — Goa Campus')).toEqual([15.3911, 73.8782]);
+        expect(collegeCoords('Delhi University — North Campus')).not.toBeNull();
+    });
+
+    it('has no pin for a college it does not know', () => {
+        expect(collegeCoords('Apex University')).toBeNull();
+        expect(collegeCoords(null)).toBeNull();
     });
 });
