@@ -5,6 +5,7 @@ import { ArrowRight, CalendarCheck, Megaphone, Plus, Users } from 'lucide-react'
 import { getSession } from '@/lib/auth';
 import prisma from '@/lib/db';
 import EventRow, { ROW_EVENT_SELECT } from '@/app/events/EventRow';
+import InstallPrompt from '@/components/InstallPrompt';
 import press from '@/app/events/press.module.css';
 import styles from './page.module.css';
 
@@ -99,6 +100,8 @@ export default async function MemberHome() {
                         Post an event
                     </Link>
                 </nav>
+
+                <InstallPrompt />
 
                 <section aria-labelledby="home-next">
                     <div className={press.groupHead}>

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import prisma from '@/lib/db';
 import EventRow, { ROW_EVENT_SELECT, type RowEvent } from '@/app/events/EventRow';
+import InstallPrompt from '@/components/InstallPrompt';
 import styles from '@/app/events/press.module.css';
 
 export const metadata: Metadata = {
@@ -89,6 +90,7 @@ export default async function MyEventsPage() {
                 </header>
 
                 <main>
+                    {registrations.length > 0 && <InstallPrompt />}
                     {registrations.length === 0 && saved.length === 0 ? (
                         <div className={styles.empty}>
                             <p className={styles.emptyTitle}>Nothing yet</p>
