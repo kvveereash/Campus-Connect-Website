@@ -55,14 +55,28 @@ export default function EventDetails({ event }: { event: EventDetail }) {
     );
     const canRegister = !isPast && event.verified && !myRegistration;
 
+    /* Measured on scroll rather than with an IntersectionObserver: that only
+       reports crossings, so a jump straight past the button (a restored
+       scroll position, a fast fling) left the bar up below it. */
     useEffect(() => {
         const el = actionsRef.current;
         if (!el || !canRegister) return;
-        const observer = new IntersectionObserver(([entry]) => {
-            setActionsBelow(!entry.isIntersecting && entry.boundingClientRect.top > 0);
-        });
-        observer.observe(el);
-        return () => observer.disconnect();
+        let frame = 0;
+        const measure = () => {
+            frame = 0;
+            setActionsBelow(el.getBoundingClientRect().top > window.innerHeight);
+        };
+        const schedule = () => {
+            if (!frame) frame = requestAnimationFrame(measure);
+        };
+        schedule();
+        window.addEventListener('scroll', schedule, { passive: true });
+        window.addEventListener('resize', schedule);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener('scroll', schedule);
+            window.removeEventListener('resize', schedule);
+        };
     }, [canRegister]);
 
     const goToRegister = () => {
