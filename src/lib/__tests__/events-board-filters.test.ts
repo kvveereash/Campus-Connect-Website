@@ -62,6 +62,7 @@ describe('timeLabel', () => {
     it('counts down the last hour in minutes, then hours', () => {
         expect(timeLabel(at(40), now)).toBe('Starts in 40 min');
         expect(timeLabel(at(180), now)).toBe('In 3 hours');
+        expect(timeLabel(at(75), now)).toBe('In 1 hour');
     });
 
     it('names today and tomorrow in Indian time', () => {

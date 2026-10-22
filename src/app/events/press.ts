@@ -161,7 +161,10 @@ export function timeLabel(start: Date | string, now: Date = new Date()): string 
     const diff = s.getTime() - now.getTime();
     if (diff <= 0) return diff > -3 * HOUR ? 'Happening now' : null;
     if (diff < HOUR) return `Starts in ${Math.max(1, Math.round(diff / 60000))} min`;
-    if (diff < 6 * HOUR) return `In ${Math.round(diff / HOUR)} hours`;
+    if (diff < 6 * HOUR) {
+        const hours = Math.round(diff / HOUR);
+        return `In ${hours} hour${hours === 1 ? '' : 's'}`;
+    }
     const day = IST_DAY.format(s);
     if (day === IST_DAY.format(now)) return 'Today';
     if (day === IST_DAY.format(new Date(now.getTime() + 24 * HOUR))) return 'Tomorrow';
