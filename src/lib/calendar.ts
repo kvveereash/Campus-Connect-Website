@@ -43,9 +43,18 @@ export function googleCalendarUrl(event: CalendarEvent) {
     return `https://calendar.google.com/calendar/render?${params}`;
 }
 
-/* RFC 5545 text: backslash, semicolon and comma are escaped, newlines become \n. */
+/* RFC 5545 text: backslash, semicolon and comma are escaped, line breaks become
+   \n. A lone \r counts as a break too, and other control characters are
+   dropped: some calendar apps start a new line at a bare \r, which would let
+   an organiser's title smuggle extra properties (an alarm, a URL) into the
+   file. */
 function icsText(value: string) {
-    return value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+    return value
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\r\n|\r|\n/g, '\\n')
+        .replace(/[\x00-\x08\x0b-\x1f\x7f]/g, '');
 }
 
 const bytes = (s: string) => new TextEncoder().encode(s).length;

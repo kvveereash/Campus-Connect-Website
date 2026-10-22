@@ -33,6 +33,14 @@ describe('icsFile', () => {
         expect(unfolded).toContain('Line one\\nLine two with a backslash \\\\ in it');
     });
 
+    it('cannot be made to start a new property with a lone carriage return', () => {
+        const smuggled = icsFile({ ...event, title: 'Talk\rBEGIN:VALARM\rACTION:DISPLAY\u0007' });
+        const lines = smuggled.replace(/\r\n /g, '').split('\r\n');
+        expect(smuggled.replace(/\r\n/g, '')).not.toMatch(/[\r\x00-\x08\x0b-\x1f\x7f]/);
+        expect(lines).toContain('SUMMARY:Talk\\nBEGIN:VALARM\\nACTION:DISPLAY');
+        expect(lines.filter((l) => l === 'BEGIN:VALARM')).toHaveLength(1);
+    });
+
     it('folds every line to 75 bytes', () => {
         for (const line of ics.split('\r\n')) {
             expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
