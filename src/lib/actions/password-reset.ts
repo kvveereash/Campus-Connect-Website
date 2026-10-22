@@ -4,7 +4,7 @@ import prisma from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
-import { sendPasswordResetEmail } from '@/lib/email';
+import { emailEnabled, sendPasswordResetEmail } from '@/lib/email';
 import { authLimiter, checkRateLimit } from '@/lib/rate-limit';
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -35,6 +35,15 @@ export async function requestPasswordReset(email: string) {
         return { success: false, error: 'Enter your email address' };
     }
     const normalizedEmail = email.trim().toLowerCase();
+
+    // Saying "a link is on its way" when no mail can leave strands people
+    // waiting. The same answer for every address, so it reveals no accounts.
+    if (!emailEnabled()) {
+        return {
+            success: false,
+            error: 'Reset emails are not switched on for this site yet, so no link can be sent. To look around, use "Try the demo" on the sign-in page.',
+        };
+    }
 
     try {
         // Keyed on the address, so one inbox cannot be flooded with reset

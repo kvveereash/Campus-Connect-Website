@@ -13,7 +13,11 @@ const mockDb = {
 
 // Getters, because the imports below are hoisted above these initialisers.
 jest.mock('@/lib/db', () => ({ __esModule: true, get default() { return mockDb; } }));
-jest.mock('@/lib/email', () => ({ sendPasswordResetEmail: (...a: unknown[]) => mockSendEmail(...a) }));
+const mockEmailEnabled = jest.fn(() => true);
+jest.mock('@/lib/email', () => ({
+    sendPasswordResetEmail: (...a: unknown[]) => mockSendEmail(...a),
+    emailEnabled: () => mockEmailEnabled(),
+}));
 jest.mock('@/lib/rate-limit', () => ({
     authLimiter: {},
     checkRateLimit: (...a: unknown[]) => mockCheckRateLimit(...a),
@@ -48,6 +52,15 @@ describe('requestPasswordReset', () => {
         const result = await requestPasswordReset('ada@campus.edu');
         expect(result.success).toBe(true);
         expect(mockSendEmail).not.toHaveBeenCalled();
+    });
+
+    it('says plainly that no link can be sent when email is off, without looking anyone up', async () => {
+        mockEmailEnabled.mockReturnValueOnce(false);
+        const result = await requestPasswordReset('ada@campus.edu');
+        expect(result.success).toBe(false);
+        expect(result.error).toMatch(/not switched on/);
+        expect(mockSendEmail).not.toHaveBeenCalled();
+        expect(mockCheckRateLimit).not.toHaveBeenCalled();
     });
 });
 

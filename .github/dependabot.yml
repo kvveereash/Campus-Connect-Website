@@ -1,0 +1,32 @@
+# Weekly dependency updates as pull requests, each checked by the CI "Check"
+# workflow before anything is merged. Grouped so a week of minor and patch
+# bumps arrives as one PR instead of twenty; majors stay separate, because
+# they are the ones that need reading. Security fixes are not grouped or
+# held for the weekly run: GitHub opens those as soon as an advisory lands.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    groups:
+      runtime:
+        dependency-type: production
+        update-types: [minor, patch]
+      tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore

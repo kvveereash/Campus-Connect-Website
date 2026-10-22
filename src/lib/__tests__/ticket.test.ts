@@ -8,21 +8,42 @@ jest.mock('@/lib/db', () => ({
     default: { clubMember: { findUnique: (...a: unknown[]) => mockClubMember(...a) } },
 }));
 
-// Only the key is needed; the real module pulls in jose, which is ESM only.
-jest.mock('@/lib/auth-edge', () => ({
-    getSigningKey: () => new TextEncoder().encode('test-key-that-is-at-least-32-characters'),
-}));
-
-import { canManageEvent, checkInUrl, readTicketToken, ticketToken } from '../ticket';
+import { canManageEvent, checkInUrl, readTicketToken, ticketToken, ticketsEnabled } from '../ticket';
 
 describe('ticket tokens', () => {
+    beforeAll(() => {
+        process.env.TICKET_SECRET = 'test-ticket-secret-at-least-32-characters';
+    });
+
     it('reads back the registration it was issued for', () => {
         expect(readTicketToken(ticketToken('cmreg123'))).toBe('cmreg123');
     });
 
     it('refuses a token for one registration signed for another', () => {
-        const [, sig] = ticketToken('cmreg123').split('.');
+        const [, sig] = (ticketToken('cmreg123') ?? '').split('.');
         expect(readTicketToken(`cmreg999.${sig}`)).toBeNull();
+    });
+
+    it('refuses a token signed with a different secret', () => {
+        const token = ticketToken('cmreg123');
+        process.env.TICKET_SECRET = 'a-rotated-ticket-secret-of-32-characters';
+        expect(readTicketToken(token)).toBeNull();
+        process.env.TICKET_SECRET = 'test-ticket-secret-at-least-32-characters';
+    });
+
+    it('is off in production until TICKET_SECRET is set, rather than using a stand-in key', () => {
+        const env = process.env as Record<string, string | undefined>;
+        const [secret, nodeEnv] = [env.TICKET_SECRET, env.NODE_ENV];
+        env.TICKET_SECRET = undefined;
+        env.NODE_ENV = 'production';
+        try {
+            expect(ticketsEnabled()).toBe(false);
+            expect(ticketToken('cmreg123')).toBeNull();
+            expect(checkInUrl('cmevent1', 'cmreg123')).toBeNull();
+        } finally {
+            env.TICKET_SECRET = secret;
+            env.NODE_ENV = nodeEnv;
+        }
     });
 
     it.each(['', 'cmreg123', 'cmreg123.', '.abc', 'cmreg123.not-the-signature', 'x'.repeat(200)])(
@@ -33,7 +54,7 @@ describe('ticket tokens', () => {
     );
 
     it('puts the token in the check-in link for that event', () => {
-        const url = new URL(checkInUrl('cmevent1', 'cmreg123'));
+        const url = new URL(checkInUrl('cmevent1', 'cmreg123') ?? '');
         expect(url.pathname).toBe('/events/cmevent1/check-in');
         expect(readTicketToken(url.searchParams.get('t'))).toBe('cmreg123');
     });

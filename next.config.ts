@@ -32,17 +32,17 @@ const securityHeaders = [
     key: 'Cross-Origin-Opener-Policy',
     value: 'same-origin'
   },
-  /* A Content-Security-Policy limits the damage of any future XSS bug. It is
-     sent as Report-Only first: browsers log violations in the console but
-     block nothing, so a missed source cannot break the site. Once the console
-     stays clean, rename the key to 'Content-Security-Policy' to enforce it.
-     'unsafe-inline' in script-src is needed for Next's inline bootstrap and
-     theme scripts (a nonce would force every page to render dynamically). */
+  /* The Content-Security-Policy limits the damage of any future XSS bug.
+     Enforced since Oct 22, after it ran report-only with a clean console on
+     the live site (every resource there is same-origin; images come through
+     /_next/image). 'unsafe-inline' in script-src is needed for Next's inline
+     bootstrap scripts: a nonce would force every page to render per request.
+     'unsafe-eval' is development only, where React's dev build needs it. */
   {
-    key: 'Content-Security-Policy-Report-Only',
+    key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://ui-avatars.com",
       "font-src 'self'",
@@ -54,6 +54,8 @@ const securityHeaders = [
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      // No upgrade-insecure-requests: Netlify serves only https with HSTS, so
+      // it gains nothing there, and it broke `next start` over plain http.
     ].join('; ')
   },
 ];

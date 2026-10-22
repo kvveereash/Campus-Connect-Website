@@ -229,18 +229,20 @@ model EventReview {
 }
 
 model EventRegistration {
-  id          String             @id @default(cuid())
-  userId      String
-  eventId     String
-  status      RegistrationStatus @default(PENDING)
-  paymentId   String?
-  amountPaid  Float?
+  id             String             @id @default(cuid())
+  userId         String
+  eventId        String
+  status         RegistrationStatus @default(PENDING)
+  paymentId      String?
+  amountPaid     Float?
   // Set when an organiser scans the attendee's ticket at the door.
-  checkedInAt DateTime?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  event       Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user        User               @relation(fields: [userId], references: [id])
+  checkedInAt    DateTime?
+  // Claimed by the day-before reminder run, so two overlapping runs cannot both send it.
+  reminderSentAt DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  event          Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user           User               @relation(fields: [userId], references: [id])
 
   @@unique([userId, eventId])
   @@index([userId])

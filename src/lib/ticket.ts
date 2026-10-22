@@ -1,43 +1,62 @@
 import 'server-only';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import prisma from '@/lib/db';
-import { getSigningKey } from '@/lib/auth-edge';
 import { SITE_URL } from '@/lib/site';
 
 /*
  * Tickets for QR check-in. A ticket is the registration id plus an HMAC of
  * it, so the QR code cannot be made up from a guessed id, and it never
  * expires: a screenshot taken the night before still works at the door.
- * The key is the session key with a "ticket:" prefix on the message, so a
- * ticket signature can never be passed off as anything else.
+ *
+ * Signed with TICKET_SECRET, not the session key. Sharing that key meant
+ * rotating it to sign everyone out also voided every ticket, and a leak of
+ * it let someone forge tickets as well as sessions.
  */
 
 /** Registrations that count as going: free sign-ups and paid ones. */
 export const GOING = ['PAID', 'COMPLETED'] as const;
 
-function signature(registrationId: string) {
-    return createHmac('sha256', getSigningKey()).update(`ticket:${registrationId}`).digest('base64url').slice(0, 22);
+const MIN_SECRET_LENGTH = 32;
+
+/* Null in production until TICKET_SECRET is set: tickets are then off (no
+   QR shown, every scan refused) rather than signed with a stand-in key. */
+function ticketKey(): Buffer | null {
+    const secret = process.env.TICKET_SECRET;
+    if (secret && secret.length >= MIN_SECRET_LENGTH) return Buffer.from(secret);
+    if (process.env.NODE_ENV !== 'production') return Buffer.from('dev-only-ticket-secret-not-for-production');
+    return null;
 }
 
+export const ticketsEnabled = () => ticketKey() !== null;
+
+function signature(registrationId: string, key: Buffer) {
+    return createHmac('sha256', key).update(`ticket:${registrationId}`).digest('base64url').slice(0, 22);
+}
+
+/** Null when tickets are off. */
 export function ticketToken(registrationId: string) {
-    return `${registrationId}.${signature(registrationId)}`;
+    const key = ticketKey();
+    return key ? `${registrationId}.${signature(registrationId, key)}` : null;
 }
 
 /** The registration id a token was issued for, or null if it was not issued by us. */
 export function readTicketToken(token: string | undefined | null): string | null {
-    if (!token || token.length > 120) return null;
+    const key = ticketKey();
+    if (!key || !token || token.length > 120) return null;
     const [id, sig] = token.split('.');
     if (!id || !sig) return null;
-    const expected = Buffer.from(signature(id));
+    const expected = Buffer.from(signature(id, key));
     const given = Buffer.from(sig);
     return expected.length === given.length && timingSafeEqual(expected, given) ? id : null;
 }
 
-/** The link an organiser's phone camera opens when it reads the QR code. */
+/** The link an organiser's phone camera opens when it reads the QR code; null when tickets are off. */
 export function checkInUrl(eventId: string, registrationId: string) {
+    const token = ticketToken(registrationId);
+    if (!token) return null;
     // Locally this points at the dev server, so scanning can be tried there.
     const base = process.env.NEXT_PUBLIC_APP_URL || SITE_URL;
-    return `${base}/events/${eventId}/check-in?t=${encodeURIComponent(ticketToken(registrationId))}`;
+    return `${base}/events/${eventId}/check-in?t=${encodeURIComponent(token)}`;
 }
 
 /**

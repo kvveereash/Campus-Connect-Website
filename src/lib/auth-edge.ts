@@ -16,7 +16,7 @@ let cachedKey: Uint8Array | null = null;
  * included. Resolved on first use rather than at import so `next build` can
  * still load this module; every sign and verify fails closed instead.
  */
-export function getSigningKey(): Uint8Array {
+function getSigningKey(): Uint8Array {
     if (cachedKey) return cachedKey;
 
     const secret = process.env.JWT_SECRET;

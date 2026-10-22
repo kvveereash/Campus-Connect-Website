@@ -23,7 +23,10 @@ export async function getMyTicket(eventId: string) {
     });
     if (!registration) return null;
 
-    const qrSvg = await QRCode.toString(checkInUrl(eventId, registration.id), {
+    const url = checkInUrl(eventId, registration.id);
+    if (!url) return null; // tickets are off until TICKET_SECRET is set
+
+    const qrSvg = await QRCode.toString(url, {
         type: 'svg',
         margin: 0,
         errorCorrectionLevel: 'M',

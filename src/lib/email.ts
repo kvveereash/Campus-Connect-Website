@@ -5,6 +5,9 @@ import { logger } from '@/lib/logger';
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
+/** Whether mail actually leaves: in production, without a key, sendEmail only logs. */
+export const emailEnabled = () => resend !== null || process.env.NODE_ENV !== 'production';
+
 // Default sender address
 const FROM_EMAIL = process.env.EMAIL_FROM || 'Campus Connect <onboarding@resend.dev>';
 
