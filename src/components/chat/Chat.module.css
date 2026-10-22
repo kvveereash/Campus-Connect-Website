@@ -76,7 +76,7 @@
     padding: 0 14px;
     border: 0;
     border-radius: var(--radius-pill);
-    background: var(--color-obsidian);
+    background: var(--color-accent);
     color: var(--color-paper);
     font: inherit;
     font-size: 13px;
@@ -86,7 +86,7 @@
 }
 
 .newGroupBtn:hover {
-    background: var(--color-accent);
+    background: var(--color-accent-hover);
 }
 
 .searchBox {
@@ -1020,14 +1020,14 @@
 }
 
 .pillPrimary {
-    background: var(--color-obsidian);
-    border-color: var(--color-obsidian);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
     color: var(--color-paper);
 }
 
 .pillPrimary:hover {
-    background: var(--color-accent);
-    border-color: var(--color-accent);
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
 }
 
 /* ============================================================
@@ -1128,7 +1128,7 @@
     margin-top: 8px;
     border: 0;
     border-radius: var(--radius-pill);
-    background: var(--color-obsidian);
+    background: var(--color-accent);
     color: var(--color-paper);
     font: inherit;
     font-size: 15px;
@@ -1137,7 +1137,7 @@
 }
 
 .primaryBtn:hover:not(:disabled) {
-    background: var(--color-accent);
+    background: var(--color-accent-hover);
 }
 
 .primaryBtn:disabled {

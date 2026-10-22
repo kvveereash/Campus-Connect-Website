@@ -111,14 +111,14 @@
 }
 
 .primary {
-    background: var(--color-obsidian);
-    border-color: var(--color-obsidian);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
     color: var(--color-paper);
 }
 
 .primary:hover:not(:disabled) {
-    background: var(--color-accent);
-    border-color: var(--color-accent);
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
 }
 
 .ghost {

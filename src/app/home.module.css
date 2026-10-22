@@ -78,12 +78,12 @@
 }
 
 .btnPrimary {
-    background: var(--color-obsidian);
+    background: var(--color-accent);
     color: var(--color-paper);
 }
 
 .btnPrimary:hover {
-    background: var(--color-accent);
+    background: var(--color-accent-hover);
 }
 
 .btnGhost {
@@ -994,7 +994,7 @@
 .joinPill {
     padding: 6px 14px;
     border-radius: var(--radius-pill);
-    background: var(--color-obsidian);
+    background: var(--color-accent);
     color: var(--color-paper);
     font-size: 13px;
     font-weight: 600;

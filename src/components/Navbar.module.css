@@ -300,13 +300,13 @@
     border-radius: var(--radius-pill);
     font-size: 14px;
     font-weight: 500;
-    background: var(--color-obsidian);
+    background: var(--color-accent);
     color: var(--color-paper);
     transition: background-color var(--duration-micro) var(--ease-glide);
 }
 
 .joinBtn:hover {
-    background: var(--color-accent);
+    background: var(--color-accent-hover);
 }
 
 .userMenu {

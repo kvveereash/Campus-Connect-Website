@@ -295,7 +295,7 @@
     gap: 6px;
     height: 40px;
     border-radius: var(--radius-pill);
-    background: var(--color-obsidian);
+    background: var(--color-accent);
     color: var(--color-paper);
     font-size: 14px;
     font-weight: 500;
@@ -303,7 +303,7 @@
 }
 
 .cardAction:hover {
-    background: var(--color-accent);
+    background: var(--color-accent-hover);
 }
 
 /* ---------- empty ---------- */

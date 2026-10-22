@@ -68,8 +68,8 @@
     align-items: center;
     padding: 9px 24px;
     border-radius: var(--radius-pill);
-    border: 1px solid var(--color-obsidian);
-    background: var(--color-obsidian);
+    border: 1px solid var(--color-accent);
+    background: var(--color-accent);
     color: var(--color-paper);
     font: inherit;
     font-size: 13px;
