@@ -33,7 +33,7 @@ export default function EventTicket({ eventId, registered }: { eventId: string; 
     if (!registered || !ticket) return null;
 
     return (
-        <div role="region" className={styles.ticket} data-in={ticket.checkedInAt ? 'true' : undefined} aria-label="Your ticket">
+        <div id="ticket" role="region" className={styles.ticket} data-in={ticket.checkedInAt ? 'true' : undefined} aria-label="Your ticket">
             <p className={styles.ticketLabel}>{ticket.checkedInAt ? 'You are in' : 'Your ticket'}</p>
             {/* SVG made on our server by the qrcode library from our own URL. */}
             <div className={styles.ticketCode} dangerouslySetInnerHTML={{ __html: ticket.qrSvg }} />

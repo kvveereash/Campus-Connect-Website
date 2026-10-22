@@ -36,6 +36,20 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
         setIsOpen(true);
     };
 
+    const showTicket = () => {
+        setIsOpen(false);
+        setStatus('idle');
+        // EventTicket appears once its own fetch returns, which can be just
+        // after this click; look for it for up to two seconds.
+        let tries = 0;
+        const find = () => {
+            const ticket = document.getElementById('ticket');
+            if (ticket) ticket.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            else if (++tries < 20) setTimeout(find, 100);
+        };
+        find();
+    };
+
     const handleConfirmRegistration = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('registering');
@@ -66,12 +80,10 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                     });
                 }
 
-                // Close modal after success animation
-                setTimeout(() => {
-                    setIsOpen(false);
-                    setStatus('idle');
-                    router.refresh(); // Refresh server data
-                }, 2000);
+                // The success state stays up until they choose what next: it
+                // used to vanish after two seconds, which made the best moment
+                // of the visit the shortest.
+                router.refresh();
             } else {
                 toast.error(result.error || 'Failed to register');
                 setStatus('idle');
@@ -236,9 +248,19 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                                     
                                 </div>
                                 <h3 style={{ marginBottom: '0.5rem' }}>You&rsquo;re in.</h3>
+                                {/* Was "Check your email": no email is sent
+                                    until a mail provider is configured. */}
                                 <p style={{ color: 'var(--text-secondary)' }}>
-                                    Registration successful. Check your email for details.
+                                    Your ticket is on this page, with a QR code to show at the entrance.
                                 </p>
+                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+                                    <button type="button" className="btn btn-primary" onClick={showTicket}>
+                                        Show my ticket
+                                    </button>
+                                    <a className="btn btn-outline" href={`/events/${eventId}/calendar.ics`} download>
+                                        Add to calendar
+                                    </a>
+                                </div>
                             </div>
                         ) : status === 'payment_pending' || status === 'processing_payment' ? (
                             <div style={{ textAlign: 'center' }}>

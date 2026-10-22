@@ -107,7 +107,7 @@ export default function PaymentReturn({
         },
         paid: {
             label: 'Registered',
-            text: 'Payment confirmed. Your place is booked and you are on the attendee list.',
+            text: 'Payment confirmed. Your place is booked, and your ticket with its QR code is below. It is also under My events.',
         },
         pending: {
             label: 'Payment received',
