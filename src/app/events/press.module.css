@@ -72,6 +72,92 @@
     text-wrap: pretty;
 }
 
+/* ---------- finder: search and place ---------- */
+/* Above the sticky rail rather than in it, so the rail stays two rows tall
+   on a phone. */
+.finder {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+    max-width: 720px;
+}
+
+.searchField,
+.placeField {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchField {
+    flex: 1 1 280px;
+    min-width: 0;
+}
+
+.placeField {
+    flex: 0 1 220px;
+    min-width: 160px;
+}
+
+.finderIcon,
+.placeChevron {
+    position: absolute;
+    pointer-events: none;
+    color: var(--color-felt);
+}
+
+.finderIcon {
+    left: 16px;
+}
+
+.placeChevron {
+    right: 14px;
+}
+
+.searchInput,
+.placeSelect {
+    width: 100%;
+    height: 46px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: var(--color-paper);
+    color: var(--color-obsidian);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    transition: border-color var(--duration-micro) var(--ease-glide);
+}
+
+.searchInput {
+    padding: 0 16px 0 42px;
+}
+
+.searchInput::placeholder {
+    color: var(--color-ash);
+}
+
+.placeSelect {
+    padding: 0 40px 0 18px;
+    appearance: none;
+    cursor: pointer;
+}
+
+.searchInput:hover,
+.placeSelect:hover {
+    border-color: var(--border-strong);
+}
+
+.searchInput:focus-visible,
+.placeSelect:focus-visible {
+    border-color: var(--color-accent);
+}
+
+@media (max-width: 720px) {
+    .placeField {
+        flex: 1 1 100%;
+    }
+}
+
 /* ---------- featured ---------- */
 .featured {
     position: relative;
@@ -453,6 +539,22 @@
     color: var(--color-felt);
 }
 
+/* A status the board never shows (My events: "Payment pending"). Marker
+   yellow, the page's one highlight. */
+.note {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-marker);
+    color: var(--color-obsidian);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
 .cover {
     position: relative;
     width: 148px;
@@ -492,6 +594,18 @@
     text-align: center;
     font-size: 16px;
     color: var(--color-felt);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.emptyTitle {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
 }
 
 .footRule {

@@ -21,6 +21,8 @@ export type EventWithRelations = PrismaEvent & {
         id: string;
         name: string;
         logo: string;
+        /** "City, State". Selected for the events board's place filter. */
+        location?: string;
     };
     club?: {
         id: string;
@@ -329,7 +331,7 @@ async function _allEvents(filters?: { search?: string; category?: string }) {
     const events = await prisma.event.findMany({
         where,
         include: {
-            hostCollege: { select: { id: true, name: true, logo: true } },
+            hostCollege: { select: { id: true, name: true, logo: true, location: true } },
             club: { select: { id: true, name: true, logo: true } },
             _count: { select: { registrations: true } }
         },
