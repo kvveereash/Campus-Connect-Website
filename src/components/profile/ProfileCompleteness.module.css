@@ -1,0 +1,47 @@
+.card {
+    margin: 20px 0 8px;
+    padding: 18px 20px;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-hairline);
+    background: var(--color-paper);
+}
+
+.head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-obsidian);
+}
+
+.bar {
+    height: 8px;
+    margin: 14px 0 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-canvas);
+    overflow: hidden;
+}
+
+.bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-accent);
+    transition: width var(--duration-base) var(--ease-glide);
+}
+
+.next {
+    font-size: 14px;
+    color: var(--color-felt);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bar span {
+        transition: none;
+    }
+}

@@ -10,6 +10,7 @@ import ProfileHeader, { BadgeType } from '@/components/profile/ProfileHeader';
 import ProfessionalTab from '@/components/profile/ProfessionalTab';
 import NetworkTab from '@/components/profile/NetworkTab';
 import EditProfileModal from '@/components/profile/EditProfileModal';
+import ProfileCompleteness from '@/components/profile/ProfileCompleteness';
 import EventSection from '@/components/profile/EventSection';
 import ProfileTabs from '@/components/profile/ProfileTabs';
 import { College } from '@/types';
@@ -86,6 +87,8 @@ export default function ProfileClient() {
                     router.push('/login');
                 }}
             />
+
+            <ProfileCompleteness user={user} onEdit={() => setIsEditOpen(true)} />
 
             <ProfileTabs<Tab>
                 tabs={[
