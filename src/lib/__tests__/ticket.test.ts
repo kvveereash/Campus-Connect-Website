@@ -53,6 +53,27 @@ describe('ticket tokens', () => {
         },
     );
 
+    it('refuses a ticket signed with the session key: only TICKET_SECRET signs tickets', async () => {
+        const { createHmac } = await import('node:crypto');
+        const env = process.env as Record<string, string | undefined>;
+        const sessionKey = env.JWT_SECRET ?? 'fallback-secret-key-for-dev-only';
+        const forged = `cmreg123.${createHmac('sha256', sessionKey).update('ticket:cmreg123').digest('base64url').slice(0, 22)}`;
+        expect(readTicketToken(forged)).toBeNull();
+    });
+
+    it('does not count a secret too short to be one in production', () => {
+        const env = process.env as Record<string, string | undefined>;
+        const [secret, nodeEnv] = [env.TICKET_SECRET, env.NODE_ENV];
+        env.TICKET_SECRET = 'short';
+        env.NODE_ENV = 'production';
+        try {
+            expect(ticketsEnabled()).toBe(false);
+        } finally {
+            env.TICKET_SECRET = secret;
+            env.NODE_ENV = nodeEnv;
+        }
+    });
+
     it('puts the token in the check-in link for that event', () => {
         const url = new URL(checkInUrl('cmevent1', 'cmreg123') ?? '');
         expect(url.pathname).toBe('/events/cmevent1/check-in');

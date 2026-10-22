@@ -18,7 +18,7 @@ const STEPS = [
     },
     {
         title: 'Connect',
-        body: 'Clubs with their own feed, members and events. Join one and its posts arrive in your Buzz.',
+        body: 'Clubs with their own feed, members and events. Join one and its posts show up under Club posts.',
     },
     {
         title: 'Team up',

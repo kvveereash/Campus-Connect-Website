@@ -111,14 +111,14 @@
 }
 
 .primary {
-    background: var(--color-obsidian);
-    border-color: var(--color-obsidian);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
     color: var(--color-paper);
 }
 
 .primary:hover:not(:disabled) {
-    background: var(--color-accent);
-    border-color: var(--color-accent);
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
 }
 
 .ghost {
@@ -172,7 +172,7 @@ a.metaItem:hover {
 
 .since {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-ash);
@@ -216,7 +216,7 @@ a.metaItem:hover {
     align-items: center;
     gap: 7px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-ash);
@@ -257,7 +257,7 @@ a.metaItem:hover {
     width: 56px;
     padding-top: 7px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-ash);

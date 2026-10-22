@@ -15,7 +15,7 @@ export default function OfflinePage() {
                     You are <em className="accent">offline.</em>
                 </>
             }
-            text="Events, Buzz and messages need the internet. This page will load again as soon as you are back online."
+            text="Events, club posts and messages need the internet. This page will load again as soon as you are back online."
             actions={
                 // No prefetch: offline it would only fail. On click, a router
                 // fetch that fails falls back to a full load, which is the retry.

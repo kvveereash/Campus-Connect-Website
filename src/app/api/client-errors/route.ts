@@ -29,6 +29,10 @@ export async function POST(request: Request) {
     const limit = await checkRateLimit(clientErrorLimiter, getRateLimitIdentifier(undefined, ip));
     if (!limit.success) return new NextResponse(null, { status: 429 });
 
+    // Refuse an oversized body before reading it, when the size is declared.
+    if (Number(request.headers.get('content-length') ?? 0) > MAX_BODY) {
+        return new NextResponse(null, { status: 413 });
+    }
     const text = await request.text();
     if (text.length > MAX_BODY) return new NextResponse(null, { status: 413 });
 
@@ -47,7 +51,9 @@ export async function POST(request: Request) {
         errorName: field(report.name, 80),
         errorMessage: field(report.message, 300),
         path: safePath(report.path),
-        requestId: request.headers.get('x-request-id') ?? undefined,
+        // The caller sets this header (the middleware passes it through), so
+        // it is capped like every other field.
+        requestId: field(request.headers.get('x-request-id'), 64),
     });
 
     return new NextResponse(null, { status: 204 });

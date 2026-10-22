@@ -3,7 +3,7 @@ import { getBuzzFeed } from '@/lib/actions/buzz';
 import BuzzClient from './BuzzClient';
 
 export const metadata: Metadata = {
-    title: 'Campus Buzz',
+    title: 'Club posts',
     description: 'What clubs across campus are posting right now.',
 };
 

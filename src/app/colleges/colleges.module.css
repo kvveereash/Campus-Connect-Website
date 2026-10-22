@@ -22,7 +22,7 @@
 }
 
 .label {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -43,7 +43,7 @@
 }
 
 .count {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -80,7 +80,7 @@
 }
 
 .clear {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -169,7 +169,7 @@
 .figures {
     display: flex;
     gap: 28px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;

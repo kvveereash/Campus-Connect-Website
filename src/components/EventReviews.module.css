@@ -38,7 +38,7 @@
 }
 
 .summaryText {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -97,7 +97,7 @@
 .label {
     display: block;
     margin-bottom: 10px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -182,7 +182,7 @@
 
 .stamp {
     margin-top: 9px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -196,7 +196,7 @@
     color: var(--color-ash);
     cursor: pointer;
     font: inherit;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;

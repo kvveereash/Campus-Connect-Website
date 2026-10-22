@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, Trophy, Map, Building2, Users } from 'lucide-react';
+import { ChevronDown, Trophy, Map, Building2 } from 'lucide-react';
 import styles from './Navbar.module.css';
 
 const ITEMS = [
@@ -12,12 +12,6 @@ const ITEMS = [
         title: 'Colleges',
         desc: 'Every campus on the board, with its clubs and events.',
         Icon: Building2,
-    },
-    {
-        href: '/team-finder',
-        title: 'Team finder',
-        desc: 'Post what you need for the next hackathon. Get matched.',
-        Icon: Users,
     },
     {
         href: '/leaderboards',

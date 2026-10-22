@@ -107,6 +107,34 @@
     flex-shrink: 0;
 }
 
+/* Four links and Explore: a two-word label must never break inside its pill. */
+.navLink,
+.dropdownTrigger {
+    white-space: nowrap;
+}
+
+/* Between the phone menu and a wide screen, the bar gives up the wordmark,
+   then the squares, before it gives up room between links. */
+@media (min-width: 861px) and (max-width: 1180px) {
+    .logoText {
+        display: none;
+    }
+}
+
+@media (max-width: 1180px) {
+    .navLink,
+    .dropdownTrigger {
+        padding: 0 11px;
+        gap: 6px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .navLinks .navMark {
+        display: none;
+    }
+}
+
 .chevron {
     transition: transform var(--duration-micro) var(--ease-glide);
 }
@@ -229,7 +257,7 @@
 
 .kbd {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     padding: 2px 6px;
     border-radius: 6px;
     background: var(--color-canvas);
@@ -272,18 +300,26 @@
     border-radius: var(--radius-pill);
     font-size: 14px;
     font-weight: 500;
-    background: var(--color-obsidian);
+    background: var(--color-accent);
     color: var(--color-paper);
     transition: background-color var(--duration-micro) var(--ease-glide);
 }
 
 .joinBtn:hover {
-    background: var(--color-accent);
+    background: var(--color-accent-hover);
 }
 
 .userMenu {
     display: flex;
     align-items: center;
+    gap: 4px;
+}
+
+/* In the phone menu instead, below the width where the nav links fold away. */
+@media (max-width: 860px) {
+    .myEvents {
+        display: none;
+    }
 }
 
 .avatar {
@@ -331,7 +367,7 @@
 
 .exploreTitle {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--color-ash);

@@ -15,7 +15,7 @@ const COLUMNS = [
         heading: 'Take part',
         links: [
             { href: '/team-finder', label: 'Team finder' },
-            { href: '/buzz', label: 'Buzz' },
+            { href: '/buzz', label: 'Club posts' },
             { href: '/leaderboards', label: 'Leaderboard' },
             { href: '/events/create', label: 'Host an event' },
         ],

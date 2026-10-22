@@ -5,25 +5,28 @@ import { usePathname } from 'next/navigation';
 import { NotificationBell } from './notifications/NotificationBell';
 import UserNav from './UserNav';
 import ExploreDropdown from './ExploreDropdown';
-import { Search, Menu, X } from 'lucide-react';
+import { Search, Menu, X, CalendarCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import styles from './Navbar.module.css';
 import { useCommand } from '@/context/CommandContext';
+import { useAuth } from '@/context/AuthContext';
 
 /**
- * The three places people actually go. Each carries its category square,
- * the same mark the events board uses, so the nav reads as the index of
- * the board rather than a row of words.
+ * The places people actually go. Each carries its category square, the same
+ * mark the events board uses, so the nav reads as the index of the board
+ * rather than a row of words. Team finder is here rather than under Explore:
+ * it is one of the main reasons to come, and a dropdown hid it. "Club posts"
+ * was "Buzz", a name that did not say what was behind it.
  */
 const PRIMARY = [
     { href: '/events', label: 'Events', mark: 'var(--press-technology)' },
-    { href: '/buzz', label: 'Buzz', mark: 'var(--press-cultural)' },
     { href: '/clubs', label: 'Clubs', mark: 'var(--press-sports)' },
+    { href: '/team-finder', label: 'Team finder', mark: 'var(--press-hackathon)' },
+    { href: '/buzz', label: 'Club posts', mark: 'var(--press-cultural)' },
 ] as const;
 
 const EXPLORE = [
     { href: '/colleges', label: 'Colleges' },
-    { href: '/team-finder', label: 'Team finder' },
     { href: '/leaderboards', label: 'Leaderboard' },
     { href: '/map', label: 'Venues' },
 ] as const;
@@ -31,6 +34,7 @@ const EXPLORE = [
 export default function Navbar() {
     const pathname = usePathname();
     const { setIsOpen } = useCommand();
+    const { user } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
@@ -118,6 +122,12 @@ export default function Navbar() {
                 className={`${styles.mobileMenu} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''}`}
                 hidden={!isMobileMenuOpen}
             >
+                {user && (
+                    <Link href="/my-events" className={styles.mobileMenuLink}>
+                        <CalendarCheck size={16} aria-hidden="true" />
+                        My events
+                    </Link>
+                )}
                 {PRIMARY.map((item) => (
                     <Link key={item.href} href={item.href} className={styles.mobileMenuLink}>
                         <span className={styles.navMark} style={{ background: item.mark }} aria-hidden="true" />

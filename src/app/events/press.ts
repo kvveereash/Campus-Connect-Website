@@ -99,3 +99,51 @@ export function groupByProximity<T extends { date: Date | string }>(events: T[])
 
     return groups;
 }
+
+/* Places people search by: one spelling per city, so "Bangalore" and
+   "Bengaluru" campuses land under the same filter. */
+const CITY_ALIASES: Record<string, string> = {
+    bangalore: 'Bengaluru',
+    bombay: 'Mumbai',
+    'new delhi': 'Delhi',
+    madras: 'Chennai',
+    calcutta: 'Kolkata',
+};
+
+/** The city part of a college's "City, State" location, or null. */
+export function cityOf(location?: string | null): string | null {
+    const city = location?.split(',')[0]?.trim();
+    if (!city) return null;
+    return CITY_ALIASES[city.toLowerCase()] ?? city;
+}
+
+type Searchable = {
+    title: string;
+    venue: string;
+    category: string;
+    club?: { name: string } | null;
+    hostCollege?: { name: string; location?: string } | null;
+};
+
+/**
+ * True when every word of the query appears somewhere in the event's title,
+ * venue, category, club, college or city. Word by word, so "hackathon pune"
+ * finds a hackathon at a Pune college even though no single field has both.
+ */
+export function matchesSearch(event: Searchable, query: string): boolean {
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return true;
+    const haystack = [
+        event.title,
+        event.venue,
+        event.category,
+        event.club?.name,
+        event.hostCollege?.name,
+        event.hostCollege?.location,
+        cityOf(event.hostCollege?.location),
+    ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+    return words.every((w) => haystack.includes(w));
+}

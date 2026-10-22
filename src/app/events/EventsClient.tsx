@@ -1,18 +1,24 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { ChevronDown, Search } from 'lucide-react';
 import { EventWithRelations } from '@/lib/actions';
-import { inkFor, dateParts, groupByProximity } from './press';
+import { useAuth } from '@/context/AuthContext';
+import { inkFor, dateParts, groupByProximity, cityOf, matchesSearch } from './press';
 import { eventPhoto } from '@/lib/college-images';
 import RevealGroup from '@/components/RevealGroup';
 import ForYou from './ForYou';
+import EventRow, { hostOf } from './EventRow';
 import styles from './press.module.css';
 
 type TimeFilter = 'Any' | 'This week' | 'This month';
 const TIME_FILTERS: TimeFilter[] = ['Any', 'This week', 'This month'];
+
+/** ?where= value for the signed-in student's own college. */
+const MY_COLLEGE = 'my-college';
 
 interface EventsClientProps {
     initialEvents: EventWithRelations[];
@@ -45,8 +51,18 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
     const { replace } = useRouter();
     const railRef = useRef<HTMLElement>(null);
 
+    const { user } = useAuth();
     const activeCategory = searchParams?.get('category') || 'All';
     const [activeTime, setActiveTime] = useState<TimeFilter>('Any');
+
+    /* Search and place live in the URL like the category, so a filtered board
+       can be shared ("hackathons in Pune"). The box keeps its own state and
+       writes the URL a moment after typing stops, so typing never waits on a
+       navigation. */
+    const urlQuery = searchParams?.get('q') ?? '';
+    const [query, setQuery] = useState(urlQuery);
+    const where = searchParams?.get('where') ?? '';
+    const myCollegeId = user?.collegeId || '';
 
     /**
      * Category tabs are derived from the events themselves rather than a
@@ -73,32 +89,73 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
         };
     }, []);
 
+    /** Cities with upcoming events, busiest first, for the place picker. */
+    const cities = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const e of initialEvents) {
+            const city = cityOf(e.hostCollege?.location);
+            if (city) counts.set(city, (counts.get(city) ?? 0) + 1);
+        }
+        return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    }, [initialEvents]);
+
+    const myCollegeCount = useMemo(
+        () => (myCollegeId ? initialEvents.filter((e) => e.hostCollegeId === myCollegeId).length : 0),
+        [initialEvents, myCollegeId],
+    );
+
     const visible = useMemo(() => {
         return initialEvents
             .filter((e) => activeCategory === 'All' || e.category === activeCategory)
+            .filter((e) => {
+                if (!where) return true;
+                if (where === MY_COLLEGE) return e.hostCollegeId === myCollegeId;
+                return cityOf(e.hostCollege?.location) === where;
+            })
+            .filter((e) => matchesSearch(e, urlQuery))
             .filter((e) => {
                 if (activeTime === 'Any') return true;
                 const d = new Date(e.date);
                 return activeTime === 'This week' ? d <= endOfWeek : d <= endOfMonth;
             })
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [initialEvents, activeCategory, activeTime, endOfWeek, endOfMonth]);
+    }, [initialEvents, activeCategory, where, myCollegeId, urlQuery, activeTime, endOfWeek, endOfMonth]);
 
     /**
      * The featured slot is an editorial choice for the default view only. Once
      * the user filters they have asked for a list, and promoting one result out
      * of it made a single match render as "nothing matches your filters".
      */
-    const isDefaultView = activeCategory === 'All' && activeTime === 'Any';
+    const isDefaultView = activeCategory === 'All' && activeTime === 'Any' && !where && !urlQuery;
     const featured = isDefaultView ? visible[0] : undefined;
     const listed = isDefaultView ? visible.slice(1) : visible;
     const groups = useMemo(() => groupByProximity(listed), [listed]);
 
-    const setCategory = (category: string) => {
-        const params = new URLSearchParams(searchParams?.toString() ?? '');
-        if (category === 'All') params.delete('category');
-        else params.set('category', category);
-        replace(`${pathname}?${params.toString()}`, { scroll: false });
+    const setParam = useCallback(
+        (name: string, value: string) => {
+            const params = new URLSearchParams(searchParams?.toString() ?? '');
+            if (value) params.set(name, value);
+            else params.delete(name);
+            const qs = params.toString();
+            replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+        },
+        [searchParams, pathname, replace],
+    );
+
+    const setCategory = (category: string) => setParam('category', category === 'All' ? '' : category);
+
+    // Write the search to the URL once typing pauses.
+    useEffect(() => {
+        const next = query.trim();
+        if (next === urlQuery) return;
+        const t = setTimeout(() => setParam('q', next), 250);
+        return () => clearTimeout(t);
+    }, [query, urlQuery, setParam]);
+
+    const clearFilters = () => {
+        setQuery('');
+        setActiveTime('Any');
+        replace(pathname, { scroll: false });
     };
 
     // Sticky group headings must clear the sticky rail above them.
@@ -127,6 +184,42 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
                         Hackathons, fests, workshops and cultural nights across campus. Everything
                         that&rsquo;s coming, in the order it arrives.
                     </p>
+
+                    <div className={styles.finder} role="search">
+                        <label className={styles.searchField}>
+                            <Search size={16} className={styles.finderIcon} aria-hidden="true" />
+                            <input
+                                type="search"
+                                aria-label="Search events"
+                                className={styles.searchInput}
+                                placeholder="Search events, clubs, colleges"
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                enterKeyHint="search"
+                                autoComplete="off"
+                            />
+                        </label>
+
+                        <label className={styles.placeField}>
+                            <select
+                                aria-label="Where"
+                                className={styles.placeSelect}
+                                value={where}
+                                onChange={(e) => setParam('where', e.target.value)}
+                            >
+                                <option value="">Anywhere</option>
+                                {myCollegeId && (
+                                    <option value={MY_COLLEGE}>My college ({myCollegeCount})</option>
+                                )}
+                                {cities.map(([city, n]) => (
+                                    <option key={city} value={city}>
+                                        {city} ({n})
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown size={16} className={styles.placeChevron} aria-hidden="true" />
+                        </label>
+                    </div>
                 </header>
 
                 {featured && <Featured event={featured} />}
@@ -181,9 +274,19 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
                 <main>
                     {/* Only on the unfiltered board: under a filter it would
                         sit above results it might not belong to. */}
-                    {activeCategory === 'All' && activeTime === 'Any' && <ForYou events={initialEvents} />}
+                    {isDefaultView && <ForYou events={initialEvents} />}
                     {groups.length === 0 ? (
-                        <p className={styles.empty}>Nothing matches those filters.</p>
+                        <div className={styles.empty}>
+                            <p className={styles.emptyTitle}>Nothing matches</p>
+                            <p>
+                                {urlQuery
+                                    ? `No upcoming event matches “${urlQuery}” with these filters.`
+                                    : 'No upcoming event matches these filters.'}
+                            </p>
+                            <button type="button" className="btn btn-outline" onClick={clearFilters}>
+                                Clear filters
+                            </button>
+                        </div>
                     ) : (
                         groups.map((group) => (
                             <RevealGroup as="section" key={group.label}>
@@ -206,19 +309,6 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
             </div>
         </div>
     );
-}
-
-function hostOf(event: EventWithRelations) {
-    return event.club?.name || event.hostCollege?.name || 'Campus';
-}
-
-function initialsOf(title: string) {
-    return title
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((w) => w[0] ?? '')
-        .join('')
-        .toUpperCase();
 }
 
 function Featured({ event }: { event: EventWithRelations }) {
@@ -273,63 +363,6 @@ function Featured({ event }: { event: EventWithRelations }) {
                     <span className={styles.sep}>/</span>
                     <span>{hostOf(event)}</span>
                 </div>
-            </div>
-        </Link>
-    );
-}
-
-function EventRow({ event }: { event: EventWithRelations }) {
-    const ink = inkFor(event.category);
-    const photo = eventPhoto(event);
-    const { month, day, weekday } = dateParts(event.date);
-    const going = event.registrationCount ?? 0;
-
-    return (
-        <Link
-            href={`/events/${event.id}`}
-            className={styles.row}
-            style={{ ['--cat' as string]: ink }}
-        >
-            <div className={styles.date}>
-                <div className={styles.dateMonth}>{month}</div>
-                <div className={styles.dateDay}>{day}</div>
-                <div className={styles.dateWeekday}>{weekday}</div>
-            </div>
-
-            <div>
-                <h3 className={styles.rowTitle}>{event.title}</h3>
-                <div className={styles.rowMeta}>
-                    <span>{event.venue}</span>
-                    <span className={styles.sep}>/</span>
-                    <span>{hostOf(event)}</span>
-                </div>
-                <div className={styles.rowTags}>
-                    <span className={styles.cat}>
-                        <i aria-hidden="true" />
-                        {event.category}
-                    </span>
-                    <span className={`${styles.price} ${event.price > 0 ? '' : styles.priceFree}`}>
-                        {event.price > 0 ? `₹${event.price.toLocaleString('en-IN')}` : 'Free'}
-                    </span>
-                    {/* Zero is not shown — the old card advertised "0 Reg." */}
-                    {going > 0 && <span className={styles.going}>{going} going</span>}
-                </div>
-            </div>
-
-            <div className={styles.cover}>
-                {photo ? (
-                    <Image
-                        src={photo}
-                        alt=""
-                        fill
-                        sizes="132px"
-                        style={{ objectFit: 'cover' }}
-                    />
-                ) : (
-                    <div className={styles.coverStub} aria-hidden="true">
-                        <span>{initialsOf(event.title)}</span>
-                    </div>
-                )}
             </div>
         </Link>
     );

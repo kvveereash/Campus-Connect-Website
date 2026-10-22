@@ -42,9 +42,9 @@
 
 /* Filled ink. Paper label — this is the line that was black on black. */
 .primary {
-    background-color: var(--color-obsidian);
+    background-color: var(--color-accent);
     color: var(--color-paper);
-    border-color: var(--color-obsidian);
+    border-color: var(--color-accent);
 }
 
 .primary:hover:not(:disabled) {

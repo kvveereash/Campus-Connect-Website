@@ -11,7 +11,7 @@
 }
 
 .label {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -91,7 +91,7 @@
 }
 
 .figure span {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;

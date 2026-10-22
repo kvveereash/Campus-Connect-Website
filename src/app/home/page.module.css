@@ -1,0 +1,76 @@
+/* The signed-in home. Rows, headings and empty states come from the events
+   board (press.module.css); only what the board does not have is here. */
+
+.quick {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0 8px;
+}
+
+.quickLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: var(--color-paper);
+    color: var(--color-obsidian);
+    font-size: 15px;
+    font-weight: 500;
+    transition: border-color var(--duration-micro) var(--ease-glide);
+}
+
+.quickLink:hover {
+    border-color: var(--border-strong);
+}
+
+.quickLink svg {
+    color: var(--color-accent);
+}
+
+.more {
+    margin-left: auto;
+    font-size: 14px;
+    color: var(--color-felt);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--border-strong);
+}
+
+.more:hover {
+    color: var(--color-obsidian);
+}
+
+.clubs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 8px;
+}
+
+.quiet {
+    font-size: 16px;
+    color: var(--color-felt);
+}
+
+.quiet a {
+    color: var(--color-obsidian);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+    .quickLink {
+        flex: 1 1 calc(50% - 4px);
+        justify-content: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .quickLink {
+        transition: none;
+    }
+}

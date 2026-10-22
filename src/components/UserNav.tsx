@@ -16,6 +16,11 @@ export default function UserNav() {
     if (user) {
         return (
             <div className={styles.userMenu}>
+                {/* Where your registrations and tickets are. On phones it is
+                    at the top of the menu instead, to keep the bar short. */}
+                <Link href="/my-events" className={`${styles.loginBtn} ${styles.myEvents}`}>
+                    My events
+                </Link>
                 <Link href="/profile" className={styles.avatar} aria-label={`Your profile, ${user.name}`}>
                     {user.avatar ? (
                         // eslint-disable-next-line @next/next/no-img-element
