@@ -9,6 +9,7 @@ import { checkRateLimit, getClientIp, getRateLimitIdentifier } from '@/lib/rate-
 import { audit, AuditAction, AuditEntityType, toAuditJson } from '@/lib/audit';
 import { ApiResult, ok, fail } from '@/lib/api-response';
 import { validateCsrfSafe } from '@/lib/csrf';
+import { DEMO_REFUSAL, isDemoEmail } from '@/lib/demo-account';
 
 /**
  * Session type returned from getSession with user data
@@ -31,6 +32,12 @@ export interface AuthSession {
 export interface ProtectedActionOptions<TInput = unknown> {
     /** Require the user to have ADMIN role */
     requireAdmin?: boolean;
+    /**
+     * Let the shared demo account run this. Off by default, so a new action
+     * is closed to the demo until someone decides it is harmless and private
+     * (see src/lib/demo.ts).
+     */
+    allowDemo?: boolean;
     /** Custom role check */
     requiredRoles?: string[];
     /** Rate limiter to apply */
@@ -115,6 +122,10 @@ export function createProtectedAction<TInput, TOutput>(
             };
 
             // 2. Authorization Check
+            if (!options.allowDemo && isDemoEmail(authSession.user?.email)) {
+                throw new AuthorizationError(DEMO_REFUSAL);
+            }
+
             if (options.requireAdmin && authSession.user.role !== 'ADMIN') {
                 logger.warn('Unauthorized admin action attempt', {
                     userId: authSession.userId,

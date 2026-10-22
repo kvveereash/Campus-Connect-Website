@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { authHref, safeRedirectPath } from "@/lib/utils";
 import styles from "@/app/login/auth.module.css";
 import AuthAside, { type AsideBubble } from '@/components/auth/AuthAside';
+import TryDemo from '@/components/TryDemo';
 
 /* What lands on the board in a week, all of it in one place. */
 const CAMPUS_ACTIVITY: AsideBubble[] = [
@@ -32,6 +33,8 @@ export function ImageSliderLoginDemo() {
      without the page pretending you had just arrived. */
   const expired = searchParams.get('reason') === 'expired';
   const returnTo = searchParams.get('redirect');
+  // Set by /api/demo when the demo could not be opened.
+  const demoProblem = searchParams.get('demo');
 
   useEffect(() => {
     if (state?.success) {
@@ -135,6 +138,15 @@ export function ImageSliderLoginDemo() {
               {isPending ? "Signing in" : "Sign in"}
             </button>
           </form>
+
+          {demoProblem && (
+            <p className={styles.subtitle} role="alert">
+              {demoProblem === 'busy'
+                ? 'The demo was opened a lot from this network in the last hour. Try again later, or sign up.'
+                : 'The demo did not open this time. Try again in a moment.'}
+            </p>
+          )}
+          <TryDemo />
 
           <p className={styles.foot}>
             {/* The return address goes along, so making an account on the

@@ -75,6 +75,7 @@ export const verifyPaymentStatusAction = createProtectedAction(z.object({ regist
         throw new Error(`Payment not completed yet (Status: ${stripeSession.payment_status})`);
     }
 }, {
+    allowDemo: true,
     audit: { action: 'PAYMENT', entityType: 'Payment', getEntityId: (d) => d.registrationId }
 });
 

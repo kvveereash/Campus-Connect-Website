@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { DEMO_REFUSAL, isDemoEmail } from '@/lib/demo-account';
 import { authLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { hashVerificationToken, issueVerificationEmail } from '@/lib/email-verification';
@@ -28,6 +29,7 @@ import type { ActionState } from '@/types';
  */
 export async function sendVerificationEmail(): Promise<ActionState> {
     const session = await getSession();
+    if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
     if (!session?.userId) return { success: false, error: 'Not signed in' };
 
     // Per user, and under its own key: sharing the sign-in bucket meant a few

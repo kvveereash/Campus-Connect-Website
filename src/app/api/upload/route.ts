@@ -3,6 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { getSession } from '@/lib/auth';
+import { DEMO_REFUSAL, isDemoEmail } from '@/lib/demo-account';
 import { checkRateLimit, getRateLimitIdentifier, uploadLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { isObjectStorageConfigured, StorageUploadError, uploadObject } from '@/lib/storage';
@@ -63,6 +64,10 @@ export async function POST(request: NextRequest) {
             { success: false, error: 'You must be logged in to upload files' },
             { status: 401 }
         );
+    }
+    // The shared demo account is anyone with the button: no storage for it.
+    if (isDemoEmail(session.user?.email)) {
+        return NextResponse.json({ success: false, error: DEMO_REFUSAL }, { status: 403 });
     }
 
     // 2. Rate limit per user.

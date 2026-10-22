@@ -24,6 +24,7 @@ export const markNotificationAsReadAction = createProtectedAction(z.object({ not
     });
     return { success: true };
 }, {
+    allowDemo: true,
     // No specific role required, just auth
 });
 
@@ -36,7 +37,7 @@ export const markAllNotificationsAsReadAction = createProtectedAction(z.object({
         data: { read: true }
     });
     return { success: true };
-});
+}, { allowDemo: true });
 
 // ─────────────────────────────────────────────────
 // Legacy Wrappers

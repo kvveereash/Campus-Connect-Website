@@ -1,0 +1,77 @@
+.divided {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+/* "or" between two hairlines. */
+.rule {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.rule::before,
+.rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-hairline);
+}
+
+.button {
+    width: 100%;
+    min-height: 48px;
+    border-radius: var(--radius-pill);
+}
+
+.note {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-felt);
+    text-align: center;
+}
+
+.linkForm {
+    display: flex;
+}
+
+.link {
+    padding: 6px 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 14px;
+    color: var(--color-felt);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--border-strong);
+    cursor: pointer;
+    transition: color var(--duration-base) var(--ease-glide);
+}
+
+.link:hover {
+    color: var(--color-accent);
+    text-decoration-color: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .link {
+        transition: none;
+    }
+}
+
+/* Comfortable tap target on phones. */
+@media (pointer: coarse) {
+    .link {
+        min-height: 44px;
+    }
+}

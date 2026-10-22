@@ -13,6 +13,7 @@ import GlobalModal from "@/components/GlobalModal";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
 import { fontVariables } from "./fonts";
+import DemoBanner from "@/components/DemoBanner";
 
 import SWRegister from "@/components/SWRegister"; // Added
 import { GlobalNotificationListener } from "@/components/chat/GlobalNotificationListener";
@@ -77,6 +78,7 @@ export default function RootLayout({
                   <Navbar />
                 </ChromeGate>
                 <main className="container">
+                  <DemoBanner />
                   {children}
                 </main>
                 <ChromeGate>

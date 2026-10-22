@@ -156,6 +156,7 @@ export const sendMessageAction = createProtectedAction(sendMessageSchema, async 
         throw new Error('Failed to send message');
     }
 }, {
+    allowDemo: true,
     rateLimiter: messageLimiter // Use shared limiter
     // Note: duplicate imports of rate-limit might need checking if I import `messageLimiter` at top.
 });
@@ -178,7 +179,7 @@ export const markAsReadAction = createProtectedAction(markAsReadSchema, async (d
     });
 
     return { success: true };
-});
+}, { allowDemo: true });
 
 // ─────────────────────────────────────────────────
 // Legacy Wrappers
@@ -434,6 +435,7 @@ export const updatePresenceAction = createProtectedAction(updatePresenceSchema, 
     });
     return { success: true };
 }, {
+    allowDemo: true,
     // Low priority, maybe no audit
 });
 
@@ -449,7 +451,7 @@ export const triggerTypingAction = createProtectedAction(triggerTypingSchema, as
         userId: session.userId
     });
     return { success: true };
-});
+}, { allowDemo: true });
 
 // 9. Toggle Reaction
 const toggleReactionSchema = z.object({
@@ -487,7 +489,7 @@ export const toggleReactionAction = createProtectedAction(toggleReactionSchema, 
     });
 
     return { success: true };
-});
+}, { allowDemo: true });
 
 // ─────────────────────────────────────────────────
 // Legacy Wrappers

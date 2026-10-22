@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { DEMO_REFUSAL, isDemoEmail } from '@/lib/demo-account';
 import { revalidatePath } from 'next/cache';
 import { reviewSchema } from '@/lib/schemas';
 import { cleanUserText } from '@/lib/sanitize';
@@ -16,6 +17,7 @@ export async function addEventReview(
     comment?: string
 ) {
     const session = await getSession();
+    if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
     if (!session || !session.userId) {
         return { success: false, error: 'Unauthorized' };
     }
@@ -127,6 +129,7 @@ export async function getEventReviews(eventId: string) {
  */
 export async function deleteEventReview(reviewId: string) {
     const session = await getSession();
+    if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
     if (!session || !session.userId) {
         return { success: false, error: 'Unauthorized' };
     }

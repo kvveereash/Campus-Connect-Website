@@ -7,6 +7,7 @@ import { inkFor } from './events/press';
 import { resolveEventImage } from '@/lib/college-images';
 import HomeMotion from './HomeMotion';
 import CollegeIndex, { type LandingCollege } from './CollegeIndex';
+import TryDemo from '@/components/TryDemo';
 import styles from './home.module.css';
 
 export type { LandingCollege };
@@ -161,6 +162,9 @@ export default function Landing({ events, stats, categories, clubs, marquee, col
                         <Link href="/signup" className={styles.btnGhost}>
                             Join free
                         </Link>
+                    </div>
+                    <div data-hero-fade>
+                        <TryDemo variant="link" />
                     </div>
                     {next && nextParts && (
                         <Link href={`/events/${next.id}`} className={styles.nextUp} data-hero-fade>

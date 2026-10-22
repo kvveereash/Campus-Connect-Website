@@ -144,7 +144,7 @@ export const getUserPendingPaymentsAction = createProtectedAction(getUserPending
     });
 
     return pendingRegistrations;
-});
+}, { allowDemo: true });
 
 // Wrapper
 export async function getUserPendingPayments() {

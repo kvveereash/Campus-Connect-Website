@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { authHref, safeRedirectPath } from "@/lib/utils";
 import styles from "@/app/login/auth.module.css";
 import AuthAside, { type AsideBubble } from "@/components/auth/AuthAside";
+import TryDemo from "@/components/TryDemo";
 
 /* The forty group chats, or eight of them. */
 const GROUP_CHATS: AsideBubble[] = [
@@ -126,6 +127,8 @@ export function ImageSliderSignupDemo() {
               {isPending ? "Creating account" : "Create account"}
             </button>
           </form>
+
+          <TryDemo />
 
           <p className={styles.foot}>
             Already have an account? <Link href={authHref(returnTo)}>Sign in</Link>

@@ -3,6 +3,7 @@
 import prisma from '@/lib/db';
 import { revalidatePath, updateTag, unstable_cache } from 'next/cache';
 import { getSession } from '@/lib/auth';
+import { DEMO_REFUSAL, isDemoEmail } from '@/lib/demo-account';
 import { ActionState } from '@/types';
 import { cleanUserText } from '@/lib/sanitize';
 import { postLimiter, commentLimiter, eventLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
@@ -116,6 +117,7 @@ export const joinClubAction = createProtectedAction(joinClubSchema, async ({ clu
 
     return { message: 'Joined club successfully' };
 }, {
+    allowDemo: true,
     audit: { action: 'UPDATE', entityType: 'Club', getEntityId: (d) => d.clubId },
 });
 
@@ -147,7 +149,7 @@ export const leaveClubAction = createProtectedAction(leaveClubSchema, async ({ c
     revalidatePath('/profile');
 
     return { message: 'Left club successfully' };
-});
+}, { allowDemo: true });
 
 export const deleteClubAction = createProtectedAction(deleteClubSchema, async ({ clubId }, session) => {
     // Check if user is admin of the club
@@ -504,6 +506,7 @@ export async function getClubPosts(clubId: string) {
 export async function deleteClubPost(postId: string, clubId: string): Promise<ActionState> {
     try {
         const session = await getSession();
+        if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
         if (!session || !session.userId) {
             return { success: false, error: 'Unauthorized' };
         }
@@ -544,6 +547,7 @@ export async function editClubPost(postId: string, clubId: string, newContent: s
 
     try {
         const session = await getSession();
+        if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
         if (!session || !session.userId) {
             return { success: false, error: 'Unauthorized' };
         }
@@ -584,6 +588,7 @@ export async function createPostComment(postId: string, content: string): Promis
 
     try {
         const session = await getSession();
+        if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
         if (!session || !session.userId) {
             return { success: false, error: 'Unauthorized' };
         }
@@ -671,6 +676,7 @@ export async function getPostComments(postId: string) {
 export async function deletePostComment(commentId: string, _postId?: string): Promise<ActionState> {
     try {
         const session = await getSession();
+        if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
         if (!session || !session.userId) {
             return { success: false, error: 'Unauthorized' };
         }

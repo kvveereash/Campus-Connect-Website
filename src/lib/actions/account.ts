@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { createSession, deleteSession, getSession, passwordVersion } from '@/lib/auth';
+import { DEMO_REFUSAL, isDemoEmail } from '@/lib/demo-account';
 import { authLimiter, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import type { ActionState } from '@/types';
@@ -25,6 +26,7 @@ export async function changePassword(
     newPassword: string
 ): Promise<ActionState> {
     const session = await getSession();
+    if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
     if (!session?.userId) return { success: false, error: 'Not signed in' };
 
     if (newPassword.length < MIN_PASSWORD) {
@@ -78,6 +80,7 @@ export async function changePassword(
 
 export async function deleteAccount(password: string): Promise<ActionState> {
     const session = await getSession();
+    if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
     if (!session?.userId) return { success: false, error: 'Not signed in' };
 
     const limit = await checkRateLimit(authLimiter, getRateLimitIdentifier(session.userId as string));

@@ -123,6 +123,19 @@ test('the app installs: manifest, icons and an offline page', async ({ page, req
     await expect(page.getByRole('heading', { name: /offline/ })).toBeVisible();
 });
 
+/* Signs in only: the demo account already exists, so nothing is written. */
+test('Try the demo opens the demo account, which cannot edit its profile', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByRole('button', { name: 'Try the demo' }).click();
+    await expect(page).toHaveURL(/\/profile$/);
+    await expect(page.getByText('You are in the demo account.')).toBeVisible();
+    await expectNoHorizontalScroll(page);
+
+    await page.getByRole('button', { name: 'Edit profile' }).click();
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+    await expect(page.getByText(/demo account can look around/)).toBeVisible();
+});
+
 test('crawlers get robots.txt, a sitemap and a share image', async ({ request }) => {
     const robots = await request.get('/robots.txt');
     expect(await robots.text()).toContain('Sitemap:');

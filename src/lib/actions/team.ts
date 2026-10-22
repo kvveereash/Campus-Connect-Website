@@ -3,6 +3,7 @@
 import prisma from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { getSession } from '@/lib/auth';
+import { DEMO_REFUSAL, isDemoEmail } from '@/lib/demo-account';
 import { revalidatePath } from 'next/cache';
 import { isOk } from '@/lib/api-response';
 
@@ -106,6 +107,7 @@ export async function updateTeamRequest(id: string, data: Partial<{
 }>) {
     try {
         const session = await getSession();
+        if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
         if (!session || !session.userId) {
             return { success: false, error: 'Unauthorized' };
         }
@@ -145,6 +147,7 @@ export async function updateTeamRequest(id: string, data: Partial<{
 export async function deleteTeamRequest(id: string) {
     try {
         const session = await getSession();
+        if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
         if (!session || !session.userId) {
             return { success: false, error: 'Unauthorized' };
         }
@@ -168,6 +171,7 @@ export async function deleteTeamRequest(id: string) {
 export async function connectToTeamRequest(requestId: string) {
     try {
         const session = await getSession();
+        if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
         if (!session || !session.userId) {
             return { success: false, error: 'Unauthorized' };
         }

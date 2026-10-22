@@ -103,6 +103,10 @@ export const globalApiLimiter = defineLimiter(100, '1 m', 'ratelimit:api:global'
 // Uploads: 20 per hour (writes to disk — keep it tight)
 export const uploadLimiter = defineLimiter(20, '1 h', 'ratelimit:upload');
 
+// "Try the demo" sign-ins: 10 an hour per IP. Plenty for a recruiter clicking
+// around; not enough to script the demo account into a spam source.
+export const demoLimiter = defineLimiter(10, '1 h', 'ratelimit:demo');
+
 // Crash reports from browsers: 20 a minute per IP. Real crashes come one or two
 // at a time; more than this is a loop or someone filling the logs.
 export const clientErrorLimiter = defineLimiter(20, '1 m', 'ratelimit:client-error');

@@ -4,6 +4,7 @@ import prisma from '@/lib/db';
 import { revalidatePath, updateTag } from 'next/cache';
 import bcrypt from 'bcryptjs';
 import { createSession, deleteSession, getSession, passwordVersion } from '@/lib/auth';
+import { DEMO_REFUSAL, isDemoEmail } from '@/lib/demo-account';
 import { ActionState } from '@/types';
 import { authLimiter, signupLimiter, loginIpLimiter, signupIpLimiter, eventLimiter, getClientIp, getRateLimitIdentifier, checkRateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
@@ -355,6 +356,7 @@ export async function getSessionUser() {
 
 export async function updateUserProfile(input: UpdateUserProfileInput) {
     const session = await getSession();
+    if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
     if (!session || !session.userId) {
         return { success: false, error: 'Unauthorized' };
     }

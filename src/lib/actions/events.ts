@@ -4,6 +4,7 @@ import prisma from '@/lib/db';
 import { Event as PrismaEvent, Prisma } from '@prisma/client';
 import { revalidatePath, updateTag } from 'next/cache';
 import { getSession } from '@/lib/auth';
+import { DEMO_REFUSAL, isDemoEmail } from '@/lib/demo-account';
 import { unstable_cache } from 'next/cache';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache';
 import { clampLimit } from '@/lib/pagination';
@@ -158,6 +159,7 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
 
     return { earnedBadges, registrationId: registration.id };
 }, {
+    allowDemo: true,
     audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.eventId },
 });
 
@@ -548,6 +550,7 @@ export async function getUserBadges(userId: string) {
  */
 export async function deleteEvent(eventId: string) {
     const session = await getSession();
+    if (isDemoEmail(session?.user?.email)) return { success: false, error: DEMO_REFUSAL };
     if (!session || !session.userId) {
         return { success: false, error: 'Unauthorized' };
     }
