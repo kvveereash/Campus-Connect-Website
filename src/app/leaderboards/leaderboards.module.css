@@ -21,7 +21,7 @@
 }
 
 .label {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -42,7 +42,7 @@
 }
 
 .note {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -172,7 +172,7 @@
 
 .sub {
     margin-top: 3px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -201,7 +201,7 @@
 
 .scoreLabel {
     margin-top: 5px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;

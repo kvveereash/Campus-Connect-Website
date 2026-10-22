@@ -256,7 +256,7 @@
 
 .nextLabel {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-accent);
@@ -330,7 +330,7 @@
     align-items: center;
     gap: 7px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-felt);
@@ -354,7 +354,7 @@
     align-items: center;
     margin-top: 4px;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     color: var(--color-ash);
 }
@@ -545,7 +545,7 @@
 
 .catCount {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     color: var(--color-ash);
 }
 
@@ -607,7 +607,7 @@
     border-radius: 12px;
     background: var(--color-paper);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     color: var(--color-felt);
 }

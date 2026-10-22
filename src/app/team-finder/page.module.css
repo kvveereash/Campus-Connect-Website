@@ -210,7 +210,7 @@
 
 .scoreLabel {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-ash);
@@ -280,7 +280,7 @@
 
 .reasons {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.6;
     text-transform: uppercase;
     letter-spacing: 0.03em;

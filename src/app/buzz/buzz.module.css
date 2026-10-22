@@ -24,7 +24,7 @@
 }
 
 .label {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -45,7 +45,7 @@
 }
 
 .note {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -93,7 +93,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -267,11 +267,12 @@
     margin-bottom: 14px;
 }
 
+/* Names are read, not scanned: the body face, as written. */
 .club {
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
     color: var(--color-obsidian);
 }
 
@@ -284,9 +285,14 @@
     font-size: 11px;
 }
 
-.author,
+.author {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: var(--color-inkstone);
+}
+
 .stamp {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -344,7 +350,7 @@
     border: 0;
     padding: 0;
     font: inherit;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -381,15 +387,15 @@
 }
 
 .commentAuthor {
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
     color: var(--color-obsidian);
 }
 
 .commentStamp {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;

@@ -146,16 +146,17 @@
     min-width: 0;
 }
 
+/* Names in the body face, as written; times stay mono. */
 .authorName {
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
     color: var(--color-obsidian);
 }
 
 .timestamp {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -192,7 +193,7 @@
     background: transparent;
     border: 0;
     font: inherit;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -287,15 +288,15 @@
 }
 
 .commentAuthor {
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
     color: var(--color-obsidian);
 }
 
 .commentTime {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -390,7 +391,7 @@
 .loading,
 .emptyComments {
     padding: 10px 0;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;

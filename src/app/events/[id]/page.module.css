@@ -16,7 +16,7 @@
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -42,7 +42,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 14px;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -130,7 +130,7 @@
 }
 
 .sectionLabel {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -165,7 +165,7 @@
 }
 
 .factKey {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     font-family: var(--font-mono);
     text-transform: uppercase;
@@ -352,7 +352,7 @@
 
     .registerBarText span {
         font-family: var(--font-mono);
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.04em;
         text-transform: uppercase;
         color: var(--color-felt);
@@ -408,7 +408,7 @@
 .ticketLabel {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-ash);

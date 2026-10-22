@@ -257,7 +257,7 @@
 
 .kbd {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     padding: 2px 6px;
     border-radius: 6px;
     background: var(--color-canvas);
@@ -367,7 +367,7 @@
 
 .exploreTitle {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--color-ash);
