@@ -133,7 +133,7 @@ export default function BuzzClient({ posts }: Props) {
         <div className={styles.page}>
             <header className={styles.masthead}>
                 <div>
-                    <p className={styles.label}>Buzz</p>
+                    <p className={styles.label}>Club posts</p>
                     <h1 className={styles.title}>
                         What clubs are <em className="accent">saying.</em>
                     </h1>

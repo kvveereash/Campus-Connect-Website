@@ -22,7 +22,7 @@ export default function manifest(): MetadataRoute.Manifest {
         shortcuts: [
             { name: 'Events', url: '/events' },
             { name: 'Messages', url: '/messages' },
-            { name: 'Buzz', url: '/buzz' },
+            { name: 'Club posts', url: '/buzz' },
         ],
     };
 }

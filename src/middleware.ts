@@ -56,6 +56,7 @@ export async function middleware(request: NextRequest) {
     const isProtectedPath =
         pathname === '/profile' ||
         pathname === '/settings' ||
+        pathname === '/my-events' ||
         pathname.startsWith('/messages') ||
         pathname.startsWith('/team-finder') ||
         pathname.startsWith('/admin') ||

@@ -107,6 +107,34 @@
     flex-shrink: 0;
 }
 
+/* Four links and Explore: a two-word label must never break inside its pill. */
+.navLink,
+.dropdownTrigger {
+    white-space: nowrap;
+}
+
+/* Between the phone menu and a wide screen, the bar gives up the wordmark,
+   then the squares, before it gives up room between links. */
+@media (min-width: 861px) and (max-width: 1180px) {
+    .logoText {
+        display: none;
+    }
+}
+
+@media (max-width: 1180px) {
+    .navLink,
+    .dropdownTrigger {
+        padding: 0 11px;
+        gap: 6px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .navLinks .navMark {
+        display: none;
+    }
+}
+
 .chevron {
     transition: transform var(--duration-micro) var(--ease-glide);
 }
@@ -284,6 +312,14 @@
 .userMenu {
     display: flex;
     align-items: center;
+    gap: 4px;
+}
+
+/* In the phone menu instead, below the width where the nav links fold away. */
+@media (max-width: 860px) {
+    .myEvents {
+        display: none;
+    }
 }
 
 .avatar {
