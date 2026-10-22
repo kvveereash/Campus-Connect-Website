@@ -1,0 +1,47 @@
+/* A bone: the grey shape something will fill. It breathes with opacity, not a
+   sliding gradient, so it costs the compositor nothing. */
+.bone {
+    display: block;
+    background: var(--color-slate);
+    border-radius: 8px;
+    animation: breathe 1.6s ease-in-out infinite;
+}
+
+.dark {
+    background: rgba(255, 255, 255, 0.14); /* a bone on a dark or blue surface */
+}
+
+@keyframes breathe {
+    50% {
+        opacity: 0.55;
+    }
+}
+
+/* The whole loading screen waits a beat before it shows. Most pages answer in
+   under 150ms, and a skeleton that flashes for a frame reads as a flicker. */
+.region {
+    animation: arrive 0.2s ease-out 0.15s backwards;
+}
+
+/* Read out, not shown. */
+.label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@keyframes arrive {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bone,
+    .region {
+        animation: none;
+    }
+}

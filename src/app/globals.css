@@ -695,38 +695,7 @@ html {
   animation-delay: 0.5s;
 }
 
-/* ─── Shimmer Skeleton ──────────────────────────────────────────────────── */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
 
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.skeleton {
-  background: linear-gradient(90deg, #f0ebe0 25%, #e8e3d8 50%, #f0ebe0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: var(--radius-card, 1rem);
-}
-
-.skeleton-text {
-  height: 0.9rem;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #f0ebe0 25%, #e8e3d8 50%, #f0ebe0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-circle {
-  border-radius: 50%;
-  background: linear-gradient(90deg, #f0ebe0 25%, #e8e3d8 50%, #f0ebe0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
 /* ============================================================
    CAMPUS PRESS — design tokens for the events surface
    ------------------------------------------------------------

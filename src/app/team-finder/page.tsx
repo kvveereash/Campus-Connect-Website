@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { getSessionUser, getRecommendedTeammates } from '@/lib/actions';
+import RevealGroup from '@/components/RevealGroup';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -71,13 +72,13 @@ export default async function TeamFinderPage() {
             )}
 
             {matches.length > 0 ? (
-                <ul className={styles.grid} data-reveal-group>
+                <RevealGroup as="ul" className={styles.grid}>
                     {matches.map((match) => (
                         <li key={match.id}>
                             <MatchCard match={match} />
                         </li>
                     ))}
-                </ul>
+                </RevealGroup>
             ) : (
                 <div className={styles.empty}>
                     <h2 className={styles.emptyTitle}>No one to suggest yet</h2>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTeam } from '@/context/TeamContext';
 import { useAuth } from '@/context/AuthContext';
 import TeamRequestCard from './TeamRequestCard';
+import RevealGroup from '@/components/RevealGroup';
 import styles from './TeamFinder.module.css';
 import { TeamRequest } from '@/types';
 
@@ -136,7 +137,7 @@ export default function TeamFinder({ eventId }: { eventId: string }) {
                 </div>
             )}
 
-            <div className={styles.list} data-reveal-group>
+            <RevealGroup className={styles.list}>
                 {requests.length > 0 ? (
                     requests.map((req) => (
                         <TeamRequestCard
@@ -153,7 +154,7 @@ export default function TeamFinder({ eventId }: { eventId: string }) {
                     </div>
                 )
                 }
-            </div>
+            </RevealGroup>
         </div>
     );
 }

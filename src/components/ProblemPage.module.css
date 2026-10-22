@@ -1,0 +1,70 @@
+/* The not-found and error screens: the site's empty-state box (dashed, on the
+   dot grid), because a missing page is an empty board, not an alarm. */
+.wrap {
+    display: grid;
+    place-items: center;
+    min-height: 62vh;
+    padding: clamp(32px, 6vw, 72px) 0;
+}
+
+.box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 640px;
+    padding: clamp(40px, 7vw, 72px) clamp(20px, 5vw, 48px);
+    border-radius: 24px;
+    border: 1px dashed var(--border-strong);
+    background-color: var(--color-paper);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.kicker {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-obsidian);
+    text-wrap: balance;
+}
+
+.text {
+    margin: 0;
+    max-width: 44ch;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--color-felt);
+    text-wrap: pretty;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.reference {
+    margin: 6px 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}

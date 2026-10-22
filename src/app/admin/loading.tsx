@@ -1,24 +1,23 @@
 import ListSkeleton from '@/components/ListSkeleton';
+import Skeleton, { LoadingRegion } from '@/components/Skeleton';
 
 export default function AdminLoading() {
     return (
-        <div>
-            <div style={{ marginBottom: '30px' }}>
-                <div style={{ height: '40px', width: '200px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '10px' }}></div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
-                {Array(4).fill(0).map((_, i) => (
-                    <div key={i} style={{
-                        height: '140px',
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                        borderRadius: '12px'
-                    }}></div>
+        <LoadingRegion label="Loading the admin dashboard">
+            <Skeleton width="200px" height="40px" style={{ marginBottom: '30px' }} />
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))',
+                    gap: '20px',
+                    marginBottom: '40px',
+                }}
+            >
+                {Array.from({ length: 4 }, (_, i) => (
+                    <Skeleton key={i} height="140px" borderRadius="var(--radius-card)" />
                 ))}
             </div>
-
             <ListSkeleton count={3} />
-        </div>
+        </LoadingRegion>
     );
 }

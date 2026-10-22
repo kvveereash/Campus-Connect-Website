@@ -52,3 +52,7 @@ next-env.d.ts
 
 # local editor/agent tooling
 /.claude
+
+# Playwright
+/test-results/
+/playwright-report/
