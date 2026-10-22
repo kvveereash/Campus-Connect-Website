@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import { pusherClient } from '@/lib/pusher-client';
 import { userChannel } from '@/lib/pusher-channels';
-import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/lib/actions/notifications'; // Need to add markAll logic if missing
+import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/lib/actions/notifications';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -35,16 +35,19 @@ export function NotificationBell() {
     // Fetch initial
     useEffect(() => {
         if (user?.id) {
-            getNotifications().then(data => {
-                // Ensure dates are Date objects if serialized
-                const parsed = data.map(n => ({
-                    ...n,
-                    createdAt: new Date(n.createdAt)
-                }));
-                setNotifications(parsed);
-                setUnreadCount(parsed.filter(n => !n.read).length);
-                setLoading(false);
-            });
+            getNotifications()
+                .then(data => {
+                    // Ensure dates are Date objects if serialized
+                    const parsed = data.map(n => ({
+                        ...n,
+                        createdAt: new Date(n.createdAt)
+                    }));
+                    setNotifications(parsed);
+                    setUnreadCount(parsed.filter(n => !n.read).length);
+                })
+                // A failed load shows the empty state rather than "Loading" forever.
+                .catch(() => {})
+                .finally(() => setLoading(false));
         }
     }, [user?.id]);
 
@@ -81,9 +84,15 @@ export function NotificationBell() {
             }
         };
 
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') setIsOpen(false);
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
         };
     }, []);
 
@@ -103,11 +112,6 @@ export function NotificationBell() {
         // Optimistic
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         setUnreadCount(0);
-        // We need a server action for this, or loop. Creating one-off loop for now is fine or adding action.
-        // Assuming markAllNotificationsAsRead exists or I'll implement loop here if not.
-        // I didn't verify markAllNotificationsAsRead exists in my previous steps, so I will loop for now or add it.
-        // Actually, NotificationsList.tsx used `markAllAsRead` import. Let's assume I need to double check actions.
-        // I will just loop for now to be safe, or simply don't await.
         if (user?.id) {
             await markAllNotificationsAsRead();
         }
@@ -118,20 +122,25 @@ export function NotificationBell() {
     return (
         <div className={styles.bellContainer} ref={dropdownRef}>
             <button
+                type="button"
                 className={styles.bellButton}
                 onClick={() => setIsOpen(!isOpen)}
-                aria-label="Notifications"
+                aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+                aria-expanded={isOpen}
             >
-                <Bell size={22} />
+                <Bell size={20} aria-hidden="true" />
                 {unreadCount > 0 && (
-                    <span className={styles.badge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+                    <span className={styles.badge} aria-hidden="true">{unreadCount > 99 ? '99+' : unreadCount}</span>
                 )}
             </button>
 
             {isOpen && (
                 <div className={styles.dropdown}>
                     <div className={styles.header}>
-                        <h3>Notifications</h3>
+                        <h3>
+                            Notifications
+                            {unreadCount > 0 && <span className={styles.count}>{unreadCount} new</span>}
+                        </h3>
                         {unreadCount > 0 && (
                             <button
                                 className={styles.markAllBtn}
@@ -144,14 +153,20 @@ export function NotificationBell() {
 
                     <div className={styles.scrollArea}>
                         {loading ? (
-                            <div className={styles.loading}>Loading...</div>
+                            <div className={styles.loading}>Loading notifications</div>
                         ) : notifications.length === 0 ? (
-                            <div className={styles.empty}>No notifications</div>
+                            <div className={styles.empty}>
+                                <strong>Nothing new yet.</strong>
+                                <span>Sign-ups for your events, replies and reminders land here.</span>
+                                <Link href="/events" onClick={() => setIsOpen(false)}>
+                                    Browse events
+                                </Link>
+                            </div>
                         ) : (
                             notifications.map(notification => (
                                 <div
                                     key={notification.id}
-                                    className={`${styles.item} ${!notification.read ? styles.unread : styles.read}`}
+                                    className={notification.read ? styles.item : `${styles.item} ${styles.unread}`}
                                     onClick={() => handleMarkRead(notification.id, notification.read)}
                                 >
                                     <Link
@@ -161,13 +176,7 @@ export function NotificationBell() {
                                     >
                                         <div className={styles.avatar}>
                                             {notification.actor?.avatar ? (
-                                                <Image
-                                                    src={notification.actor.avatar}
-                                                    width={32}
-                                                    height={32}
-                                                    alt=""
-                                                    style={{ borderRadius: '50%' }}
-                                                />
+                                                <Image src={notification.actor.avatar} width={36} height={36} alt="" />
                                             ) : (
                                                 <div className={styles.placeholderAvatar}>
                                                     {notification.actor?.name?.[0]?.toUpperCase() || 'C'}
@@ -184,7 +193,7 @@ export function NotificationBell() {
                                                 {formatIST(notification.createdAt, { day: 'numeric', month: 'short' })}
                                             </span>
                                         </div>
-                                        {!notification.read && <div className={styles.dot} />}
+                                        {!notification.read && <span className={styles.dot} aria-label="Unread" />}
                                     </Link>
                                 </div>
                             ))

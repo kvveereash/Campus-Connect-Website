@@ -4,209 +4,292 @@
 }
 
 .bellButton {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
     position: relative;
-    padding: 0.5rem;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
     border-radius: 50%;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: transparent;
+    color: var(--color-inkstone);
+    cursor: pointer;
+    transition: background-color var(--duration-base) var(--ease-glide),
+                color var(--duration-base) var(--ease-glide);
 }
 
-.bellButton:hover {
-    background: rgba(15, 31, 28, 0.05);
-    /* Forest with low opacity */
-    color: var(--color-forest);
+.bellButton:hover,
+.bellButton[aria-expanded='true'] {
+    background: var(--color-slate);
+    color: var(--color-obsidian);
 }
 
+/* Campus blue: the one colour that means "act on this". */
 .badge {
     position: absolute;
-    top: 2px;
+    top: 4px;
     right: 2px;
-    background: var(--color-orange);
-    color: white;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 2px 5px;
-    border-radius: 0px;
-    border: 2px solid #ffffff;
-    /* White border to cut out from bell */
-    min-width: 16px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-paper);
+    color: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 18px;
     text-align: center;
-    line-height: 1;
+    font-variant-numeric: tabular-nums;
 }
 
+/* A sheet that floats over the page, so it gets the float shadow. */
 .dropdown {
     position: absolute;
     top: calc(100% + 10px);
-    right: -10px;
-    width: 340px;
-    background: #ffffff;
-    border: 1px solid var(--border-color);
-    border-radius: 0px;
-    /* Match card radius */
-    box-shadow: none;
-    /* Premium shadow */
+    right: -8px;
     z-index: 100;
+    width: min(380px, calc(100vw - 24px));
     overflow: hidden;
-    animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    /* Apple-like easing */
+    border-radius: 20px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    box-shadow: var(--shadow-float);
+    transform-origin: top right;
+    animation: open var(--duration-base, 0.2s) var(--ease-glide) backwards;
 }
 
-@keyframes slideDown {
+@keyframes open {
     from {
         opacity: 0;
-        transform: translateY(-8px) scale(0.98);
+        transform: translateY(-6px) scale(0.98);
     }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.loading,
-.empty {
-    padding: 3rem 2rem;
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    font-family: var(--font-sans);
 }
 
 .header {
     display: flex;
+    align-items: baseline;
     justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--color-cream);
-    /* Subtle contrast header */
+    gap: 12px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border-hairline);
 }
 
 .header h3 {
     margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
     font-family: var(--font-display);
-    color: var(--color-forest);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--color-obsidian);
+}
+
+.count {
+    margin-left: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
 }
 
 .markAllBtn {
-    background: transparent;
-    border: none;
-    color: var(--color-forest);
-    font-size: 0.85rem;
-    font-weight: 600;
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-accent);
     cursor: pointer;
     text-decoration: underline;
     text-underline-offset: 4px;
-    opacity: 0.7;
-    transition: opacity 0.2s;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--duration-base) var(--ease-glide);
 }
 
 .markAllBtn:hover {
-    opacity: 1;
+    text-decoration-color: currentColor;
 }
 
 .scrollArea {
-    max-height: 400px;
+    max-height: min(440px, 70vh);
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .item {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(15, 31, 28, 0.03);
-    transition: background 0.2s;
-    cursor: pointer;
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
     position: relative;
-    background: #ffffff;
+    border-bottom: 1px solid var(--border-hairline);
+    background: var(--color-paper);
+    transition: background-color var(--duration-base) var(--ease-glide);
+}
+
+.item:last-child {
+    border-bottom: 0;
 }
 
 .item:hover {
-    background: var(--color-cream);
+    background: var(--color-canvas);
 }
 
+/* Unread: a tint of the accent, never a solid block, so the text keeps its contrast. */
 .unread {
-    background: var(--color-mint);
-    /* Highlight unread items with Mint */
+    background: var(--color-accent-soft);
 }
 
 .unread:hover {
-    background: #c3f3db;
-    /* Slightly darker mint on hover */
-}
-
-.read {
-    opacity: 1;
-    /* Keep full opacity but differentiate with background */
+    background: color-mix(in srgb, var(--color-accent-soft) 70%, var(--color-accent) 8%);
 }
 
 .linkWrapper {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
-    flex: 1;
-    text-decoration: none;
+    gap: 12px;
+    padding: 14px 20px;
     color: inherit;
+    text-decoration: none;
+}
+
+.linkWrapper:focus-visible {
+    outline-offset: -3px;
 }
 
 .avatar {
     flex-shrink: 0;
-    margin-top: 2px;
+    width: 36px;
+    height: 36px;
+    overflow: hidden;
+    border-radius: 50%;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .placeholderAvatar {
+    display: grid;
+    place-items: center;
     width: 36px;
     height: 36px;
-    background: var(--color-obsidian);
-    /* Paper on ink. Was --color-forest, an alias of --color-obsidian, so
-       this rendered the same shade as its own background. */
-    color: var(--color-paper);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border: 1px solid rgba(15, 31, 28, 0.1);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
 }
 
 .content {
     flex: 1;
-    font-size: 0.95rem;
-    line-height: 1.4;
-    color: var(--text-secondary);
+    min-width: 0;
+}
+
+.content p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--color-inkstone);
 }
 
 .actorName {
-    font-weight: 700;
-    color: var(--color-forest);
+    font-weight: 600;
+    color: var(--color-obsidian);
 }
 
 .time {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    opacity: 0.8;
     display: block;
-    margin-top: 0.35rem;
-    font-weight: 500;
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
 }
 
 .dot {
+    flex-shrink: 0;
     width: 8px;
     height: 8px;
-    background: var(--color-orange);
+    margin-top: 6px;
     border-radius: 50%;
-    margin-top: 8px;
-    flex-shrink: 0;
-    box-shadow: none;
-    /* Halo effect */
+    background: var(--color-accent);
+}
+
+.loading {
+    padding: 36px 20px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--color-ash);
+}
+
+/* The site's empty state, at dropdown size: dashed box on the dot grid. */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 16px;
+    padding: 28px 20px;
+    border-radius: var(--radius-card);
+    border: 1px dashed var(--border-strong);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.empty strong {
+    font-family: var(--font-display);
+    font-size: 17px;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+}
+
+.empty span {
+    max-width: 30ch;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-felt);
+}
+
+.empty a {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* On a phone the bell is not at the screen's edge, so a panel hung from it
+   would run off the left. Pin it under the navbar, edge to edge. */
+@media (max-width: 520px) {
+    .dropdown {
+        position: fixed;
+        top: 72px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        transform-origin: top center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bellButton,
+    .item,
+    .markAllBtn {
+        transition: none;
+    }
+
+    .dropdown {
+        animation: none;
+    }
 }
