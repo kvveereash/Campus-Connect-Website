@@ -10,6 +10,7 @@ import ClubAdminControls from '@/components/clubs/ClubAdminControls';
 import JoinClubButton from '@/components/JoinClubButton';
 import ClubFeed from '@/components/clubs/ClubFeed';
 import { formatIST } from '@/lib/format';
+import { shareMetadata } from '@/lib/site';
 
 const MEMBERS_SHOWN = 12;
 
@@ -19,7 +20,12 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     const { id } = await props.params;
     const club = await getClubDetails(id);
     if (!club) return { title: 'Club not found' };
-    return { title: club.name, description: summary(club.description) };
+    const description = summary(club.description);
+    return {
+        title: club.name,
+        description,
+        ...shareMetadata({ title: club.name, description, path: `/clubs/${id}` }),
+    };
 }
 
 export default async function ClubDetailsPage(props: { params: Promise<{ id: string }> }) {

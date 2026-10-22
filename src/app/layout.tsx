@@ -12,6 +12,7 @@ import { ModalProvider } from "@/context/ModalContext";
 import { CommandProvider } from "@/context/CommandContext";
 import GlobalModal from "@/components/GlobalModal";
 import "./globals.css";
+import { SITE_URL } from "@/lib/site";
 
 import SWRegister from "@/components/SWRegister"; // Added
 import { GlobalNotificationListener } from "@/components/chat/GlobalNotificationListener";
@@ -39,7 +40,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://campusconnect2026.netlify.app'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'Campus Connect',
     template: '%s | Campus Connect'
@@ -51,9 +52,10 @@ export const metadata: Metadata = {
     // url comes from metadataBase. This was a placeholder domain, and the
     // image it named (/og-image.png) does not exist, so shared links showed
     // the wrong address and a broken preview.
+    // The image is src/app/opengraph-image.tsx; events, clubs and colleges
+    // draw their own.
     siteName: 'Campus Connect',
-    images: [{ url: '/logo.png' }],
-    locale: 'en_US',
+    locale: 'en_IN',
     type: 'website',
   },
   manifest: '/manifest.json',
@@ -63,10 +65,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Campus Connect',
   },
+  // Card type only: a fixed title here would label every shared event
+  // "Campus Connect" on X, which otherwise reads each page's Open Graph tags.
   twitter: {
     card: 'summary_large_image',
-    title: 'Campus Connect',
-    description: 'Discover events, join clubs, and connect with peers.',
   },
 };
 

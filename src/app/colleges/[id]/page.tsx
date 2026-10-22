@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getCollegeById, getEventsByHost } from '@/lib/actions';
+import { shareMetadata } from '@/lib/site';
 import CollegeClient from './CollegeClient';
 
 // Nothing on a college page depends on who is looking (following is handled
@@ -15,7 +16,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const { id } = await params;
     const college = await getCollegeById(id);
     if (!college) return { title: 'College not found' };
-    return { title: college.name, description: `Clubs and upcoming events at ${college.name}.` };
+    const description = `Clubs and upcoming events at ${college.name}, ${college.location}.`;
+    return {
+        title: college.name,
+        description,
+        ...shareMetadata({ title: college.name, description, path: `/colleges/${id}` }),
+    };
 }
 
 export default async function CollegePage({ params }: { params: Promise<{ id: string }> }) {
