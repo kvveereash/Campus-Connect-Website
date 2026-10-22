@@ -17,6 +17,7 @@ import EventTicket from '@/components/EventTicket';
 import ShareButton from '@/components/ShareButton';
 import InterestButton from '@/components/InterestButton';
 import WhenTag from '@/components/WhenTag';
+import GoingNearYou from '@/components/GoingNearYou';
 import { googleCalendarUrl } from '@/lib/calendar';
 import { deleteEvent, type EventDetail } from '@/lib/actions/events';
 import styles from './page.module.css';
@@ -236,6 +237,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                         </div>
 
                         <div className={styles.actions} ref={actionsRef}>
+                            {!isPast && event.verified && <GoingNearYou eventId={event.id} />}
                             {/* The server refuses registration for past and
                                 unapproved events; say so instead of offering a
                                 button that can only fail. */}

@@ -1,0 +1,17 @@
+.line {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--color-accent-soft);
+    color: var(--color-obsidian);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.line svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--color-accent);
+}
