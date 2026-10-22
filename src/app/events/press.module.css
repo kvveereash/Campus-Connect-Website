@@ -689,3 +689,11 @@
         transition: none;
     }
 }
+
+/* List / Calendar, at the end of the When row so the rail stays two rows. */
+.viewSwitch {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+    padding-left: 12px;
+}

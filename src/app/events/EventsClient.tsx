@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { ChevronDown, Search } from 'lucide-react';
+import { CalendarDays, ChevronDown, List, Search } from 'lucide-react';
 import { EventWithRelations } from '@/lib/actions';
 import { useAuth } from '@/context/AuthContext';
 import { inkFor, dateParts, groupByProximity, cityOf, matchesSearch } from './press';
@@ -12,6 +12,7 @@ import { eventPhoto } from '@/lib/college-images';
 import RevealGroup from '@/components/RevealGroup';
 import ForYou from './ForYou';
 import EventRow, { hostOf } from './EventRow';
+import EventsCalendar from './EventsCalendar';
 import styles from './press.module.css';
 
 type TimeFilter = 'Any' | 'This week' | 'This month';
@@ -62,6 +63,7 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
     const urlQuery = searchParams?.get('q') ?? '';
     const [query, setQuery] = useState(urlQuery);
     const where = searchParams?.get('where') ?? '';
+    const view = searchParams?.get('view') === 'calendar' ? 'calendar' : 'list';
     const myCollegeId = user?.collegeId || '';
 
     /**
@@ -126,7 +128,7 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
      * the user filters they have asked for a list, and promoting one result out
      * of it made a single match render as "nothing matches your filters".
      */
-    const isDefaultView = activeCategory === 'All' && activeTime === 'Any' && !where && !urlQuery;
+    const isDefaultView = view === 'list' && activeCategory === 'All' && activeTime === 'Any' && !where && !urlQuery;
     const featured = isDefaultView ? visible[0] : undefined;
     const listed = isDefaultView ? visible.slice(1) : visible;
     const groups = useMemo(() => groupByProximity(listed), [listed]);
@@ -268,6 +270,26 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
                                 {t}
                             </button>
                         ))}
+                        <div className={styles.viewSwitch} role="group" aria-label="Show as">
+                            <button
+                                type="button"
+                                className={styles.chip}
+                                aria-pressed={view === 'list'}
+                                onClick={() => setParam('view', '')}
+                            >
+                                <List size={15} aria-hidden="true" />
+                                List
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.chip}
+                                aria-pressed={view === 'calendar'}
+                                onClick={() => setParam('view', 'calendar')}
+                            >
+                                <CalendarDays size={15} aria-hidden="true" />
+                                Calendar
+                            </button>
+                        </div>
                     </div>
                 </nav>
 
@@ -275,7 +297,9 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
                     {/* Only on the unfiltered board: under a filter it would
                         sit above results it might not belong to. */}
                     {isDefaultView && <ForYou events={initialEvents} />}
-                    {groups.length === 0 ? (
+                    {view === 'calendar' && visible.length > 0 ? (
+                        <EventsCalendar events={visible} />
+                    ) : groups.length === 0 ? (
                         <div className={styles.empty}>
                             <p className={styles.emptyTitle}>Nothing matches</p>
                             <p>
