@@ -47,6 +47,15 @@ export async function middleware(request: NextRequest) {
 
     const isApiRoute = pathname.startsWith('/api/');
 
+    /* The landing page is a pitch for people who have not joined. Someone
+       signed in goes to their own home instead. Only the signed cookie is
+       checked here (no database); /home itself checks the session properly
+       and sends anyone it does not accept to log in, so this cannot loop. */
+    if (pathname === '/' && request.cookies.get('session')?.value) {
+        const session = await getSessionFromRequest(request);
+        if (session) return NextResponse.redirect(new URL('/home', request.url));
+    }
+
     /**
      * Routes that require a logged-in user.
      *
@@ -57,6 +66,7 @@ export async function middleware(request: NextRequest) {
         pathname === '/profile' ||
         pathname === '/settings' ||
         pathname === '/my-events' ||
+        pathname === '/home' ||
         pathname.startsWith('/messages') ||
         pathname.startsWith('/team-finder') ||
         pathname.startsWith('/admin') ||

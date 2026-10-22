@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import prisma from '@/lib/db';
-import EventRow, { type RowEvent } from '@/app/events/EventRow';
+import EventRow, { ROW_EVENT_SELECT, type RowEvent } from '@/app/events/EventRow';
 import styles from '@/app/events/press.module.css';
 
 export const metadata: Metadata = {
@@ -30,20 +30,7 @@ export default async function MyEventsPage() {
         select: {
             id: true,
             status: true,
-            event: {
-                select: {
-                    id: true,
-                    title: true,
-                    date: true,
-                    venue: true,
-                    category: true,
-                    price: true,
-                    thumbnail: true,
-                    registrationCount: true,
-                    club: { select: { name: true } },
-                    hostCollege: { select: { name: true } },
-                },
-            },
+            event: { select: ROW_EVENT_SELECT },
         },
         orderBy: { event: { date: 'asc' } },
     });

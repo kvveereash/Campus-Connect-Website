@@ -18,6 +18,20 @@ export type RowEvent = {
     hostCollege?: { name: string } | null;
 };
 
+/** The Prisma select that yields a RowEvent, for server pages listing rows. */
+export const ROW_EVENT_SELECT = {
+    id: true,
+    title: true,
+    date: true,
+    venue: true,
+    category: true,
+    price: true,
+    thumbnail: true,
+    registrationCount: true,
+    club: { select: { name: true } },
+    hostCollege: { select: { name: true } },
+} as const;
+
 export function hostOf(event: Pick<RowEvent, 'club' | 'hostCollege'>) {
     return event.club?.name || event.hostCollege?.name || 'Campus';
 }
