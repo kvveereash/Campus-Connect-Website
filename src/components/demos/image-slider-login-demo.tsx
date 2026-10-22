@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { login } from "@/lib/actions/auth";
 import { toast } from "sonner";
-import { safeRedirectPath } from "@/lib/utils";
+import { authHref, safeRedirectPath } from "@/lib/utils";
 import styles from "@/app/login/auth.module.css";
 import AuthAside, { type AsideBubble } from '@/components/auth/AuthAside';
 
@@ -31,6 +31,7 @@ export function ImageSliderLoginDemo() {
      validates. Being asked to sign in again mid-session is confusing enough
      without the page pretending you had just arrived. */
   const expired = searchParams.get('reason') === 'expired';
+  const returnTo = searchParams.get('redirect');
 
   useEffect(() => {
     if (state?.success) {
@@ -41,7 +42,7 @@ export function ImageSliderLoginDemo() {
       // Only same-origin destinations are honoured, so a crafted
       // ?redirect=//evil.com (or /\evil.com, which slipped past the old
       // prefix check) cannot turn our login page into an open redirect.
-      const destination = safeRedirectPath(searchParams.get("redirect"), window.location.origin);
+      const destination = safeRedirectPath(returnTo, window.location.origin);
 
       // Navigate immediately, and do NOT wait on refreshUser().
       //
@@ -60,7 +61,7 @@ export function ImageSliderLoginDemo() {
     } else if (state?.error) {
       toast.error(state.error);
     }
-  }, [searchParams, state]);
+  }, [returnTo, state]);
 
   return (
     <div className={styles.screen}>
@@ -136,7 +137,9 @@ export function ImageSliderLoginDemo() {
           </form>
 
           <p className={styles.foot}>
-            No account yet? <Link href="/signup">Create one</Link>
+            {/* The return address goes along, so making an account on the
+                way still ends on the page that asked for one. */}
+            No account yet? <Link href={authHref(returnTo, "/signup")}>Create one</Link>
           </p>
         </div>
       </main>

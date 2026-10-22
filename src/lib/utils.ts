@@ -27,3 +27,12 @@ export function safeRedirectPath(value: string | null, origin: string, fallback 
         return fallback
     }
 }
+
+/**
+ * The sign-in (or sign-up) page, set to bring the visitor back to `returnTo`
+ * afterwards. Someone who taps Register on an event and has to sign in first
+ * should land back on that event, not start over from a list.
+ */
+export function authHref(returnTo: string | null, page: '/login' | '/signup' = '/login') {
+    return returnTo ? `${page}?redirect=${encodeURIComponent(returnTo)}` : page
+}

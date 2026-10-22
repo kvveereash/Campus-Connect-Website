@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { signup } from "@/lib/actions/auth";
 import { toast } from "sonner";
+import { authHref, safeRedirectPath } from "@/lib/utils";
 import styles from "@/app/login/auth.module.css";
 import AuthAside, { type AsideBubble } from "@/components/auth/AuthAside";
 
@@ -21,21 +22,31 @@ const GROUP_CHATS: AsideBubble[] = [
   { from: "Class Reps", text: "Fwd: Fwd: Fwd: Notice", unread: 33, color: "#c2410c" },
 ];
 
+/* ?redirect= is read in the browser rather than with useSearchParams, which
+   would make the page render an empty Suspense fallback until JavaScript
+   loads instead of the static form. Nothing needs it before then. */
+const noSubscribe = () => () => {};
+const readReturnTo = () => new URLSearchParams(window.location.search).get("redirect");
+
 export function ImageSliderSignupDemo() {
+  const returnTo = useSyncExternalStore(noSubscribe, readReturnTo, () => null);
   const [state, formAction, isPending] = useActionState(signup, null);
 
   useEffect(() => {
     if (state?.success) {
-      toast.success(state.message || "Account created successfully!");
+      toast.success(state.message || "Account created");
+      // Back to the page that asked for an account (an event someone was
+      // registering for), checked the same way the login form checks it;
+      // the events list when they came here on their own.
       // Navigate immediately — refreshUser() can stay pending forever, which
       // used to strand a newly signed-up user on this page. The full load
       // re-creates AuthProvider, so refreshing here first buys nothing.
       // See the login form for why this is not router.replace().
-      window.location.assign("/events");
+      window.location.assign(safeRedirectPath(returnTo, window.location.origin, "/events"));
     } else if (state?.error) {
       toast.error(state.error);
     }
-  }, [state]);
+  }, [returnTo, state]);
 
   return (
     <div className={styles.screen}>
@@ -117,7 +128,7 @@ export function ImageSliderSignupDemo() {
           </form>
 
           <p className={styles.foot}>
-            Already have an account? <Link href="/login">Sign in</Link>
+            Already have an account? <Link href={authHref(returnTo)}>Sign in</Link>
           </p>
         </div>
       </main>

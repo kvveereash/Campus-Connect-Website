@@ -1,5 +1,5 @@
 
-import { cn, safeRedirectPath } from './utils';
+import { authHref, cn, safeRedirectPath } from './utils';
 
 describe('cn utility', () => {
     it('should merge class names correctly', () => {
@@ -46,5 +46,28 @@ describe('safeRedirectPath', () => {
 
     it('falls back when there is no value', () => {
         expect(safeRedirectPath(null, origin)).toBe('/profile');
+    });
+
+    it('uses the fallback it is given', () => {
+        expect(safeRedirectPath(null, origin, '/events')).toBe('/events');
+    });
+});
+
+describe('authHref', () => {
+    it('points sign-in back at the page the visitor came from', () => {
+        expect(authHref('/events/abc')).toBe('/login?redirect=%2Fevents%2Fabc');
+    });
+
+    it('builds the sign-up link the same way', () => {
+        expect(authHref('/events/abc', '/signup')).toBe('/signup?redirect=%2Fevents%2Fabc');
+    });
+
+    it('encodes a query string so it survives the round trip', () => {
+        const href = authHref('/events?category=Sports&when=week');
+        expect(new URLSearchParams(href.split('?')[1]).get('redirect')).toBe('/events?category=Sports&when=week');
+    });
+
+    it('leaves the link plain when there is nowhere to return to', () => {
+        expect(authHref(null, '/signup')).toBe('/signup');
     });
 });

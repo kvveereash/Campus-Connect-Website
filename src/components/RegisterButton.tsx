@@ -8,6 +8,7 @@ import { joinEvent } from '@/lib/actions/events';
 import { createEventPaymentSession } from '@/lib/actions/payments';
 import { verifyPaymentStatus } from '@/lib/actions/verify-payment';
 import { toast } from 'sonner';
+import { authHref } from '@/lib/utils';
 
 // Stripe charges in INR (lib/stripe.ts), and every listing shows rupees.
 const rupees = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
@@ -28,7 +29,8 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
         if (isLoading) return; // Do nothing if still checking session
 
         if (!user) {
-            router.push('/login');
+            // Back to this event after signing in (or signing up on the way).
+            router.push(authHref(window.location.pathname));
             return;
         }
         setIsOpen(true);

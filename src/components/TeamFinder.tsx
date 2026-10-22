@@ -1,15 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useTeam } from '@/context/TeamContext';
 import { useAuth } from '@/context/AuthContext';
+import { authHref } from '@/lib/utils';
 import TeamRequestCard from './TeamRequestCard';
 import styles from './TeamFinder.module.css';
 import { TeamRequest } from '@/types';
 
 export default function TeamFinder({ eventId }: { eventId: string }) {
     const { getRequestsByEvent, addRequest, deleteRequest, updateRequest, fetchRequests } = useTeam();
-    const { user } = useAuth();
+    const { user, isLoading } = useAuth();
+    const pathname = usePathname();
+    // Only once the session check has answered: a signed-in visitor should
+    // never be shown "Sign in" while it is still running.
+    const signInHref = !user && !isLoading ? authHref(pathname) : undefined;
     const requests = getRequestsByEvent(eventId);
     const [showForm, setShowForm] = useState(false);
 
@@ -74,18 +81,28 @@ export default function TeamFinder({ eventId }: { eventId: string }) {
         <div className={styles.container}>
             <div className={styles.header}>
                 <h2 className={styles.title}>Find Teammates</h2>
-                <button
-                    className="btn btn-outline"
-                    onClick={() => {
-                        if (showForm) {
-                            resetForm();
-                        } else {
-                            setShowForm(true);
-                        }
-                    }}
-                >
-                    {showForm ? 'Cancel' : 'Post Request'}
-                </button>
+                {/* Signed out, the form used to open, take a whole request and
+                    then do nothing on submit. Ask for a sign-in up front, and
+                    come back here after it. */}
+                {signInHref ? (
+                    <Link href={signInHref} className="btn btn-outline">
+                        Sign in to post
+                    </Link>
+                ) : (
+                    <button
+                        className="btn btn-outline"
+                        disabled={isLoading}
+                        onClick={() => {
+                            if (showForm) {
+                                resetForm();
+                            } else {
+                                setShowForm(true);
+                            }
+                        }}
+                    >
+                        {showForm ? 'Cancel' : 'Post Request'}
+                    </button>
+                )}
             </div>
 
             {showForm && (
@@ -143,6 +160,7 @@ export default function TeamFinder({ eventId }: { eventId: string }) {
                             key={req.id}
                             request={req}
                             currentUserId={user?.id}
+                            signInHref={signInHref}
                             onDelete={deleteRequest}
                             onEdit={handleEdit}
                         />

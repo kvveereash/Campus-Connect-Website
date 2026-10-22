@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { TeamRequest } from '@/types';
 import styles from './TeamRequestCard.module.css';
@@ -9,6 +10,8 @@ import { formatIST } from '@/lib/format';
 interface TeamRequestCardProps {
     request: TeamRequest;
     currentUserId?: string;
+    /** Set when the visitor is signed out: Connect becomes a sign-in link. */
+    signInHref?: string;
     onDelete?: (id: string) => void;
     onEdit?: (request: TeamRequest) => void;
 }
@@ -16,6 +19,7 @@ interface TeamRequestCardProps {
 export default function TeamRequestCard({
     request,
     currentUserId,
+    signInHref,
     onDelete,
     onEdit,
 }: TeamRequestCardProps) {
@@ -117,6 +121,11 @@ export default function TeamRequestCard({
                                 </button>
                             ))}
                     </>
+                ) : signInHref ? (
+                    // Signed out, Connect could only come back "Unauthorized".
+                    <Link href={signInHref} className={styles.connect}>
+                        Sign in to connect
+                    </Link>
                 ) : (
                     <button
                         type="button"
