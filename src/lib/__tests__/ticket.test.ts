@@ -3,9 +3,13 @@
  */
 
 const mockClubMember = jest.fn();
+const mockOrganiser = jest.fn();
 jest.mock('@/lib/db', () => ({
     __esModule: true,
-    default: { clubMember: { findUnique: (...a: unknown[]) => mockClubMember(...a) } },
+    default: {
+        clubMember: { findUnique: (...a: unknown[]) => mockClubMember(...a) },
+        eventOrganiser: { findUnique: (...a: unknown[]) => mockOrganiser(...a) },
+    },
 }));
 
 import { canManageEvent, checkInUrl, readTicketToken, ticketToken, ticketsEnabled } from '../ticket';
@@ -84,7 +88,20 @@ describe('ticket tokens', () => {
 describe('canManageEvent', () => {
     const event = { creatorId: 'creator', clubId: 'club1' };
 
-    beforeEach(() => mockClubMember.mockReset());
+    beforeEach(() => {
+        mockClubMember.mockReset();
+        mockOrganiser.mockReset();
+    });
+
+    it('lets a co-organiser of that event in', async () => {
+        mockOrganiser.mockResolvedValueOnce({ id: 'org1' });
+        await expect(canManageEvent({ ...event, id: 'ev1' }, { userId: 'helper' })).resolves.toBe(true);
+        expect(mockOrganiser).toHaveBeenCalledWith(
+            expect.objectContaining({ where: { eventId_userId: { eventId: 'ev1', userId: 'helper' } } }),
+        );
+        mockOrganiser.mockResolvedValueOnce(null);
+        await expect(canManageEvent({ ...event, id: 'ev1' }, { userId: 'stranger' })).resolves.toBe(false);
+    });
 
     it('lets the creator and site admins in without asking the database', async () => {
         await expect(canManageEvent(event, { userId: 'creator' })).resolves.toBe(true);

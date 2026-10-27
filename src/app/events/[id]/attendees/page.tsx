@@ -8,6 +8,8 @@ import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { canManageEvent, GOING } from '@/lib/ticket';
 import { checkInFromList } from '@/lib/actions/check-in';
+import AnnounceForm from './AnnounceForm';
+import OrganiserButton from './OrganiserButton';
 import { formatIST } from '@/lib/format';
 import styles from '../organiser.module.css';
 
@@ -43,12 +45,14 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
 
     const event = await prisma.event.findFirst({
         where: { id, deletedAt: null },
-        select: { id: true, title: true, date: true, creatorId: true, clubId: true },
+        select: { id: true, title: true, date: true, creatorId: true, clubId: true, creator: { select: { name: true } } },
     });
     if (!event) notFound();
     if (!(await canManageEvent(event, session))) redirect(`/events/${id}`);
+    // Only the creator (or a site admin) adds and removes co-organisers.
+    const isCreator = event.creatorId === session.userId || session.user?.role === 'ADMIN';
 
-    const [registrations, awaitingPayment] = await Promise.all([
+    const [registrations, awaitingPayment, waitlisted, organisers] = await Promise.all([
         prisma.eventRegistration.findMany({
             where: { eventId: event.id, status: { in: [...GOING] } },
             orderBy: { createdAt: 'desc' },
@@ -61,7 +65,14 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
             },
         }),
         prisma.eventRegistration.count({ where: { eventId: event.id, status: 'PENDING_PAYMENT' } }),
+        prisma.eventRegistration.count({ where: { eventId: event.id, status: 'WAITLISTED' } }),
+        prisma.eventOrganiser.findMany({
+            where: { eventId: event.id },
+            orderBy: { createdAt: 'asc' },
+            select: { user: { select: { id: true, name: true } } },
+        }),
     ]);
+    const organiserIds = new Set(organisers.map((o) => o.user.id));
 
     const arrived = registrations.filter((r) => r.checkedInAt).length;
     const share = registrations.length ? Math.round((arrived / registrations.length) * 100) : 0;
@@ -82,10 +93,16 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
             </p>
             <h1 className={styles.title}>{event.title}</h1>
             <p className={styles.lede}>
-                Scan tickets at the entrance with your phone camera, or check people in from the list below.{' '}
+                Scan tickets at the entrance with your phone camera, or check people in from the list below.
+            </p>
+            <p className={styles.tools}>
                 <Link href={`/events/${event.id}/check-in`} className={styles.link}>
                     Open the door page
                 </Link>
+                {/* A file download, so a plain link rather than <Link>. */}
+                <a href={`/events/${event.id}/attendees.csv`} className={styles.link} download>
+                    Download the list (CSV)
+                </a>
             </p>
 
             <dl className={styles.stats}>
@@ -113,6 +130,13 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
                     </dt>
                     <dd>{awaitingPayment}</dd>
                 </div>
+                <div className={styles.stat}>
+                    <dt>
+                        <span className={styles.square} style={{ '--mark': 'var(--press-hackathon)' } as CSSProperties} />
+                        Waitlist
+                    </dt>
+                    <dd>{waitlisted}</dd>
+                </div>
             </dl>
 
             <figure className={styles.chart} aria-label={`${recent} sign-ups in the last ${DAYS} days`}>
@@ -136,6 +160,31 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
                     <span>Today</span>
                 </div>
             </figure>
+
+            <p className={styles.label}>Post an update</p>
+            <AnnounceForm eventId={event.id} audience={registrations.length + waitlisted} />
+
+            <p className={styles.label}>Organisers</p>
+            <ul className={styles.organisers}>
+                <li className={styles.organiser}>
+                    <span>
+                        {event.creator?.name ?? 'The creator'}
+                        <small>Created it</small>
+                    </span>
+                </li>
+                {organisers.map(({ user }) => (
+                    <li key={user.id} className={styles.organiser}>
+                        <span>
+                            {user.name}
+                            <small>Co-organiser</small>
+                        </span>
+                        {isCreator && <OrganiserButton eventId={event.id} userId={user.id} name={user.name} mode="remove" />}
+                    </li>
+                ))}
+            </ul>
+            {isCreator && organisers.length === 0 && (
+                <p className={styles.lede}>Need help at the door? Pick someone going and choose Make organiser next to their name.</p>
+            )}
 
             <p className={styles.label}>Who is coming</p>
             {registrations.length === 0 ? (
@@ -166,6 +215,9 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
                                         .filter(Boolean)
                                         .join(' · ')}
                                 </span>
+                                {isCreator && r.user.id !== event.creatorId && !organiserIds.has(r.user.id) && (
+                                    <OrganiserButton eventId={event.id} userId={r.user.id} name={r.user.name} mode="add" />
+                                )}
                             </span>
                             {r.checkedInAt ? (
                                 <span className={styles.arrived}>

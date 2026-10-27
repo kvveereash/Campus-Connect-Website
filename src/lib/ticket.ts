@@ -29,26 +29,42 @@ function ticketKey(): Buffer | null {
 
 export const ticketsEnabled = () => ticketKey() !== null;
 
-function signature(registrationId: string, key: Buffer) {
-    return createHmac('sha256', key).update(`ticket:${registrationId}`).digest('base64url').slice(0, 22);
+/* The same key signs tickets, certificate links and calendar feeds, each with
+   its own purpose in the message, so a certificate link can never be passed
+   off as a ticket (or the other way round). */
+type Purpose = 'ticket' | 'certificate' | 'calendar';
+
+function signature(purpose: Purpose, id: string, key: Buffer) {
+    return createHmac('sha256', key).update(`${purpose}:${id}`).digest('base64url').slice(0, 22);
 }
 
-/** Null when tickets are off. */
-export function ticketToken(registrationId: string) {
+function sign(purpose: Purpose, id: string) {
     const key = ticketKey();
-    return key ? `${registrationId}.${signature(registrationId, key)}` : null;
+    return key ? `${id}.${signature(purpose, id, key)}` : null;
 }
 
-/** The registration id a token was issued for, or null if it was not issued by us. */
-export function readTicketToken(token: string | undefined | null): string | null {
+function read(purpose: Purpose, token: string | undefined | null): string | null {
     const key = ticketKey();
     if (!key || !token || token.length > 120) return null;
     const [id, sig] = token.split('.');
     if (!id || !sig) return null;
-    const expected = Buffer.from(signature(id, key));
+    const expected = Buffer.from(signature(purpose, id, key));
     const given = Buffer.from(sig);
     return expected.length === given.length && timingSafeEqual(expected, given) ? id : null;
 }
+
+/** Null when tickets are off. */
+export const ticketToken = (registrationId: string) => sign('ticket', registrationId);
+/** The registration id a token was issued for, or null if it was not issued by us. */
+export const readTicketToken = (token: string | undefined | null) => read('ticket', token);
+
+/** The public "check this certificate" link's token, for a checked-in registration. */
+export const certificateToken = (registrationId: string) => sign('certificate', registrationId);
+export const readCertificateToken = (token: string | undefined | null) => read('certificate', token);
+
+/** A person's private calendar feed address. Anyone holding it sees their events, nothing else. */
+export const calendarFeedToken = (userId: string) => sign('calendar', userId);
+export const readCalendarFeedToken = (token: string | undefined | null) => read('calendar', token);
 
 /** The link an organiser's phone camera opens when it reads the QR code; null when tickets are off. */
 export function checkInUrl(eventId: string, registrationId: string) {
@@ -64,15 +80,25 @@ export function checkInUrl(eventId: string, registrationId: string) {
  * it, or a site admin. Check-in and the attendee list are theirs alone.
  */
 export async function canManageEvent(
-    event: { creatorId: string | null; clubId: string | null },
+    event: { id?: string; creatorId: string | null; clubId: string | null },
     session: { userId: string; user?: { role?: string } } | null,
 ) {
     if (!session?.userId) return false;
     if (session.user?.role === 'ADMIN' || event.creatorId === session.userId) return true;
-    if (!event.clubId) return false;
-    const member = await prisma.clubMember.findUnique({
-        where: { userId_clubId: { userId: session.userId, clubId: event.clubId } },
-        select: { role: true },
-    });
-    return member?.role === 'ADMIN';
+    // Co-organisers the creator added (needs the event id to look them up).
+    const [member, organiser] = await Promise.all([
+        event.clubId
+            ? prisma.clubMember.findUnique({
+                  where: { userId_clubId: { userId: session.userId, clubId: event.clubId } },
+                  select: { role: true },
+              })
+            : null,
+        event.id
+            ? prisma.eventOrganiser.findUnique({
+                  where: { eventId_userId: { eventId: event.id, userId: session.userId } },
+                  select: { id: true },
+              })
+            : null,
+    ]);
+    return member?.role === 'ADMIN' || Boolean(organiser);
 }

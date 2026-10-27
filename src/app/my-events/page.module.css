@@ -1,0 +1,90 @@
+/* My events' own parts; the board's look comes from events/press.module.css. */
+
+.certificates {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    overflow: hidden;
+}
+
+.certificate {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+}
+
+.certificate + .certificate {
+    border-top: 1px solid var(--border-hairline);
+}
+
+.certificate span {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.certificate strong {
+    overflow: hidden;
+    font-weight: 600;
+    color: var(--color-obsidian);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.certificate small {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.feed {
+    margin-top: 40px;
+    padding: clamp(20px, 4vw, 28px);
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.feed h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+}
+
+.feed p {
+    margin: 8px 0 0;
+    max-width: 60ch;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-felt);
+}
+
+.feedActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.copy {
+    padding: 8px 4px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 14px;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+}

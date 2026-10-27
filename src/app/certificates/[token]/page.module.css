@@ -1,0 +1,104 @@
+.wrap {
+    display: grid;
+    place-items: center;
+    min-height: 62vh;
+    padding: clamp(32px, 6vw, 72px) 0;
+}
+
+.card {
+    width: 100%;
+    max-width: 620px;
+    padding: clamp(32px, 6vw, 52px) clamp(20px, 5vw, 44px);
+    border-radius: 24px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+/* A confirmed certificate gets the success edge, like a checked-in ticket. */
+.card[data-state='ok'] {
+    border-color: var(--color-success);
+    box-shadow: inset 0 0 0 1px var(--color-success);
+}
+
+.card[data-state='bad'] {
+    border-style: dashed;
+    border-color: var(--border-strong);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.kicker {
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.card[data-state='ok'] .kicker {
+    color: var(--color-success);
+}
+
+.title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 5vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    color: var(--color-obsidian);
+    text-wrap: balance;
+}
+
+.text {
+    margin: 14px 0 0;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--color-felt);
+    text-wrap: pretty;
+}
+
+.facts {
+    margin: 24px 0 0;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.fact {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.fact dt {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.fact dd {
+    margin: 0;
+    font-size: 15px;
+    color: var(--color-obsidian);
+    overflow-wrap: anywhere;
+}
+
+.link {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+@media (max-width: 520px) {
+    .fact {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+    }
+}

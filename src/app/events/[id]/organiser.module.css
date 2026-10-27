@@ -358,3 +358,119 @@
     text-decoration: underline;
     text-underline-offset: 3px;
 }
+
+/* ─── Tell everyone ─── */
+
+.announce {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 18px 20px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.announceLabel {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.announceInput {
+    width: 100%;
+    min-height: 84px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--color-paper);
+    font: inherit;
+    font-size: 16px; /* 16px keeps iOS from zooming in on focus */
+    line-height: 1.5;
+    color: var(--color-obsidian);
+    resize: vertical;
+}
+
+.announceInput:focus {
+    border-color: var(--color-accent);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.announceFoot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.announceCount {
+    font-size: 13px;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Organisers ─── */
+
+.organisers {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.organiser {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+}
+
+.organiser + .organiser {
+    border-top: 1px solid var(--border-hairline);
+}
+
+.organiser small {
+    margin-left: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.quiet {
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-felt);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--border-strong);
+    cursor: pointer;
+}
+
+.quiet:hover:not(:disabled) {
+    color: var(--color-accent);
+}
+
+.quiet:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 10px;
+    font-size: 15px;
+}
