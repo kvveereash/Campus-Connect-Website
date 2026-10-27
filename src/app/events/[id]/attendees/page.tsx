@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { Suspense, type CSSProperties } from 'react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,6 +9,10 @@ import { getSession } from '@/lib/auth';
 import { canManageEvent, GOING } from '@/lib/ticket';
 import { checkInFromList } from '@/lib/actions/check-in';
 import AnnounceForm from './AnnounceForm';
+import Skeleton from '@/components/Skeleton';
+import EventAnalytics from '@/components/analytics/EventAnalytics';
+import VolunteerManager from '@/components/volunteers/VolunteerManager';
+import { getVolunteerRolesForOrganiser } from '@/lib/actions/volunteers';
 import OrganiserButton from './OrganiserButton';
 import { formatIST } from '@/lib/format';
 import styles from '../organiser.module.css';
@@ -52,7 +56,7 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
     // Only the creator (or a site admin) adds and removes co-organisers.
     const isCreator = event.creatorId === session.userId || session.user?.role === 'ADMIN';
 
-    const [registrations, awaitingPayment, waitlisted, organisers] = await Promise.all([
+    const [registrations, awaitingPayment, waitlisted, organisers, volunteerRoles] = await Promise.all([
         prisma.eventRegistration.findMany({
             where: { eventId: event.id, status: { in: [...GOING] } },
             orderBy: { createdAt: 'desc' },
@@ -71,6 +75,7 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
             orderBy: { createdAt: 'asc' },
             select: { user: { select: { id: true, name: true } } },
         }),
+        getVolunteerRolesForOrganiser(event.id),
     ]);
     const organiserIds = new Set(organisers.map((o) => o.user.id));
 
@@ -161,6 +166,11 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
                 </div>
             </figure>
 
+            {/* Streams in after the list: its own queries should not hold up the door. */}
+            <Suspense fallback={<Skeleton height="420px" borderRadius="var(--radius-card)" style={{ marginTop: 44 }} />}>
+                <EventAnalytics eventId={event.id} />
+            </Suspense>
+
             <p className={styles.label}>Post an update</p>
             <AnnounceForm eventId={event.id} audience={registrations.length + waitlisted} />
 
@@ -185,6 +195,9 @@ export default async function AttendeesPage({ params }: { params: Promise<{ id: 
             {isCreator && organisers.length === 0 && (
                 <p className={styles.lede}>Need help at the door? Pick someone going and choose Make organiser next to their name.</p>
             )}
+
+            <p className={styles.label}>Volunteers</p>
+            <VolunteerManager eventId={event.id} roles={volunteerRoles} />
 
             <p className={styles.label}>Who is coming</p>
             {registrations.length === 0 ? (

@@ -1,7 +1,17 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, CheckSquare, Shield, ScrollText, Flag } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Shield, ScrollText, Flag, BarChart3, PartyPopper } from 'lucide-react';
+import styles from './layout.module.css';
+
+const LINKS = [
+    { href: '/admin', label: 'Overview', Icon: LayoutDashboard },
+    { href: '/admin/verification', label: 'Verification', Icon: CheckSquare },
+    { href: '/admin/fests', label: 'Fests', Icon: PartyPopper },
+    { href: '/admin/reports', label: 'Reports', Icon: Flag },
+    { href: '/admin/insights', label: 'Insights', Icon: BarChart3 },
+    { href: '/admin/logs', label: 'Audit logs', Icon: ScrollText },
+] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
     const session = await getSession();
@@ -11,50 +21,23 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#09090b', color: 'white' }}>
-            {/* Sidebar */}
-            <aside style={{ width: '250px', borderRight: '1px solid rgba(255,255,255,0.1)', padding: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
-                    <Shield size={24} color="#8b5cf6" />
-                    <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>Admin Panel</h2>
+        <div className={styles.shell}>
+            <aside className={styles.sidebar}>
+                <div className={styles.brand}>
+                    <Shield size={22} aria-hidden="true" />
+                    <h2>Admin</h2>
                 </div>
-
-                <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <Link href="/admin" style={navLinkStyle}>
-                        <LayoutDashboard size={18} />
-                        Overview
-                    </Link>
-                    <Link href="/admin/verification" style={navLinkStyle}>
-                        <CheckSquare size={18} />
-                        Verification
-                    </Link>
-                    <Link href="/admin/reports" style={navLinkStyle}>
-                        <Flag size={18} />
-                        Reports
-                    </Link>
-                    <Link href="/admin/logs" style={navLinkStyle}>
-                        <ScrollText size={18} />
-                        Audit Logs
-                    </Link>
+                <nav className={styles.nav} aria-label="Admin">
+                    {LINKS.map(({ href, label, Icon }) => (
+                        <Link key={href} href={href} className={styles.link}>
+                            <Icon size={18} aria-hidden="true" />
+                            {label}
+                        </Link>
+                    ))}
                 </nav>
             </aside>
 
-            {/* Main Content */}
-            <main style={{ flex: 1, padding: '40px' }}>
-                {children}
-            </main>
+            <main className={styles.main}>{children}</main>
         </div>
     );
 }
-
-const navLinkStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px',
-    borderRadius: '8px',
-    color: '#a1a1aa',
-    textDecoration: 'none',
-    transition: 'all 0.2s',
-    fontSize: '0.95rem'
-} as const;

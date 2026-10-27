@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react';
 import { Link2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SITE_URL } from '@/lib/site';
+import { withRef } from '@/components/analytics/sources';
 import styles from './ShareButton.module.css';
 
 const noSubscribe = () => () => {};
@@ -13,11 +14,14 @@ const canNativeShare = () => typeof navigator.share === 'function';
  * Share an event. Students pass events on in group chats, so on a phone this
  * opens the system share sheet (WhatsApp is usually first). Where there is no
  * share sheet (most desktops) it offers WhatsApp and Copy link instead.
+ *
+ * Each link carries ?ref=, so the organiser's numbers can tell a WhatsApp
+ * share from a copied link (see src/components/analytics/ViewBeacon.tsx).
  */
 export default function ShareButton({ title, text, path }: { title: string; text: string; path: string }) {
     // false during server render and hydration; the real answer after.
     const native = useSyncExternalStore(noSubscribe, canNativeShare, () => false);
-    const url = () => new URL(path, window.location.origin).toString();
+    const url = () => new URL(withRef(path, 'share'), window.location.origin).toString();
 
     const share = async () => {
         try {
@@ -49,7 +53,7 @@ export default function ShareButton({ title, text, path }: { title: string; text
         <div className={styles.row}>
             <a
                 className={`btn btn-outline ${styles.button}`}
-                href={`https://wa.me/?text=${encodeURIComponent(`${text} ${SITE_URL}${path}`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`${text} ${SITE_URL}${withRef(path, 'whatsapp')}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
             >

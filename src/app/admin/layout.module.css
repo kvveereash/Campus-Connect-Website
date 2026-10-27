@@ -1,0 +1,100 @@
+/* The admin area is a dark shell, set apart from the noticeboard on purpose:
+   it is a workroom, not a page students see. The colours are the old inline
+   values, kept so every admin page that was designed against them still reads. */
+
+.shell {
+    display: flex;
+    min-height: 100vh;
+    background: #09090b; /* one-off: the admin shell's ground */
+    color: #fafafa;
+}
+
+.sidebar {
+    flex: 0 0 240px;
+    padding: 20px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+    color: #a78bfa;
+}
+
+.brand h2 {
+    margin: 0;
+    color: #fafafa;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: 8px;
+    color: #a1a1aa;
+    font-size: 0.95rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+        background-color var(--duration-micro) var(--ease-glide),
+        color var(--duration-micro) var(--ease-glide);
+}
+
+.link:hover,
+.link:focus-visible {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fafafa;
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+    padding: 40px;
+}
+
+/* On a phone the sidebar becomes a row of tabs that scrolls sideways on its
+   own, so the page itself never does. */
+@media (max-width: 800px) {
+    .shell {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        flex: none;
+        padding: 16px 16px 0;
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .brand {
+        margin-bottom: 12px;
+    }
+
+    .nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 12px;
+        scrollbar-width: none;
+    }
+
+    .link {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+    .main {
+        padding: 24px 16px;
+    }
+}

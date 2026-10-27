@@ -1,0 +1,266 @@
+/* The organiser's analytics panel, on the attendees page. It sits among the
+   page's own sections, so the label, card and chart follow
+   src/app/events/[id]/organiser.module.css. */
+
+.panel {
+    min-width: 0;
+}
+
+.label {
+    margin: clamp(28px, 5vw, 44px) 0 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+.note {
+    margin: 0;
+    max-width: 60ch;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-felt);
+}
+
+.num {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+/* ─── Views → registrations → check-ins ─── */
+
+.funnel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: stretch;
+    gap: 8px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    padding: 18px 20px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.stepLabel {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.stepValue {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-obsidian);
+    overflow-wrap: anywhere;
+}
+
+.rate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0 4px;
+    text-align: center;
+}
+
+.arrow {
+    color: var(--color-ash);
+}
+
+.rateValue {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-obsidian);
+}
+
+.rateLabel {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+/* ─── Views per day ─── */
+
+.chart {
+    margin: 12px 0 0;
+    padding: 20px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.chartHead {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.bars {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: end;
+    gap: 3px;
+    height: 120px;
+    margin-top: 16px;
+}
+
+.bar {
+    min-height: 2px;
+    border-radius: 3px 3px 1px 1px;
+    background: var(--color-accent);
+}
+
+.bar[data-empty='true'] {
+    background: var(--color-slate);
+}
+
+.axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-ash);
+}
+
+/* ─── Sources ─── */
+
+.tableWrap {
+    margin-top: 12px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+.caption {
+    padding: 16px 18px 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--color-ash);
+}
+
+.table th,
+.table td {
+    padding: 12px 18px;
+    text-align: left;
+}
+
+.table thead th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.table tbody th {
+    font-weight: 500;
+    color: var(--color-obsidian);
+    overflow-wrap: anywhere;
+}
+
+.table tbody tr + tr > * {
+    border-top: 1px solid var(--border-hairline);
+}
+
+.table .num {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* ─── Before any views ─── */
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 48px 24px;
+    border-radius: 20px;
+    border: 1px dashed var(--border-strong);
+    background-color: var(--color-paper);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.empty h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: -0.02em;
+}
+
+.empty p {
+    margin: 0;
+    max-width: 40ch;
+    color: var(--color-felt);
+}
+
+@media (max-width: 600px) {
+    .funnel {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .step {
+        flex-direction: row;
+        align-items: baseline;
+    }
+
+    .rate {
+        flex-direction: row;
+        gap: 8px;
+        padding: 2px 0;
+    }
+
+    .arrow {
+        transform: rotate(90deg);
+    }
+
+    .table th,
+    .table td {
+        padding: 12px 14px;
+    }
+}

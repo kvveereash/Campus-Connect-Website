@@ -28,7 +28,8 @@ function span(event: CalendarEvent) {
     return { start, end: new Date(start.getTime() + ASSUMED_LENGTH_MS) };
 }
 
-const pageUrl = (event: CalendarEvent) => `${SITE_URL}/events/${event.id}`;
+// ?ref=calendar tells the organiser's numbers this visit came from a calendar entry.
+const pageUrl = (event: CalendarEvent) => `${SITE_URL}/events/${event.id}?ref=calendar`;
 
 export function googleCalendarUrl(event: CalendarEvent) {
     const { start, end } = span(event);
