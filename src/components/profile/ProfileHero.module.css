@@ -331,12 +331,14 @@ a.metaItem:hover {
 
     .stat {
         min-width: 0;
-        padding: 12px;
+        padding: 12px 10px;
     }
 
+    /* Three to a row on a phone: tighter tracking so "Going to" fits. */
     .stat dt {
         gap: 5px;
-        font-size: 10px;
+        font-size: 11px;
+        letter-spacing: 0.01em;
         white-space: nowrap;
     }
 
