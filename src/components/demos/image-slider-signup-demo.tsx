@@ -10,6 +10,7 @@ import { authHref, safeRedirectPath } from "@/lib/utils";
 import styles from "@/app/login/auth.module.css";
 import AuthAside, { type AsideBubble } from "@/components/auth/AuthAside";
 import TryDemo from "@/components/TryDemo";
+import GoogleButton from "@/components/auth/GoogleButton";
 
 /* The forty group chats, or eight of them. */
 const GROUP_CHATS: AsideBubble[] = [
@@ -29,7 +30,7 @@ const GROUP_CHATS: AsideBubble[] = [
 const noSubscribe = () => () => {};
 const readReturnTo = () => new URLSearchParams(window.location.search).get("redirect");
 
-export function ImageSliderSignupDemo() {
+export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolean }) {
   const returnTo = useSyncExternalStore(noSubscribe, readReturnTo, () => null);
   const [state, formAction, isPending] = useActionState(signup, null);
 
@@ -70,8 +71,7 @@ export function ImageSliderSignupDemo() {
             club or registering for an event needs a name attached.
           </p>
 
-          {/* Google/Apple buttons removed — no OAuth provider is wired up,
-              so they were controls that did nothing. See the login form. */}
+          {googleEnabled && <GoogleButton returnTo={returnTo} />}
 
           <form action={formAction}>
             <div className={styles.fields}>

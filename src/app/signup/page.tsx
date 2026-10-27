@@ -1,4 +1,5 @@
 import { ImageSliderSignupDemo } from "@/components/demos/image-slider-signup-demo";
+import { googleConfigured } from "@/lib/google-oauth";
 
 export const metadata = {
   title: "Sign Up",
@@ -6,5 +7,6 @@ export const metadata = {
 };
 
 export default function SignupPage() {
-  return <ImageSliderSignupDemo />;
+  // Read on the server: the client secret's presence is not something the browser can see.
+  return <ImageSliderSignupDemo googleEnabled={googleConfigured()} />;
 }

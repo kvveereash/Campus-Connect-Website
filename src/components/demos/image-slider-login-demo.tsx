@@ -11,6 +11,7 @@ import { authHref, safeRedirectPath } from "@/lib/utils";
 import styles from "@/app/login/auth.module.css";
 import AuthAside, { type AsideBubble } from '@/components/auth/AuthAside';
 import TryDemo from '@/components/TryDemo';
+import GoogleButton from '@/components/auth/GoogleButton';
 
 /* What lands on the board in a week, all of it in one place. */
 const CAMPUS_ACTIVITY: AsideBubble[] = [
@@ -24,7 +25,21 @@ const CAMPUS_ACTIVITY: AsideBubble[] = [
   { from: 'IIT Mumbai', text: '6 events this month', unread: 5, color: '#c2410c' },
 ];
 
-export function ImageSliderLoginDemo() {
+/* Set by /api/auth/google/callback; each says what happened and what to do. */
+const GOOGLE_PROBLEMS: Record<string, string> = {
+  off: 'Google sign-in is not set up on this site yet. Use your email and password.',
+  busy: 'Google sign-in was tried a lot from this network in the last hour. Try again later, or use your email.',
+  expired: 'That Google sign-in expired. Try again.',
+  cancelled: 'Google sign-in was cancelled. Try again, or use your email.',
+  unverified: 'Google did not confirm that email address. Confirm it with Google, or sign in with your email.',
+  demo: 'The shared demo account cannot be opened with Google. Use Try the demo instead.',
+  deleted: 'The account linked to that Google account was deleted. Sign up again with your email.',
+  locked: 'That account is locked for now. Try again later, or reset your password.',
+  'other-google': 'That email is already linked to a different Google account. Use that one, or your password.',
+};
+const GOOGLE_FAILED = 'Google sign-in did not work this time. Try again, or use your email.';
+
+export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean }) {
   const searchParams = useSearchParams();
   const [state, formAction, isPending] = useActionState(login, null);
 
@@ -35,6 +50,7 @@ export function ImageSliderLoginDemo() {
   const returnTo = searchParams.get('redirect');
   // Set by /api/demo when the demo could not be opened.
   const demoProblem = searchParams.get('demo');
+  const googleProblem = searchParams.get('google');
 
   useEffect(() => {
     if (state?.success) {
@@ -90,10 +106,7 @@ export function ImageSliderLoginDemo() {
               : 'Your events, your clubs and everything you have registered for.'}
           </p>
 
-          {/* Google/Apple buttons were here. They had no handler — the app
-              uses its own JWT auth and no OAuth provider is configured — so
-              they were decorative controls that did nothing when clicked.
-              Removed rather than faked; add them back alongside real OAuth. */}
+          {googleEnabled && <GoogleButton returnTo={returnTo} />}
 
           <form action={formAction}>
             <div className={styles.fields}>
@@ -139,6 +152,12 @@ export function ImageSliderLoginDemo() {
             </button>
           </form>
 
+          {googleProblem && (
+            <p className={styles.subtitle} role="alert">
+              {/* hasOwn, so ?google=constructor cannot pull a function off the prototype. */}
+              {Object.hasOwn(GOOGLE_PROBLEMS, googleProblem) ? GOOGLE_PROBLEMS[googleProblem] : GOOGLE_FAILED}
+            </p>
+          )}
           {demoProblem && (
             <p className={styles.subtitle} role="alert">
               {demoProblem === 'busy'
