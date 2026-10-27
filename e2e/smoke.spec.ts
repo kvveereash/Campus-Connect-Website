@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 /* The public pages a student meets first. Each must load, show its heading,
    fit the screen and log no errors. */
-const PUBLIC_PAGES = ['/', '/events', '/clubs', '/colleges', '/buzz', '/leaderboards', '/map', '/about', '/login', '/signup'];
+const PUBLIC_PAGES = ['/', '/events', '/fests', '/clubs', '/colleges', '/buzz', '/leaderboards', '/map', '/about', '/login', '/signup'];
 
 // Noise that is not the page's fault: the report-only CSP flags the dev
 // server's own eval, and a dev-only HMR socket can drop between tests.
@@ -172,4 +172,35 @@ test('an event offers a way to report it, after signing in', async ({ page }) =>
     await page.goto('/events');
     await page.goto(await firstDetailLink(page, 'events'));
     await expect(page.getByRole('link', { name: 'Sign in to report' })).toBeVisible();
+});
+
+test('a college widget can be framed by other sites, and nothing else can', async ({ page, request }) => {
+    await page.goto('/colleges');
+    const college = await firstDetailLink(page, 'colleges');
+    const id = college.split('/').pop();
+
+    const widget = await request.get(`/embed/college/${id}`);
+    expect(widget.status()).toBe(200);
+    expect(widget.headers()['content-type']).toContain('text/html');
+    expect(widget.headers()['content-security-policy']).toContain('frame-ancestors *');
+    expect(widget.headers()['x-frame-options']).toBeUndefined();
+
+    const board = await request.get('/events');
+    expect(board.headers()['content-security-policy']).toContain("frame-ancestors 'self'");
+});
+
+test('the view counter refuses made-up sources', async ({ request }) => {
+    const res = await request.post('/api/events/not-a-real-event/view?source=made-up', {
+        headers: { 'user-agent': 'Mozilla/5.0 smoke test' },
+    });
+    expect(res.status()).toBe(400);
+});
+
+test('the interface switches to Hindi and back', async ({ page }) => {
+    await page.goto('/events');
+    await page.getByRole('combobox', { name: 'Language' }).selectOption('hi');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'hi');
+    await expect(page.getByRole('link', { name: 'इवेंट' }).first()).toBeVisible();
+    await page.getByRole('combobox', { name: 'भाषा' }).selectOption('en');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
