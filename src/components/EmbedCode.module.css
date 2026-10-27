@@ -1,0 +1,220 @@
+.embed {
+    min-width: 0;
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+}
+
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 18px;
+    border: 0;
+    border-radius: var(--radius-card);
+    background: transparent;
+    color: var(--color-obsidian);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-align: left;
+}
+
+.toggle:hover .toggleText {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.toggleIcon {
+    flex: none;
+    color: var(--color-accent);
+}
+
+.toggleText {
+    flex: 1;
+    min-width: 0;
+}
+
+.chevron {
+    flex: none;
+    color: var(--color-felt);
+    transition: transform var(--duration-micro) var(--ease-glide);
+}
+
+.toggle[aria-expanded='true'] .chevron {
+    transform: rotate(180deg);
+}
+
+.panel {
+    display: grid;
+    gap: 14px;
+    padding: 4px 18px 18px;
+}
+
+.lead {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--color-felt);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.themes {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
+.legend {
+    margin: 0 0 8px;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.choice {
+    position: relative;
+    display: inline-flex;
+}
+
+/* Visually hidden but still the focusable, checkable control. */
+.radio {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.choiceLabel {
+    padding: 7px 16px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    color: var(--color-obsidian);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color var(--duration-micro) var(--ease-glide),
+        border-color var(--duration-micro) var(--ease-glide),
+        color var(--duration-micro) var(--ease-glide);
+}
+
+.choice:hover .choiceLabel {
+    border-color: var(--color-obsidian);
+}
+
+.radio:checked + .choiceLabel {
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.radio:focus-visible + .choiceLabel {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+.codeBox {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    padding: 14px 14px 14px 16px;
+    border-radius: 12px; /* an inset box inside the card: one step below --radius-card */
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.code {
+    margin: 0;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.55;
+    /* One long line: wrap it rather than scroll the page sideways on a phone. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.copy {
+    padding: 7px 14px;
+    border: 1px solid var(--border-on-dark);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-paper);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color var(--duration-micro) var(--ease-glide),
+        color var(--duration-micro) var(--ease-glide);
+}
+
+.copy:hover {
+    background: var(--color-paper);
+    color: var(--color-obsidian);
+}
+
+html .copy:focus-visible {
+    outline-color: var(--color-paper);
+}
+
+.preview {
+    padding: 16px;
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 12px;
+    background-color: var(--color-canvas);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+}
+
+.frame {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    border: 0;
+    background: transparent;
+}
+
+@media (max-width: 480px) {
+    .toggle {
+        padding: 14px;
+    }
+
+    .panel {
+        padding: 4px 14px 14px;
+    }
+
+    .codeBox {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .copy {
+        justify-self: start;
+    }
+
+    .preview {
+        padding: 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chevron,
+    .choiceLabel,
+    .copy {
+        transition: none;
+    }
+}

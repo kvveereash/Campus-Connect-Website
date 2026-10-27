@@ -50,13 +50,46 @@ const securityHeaders = [
       "connect-src 'self' https://*.pusher.com wss://*.pusher.com",
       "worker-src 'self'",
       "manifest-src 'self'",
-      "frame-src 'none'",
+      // 'self' (was 'none') so the widget preview in EmbedCode can show
+      // this site's own /embed pages. No other origin may be framed.
+      "frame-src 'self'",
       "frame-ancestors 'self'",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
       // No upgrade-insecure-requests: Netlify serves only https with HSTS, so
       // it gains nothing there, and it broke `next start` over plain http.
+    ].join('; ')
+  },
+];
+
+/* /embed/* is the events widget other websites put in an iframe
+   (public/embed.js), so it cannot carry the rules above: X-Frame-Options and
+   frame-ancestors 'self' are exactly what stop it showing anywhere else. It
+   gets its own, stricter policy instead. The documents there are plain HTML
+   with inline CSS and one inline script (src/lib/embed.ts), no images, fonts
+   or requests, so everything else is 'none'; frame-ancestors * is the one
+   permission they need. Links open in a new tab, which form-action and
+   base-uri do not touch. */
+const embedHeaders = [
+  {
+    key: 'X-Content-Type-Options',
+    value: 'nosniff'
+  },
+  {
+    key: 'Referrer-Policy',
+    value: 'strict-origin-when-cross-origin'
+  },
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'none'",
+      "style-src 'unsafe-inline'",
+      "script-src 'unsafe-inline'",
+      "img-src 'self' data:",
+      "frame-ancestors *",
+      "base-uri 'none'",
+      "form-action 'none'",
     ].join('; ')
   },
 ];
@@ -120,8 +153,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        // Every path except /embed/*, which may be framed by any site and
+        // gets embedHeaders below. Two rules that never overlap, so neither
+        // has to undo the other's X-Frame-Options or CSP.
+        source: '/:path((?!embed/).*)',
         headers: securityHeaders,
+      },
+      {
+        source: '/embed/:path+',
+        headers: embedHeaders,
       },
     ];
   },

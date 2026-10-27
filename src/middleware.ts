@@ -38,6 +38,11 @@ export async function middleware(request: NextRequest) {
         // Writing to it still does: createClubPost checks membership on the
         // server, and the composer is only rendered for a signed-in member.
         '/buzz',
+        // Widgets framed on other sites: never signed in, so no session to read.
+        '/embed',
+        '/embed.js',
+        // Fests, like events, are public to read.
+        '/fests',
     ];
 
     // Check if current path is public (exact match or starts with for API routes)

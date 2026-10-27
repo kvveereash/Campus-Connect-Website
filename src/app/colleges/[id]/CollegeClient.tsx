@@ -11,6 +11,7 @@ import { resolveCollegeImage, resolveClubImage, getCollegePhotoCredit } from '@/
 import { inkFor } from '@/app/events/press';
 import type { EventWithRelations } from '@/lib/actions';
 import RevealGroup from '@/components/RevealGroup';
+import EmbedCode from '@/components/EmbedCode';
 import styles from './page.module.css';
 
 interface CollegeClub {
@@ -168,6 +169,11 @@ export default function CollegeClient({ college, events, clubs, students }: Coll
                     </div>
                 )}
             </section>
+
+            {/* Any college's public events can be shown on its own website. */}
+            <div className={styles.section}>
+                <EmbedCode kind="college" id={college.id} />
+            </div>
 
             {/* ── Clubs ── */}
             <section className={styles.section}>

@@ -20,6 +20,8 @@ export default function robots(): MetadataRoute.Robots {
                 '/events/*/edit',
                 '/events/*/check-in',
                 '/events/*/attendees',
+                '/fests/create',
+                '/fests/*/edit',
                 '/offline',
                 '/clubs/create',
                 '/reset-password/',
@@ -27,6 +29,10 @@ export default function robots(): MetadataRoute.Robots {
                 '/forbidden',
                 // Each one names a person and an event they attended.
                 '/certificates/',
+                // One-person unsubscribe links from the Monday email.
+                '/digest/',
+                // Widgets for other sites; the events themselves are indexed here.
+                '/embed/',
             ],
         },
         sitemap: `${SITE_URL}/sitemap.xml`,

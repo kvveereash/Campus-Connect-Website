@@ -15,6 +15,7 @@ import RecruitmentQuestions from '@/components/clubs/RecruitmentQuestions';
 import RecruitmentSettings from '@/components/clubs/RecruitmentSettings';
 import ApplicationList from '@/components/clubs/ApplicationList';
 import ReportButton from '@/components/ReportButton';
+import EmbedCode from '@/components/EmbedCode';
 import { formatIST } from '@/lib/format';
 import { shareMetadata } from '@/lib/site';
 import { authHref } from '@/lib/utils';
@@ -346,6 +347,12 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                             </p>
                         )}
                     </section>
+
+                    {isAdmin && club.verified && (
+                        <section className={styles.section}>
+                            <EmbedCode kind="club" id={club.id} />
+                        </section>
+                    )}
 
                     <section className={styles.section}>
                         <p className={styles.sectionLabel}>Feed</p>
