@@ -16,12 +16,14 @@ interface SendEmailParams {
     subject: string;
     html: string;
     text?: string;
+    /** Extra headers, e.g. List-Unsubscribe on the weekly digest. */
+    headers?: Record<string, string>;
 }
 
 /**
  * Send an email using Resend (production) or Console (development)
  */
-export async function sendEmail({ to, subject, html, text }: SendEmailParams) {
+export async function sendEmail({ to, subject, html, text, headers }: SendEmailParams) {
     // 1. Dev/Fallback Mode
     // If no API Key or explicitly in Mock mode (optional), log to console
     if (!resend) {
@@ -48,6 +50,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams) {
             subject,
             html,
             text, // Optional plain text version
+            headers,
         });
 
         if (error) {

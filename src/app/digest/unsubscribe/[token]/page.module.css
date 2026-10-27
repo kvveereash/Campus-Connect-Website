@@ -1,0 +1,83 @@
+/* The same centred sheet as the certificate check: one message, one action. */
+.wrap {
+    display: grid;
+    place-items: center;
+    min-height: 62vh;
+    padding: clamp(32px, 6vw, 72px) 0;
+}
+
+.card {
+    width: 100%;
+    max-width: 620px;
+    padding: clamp(32px, 6vw, 52px) clamp(20px, 5vw, 44px);
+    border-radius: 24px;
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+/* A link that does not work reads as an empty state: dashed, on the dot grid. */
+.card[data-state='bad'] {
+    border-style: dashed;
+    border-color: var(--border-strong);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.kicker {
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 5vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    color: var(--color-obsidian);
+    text-wrap: balance;
+}
+
+.text {
+    margin: 14px 0 0;
+    max-width: 52ch;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--color-felt);
+    text-wrap: pretty;
+}
+
+.card[data-state='bad'] .text {
+    margin-inline: auto;
+}
+
+.form {
+    margin: 24px 0 0;
+}
+
+.link {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--duration-base) var(--ease-glide);
+}
+
+.link:hover,
+.link:focus-visible {
+    text-decoration-color: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .link {
+        transition: none;
+    }
+}
