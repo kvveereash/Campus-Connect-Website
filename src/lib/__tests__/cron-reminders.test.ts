@@ -19,6 +19,7 @@ jest.mock('@/lib/db', () => ({
     },
 }));
 jest.mock('@/lib/email', () => ({ sendEmail: (...a: unknown[]) => mockSendEmail(...a) }));
+jest.mock('@/lib/push', () => ({ sendPush: jest.fn(async () => undefined) }));
 jest.mock('@/lib/logger', () => ({ logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() } }));
 
 import { POST } from '@/app/api/cron/reminders/route';
