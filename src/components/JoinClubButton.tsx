@@ -61,7 +61,7 @@ export default function JoinClubButton({ clubId, clubName, isMember, isAdmin, on
                 className={styles.leaveButton}
                 disabled={isPending}
             >
-                {isPending ? 'Leaving...' : 'Leave Club'}
+                {isPending ? 'Leaving' : 'Leave club'}
             </button>
         );
     }
@@ -72,7 +72,7 @@ export default function JoinClubButton({ clubId, clubName, isMember, isAdmin, on
             className={styles.joinButton}
             disabled={isPending}
         >
-            {isPending ? 'Joining...' : 'Join Club'}
+            {isPending ? 'Joining' : 'Join club'}
         </button>
     );
 }

@@ -1,54 +1,57 @@
-.joinButton {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 0px;
+/* Pills on the site tokens. These used to read --primary, --border and
+   --error, names from before the redesign that no longer exist, which left
+   "Join Club" as white text on nothing. */
+
+.joinButton,
+.leaveButton,
+.adminBadge {
+    display: inline-flex;
+    align-items: center;
+    height: 42px;
+    padding: 0 20px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-sans);
+    font-size: 14px;
     font-weight: 600;
+    transition:
+        background-color var(--duration-micro) var(--ease-glide),
+        border-color var(--duration-micro) var(--ease-glide),
+        color var(--duration-micro) var(--ease-glide);
+}
+
+.joinButton {
+    border: 1px solid var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-paper);
     cursor: pointer;
-    transition: all 0.2s var(--ease-glide);
 }
 
 .joinButton:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-1px);
-}
-
-.joinButton:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
 }
 
 .leaveButton {
-    background-color: transparent;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    padding: 0.6rem 1.2rem;
-    border-radius: 0px;
-    font-weight: 600;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--color-inkstone);
     cursor: pointer;
-    transition: all 0.2s var(--ease-glide);
 }
 
 .leaveButton:hover {
-    color: var(--error);
-    border-color: var(--error);
-    background-color: rgba(239, 68, 68, 0.1);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
 }
 
+.joinButton:disabled,
 .leaveButton:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+    opacity: 0.6;
+    cursor: default;
 }
 
 .adminBadge {
-    background-color: var(--secondary);
-    color: white;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 0px;
-    font-weight: 600;
+    border: 1px solid var(--border-hairline);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
     cursor: default;
-    opacity: 0.9;
 }
