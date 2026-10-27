@@ -14,6 +14,7 @@ import "./globals.css";
 import { SITE_URL } from "@/lib/site";
 import { fontVariables } from "./fonts";
 import DemoBanner from "@/components/DemoBanner";
+import NavigationProgress from "@/components/NavigationProgress";
 
 import SWRegister from "@/components/SWRegister"; // Added
 import { GlobalNotificationListener } from "@/components/chat/GlobalNotificationListener";
@@ -69,6 +70,7 @@ export default function RootLayout({
     >
       <body>
         <SWRegister /> {/* Added Service Worker Registration */}
+        <NavigationProgress />
           <ModalProvider>
             <AuthProvider>
               <CommandProvider>
