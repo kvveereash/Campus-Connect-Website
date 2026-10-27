@@ -93,6 +93,8 @@ model User {
   // that existed before this column did is unverified rather than broken,
   // and nothing about signing in depends on it.
   emailVerified  DateTime?
+  // Google's stable account id ("sub"), set on first Google sign-in.
+  googleId       String?    @unique
   auditLogs      AuditLog[] @relation("AuditActor")
 
   clubMemberships            ClubMember[]
@@ -109,6 +111,11 @@ model User {
   emailVerificationTokens    EmailVerificationToken[]
   posts                      Post[]
   reactions                  Reaction[]
+  organisedEvents            EventOrganiser[]
+  clubApplications           ClubApplication[]
+  reportsFiled               Report[]                  @relation("ReportsFiled")
+  reportsResolved            Report[]                  @relation("ReportsResolved")
+  pushSubscriptions          PushSubscription[]
 
   teamRequests     TeamRequest[]
   college          College?      @relation(fields: [collegeId], references: [id])
@@ -197,12 +204,15 @@ model Event {
   verifiedBy        String?
   verifiedAt        DateTime?
   price             Float               @default(0)
+  // Seats. Null means no limit; when full, new sign-ups join the waitlist.
+  capacity          Int?
   club              Club?               @relation(fields: [clubId], references: [id])
   creator           User?               @relation("CreatedEvents", fields: [creatorId], references: [id])
   hostCollege       College             @relation(fields: [hostCollegeId], references: [id])
   registrations     EventRegistration[]
   reviews           EventReview[]
   interests         EventInterest[]
+  organisers        EventOrganiser[]
   teamRequests      TeamRequest[]
 
   deletedAt DateTime?
@@ -289,23 +299,27 @@ model UserBadge {
 }
 
 model Club {
-  id              String       @id @default(cuid())
-  name            String
-  description     String
-  logo            String?
-  category        String
-  collegeId       String
-  verified        Boolean      @default(false)
-  rejectionReason String?
-  verifiedBy      String?
-  verifiedAt      DateTime?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  college         College      @relation(fields: [collegeId], references: [id])
-  members         ClubMember[]
-  events          Event[]
-  posts           Post[]
-  deletedAt       DateTime?
+  id               String            @id @default(cuid())
+  name             String
+  description      String
+  logo             String?
+  category         String
+  collegeId        String
+  verified         Boolean           @default(false)
+  rejectionReason  String?
+  verifiedBy       String?
+  verifiedAt       DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  college          College           @relation(fields: [collegeId], references: [id])
+  members          ClubMember[]
+  events           Event[]
+  posts            Post[]
+  // Recruitment: open or closed, and the questions applicants answer (JSON array of strings).
+  recruiting       Boolean           @default(false)
+  recruitQuestions Json?
+  applications     ClubApplication[]
+  deletedAt        DateTime?
 
   @@index([collegeId])
   @@index([deletedAt])
@@ -467,4 +481,94 @@ model LoginAttempt {
   createdAt DateTime @default(now())
 
   @@index([email, createdAt])
+}
+
+/// A co-organiser: can check people in, see attendees and announce, like the creator.
+model EventOrganiser {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  createdAt DateTime @default(now())
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([userId])
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+/// A student applying to join a club while it is recruiting.
+model ClubApplication {
+  id        String            @id @default(cuid())
+  clubId    String
+  userId    String
+  answers   Json
+  status    ApplicationStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  decidedAt DateTime?
+  club      Club              @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, userId])
+  @@index([clubId, status])
+}
+
+enum ReportTarget {
+  EVENT
+  POST
+  COMMENT
+  CLUB
+  USER
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE
+  MISLEADING
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  ACTION_TAKEN
+  DISMISSED
+}
+
+/// Something a user flagged for an admin to look at.
+model Report {
+  id           String       @id @default(cuid())
+  reporterId   String
+  targetType   ReportTarget
+  targetId     String
+  reason       ReportReason
+  details      String?
+  status       ReportStatus @default(OPEN)
+  createdAt    DateTime     @default(now())
+  resolvedAt   DateTime?
+  resolvedById String?
+  reporter     User         @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolvedBy   User?        @relation("ReportsResolved", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  // One report per person per thing: a second click updates nothing.
+  @@unique([reporterId, targetType, targetId])
+  @@index([status, createdAt])
+}
+
+/// A browser that agreed to receive push notifications for this user.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
