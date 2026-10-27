@@ -37,6 +37,7 @@ export type AuditAction =
 export type AuditEntityType =
     | 'User'
     | 'Event'
+    | 'Fest'
     | 'Club'
     | 'College'
     | 'Registration'

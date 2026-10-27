@@ -95,6 +95,10 @@ model User {
   emailVerified  DateTime?
   // Google's stable account id ("sub"), set on first Google sign-in.
   googleId       String?    @unique
+  // The Monday email of what is coming up. Opt-in, and only ever sent to a
+  // confirmed address; digestSentAt is claimed per run so a retry cannot double-send.
+  weeklyDigest   Boolean    @default(false)
+  digestSentAt   DateTime?
   auditLogs      AuditLog[] @relation("AuditActor")
 
   clubMemberships            ClubMember[]
@@ -116,6 +120,8 @@ model User {
   reportsFiled               Report[]                  @relation("ReportsFiled")
   reportsResolved            Report[]                  @relation("ReportsResolved")
   pushSubscriptions          PushSubscription[]
+  createdFests               Fest[]                    @relation("CreatedFests")
+  volunteerSignups           VolunteerSignup[]
 
   teamRequests     TeamRequest[]
   college          College?      @relation(fields: [collegeId], references: [id])
@@ -185,6 +191,7 @@ model College {
   events      Event[]
   students    User[]
   followers   User[]   @relation("FollowedColleges")
+  fests       Fest[]
 }
 
 model Event {
@@ -206,6 +213,11 @@ model Event {
   price             Float               @default(0)
   // Seats. Null means no limit; when full, new sign-ups join the waitlist.
   capacity          Int?
+  // The fest this event is part of, if any.
+  festId            String?
+  fest              Fest?               @relation(fields: [festId], references: [id], onDelete: SetNull)
+  volunteerRoles    VolunteerRole[]
+  views             EventView[]
   club              Club?               @relation(fields: [clubId], references: [id])
   creator           User?               @relation("CreatedEvents", fields: [creatorId], references: [id])
   hostCollege       College             @relation(fields: [hostCollegeId], references: [id])
@@ -221,6 +233,7 @@ model Event {
   @@index([date])
   @@index([category])
   @@index([creatorId])
+  @@index([festId])
   @@index([deletedAt])
 }
 
@@ -267,6 +280,8 @@ model EventRegistration {
   checkedInAt    DateTime?
   // Claimed by the day-before reminder run, so two overlapping runs cannot both send it.
   reminderSentAt DateTime?
+  // Where the person found the event (board, whatsapp, calendar, embed...), for the organiser's numbers.
+  source         String?
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   event          Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -319,6 +334,7 @@ model Club {
   recruiting       Boolean           @default(false)
   recruitQuestions Json?
   applications     ClubApplication[]
+  fests            Fest[]
   deletedAt        DateTime?
 
   @@index([collegeId])
@@ -571,4 +587,68 @@ model PushSubscription {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// A college fest: many events over a few days, shown as one timetable.
+model Fest {
+  id          String    @id @default(cuid())
+  name        String
+  tagline     String?
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  coverImage  String?
+  collegeId   String
+  clubId      String?
+  creatorId   String?
+  // Like events and clubs, a fest is public once an admin approves it.
+  verified    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  college     College   @relation(fields: [collegeId], references: [id])
+  club        Club?     @relation(fields: [clubId], references: [id], onDelete: SetNull)
+  creator     User?     @relation("CreatedFests", fields: [creatorId], references: [id], onDelete: SetNull)
+  events      Event[]
+
+  @@index([collegeId])
+  @@index([startDate])
+  @@index([deletedAt])
+}
+
+// A job an event needs people for: registration desk, stage, tech.
+model VolunteerRole {
+  id          String            @id @default(cuid())
+  eventId     String
+  name        String
+  description String?
+  slots       Int
+  createdAt   DateTime          @default(now())
+  event       Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  signups     VolunteerSignup[]
+
+  @@index([eventId])
+}
+
+model VolunteerSignup {
+  id        String        @id @default(cuid())
+  roleId    String
+  userId    String
+  createdAt DateTime      @default(now())
+  role      VolunteerRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, userId])
+  @@index([userId])
+}
+
+// Page views per event per day per source. Counted, never per person.
+model EventView {
+  eventId String
+  day     DateTime @db.Date
+  source  String
+  count   Int      @default(0)
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, day, source])
 }

@@ -119,6 +119,18 @@ export const pushSubscribeLimiter = defineLimiter(10, '1 h', 'ratelimit:push-sub
 // "Ask in plain words" search: 20 an hour per IP. Each one is a paid model call.
 export const aiSearchLimiter = defineLimiter(20, '1 h', 'ratelimit:ai-search');
 
+// Fests created: 5 an hour per user.
+export const festLimiter = defineLimiter(5, '1 h', 'ratelimit:fest');
+
+// Volunteer sign-ups and role changes: 20 an hour per user.
+export const volunteerLimiter = defineLimiter(20, '1 h', 'ratelimit:volunteer');
+
+// Event page views counted: 60 a minute per IP, so a script cannot inflate an organiser's numbers.
+export const viewLimiter = defineLimiter(60, '1 m', 'ratelimit:view');
+
+// Digest opt-in changes: 20 an hour per user.
+export const digestLimiter = defineLimiter(20, '1 h', 'ratelimit:digest');
+
 // Google sign-in starts: 20 an hour per IP.
 export const googleAuthLimiter = defineLimiter(20, '1 h', 'ratelimit:google-auth');
 

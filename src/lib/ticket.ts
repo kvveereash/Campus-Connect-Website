@@ -32,7 +32,7 @@ export const ticketsEnabled = () => ticketKey() !== null;
 /* The same key signs tickets, certificate links and calendar feeds, each with
    its own purpose in the message, so a certificate link can never be passed
    off as a ticket (or the other way round). */
-type Purpose = 'ticket' | 'certificate' | 'calendar';
+type Purpose = 'ticket' | 'certificate' | 'calendar' | 'digest';
 
 function signature(purpose: Purpose, id: string, key: Buffer) {
     return createHmac('sha256', key).update(`${purpose}:${id}`).digest('base64url').slice(0, 22);
@@ -65,6 +65,10 @@ export const readCertificateToken = (token: string | undefined | null) => read('
 /** A person's private calendar feed address. Anyone holding it sees their events, nothing else. */
 export const calendarFeedToken = (userId: string) => sign('calendar', userId);
 export const readCalendarFeedToken = (token: string | undefined | null) => read('calendar', token);
+
+// The one-click unsubscribe link in the weekly digest email.
+export const digestUnsubscribeToken = (userId: string) => sign('digest', userId);
+export const readDigestUnsubscribeToken = (token: string | undefined | null) => read('digest', token);
 
 /** The link an organiser's phone camera opens when it reads the QR code; null when tickets are off. */
 export function checkInUrl(eventId: string, registrationId: string) {
