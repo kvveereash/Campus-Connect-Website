@@ -6,7 +6,8 @@ import { canManageEvent } from '@/lib/ticket';
 
 /*
  * The attendee list as a spreadsheet, for the organisers. The same fields the
- * attendee page shows (no emails or phone numbers), plus the waitlist.
+ * attendee page shows (no emails or phone numbers), plus the waitlist and
+ * each person's volunteer role.
  */
 
 const STATUS: Record<string, string> = {
@@ -34,30 +35,50 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         return new NextResponse('Only the organisers of this event can download its list.', { status: 403 });
     }
 
-    const registrations = await prisma.eventRegistration.findMany({
-        where: { eventId: id, status: { in: ['COMPLETED', 'PAID', 'PENDING_PAYMENT', 'WAITLISTED'] } },
-        orderBy: { createdAt: 'asc' },
-        take: 5000,
-        select: {
-            status: true,
-            createdAt: true,
-            checkedInAt: true,
-            user: { select: { name: true, department: true, year: true, college: { select: { name: true } } } },
-        },
-    });
+    const person = { select: { name: true, department: true, year: true, college: { select: { name: true } } } } as const;
+    const [registrations, volunteers] = await Promise.all([
+        prisma.eventRegistration.findMany({
+            where: { eventId: id, status: { in: ['COMPLETED', 'PAID', 'PENDING_PAYMENT', 'WAITLISTED'] } },
+            orderBy: { createdAt: 'asc' },
+            take: 5000,
+            select: { userId: true, status: true, createdAt: true, checkedInAt: true, user: person },
+        }),
+        prisma.volunteerSignup.findMany({
+            where: { role: { eventId: id } },
+            orderBy: { createdAt: 'asc' },
+            select: { userId: true, createdAt: true, role: { select: { name: true } }, user: person },
+        }),
+    ]);
+    // One role per person per event, so a person maps to at most one role.
+    const roleOf = new Map(volunteers.map((v) => [v.userId, v.role.name]));
+    const registered = new Set(registrations.map((r) => r.userId));
 
     const when = (d: Date | null) => (d ? `${formatIST(d, { day: '2-digit', month: 'short', year: 'numeric' })} ${formatIST(d, { hour: '2-digit', minute: '2-digit' })}` : '');
     const rows = [
-        ['Name', 'College', 'Department', 'Year', 'Status', 'Signed up (IST)', 'Checked in (IST)'],
+        ['Name', 'College', 'Department', 'Year', 'Status', 'Volunteer role', 'Signed up (IST)', 'Checked in (IST)'],
         ...registrations.map((r) => [
             r.user.name,
             r.user.college?.name ?? '',
             r.user.department ?? '',
             r.user.year ?? '',
             STATUS[r.status] ?? r.status,
+            roleOf.get(r.userId) ?? '',
             when(r.createdAt),
             when(r.checkedInAt),
         ]),
+        // Volunteers need not register, but the desk still needs their names.
+        ...volunteers
+            .filter((v) => !registered.has(v.userId))
+            .map((v) => [
+                v.user.name,
+                v.user.college?.name ?? '',
+                v.user.department ?? '',
+                v.user.year ?? '',
+                'Volunteer only',
+                v.role.name,
+                when(v.createdAt),
+                '',
+            ]),
     ];
     // A byte-order mark so Excel reads the file as UTF-8 (names, ₹, scripts).
     const body = `﻿${rows.map((row) => row.map(cell).join(',')).join('\r\n')}\r\n`;

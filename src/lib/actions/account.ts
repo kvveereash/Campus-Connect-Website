@@ -129,6 +129,8 @@ export async function deleteAccount(password: string): Promise<ActionState> {
         }),
         // No more notifications on the phones this account turned them on for.
         prisma.pushSubscription.deleteMany({ where: { userId: user.id } }),
+        // Frees volunteer slots at events still to come; past roles stay on the organiser's record.
+        prisma.volunteerSignup.deleteMany({ where: { userId: user.id, role: { event: { date: { gte: new Date() } } } } }),
         prisma.user.update({
             where: { id: user.id },
             data: {
@@ -138,6 +140,8 @@ export async function deleteAccount(password: string): Promise<ActionState> {
                 // Freed, so the same Google account can sign up again later
                 // instead of meeting "this account was deleted" forever.
                 googleId: null,
+                weeklyDigest: false,
+                digestSentAt: null,
                 password: await bcrypt.hash(crypto.randomUUID(), 12),
                 avatar: null,
                 bio: null,

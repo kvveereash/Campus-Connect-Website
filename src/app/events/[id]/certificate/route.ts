@@ -8,6 +8,7 @@ import { SITE_URL } from '@/lib/site';
 /*
  * Your participation certificate for an event, as a PDF download. Only for
  * someone the organiser checked in at the door: registering is not attending.
+ * A volunteer role held at the event is printed on it too.
  */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -27,7 +28,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         select: {
             id: true,
             checkedInAt: true,
-            user: { select: { name: true } },
+            user: {
+                select: {
+                    name: true,
+                    // The role they volunteered in here, if any: one per event.
+                    volunteerSignups: { where: { role: { eventId: id } }, take: 1, select: { role: { select: { name: true } } } },
+                },
+            },
             event: {
                 select: {
                     title: true,
@@ -55,6 +62,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         checkedInAt: registration.checkedInAt,
         verifyUrl: `${process.env.NEXT_PUBLIC_APP_URL || SITE_URL}/certificates/${token}`,
         code: registration.id.slice(-8).toUpperCase(),
+        volunteerRole: registration.user.volunteerSignups[0]?.role.name ?? null,
     });
 
     const slug = event.title.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 50) || 'event';

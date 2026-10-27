@@ -32,6 +32,8 @@ export type CertificateDetails = {
     checkedInAt: Date;
     verifyUrl: string;
     code: string;
+    /** The volunteer role they held at the event, if any ("Registration desk"). */
+    volunteerRole?: string | null;
 };
 
 /** The text with every character the font cannot draw removed. */
@@ -134,7 +136,15 @@ export async function certificatePdf(details: CertificateDetails) {
 
     const when = formatIST(details.date, { day: 'numeric', month: 'long', year: 'numeric' });
     const hosted = drawable(sans, [host && `Hosted by ${host}`, college && `at ${college}`, `on ${when}`].filter(Boolean).join(' '));
-    centred(page, hosted, height - 336 - titleLines.length * (titleSize + 6) - 8, sans, 12, FELT);
+    const hostedY = height - 336 - titleLines.length * (titleSize + 6) - 8;
+    centred(page, hosted, hostedY, sans, 12, FELT);
+
+    // Even with a two-line title this sits clear of the rule at y 132.
+    const role = details.volunteerRole ? drawable(sansBold, details.volunteerRole) : '';
+    if (role) {
+        const line = `Volunteered as ${role}`;
+        centred(page, line, hostedY - 24, sansBold, fitSize(sansBold, line, 12, 9, width - 200));
+    }
 
     // Proof: when they were checked in, and where anyone can confirm it.
     page.drawLine({ start: { x: 60, y: 132 }, end: { x: width - 170, y: 132 }, thickness: 1, color: HAIRLINE });

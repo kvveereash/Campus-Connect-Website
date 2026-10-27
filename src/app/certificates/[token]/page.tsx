@@ -10,30 +10,42 @@ export const metadata: Metadata = { title: 'Certificate check', robots: { index:
 /*
  * Where the QR code on a certificate leads: anyone (a recruiter, a college
  * office) can confirm that the named person really was checked in at that
- * event. Shows only what is on the certificate itself.
+ * event, and in which volunteer role if they held one. Shows only what is on
+ * the certificate itself.
  */
 export default async function CertificateCheckPage({ params }: { params: Promise<{ token: string }> }) {
     const { token } = await params;
     const registrationId = readCertificateToken(decodeURIComponent(token));
-    const registration = registrationId
-        ? await prisma.eventRegistration.findFirst({
-              where: { id: registrationId, status: { in: [...GOING] }, checkedInAt: { not: null }, event: { deletedAt: null } },
-              select: {
-                  id: true,
-                  checkedInAt: true,
-                  user: { select: { name: true } },
-                  event: {
-                      select: {
-                          id: true,
-                          title: true,
-                          date: true,
-                          club: { select: { name: true } },
-                          hostCollege: { select: { name: true } },
+    // The role is looked up alongside, through the registration's own person
+    // and event, so neither read waits on the other.
+    const [registration, volunteered] = registrationId
+        ? await Promise.all([
+              prisma.eventRegistration.findFirst({
+                  where: { id: registrationId, status: { in: [...GOING] }, checkedInAt: { not: null }, event: { deletedAt: null } },
+                  select: {
+                      id: true,
+                      checkedInAt: true,
+                      user: { select: { name: true } },
+                      event: {
+                          select: {
+                              id: true,
+                              title: true,
+                              date: true,
+                              club: { select: { name: true } },
+                              hostCollege: { select: { name: true } },
+                          },
                       },
                   },
-              },
-          })
-        : null;
+              }),
+              prisma.volunteerSignup.findFirst({
+                  where: {
+                      user: { registrations: { some: { id: registrationId } } },
+                      role: { event: { registrations: { some: { id: registrationId } } } },
+                  },
+                  select: { role: { select: { name: true } } },
+              }),
+          ])
+        : [null, null];
 
     if (!registration?.checkedInAt) {
         return (
@@ -56,6 +68,7 @@ export default async function CertificateCheckPage({ params }: { params: Promise
         ['Event', event.title],
         ['Date', formatIST(event.date, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })],
         ['Hosted by', [event.club?.name, event.hostCollege.name].filter(Boolean).join(', ')],
+        ...(volunteered ? [['Volunteered as', volunteered.role.name] as [string, string]] : []),
         [
             'Checked in',
             `${formatIST(registration.checkedInAt, { day: 'numeric', month: 'short', year: 'numeric' })}, ${formatIST(registration.checkedInAt, { hour: 'numeric', minute: '2-digit' })}`,
@@ -71,7 +84,8 @@ export default async function CertificateCheckPage({ params }: { params: Promise
                     This certificate is <em className="accent">genuine.</em>
                 </h1>
                 <p className={styles.text}>
-                    {registration.user.name} took part in this event and was checked in at the door by its organisers.
+                    {registration.user.name} took part in this event
+                    {volunteered ? `, volunteered as ${volunteered.role.name},` : ''} and was checked in at the door by its organisers.
                 </p>
                 <dl className={styles.facts}>
                     {facts.map(([key, value]) => (

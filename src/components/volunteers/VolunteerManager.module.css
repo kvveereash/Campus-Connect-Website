@@ -1,0 +1,284 @@
+/* The organiser's volunteer roles, on the attendee page. Same cards, inputs
+   and quiet links as events/[id]/organiser.module.css. */
+
+.manager {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+/* ─── Roles ─── */
+
+.roles {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.role {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+    padding: 18px 20px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.roleHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px 16px;
+}
+
+.roleTitle {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    flex: 1 1 240px;
+}
+
+.roleTitle h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    overflow-wrap: anywhere;
+}
+
+.roleTitle p {
+    margin: 2px 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-felt);
+    overflow-wrap: anywhere;
+}
+
+.count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+.count[data-full] {
+    color: var(--color-success);
+}
+
+.buttons {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+}
+
+.quiet {
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 14px;
+    color: var(--color-felt);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--border-strong);
+    cursor: pointer;
+}
+
+.quiet:hover:not(:disabled) {
+    color: var(--color-accent);
+}
+
+.quiet:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* ─── Who signed up ─── */
+
+.people {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.person {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    padding: 4px 12px 4px 4px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: var(--color-canvas);
+    font-size: 14px;
+    color: var(--color-obsidian);
+    transition: border-color var(--duration-base) var(--ease-glide);
+}
+
+.person:hover {
+    border-color: var(--color-accent);
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--color-slate);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.personName {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.none {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-felt);
+}
+
+/* ─── Forms ─── */
+
+.form {
+    display: grid;
+    gap: 12px;
+    padding: 18px 20px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+.edit {
+    display: grid;
+    gap: 12px;
+}
+
+.formLabel {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 150px);
+    gap: 12px;
+}
+
+.field {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+.field > span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-inkstone);
+}
+
+.input {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--color-paper);
+    font: inherit;
+    font-size: 16px; /* 16px keeps iOS from zooming in on focus */
+    color: var(--color-obsidian);
+    font-variant-numeric: tabular-nums;
+}
+
+.input:focus {
+    border-color: var(--color-accent);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.formFoot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.hint {
+    font-size: 13px;
+    color: var(--color-felt);
+}
+
+.hint[data-warn] {
+    color: var(--color-danger);
+}
+
+/* ─── Empty ─── */
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 48px 24px;
+    border-radius: 20px;
+    border: 1px dashed var(--border-strong);
+    background-color: var(--color-paper);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.empty h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.empty p {
+    margin: 0;
+    max-width: 44ch;
+    color: var(--color-felt);
+}
+
+@media (max-width: 520px) {
+    .fields {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .person {
+        transition: none;
+    }
+}

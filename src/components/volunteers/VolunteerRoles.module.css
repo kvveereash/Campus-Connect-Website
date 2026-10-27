@@ -1,0 +1,138 @@
+/* Volunteer roles on the event page. Carries the page's ruled panel itself
+   (the same as .panel in events/[id]/page.module.css), because it renders
+   nothing for events without roles and an empty panel would leave a rule. */
+
+.section {
+    margin-top: clamp(48px, 7vw, 88px);
+    padding-top: clamp(32px, 4vw, 48px);
+    border-top: 1px solid var(--border-hairline);
+}
+
+.label {
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+.title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3.4vw, 2.4375rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+}
+
+.note {
+    margin: 12px 0 0;
+    max-width: 56ch;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-felt);
+}
+
+.roles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+    gap: 12px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.role {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 18px 20px;
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+}
+
+/* Your role gets the campus-blue edge, like a selected chip. */
+.role[data-mine] {
+    border-color: var(--color-accent);
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+.roleHead {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.roleName {
+    margin: 0;
+    min-width: 0;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-obsidian);
+    overflow-wrap: anywhere;
+}
+
+.badge {
+    flex-shrink: 0;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-soft);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+}
+
+.roleText {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-inkstone);
+    overflow-wrap: anywhere;
+}
+
+.meter {
+    height: 4px;
+    margin-top: auto;
+    border-radius: var(--radius-pill);
+    background: var(--color-slate);
+    overflow: hidden;
+}
+
+.meter span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-accent);
+}
+
+.roleFoot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
+    font-variant-numeric: tabular-nums;
+}
+
+.count small {
+    font-size: inherit;
+    color: var(--color-ash);
+}
