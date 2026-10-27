@@ -20,5 +20,6 @@ export default async function EventsPage() {
   // which also keeps ?category= links shareable.
   const events = await getAllEvents();
 
-  return <EventsClient initialEvents={events} />;
+  // Read when the page is built; the key itself never reaches the browser.
+  return <EventsClient initialEvents={events} canAsk={Boolean(process.env.ANTHROPIC_API_KEY)} />;
 }
