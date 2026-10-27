@@ -74,3 +74,17 @@
         transition: none;
     }
 }
+
+/* On touch screens: an invisible 44px box around these small links takes
+   the tap, without making them look any bigger. */
+@media (pointer: coarse) {
+    .more {
+        position: relative;
+    }
+
+    .more::after {
+        content: '';
+        position: absolute;
+        inset: -11px -8px;
+    }
+}

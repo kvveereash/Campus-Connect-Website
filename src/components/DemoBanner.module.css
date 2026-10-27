@@ -67,3 +67,17 @@
     background: var(--color-accent-hover);
     color: var(--color-paper);
 }
+
+/* On touch screens: an invisible 44px box around these small links takes
+   the tap, without making them look any bigger. */
+@media (pointer: coarse) {
+    .links a {
+        position: relative;
+    }
+
+    .links a::after {
+        content: '';
+        position: absolute;
+        inset: -11px -6px;
+    }
+}

@@ -417,3 +417,17 @@
         transition: none;
     }
 }
+
+/* On touch screens: an invisible 44px box around these small links takes
+   the tap, without making them look any bigger. */
+@media (pointer: coarse) {
+    .actionButton {
+        position: relative;
+    }
+
+    .actionButton::after {
+        content: '';
+        position: absolute;
+        inset: -12px -6px;
+    }
+}

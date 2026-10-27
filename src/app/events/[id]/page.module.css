@@ -488,3 +488,17 @@
     line-height: 1.45;
     color: var(--color-felt);
 }
+
+/* On touch screens: an invisible 44px box around these small links takes
+   the tap, without making them look any bigger. */
+@media (pointer: coarse) {
+    .calendar a {
+        position: relative;
+    }
+
+    .calendar a::after {
+        content: '';
+        position: absolute;
+        inset: -13px -6px;
+    }
+}
