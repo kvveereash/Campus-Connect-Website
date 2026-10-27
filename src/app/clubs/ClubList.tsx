@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Plus } from 'lucide-react';
+import { inkFor } from '@/app/events/press';
 import { resolveClubImage } from '@/lib/college-images';
 import { useAuth } from '@/context/AuthContext';
 import { getPostableClubs } from '@/lib/actions/buzz';
@@ -31,6 +32,11 @@ interface ClubListProps {
 // cards blank for seconds.
 const stagger = (i: number) => ({ '--delay': `${Math.min(i, 12) * 0.05}s` }) as CSSProperties;
 
+/* Clubs pick their category freely, so near-duplicates appear; each is
+   filed under the name the events board uses. */
+const CATEGORY_ALIASES: Record<string, string> = { Technical: 'Technology', Tech: 'Technology' };
+const categoryOf = (c: string) => CATEGORY_ALIASES[c] ?? c;
+
 export default function ClubList({ initialClubs }: ClubListProps) {
     const { user } = useAuth();
     const [category, setCategory] = useState('All');
@@ -56,14 +62,17 @@ export default function ClubList({ initialClubs }: ClubListProps) {
      */
     const categories = useMemo(() => {
         const counts = new Map<string, number>();
-        for (const c of initialClubs) counts.set(c.category, (counts.get(c.category) ?? 0) + 1);
+        for (const c of initialClubs) {
+            const name = categoryOf(c.category);
+            counts.set(name, (counts.get(name) ?? 0) + 1);
+        }
         return [...counts.entries()].sort((a, b) => b[1] - a[1]);
     }, [initialClubs]);
 
     const visible = useMemo(
         () =>
             initialClubs
-                .filter((c) => category === 'All' || c.category === category)
+                .filter((c) => category === 'All' || categoryOf(c.category) === category)
                 .filter((c) => !mineOnly || joinedClubIds.includes(c.id)),
         [initialClubs, category, mineOnly, joinedClubIds]
     );
@@ -87,47 +96,54 @@ export default function ClubList({ initialClubs }: ClubListProps) {
                 </span>
             </header>
 
+            {/* Categories wrap onto a second line on wide screens and scroll
+                sideways on a phone, with a fade to show there is more. Start
+                a club stays pinned at the end either way. */}
             <nav className={styles.controls} aria-label="Filter clubs">
-                <button
-                    type="button"
-                    className={styles.pill}
-                    aria-pressed={category === 'All' && !mineOnly}
-                    onClick={() => { setCategory('All'); setMineOnly(false); }}
-                >
-                    All
-                    <span className={styles.pillCount}>{initialClubs.length}</span>
-                </button>
-
-                {categories.map(([name, n]) => (
-                    <button
-                        key={name}
-                        type="button"
-                        className={styles.pill}
-                        aria-pressed={category === name}
-                        onClick={() => setCategory(category === name ? 'All' : name)}
-                    >
-                        {name}
-                        <span className={styles.pillCount}>{n}</span>
-                    </button>
-                ))}
-
-                {user && joinedClubIds.length > 0 && (
+                <div className={styles.chips}>
                     <button
                         type="button"
                         className={styles.pill}
-                        aria-pressed={mineOnly}
-                        onClick={() => setMineOnly((v) => !v)}
+                        aria-pressed={category === 'All' && !mineOnly}
+                        onClick={() => { setCategory('All'); setMineOnly(false); }}
                     >
-                        Mine
-                        <span className={styles.pillCount}>{joinedClubIds.length}</span>
+                        All
+                        <span className={styles.pillCount}>{initialClubs.length}</span>
                     </button>
-                )}
 
-                <span className={styles.spacer} />
+                    {user && joinedClubIds.length > 0 && (
+                        <>
+                            <button
+                                type="button"
+                                className={styles.pill}
+                                aria-pressed={mineOnly}
+                                onClick={() => setMineOnly((v) => !v)}
+                            >
+                                Mine
+                                <span className={styles.pillCount}>{joinedClubIds.length}</span>
+                            </button>
+                            <span className={styles.divider} aria-hidden="true" />
+                        </>
+                    )}
 
-                <Link href="/clubs/create" className={styles.create}>
-                    <Plus size={14} aria-hidden="true" />
-                    Start a club
+                    {categories.map(([name, n]) => (
+                        <button
+                            key={name}
+                            type="button"
+                            className={styles.pill}
+                            aria-pressed={category === name}
+                            onClick={() => setCategory(category === name ? 'All' : name)}
+                        >
+                            <i className={styles.swatch} style={{ background: inkFor(name) }} aria-hidden="true" />
+                            {name}
+                            <span className={styles.pillCount}>{n}</span>
+                        </button>
+                    ))}
+                </div>
+
+                <Link href="/clubs/create" className={styles.create} aria-label="Start a club">
+                    <Plus size={16} aria-hidden="true" />
+                    <span className={styles.createText}>Start a club</span>
                 </Link>
             </nav>
 

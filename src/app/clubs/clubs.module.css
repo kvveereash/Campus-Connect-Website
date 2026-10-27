@@ -56,21 +56,51 @@
     top: 64px;
     z-index: 20;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 -12px 20px;
+    align-items: flex-start;
+    gap: 16px;
+    margin: 0 -12px 24px;
     padding: 12px;
     border-radius: 18px;
     background: rgba(245, 244, 240, 0.86);
     -webkit-backdrop-filter: saturate(160%) blur(14px);
     backdrop-filter: saturate(160%) blur(14px);
-    overflow-x: auto;
-    scrollbar-width: none;
 }
 
-.controls::-webkit-scrollbar {
+/* Wide screens: the chips wrap, so none of them is ever off-screen. */
+.chips {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+}
+
+.chips::-webkit-scrollbar {
     display: none;
 }
+
+/* The category's colour, the same square the events board uses. */
+.swatch {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
+.pill[aria-pressed='true'] .swatch {
+    box-shadow: 0 0 0 1.5px var(--color-paper);
+}
+
+/* Separates "Mine" (whose) from the categories (what). */
+.divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: 22px;
+    margin: 0 2px;
+    background: var(--border-strong);
+}
+
 
 .pill {
     flex-shrink: 0;
@@ -117,10 +147,6 @@
     color: var(--color-paper);
 }
 
-.spacer {
-    flex: 1;
-    min-width: 8px;
-}
 
 .create {
     flex-shrink: 0;
@@ -276,9 +302,39 @@
     }
 
     .controls {
+        align-items: center;
+        gap: 10px;
         margin: 0 -16px 16px;
         padding: 10px 16px;
         border-radius: 0;
+    }
+
+    /* A phone keeps the bar one row tall: the chips scroll sideways, and
+       the fade at the right edge shows there are more. */
+    .chips {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding-right: 24px;
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+        mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+    }
+
+    /* Start a club becomes a round "+" (its label stays for screen readers). */
+    .create {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .createText {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
     }
 
     .grid {
