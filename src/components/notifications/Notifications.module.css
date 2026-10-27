@@ -269,6 +269,14 @@
     text-underline-offset: 4px;
 }
 
+/* Push on/off (src/components/PushToggle.tsx), one line under the list.
+   The canvas tint sets it apart from the notifications above it. */
+.pushFooter {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-hairline);
+    background: var(--color-canvas);
+}
+
 /* On a phone the bell is not at the screen's edge, so a panel hung from it
    would run off the left. Pin it under the navbar, edge to edge. */
 @media (max-width: 520px) {

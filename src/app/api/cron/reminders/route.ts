@@ -6,6 +6,7 @@ import { formatIST } from '@/lib/format';
 import { sendEmail } from '@/lib/email';
 import { escapeHtml } from '@/lib/sanitize';
 import { SITE_URL } from '@/lib/site';
+import { sendPush } from '@/lib/push';
 
 /*
  * The day-before reminder. netlify/functions/event-reminders.mjs calls this
@@ -55,15 +56,18 @@ export async function POST(request: Request) {
                 })
             ).map((user) => ({ userId: user.id, user }));
 
+            const message = `reminds you: ${event.title} is ${when}, at ${event.venue}.`;
             await prisma.notification.createMany({
                 data: due.map((r) => ({
                     recipientId: r.userId,
                     type: 'EVENT_REMINDER' as const,
-                    message: `reminds you: ${event.title} is ${when}, at ${event.venue}.`,
+                    message,
                     link,
                 })),
             });
             sent += due.length;
+            // The same words the bell shows; sendPush never throws.
+            await sendPush(due.map((r) => r.userId), { title: 'Campus Connect', body: `Campus Connect ${message}`, url: link });
 
             // Email is best effort and only once Resend is configured; the in-app
             // reminder above is the one that always lands.
@@ -92,15 +96,17 @@ export async function POST(request: Request) {
               )
             RETURNING "userId"`;
         if (savers.length > 0) {
+            const message = `reminds you: ${event.title}, which you saved, is ${when}, at ${event.venue}. Register to get a ticket.`;
             await prisma.notification.createMany({
                 data: savers.map((s) => ({
                     recipientId: s.userId,
                     type: 'EVENT_REMINDER' as const,
-                    message: `reminds you: ${event.title}, which you saved, is ${when}, at ${event.venue}. Register to get a ticket.`,
+                    message,
                     link,
                 })),
             });
             savedSent += savers.length;
+            await sendPush(savers.map((s) => s.userId), { title: 'Campus Connect', body: `Campus Connect ${message}`, url: link });
         }
     }
 

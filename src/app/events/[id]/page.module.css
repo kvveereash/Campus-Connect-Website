@@ -236,6 +236,10 @@
     flex: 1 1 140px;
 }
 
+.report {
+    margin-top: 22px;
+}
+
 .ownerActions {
     display: flex;
     flex-wrap: wrap;
@@ -487,6 +491,19 @@
     font-size: 13px;
     line-height: 1.45;
     color: var(--color-felt);
+}
+
+.seats {
+    font-variant-numeric: tabular-nums;
+}
+
+.seats[data-full] {
+    color: var(--color-danger);
+}
+
+.ticketAction {
+    width: 100%;
+    margin-top: 4px;
 }
 
 /* On touch screens: an invisible 44px box around these small links takes

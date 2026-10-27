@@ -13,6 +13,8 @@ import RevealGroup from '@/components/RevealGroup';
 import ForYou from './ForYou';
 import EventRow, { hostOf } from './EventRow';
 import EventsCalendar from './EventsCalendar';
+import AskBox from './AskBox';
+import type { AskFilters } from '@/lib/actions/ask';
 import styles from './press.module.css';
 
 type TimeFilter = 'Any' | 'This week' | 'This month';
@@ -23,6 +25,8 @@ const MY_COLLEGE = 'my-college';
 
 interface EventsClientProps {
     initialEvents: EventWithRelations[];
+    /** Whether "Ask in plain words" is set up (the server has an Anthropic key). */
+    canAsk?: boolean;
 }
 
 /** What the board needs from the URL: just the category, read-only. */
@@ -47,7 +51,7 @@ function EventsWithParams(props: EventsClientProps) {
     return <EventsBoard {...props} searchParams={searchParams} />;
 }
 
-function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { searchParams: Params }) {
+function EventsBoard({ initialEvents, canAsk = false, searchParams }: EventsClientProps & { searchParams: Params }) {
     const pathname = usePathname();
     const { replace } = useRouter();
     const railRef = useRef<HTMLElement>(null);
@@ -154,6 +158,20 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
         return () => clearTimeout(t);
     }, [query, urlQuery, setParam]);
 
+    /* An answer replaces every filter at once, in one navigation: setting the
+       params one by one would have each read the URL before the last landed. */
+    const applyAsk = (filters: AskFilters) => {
+        const params = new URLSearchParams(searchParams?.toString() ?? '');
+        const set = (name: string, value: string | null) => (value ? params.set(name, value) : params.delete(name));
+        set('category', filters.category);
+        set('where', filters.where);
+        set('q', filters.keywords);
+        setQuery(filters.keywords);
+        setActiveTime(filters.when);
+        const qs = params.toString();
+        replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    };
+
     const clearFilters = () => {
         setQuery('');
         setActiveTime('Any');
@@ -222,6 +240,7 @@ function EventsBoard({ initialEvents, searchParams }: EventsClientProps & { sear
                             <ChevronDown size={16} className={styles.placeChevron} aria-hidden="true" />
                         </label>
                     </div>
+                    {canAsk && <AskBox onApply={applyAsk} onClear={clearFilters} />}
                 </header>
 
                 {featured && <Featured event={featured} />}

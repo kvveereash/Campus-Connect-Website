@@ -11,6 +11,7 @@ import { createClubPost, getPostComments, createPostComment } from '@/lib/action
 import { getPostableClubs, type BuzzPost } from '@/lib/actions/buzz';
 import styles from './buzz.module.css';
 import Reveal from '@/components/Reveal';
+import ReportButton from '@/components/ReportButton';
 import { formatIST } from '@/lib/format';
 
 interface Props {
@@ -304,6 +305,11 @@ export default function BuzzClient({ posts }: Props) {
                                         <MessageCircle size={13} aria-hidden="true" />
                                         {post.commentCount}
                                     </button>
+                                    {user?.id !== post.author.id && (
+                                        <div className={styles.reportSlot}>
+                                            <ReportButton targetType="POST" targetId={post.id} />
+                                        </div>
+                                    )}
                                 </div>
 
                                 {openComments === post.id && (
@@ -322,6 +328,14 @@ export default function BuzzClient({ posts }: Props) {
                                                         <span className={styles.commentStamp}>
                                                             {timeAgo(c.timestamp)}
                                                         </span>
+                                                        {user?.id !== c.author.id && (
+                                                            <div className={styles.reportSlot}>
+                                                                <ReportButton
+                                                                    targetType="COMMENT"
+                                                                    targetId={c.id}
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <p className={styles.commentBody}>
                                                         {c.content}

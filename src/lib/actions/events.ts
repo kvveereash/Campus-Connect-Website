@@ -16,6 +16,7 @@ import { createNotification } from '@/lib/notification-helper';
 import { audit } from '@/lib/audit';
 import { checkAndAwardBadges } from '@/lib/badges';
 import { eventLimiter } from '@/lib/rate-limit';
+import { fillFromWaitlist, lockEvent, notifyPromoted, seatsTaken, waitlistPosition } from '@/lib/waitlist';
 
 export type EventWithRelations = PrismaEvent & {
     hostCollege: {
@@ -79,6 +80,7 @@ export const createEventAction = createProtectedAction(eventSchema, async (data,
             category: data.category,
             registrationCount: 0,
             price: data.price || 0,
+            capacity: data.capacity ?? null,
             thumbnail: data.thumbnail || '/event-placeholder.png',
             hostCollege: { connect: { id: collegeId } },
             creator: { connect: { id: session.userId } },
@@ -118,15 +120,20 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
 
     if (existingRegistration) throw new Error('Already registered');
 
-    const registration = await prisma.$transaction(async (tx) => {
+    const { registration, waitlistPosition: position } = await prisma.$transaction(async (tx) => {
+        // Locked first, so the seat count below can't change before we take one.
+        await lockEvent(tx, eventId);
+        const full = event.capacity !== null && (await seatsTaken(tx, eventId)) >= event.capacity;
+
         const reg = await tx.eventRegistration.create({
             data: {
                 userId,
                 eventId,
-                status: event.price > 0 ? 'PENDING_PAYMENT' : 'COMPLETED',
+                status: full ? 'WAITLISTED' : event.price > 0 ? 'PENDING_PAYMENT' : 'COMPLETED',
                 amountPaid: 0
             }
         });
+        if (full) return { registration: reg, waitlistPosition: await waitlistPosition(tx, eventId, reg.createdAt) };
 
         // A paid event counts the place, and awards badges, once it is paid
         // (markRegistrationPaid). Counting at join let anyone collect badges
@@ -138,8 +145,14 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
             });
         }
 
-        return reg;
+        return { registration: reg, waitlistPosition: null };
     });
+
+    if (position !== null) {
+        revalidatePath(`/events/${eventId}`);
+        updateTag(`event-${eventId}`);
+        return { earnedBadges: [], registrationId: registration.id, waitlisted: true, waitlistPosition: position };
+    }
 
     const earnedBadges = event.price > 0 ? [] : await checkAndAwardBadges(userId, event.category);
 
@@ -159,7 +172,52 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
     updateTag(`event-${eventId}`);
     updateTag(CACHE_TAGS.EVENTS);
 
-    return { earnedBadges, registrationId: registration.id };
+    return { earnedBadges, registrationId: registration.id, waitlisted: false, waitlistPosition: null };
+}, {
+    allowDemo: true,
+    audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.eventId },
+});
+
+/**
+ * Gives up your place: a free sign-up, an unpaid one, or a spot on the
+ * waitlist. A seat that frees up goes to the longest-waiting person. Paid
+ * places are refunded by the organiser (see the refund policy), so they are
+ * cancelled with them, not here.
+ */
+export const cancelRegistrationAction = createProtectedAction(joinEventSchema, async ({ eventId }, session) => {
+    const registration = await prisma.eventRegistration.findUnique({
+        where: { userId_eventId: { userId: session.userId, eventId } },
+        select: {
+            id: true,
+            status: true,
+            event: { select: { id: true, title: true, date: true, price: true, capacity: true, creatorId: true, clubId: true } },
+        },
+    });
+    if (!registration) throw new Error('You are not registered for this event');
+    if (registration.status === 'PAID') {
+        throw new Error('Paid places are cancelled by the organiser, who arranges the refund. Message them from the event page.');
+    }
+    if (registration.event.date < new Date()) throw new Error('This event has already happened');
+    const { event } = registration;
+
+    const promoted = await prisma.$transaction(async (tx) => {
+        await lockEvent(tx, eventId);
+        await tx.eventRegistration.delete({ where: { id: registration.id } });
+        if (registration.status === 'COMPLETED') {
+            await tx.event.update({ where: { id: eventId }, data: { registrationCount: { decrement: 1 } } });
+            return fillFromWaitlist(tx, event);
+        }
+        return [];
+    });
+    await notifyPromoted(event, promoted);
+
+    revalidatePath('/events');
+    revalidatePath(`/events/${eventId}`);
+    revalidatePath('/my-events');
+    updateTag(`event-${eventId}`);
+    updateTag(CACHE_TAGS.EVENTS);
+    if (event.clubId) updateTag(`club-${event.clubId}`);
+    return { cancelled: true };
 }, {
     allowDemo: true,
     audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.eventId },
@@ -205,10 +263,18 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
         updateData.rejectionReason = null;
     }
 
-    const updatedEvent = await prisma.event.update({
-        where: { id },
-        data: updateData
+    // After the approval check on purpose: changing the number of seats is
+    // not a content change an admin needs to see again.
+    if (data.capacity !== undefined) updateData.capacity = data.capacity;
+
+    // More seats (or none as the limit) fill from the waitlist straight away.
+    const { updatedEvent, promoted } = await prisma.$transaction(async (tx) => {
+        await lockEvent(tx, id);
+        const saved = await tx.event.update({ where: { id }, data: updateData });
+        const moved = data.capacity !== undefined ? await fillFromWaitlist(tx, saved) : [];
+        return { updatedEvent: saved, promoted: moved };
     });
+    await notifyPromoted(updatedEvent, promoted);
 
     revalidatePath(`/events/${id}`);
     revalidatePath('/events');
@@ -234,6 +300,7 @@ export async function createEvent(data: {
     category: string;
     thumbnail: string;
     price?: number;
+    capacity?: number | null;
     creatorId?: string;
     clubId?: string;
 }) {
@@ -256,7 +323,13 @@ export async function joinEvent(userId: string, eventId: string) {
 
     const result = await joinEventAction({ eventId });
     if (!isOk(result)) return { success: false, error: result.error || 'Unknown error' };
-    return { success: true, earnedBadges: result.data.earnedBadges, registrationId: result.data.registrationId };
+    return {
+        success: true,
+        earnedBadges: result.data.earnedBadges,
+        registrationId: result.data.registrationId,
+        waitlisted: result.data.waitlisted,
+        waitlistPosition: result.data.waitlistPosition,
+    };
 }
 
 /** @deprecated Use updateEventAction directly */
@@ -399,6 +472,8 @@ async function _getEventByIdUncached(id: string) {
             venue: true,
             category: true,
             price: true,
+            capacity: true,
+            registrationCount: true,
             thumbnail: true,
             verified: true,
             deletedAt: true,

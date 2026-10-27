@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { changePassword, deleteAccount } from '@/lib/actions/account';
 import { sendVerificationEmail } from '@/lib/actions/email-verification';
+import { isDemoEmail } from '@/lib/demo-account';
+import PushToggle from '@/components/PushToggle';
 import styles from './page.module.css';
 
 /**
@@ -152,6 +154,15 @@ export default function SettingsClient({
                     </button>
                 </form>
             </section>
+
+            {/* Its own section, which PushToggle leaves out entirely when push
+                is not set up. The shared demo account cannot subscribe. */}
+            {!isDemoEmail(email) && (
+                <PushToggle
+                    className={styles.section}
+                    heading={<p className={styles.sectionLabel}>Notifications</p>}
+                />
+            )}
 
             <section className={`${styles.section} ${styles.danger}`}>
                 <p className={styles.sectionLabel}>Delete account</p>

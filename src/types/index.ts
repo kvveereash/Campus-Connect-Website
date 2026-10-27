@@ -2,7 +2,7 @@ export interface EventRegistration {
   id: string;
   userId: string;
   eventId: string;
-  status: 'PENDING' | 'PENDING_PAYMENT' | 'PAID' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'PENDING_PAYMENT' | 'PAID' | 'COMPLETED' | 'CANCELLED' | 'WAITLISTED';
   paymentId?: string;
   amountPaid?: number;
   createdAt: string;

@@ -1,11 +1,19 @@
 import { getAdminStats, getChartData } from '@/lib/data/admin';
-import { Users, Calendar, Building2, AlertCircle } from 'lucide-react';
+import { Users, Calendar, Building2, AlertCircle, Flag } from 'lucide-react';
+import prisma from '@/lib/db';
+import { getSession } from '@/lib/auth';
 import styles from './admin.module.css';
 import AdminCharts from '@/components/admin/AdminCharts';
 
 export default async function AdminDashboard() {
-    const stats = await getAdminStats();
-    const chartData = await getChartData();
+    // A layout and its page render in parallel, so the page checks for itself
+    // rather than relying on the layout's redirect having happened first.
+    const isAdmin = (await getSession())?.user?.role === 'ADMIN';
+    const [stats, chartData, openReports] = await Promise.all([
+        getAdminStats(),
+        getChartData(),
+        isAdmin ? prisma.report.count({ where: { status: 'OPEN' } }) : 0,
+    ]);
 
     if (!stats) return null;
 
@@ -34,6 +42,12 @@ export default async function AdminDashboard() {
                     value={stats.pendingClubs + stats.pendingEvents}
                     icon={<AlertCircle size={24} color="#eab308" />}
                     highlight
+                />
+                <StatCard
+                    title="Open reports"
+                    value={openReports}
+                    icon={<Flag size={24} color="var(--color-danger)" />}
+                    highlight={openReports > 0}
                 />
             </div>
 

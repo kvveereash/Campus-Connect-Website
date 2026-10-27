@@ -282,9 +282,15 @@
 
 .commentHeader {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    gap: 9px;
+    gap: 4px 9px;
     margin-bottom: 4px;
+}
+
+/* Report sits at the far end of its row, away from the actions people use. */
+.reportSlot {
+    margin-left: auto;
 }
 
 .commentAuthor {

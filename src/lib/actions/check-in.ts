@@ -48,7 +48,7 @@ async function checkIn(eventId: string, registrationId: string) {
 
     const event = await prisma.event.findFirst({
         where: { id: eventId, deletedAt: null },
-        select: { creatorId: true, clubId: true },
+        select: { id: true, creatorId: true, clubId: true },
     });
     if (!event || !(await canManageEvent(event, session))) return;
 

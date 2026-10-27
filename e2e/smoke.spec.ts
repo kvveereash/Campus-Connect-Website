@@ -47,7 +47,9 @@ test('an event opens from the list with its details', async ({ page }) => {
     const href = await firstDetailLink(page, 'events');
     await page.goto(href);
     await expect(page.locator('h1').first()).toBeVisible();
-    await expect(page.getByText('When', { exact: true })).toBeVisible();
+    // Through the accessibility tree: until React reveals a streamed page, a
+    // hidden copy of it sits in the document too, and plain text matches both.
+    await expect(page.getByRole('complementary').getByText('When', { exact: true })).toBeVisible();
     await expectNoHorizontalScroll(page);
 });
 
@@ -145,4 +147,29 @@ test('crawlers get robots.txt, a sitemap and a share image', async ({ request })
 
     const image = await request.get('/opengraph-image');
     expect(image.headers()['content-type']).toBe('image/png');
+});
+
+/* The add-ons, from a stranger's side: nothing here writes. */
+test('private links refuse anyone who should not have them', async ({ page, request }) => {
+    await page.goto('/events');
+    const href = await firstDetailLink(page, 'events');
+
+    const csv = await request.get(`${href}/attendees.csv`, { maxRedirects: 0 });
+    expect(csv.status()).toBe(403);
+
+    const certificate = await request.get(`${href}/certificate`, { maxRedirects: 0 });
+    expect(certificate.status()).toBe(307);
+    expect(certificate.headers()['location']).toContain('/login?redirect=');
+
+    const feed = await request.get('/api/calendar/not-a-real-link.ics');
+    expect(feed.status()).toBe(404);
+
+    await page.goto('/certificates/not-a-real-certificate');
+    await expect(page.getByRole('heading', { name: 'We could not verify this certificate.' })).toBeVisible();
+});
+
+test('an event offers a way to report it, after signing in', async ({ page }) => {
+    await page.goto('/events');
+    await page.goto(await firstDetailLink(page, 'events'));
+    await expect(page.getByRole('link', { name: 'Sign in to report' })).toBeVisible();
 });

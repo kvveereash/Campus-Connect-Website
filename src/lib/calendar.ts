@@ -73,17 +73,12 @@ function fold(line: string) {
     return out.join('\r\n');
 }
 
-export function icsFile(event: CalendarEvent) {
+function vevent(event: CalendarEvent, now: Date) {
     const { start, end } = span(event);
-    const lines = [
-        'BEGIN:VCALENDAR',
-        'VERSION:2.0',
-        'PRODID:-//Campus Connect//Events//EN',
-        'CALSCALE:GREGORIAN',
-        'METHOD:PUBLISH',
+    return [
         'BEGIN:VEVENT',
         `UID:${event.id}@campusconnect`,
-        `DTSTAMP:${stamp(new Date())}`,
+        `DTSTAMP:${stamp(now)}`,
         `DTSTART:${stamp(start)}`,
         `DTEND:${stamp(end)}`,
         `SUMMARY:${icsText(event.title)}`,
@@ -97,7 +92,31 @@ export function icsFile(event: CalendarEvent) {
         'TRIGGER:-P1D',
         'END:VALARM',
         'END:VEVENT',
+    ];
+}
+
+/** A calendar of any number of events. `name` titles a subscribed feed in the calendar app. */
+export function icsCalendar(events: CalendarEvent[], name?: string) {
+    const now = new Date();
+    const lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Campus Connect//Events//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        ...(name
+            ? [
+                  `X-WR-CALNAME:${icsText(name)}`,
+                  'X-WR-TIMEZONE:Asia/Kolkata',
+                  // How often a subscribed calendar app should look again.
+                  'REFRESH-INTERVAL;VALUE=DURATION:PT6H',
+                  'X-PUBLISHED-TTL:PT6H',
+              ]
+            : []),
+        ...events.flatMap((event) => vevent(event, now)),
         'END:VCALENDAR',
     ];
     return `${lines.map(fold).join('\r\n')}\r\n`;
 }
+
+export const icsFile = (event: CalendarEvent) => icsCalendar([event]);

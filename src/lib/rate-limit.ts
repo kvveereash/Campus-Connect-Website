@@ -103,6 +103,25 @@ export const globalApiLimiter = defineLimiter(100, '1 m', 'ratelimit:api:global'
 // Uploads: 20 per hour (writes to disk — keep it tight)
 export const uploadLimiter = defineLimiter(20, '1 h', 'ratelimit:upload');
 
+// Organiser announcements to everyone going: 5 an hour per organiser. Each one
+// is a notification (and a push) to every attendee.
+export const announceLimiter = defineLimiter(5, '1 h', 'ratelimit:announce');
+
+// Reports for moderation: 10 an hour per user.
+export const reportLimiter = defineLimiter(10, '1 h', 'ratelimit:report');
+
+// Club applications: 10 an hour per user.
+export const applicationLimiter = defineLimiter(10, '1 h', 'ratelimit:application');
+
+// Push subscriptions saved: 10 an hour per user (one per browser is normal).
+export const pushSubscribeLimiter = defineLimiter(10, '1 h', 'ratelimit:push-subscribe');
+
+// "Ask in plain words" search: 20 an hour per IP. Each one is a paid model call.
+export const aiSearchLimiter = defineLimiter(20, '1 h', 'ratelimit:ai-search');
+
+// Google sign-in starts: 20 an hour per IP.
+export const googleAuthLimiter = defineLimiter(20, '1 h', 'ratelimit:google-auth');
+
 // "Try the demo" sign-ins: 10 an hour per IP. Plenty for a recruiter clicking
 // around; not enough to script the demo account into a spam source.
 export const demoLimiter = defineLimiter(10, '1 h', 'ratelimit:demo');

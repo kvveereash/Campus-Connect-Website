@@ -13,6 +13,9 @@
  *    also what clears the stale "/" left behind by v1;
  *  - keeps one page, /offline, with the CSS and scripts it links, and shows
  *    it when a page cannot be reached at all (v3).
+ *
+ * It also shows web push notifications (src/lib/push.ts sends them). That
+ * changes nothing about caching, so the cache name stays at v3.
  */
 const CACHE = 'campus-connect-v3';
 const OFFLINE = '/offline';
@@ -78,4 +81,48 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(fetch(request).catch(() => caches.match(OFFLINE).then((hit) => hit || Response.error())));
     }
     // Everything else goes straight to the network.
+});
+
+/* A path on this site, or the home page. The payload comes from our server,
+   but a notification must never open somewhere else even if it did not. */
+function sitePath(url) {
+    try {
+        const u = new URL(url || '/', self.location.origin);
+        return u.origin === self.location.origin ? u.pathname + u.search + u.hash : '/';
+    } catch {
+        return '/';
+    }
+}
+
+self.addEventListener('push', (event) => {
+    let data = {};
+    try {
+        data = event.data ? event.data.json() : {};
+    } catch {
+        data = { body: event.data ? event.data.text() : '' };
+    }
+    const url = sitePath(data.url);
+    event.waitUntil(
+        self.registration.showNotification(data.title || 'Campus Connect', {
+            body: data.body || '',
+            icon: '/icon/192',
+            badge: '/icon/192',
+            // One notification per link: three messages in the same chat
+            // replace each other instead of stacking, and still alert.
+            tag: url,
+            renotify: true,
+            data: { url },
+        })
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const target = new URL(sitePath(event.notification.data && event.notification.data.url), self.location.origin).href;
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((tabs) => {
+            const open = tabs.find((tab) => tab.url === target);
+            return open ? open.focus() : self.clients.openWindow(target);
+        })
+    );
 });

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { ImageSliderLoginDemo } from "@/components/demos/image-slider-login-demo";
+import { googleConfigured } from "@/lib/google-oauth";
 
 export const metadata = {
   title: "Login",
@@ -11,7 +12,7 @@ export default function LoginPage() {
   // static prerendering unless it sits behind a Suspense boundary.
   return (
     <Suspense fallback={<div className="min-h-screen" />}>
-      <ImageSliderLoginDemo />
+      <ImageSliderLoginDemo googleEnabled={googleConfigured()} />
     </Suspense>
   );
 }

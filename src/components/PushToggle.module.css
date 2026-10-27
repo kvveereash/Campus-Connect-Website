@@ -1,0 +1,91 @@
+/* Push notifications on/off. The settings section supplies its own heading
+   and rule; the dropdown supplies its footer. This file styles only the
+   control itself, in both sizes. */
+
+.note {
+    margin: 0 0 16px;
+    max-width: 58ch;
+    font-size: 14px;
+    line-height: 1.62;
+    color: var(--color-felt);
+}
+
+/* Holds the height of a button while the browser is checked, so the
+   section below does not move when the control appears. */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    min-height: 44px;
+}
+
+.row .note {
+    margin: 0;
+}
+
+.compactRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 20px;
+}
+
+.compactRow .note {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--color-obsidian);
+}
+
+.compactRow .status {
+    font-size: 13px;
+    color: var(--color-inkstone);
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+}
+
+/* The same quiet text action as "Mark all read" in the dropdown. */
+.link {
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-accent);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--duration-base) var(--ease-glide);
+}
+
+.link:hover:not(:disabled),
+.link:focus-visible {
+    text-decoration-color: currentColor;
+}
+
+.link:disabled {
+    color: var(--color-ash);
+    cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .link {
+        transition: none;
+    }
+}

@@ -25,6 +25,8 @@ export default function robots(): MetadataRoute.Robots {
                 '/reset-password/',
                 '/verify-email',
                 '/forbidden',
+                // Each one names a person and an event they attended.
+                '/certificates/',
             ],
         },
         sitemap: `${SITE_URL}/sitemap.xml`,

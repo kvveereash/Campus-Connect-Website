@@ -9,12 +9,14 @@ import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import RegisterButton from '@/components/RegisterButton';
+import CancelPlace from '@/components/CancelPlace';
 import TeamFinder from '@/components/TeamFinder';
 import { TeamProvider } from '@/context/TeamContext';
 import EventReviews from '@/components/EventReviews';
 import PaymentReturn from '@/components/PaymentReturn';
 import EventTicket from '@/components/EventTicket';
 import ShareButton from '@/components/ShareButton';
+import ReportButton from '@/components/ReportButton';
 import InterestButton from '@/components/InterestButton';
 import WhenTag from '@/components/WhenTag';
 import GoingNearYou from '@/components/GoingNearYou';
@@ -43,6 +45,12 @@ export default function EventDetails({ event }: { event: EventDetail }) {
     const host = event.club ?? event.hostCollege;
     const hostHref = event.club ? `/clubs/${event.club.id}` : `/colleges/${event.hostCollege.id}`;
     const priceText = event.price === 0 ? 'Free' : `₹${event.price.toLocaleString('en-IN')}`;
+    // Seats left, when the organiser set a limit. registrationCount is the
+    // seats in use (free sign-ups and paid places), kept in step by the server.
+    const seatsLeft = event.capacity === null ? null : Math.max(0, event.capacity - event.registrationCount);
+    const full = seatsLeft === 0;
+    const cancellable =
+        !isPast && (myRegistration?.status === 'COMPLETED' || myRegistration?.status === 'PENDING_PAYMENT' || myRegistration?.status === 'WAITLISTED');
 
     /* On a phone the register button sits under the description, a screen
        or more below the photo. While it is still below the fold, a bar at
@@ -135,7 +143,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                         onClick={goToRegister}
                         tabIndex={actionsBelow ? 0 : -1}
                     >
-                        Register
+                        {full ? 'Join waitlist' : 'Register'}
                     </button>
                 </div>,
                 barRoot,
@@ -233,6 +241,11 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                             <dt className={styles.factKey}>Entry</dt>
                             <dd className={styles.factValue}>
                                 {event.price === 0 ? 'Free to attend' : `₹${event.price.toLocaleString('en-IN')}`}
+                                {seatsLeft !== null && !isPast && (
+                                    <small data-full={full || undefined} className={styles.seats}>
+                                        {full ? 'Full · waitlist open' : `${seatsLeft} of ${event.capacity} places left`}
+                                    </small>
+                                )}
                             </dd>
                         </div>
 
@@ -246,8 +259,9 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                             ) : !event.verified ? (
                                 <button className="btn btn-outline" disabled>Awaiting approval</button>
                             ) : (
-                                <RegisterButton eventId={event.id} price={event.price || 0} />
+                                <RegisterButton eventId={event.id} price={event.price || 0} full={full} />
                             )}
+                            {cancellable && <CancelPlace eventId={event.id} waitlisted={myRegistration?.status === 'WAITLISTED'} />}
                             {event.verified && (
                                 <div className={styles.secondaryActions}>
                                     {!isPast && !myRegistration && <InterestButton eventId={event.id} />}
@@ -304,6 +318,13 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                                         Delete
                                     </button>
                                 )}
+                            </div>
+                        )}
+
+                        {/* Last in the column and quiet: nobody reports their own event. */}
+                        {!isOwner && event.verified && (
+                            <div className={styles.report}>
+                                <ReportButton targetType="EVENT" targetId={event.id} label="Report this event" />
                             </div>
                         )}
                     </dl>

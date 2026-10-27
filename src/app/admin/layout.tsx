@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, CheckSquare, Shield, ScrollText } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Shield, ScrollText, Flag } from 'lucide-react';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
     const session = await getSession();
@@ -27,6 +27,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                     <Link href="/admin/verification" style={navLinkStyle}>
                         <CheckSquare size={18} />
                         Verification
+                    </Link>
+                    <Link href="/admin/reports" style={navLinkStyle}>
+                        <Flag size={18} />
+                        Reports
                     </Link>
                     <Link href="/admin/logs" style={navLinkStyle}>
                         <ScrollText size={18} />

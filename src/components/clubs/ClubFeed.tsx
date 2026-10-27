@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import styles from './ClubFeed.module.css';
 import { formatIST } from '@/lib/format';
+import ReportButton from '@/components/ReportButton';
 
 interface Post {
     id: string;
@@ -359,6 +360,12 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                             >
                                                 <MessageCircle size={14} aria-hidden="true" /> {post.comments || 0}
                                             </button>
+                                            {/* Not on your own post, nor on one still saving (it has no real id yet). */}
+                                            {!isAuthor && !post.id.startsWith('temp-') && (
+                                                <div className={styles.reportSlot}>
+                                                    <ReportButton targetType="POST" targetId={post.id} />
+                                                </div>
+                                            )}
                                         </div>
 
                                         {expandedPostId === post.id && (
@@ -384,6 +391,11 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                                                                 month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                                                                             })}
                                                                         </span>
+                                                                        {currentUserId !== comment.authorId && !comment.id.startsWith('temp-') && (
+                                                                            <div className={styles.reportSlot}>
+                                                                                <ReportButton targetType="COMMENT" targetId={comment.id} />
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                     <div className={styles.commentText}>{comment.content}</div>
                                                                 </div>

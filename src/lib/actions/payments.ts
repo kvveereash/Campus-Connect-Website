@@ -62,6 +62,23 @@ export const createEventPaymentSessionAction = createProtectedAction(createPayme
     if (registration.status === 'PAID' || registration.status === 'COMPLETED') {
         throw new Error('Already paid');
     }
+    if (registration.status === 'WAITLISTED') {
+        throw new Error('You are on the waitlist. You can pay once a place opens up for you.');
+    }
+
+    // An unpaid place holds no seat, so the event may have filled up since
+    // they signed up. Then they go to the back of the line instead of paying
+    // for a seat that isn't there.
+    const { capacity } = registration.event;
+    if (capacity !== null) {
+        const taken = await prisma.eventRegistration.count({
+            where: { eventId: registration.eventId, status: { in: ['PAID', 'COMPLETED'] } },
+        });
+        if (taken >= capacity) {
+            await prisma.eventRegistration.update({ where: { id: registration.id }, data: { status: 'WAITLISTED', createdAt: new Date() } });
+            throw new Error('The last place went while you were deciding. You are on the waitlist and will hear if one opens up.');
+        }
+    }
 
     // Use idempotency to prevent creating multiple sessions for the same click
     return withIdempotency(

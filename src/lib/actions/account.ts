@@ -127,12 +127,17 @@ export async function deleteAccount(password: string): Promise<ActionState> {
             where: { userId: user.id, used: false },
             data: { used: true },
         }),
+        // No more notifications on the phones this account turned them on for.
+        prisma.pushSubscription.deleteMany({ where: { userId: user.id } }),
         prisma.user.update({
             where: { id: user.id },
             data: {
                 deletedAt: new Date(),
                 name: 'Deleted account',
                 email: `deleted+${user.id}@campus-connect.invalid`,
+                // Freed, so the same Google account can sign up again later
+                // instead of meeting "this account was deleted" forever.
+                googleId: null,
                 password: await bcrypt.hash(crypto.randomUUID(), 12),
                 avatar: null,
                 bio: null,

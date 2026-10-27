@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import styles from './Notifications.module.css';
 import { formatIST } from '@/lib/format';
+import PushToggle from '@/components/PushToggle';
 
 type Notification = {
     id: string;
@@ -199,6 +200,8 @@ export function NotificationBell() {
                             ))
                         )}
                     </div>
+
+                    <PushToggle compact className={styles.pushFooter} />
                 </div>
             )}
         </div>

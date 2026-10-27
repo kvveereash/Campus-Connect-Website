@@ -43,6 +43,13 @@ export default function EventTicket({ eventId, registered }: { eventId: string; 
                     ? `Checked in at ${formatIST(ticket.checkedInAt, { hour: 'numeric', minute: '2-digit' })}.`
                     : 'Show this at the entrance. A screenshot works too.'}
             </p>
+            {/* Attending, not registering, earns the certificate. A plain
+                link: the route answers with the PDF as a download. */}
+            {ticket.checkedInAt && (
+                <a href={`/events/${eventId}/certificate`} className={`btn btn-outline ${styles.ticketAction}`}>
+                    Download certificate
+                </a>
+            )}
         </div>
     );
 }

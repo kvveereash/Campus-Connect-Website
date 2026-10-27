@@ -50,6 +50,8 @@ export default function CreateEventPage() {
         thumbnail: '/event-placeholder.png',
         clubId: adminClubs.length > 0 ? adminClubs[0]?.id || '' : '',
         price: 0,
+        // Seats, as typed; empty means no limit.
+        capacity: '',
     });
 
     // The club picker defaults to your first club. Derived on each render, so
@@ -100,6 +102,7 @@ export default function CreateEventPage() {
                 date: new Date(formData.date).toISOString(),
                 clubId,
                 price: Number(formData.price) || 0,
+                capacity: formData.capacity.trim() ? Number(formData.capacity) : null,
             };
 
             const result = await createEvent(submissionData);
@@ -310,6 +313,28 @@ export default function CreateEventPage() {
                                 placeholder="0 for free events"
                             />
                             <span className={styles.hint}>Leave as 0 for free events</span>
+                        </div>
+
+                        {/* Seats */}
+                        <div className={styles.formGroup}>
+                            <label className={styles.label} htmlFor="capacity">
+                                Seats
+                            </label>
+                            <input
+                                type="number"
+                                id="capacity"
+                                name="capacity"
+                                min="1"
+                                step="1"
+                                inputMode="numeric"
+                                className={styles.input}
+                                value={formData.capacity}
+                                onChange={handleChange}
+                                placeholder="No limit"
+                            />
+                            <span className={styles.hint}>
+                                Leave empty for no limit. Once it fills up, new sign-ups join a waitlist and move up when someone cancels.
+                            </span>
                         </div>
 
                         <div className={styles.divider} />
