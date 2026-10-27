@@ -44,7 +44,7 @@ export function ImageSliderSignupDemo() {
       // used to strand a newly signed-up user on this page. The full load
       // re-creates AuthProvider, so refreshing here first buys nothing.
       // See the login form for why this is not router.replace().
-      const next = safeRedirectPath(returnTo, window.location.origin, "/home");
+      const next = safeRedirectPath(returnTo, window.location.origin, "/");
       const welcome = new URL("/welcome", window.location.origin);
       welcome.searchParams.set("redirect", next);
       window.location.assign(welcome);

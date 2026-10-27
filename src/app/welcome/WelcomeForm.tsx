@@ -33,7 +33,7 @@ export default function WelcomeForm({
     const [saving, setSaving] = useState(false);
 
     // Where they were going before sign-up (an event, usually), else home.
-    const go = () => window.location.assign(safeRedirectPath(next, window.location.origin, '/home'));
+    const go = () => window.location.assign(safeRedirectPath(next, window.location.origin, '/'));
 
     const toggle = (name: string) =>
         setPicked((p) =>
