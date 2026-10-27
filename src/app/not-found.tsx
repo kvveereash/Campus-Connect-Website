@@ -3,6 +3,9 @@ import ProblemPage from '@/components/ProblemPage';
 
 export default function NotFound() {
     return (
+        <>
+        {/* not-found cannot export metadata; React puts this in <head>. */}
+        <title>Page not found | Campus Connect</title>
         <ProblemPage
             kicker="404 · Not on the board"
             title={
@@ -22,5 +25,6 @@ export default function NotFound() {
                 </>
             }
         />
+        </>
     );
 }

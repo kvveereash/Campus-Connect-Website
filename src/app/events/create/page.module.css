@@ -35,10 +35,11 @@
 }
 
 /* Page Layout */
+/* No side padding: the page sits in the site's .container, which already
+   has it. Padding here too made phones inset twice. */
 .pageWrapper {
     max-width: 1100px;
     margin: 2rem auto 4rem;
-    padding: 0 1.5rem;
 }
 
 /* Split Layout */
@@ -54,7 +55,7 @@
     position: sticky;
     top: 2rem;
     background: var(--color-forest);
-    border-radius: 0px;
+    border-radius: 24px;
     padding: 3rem 2.5rem;
     color: var(--color-cream);
     overflow: hidden;
@@ -99,9 +100,6 @@
     color: var(--color-cream);
 }
 
-.sideHighlight {
-    color: var(--color-orange);
-}
 
 .sideDesc {
     font-size: 0.95rem;
@@ -139,22 +137,6 @@
     font-size: 1rem;
 }
 
-.dotsGrid {
-    position: absolute;
-    bottom: 2rem;
-    right: 2rem;
-    display: grid;
-    grid-template-columns: repeat(5, 8px);
-    gap: 8px;
-    opacity: 0.15;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-cream);
-}
 
 /* ═══ Right Panel ═══ */
 .formPanel {
@@ -458,10 +440,6 @@
         padding: 2rem;
     }
 
-    .dotsGrid {
-        display: none;
-    }
-
     .formRow {
         grid-template-columns: 1fr;
     }
@@ -469,4 +447,9 @@
     .pageWrapper {
         margin: 1rem auto 3rem;
     }
+}
+/* The accent phrase on the dark panel: campus blue is too dark on black, so
+   it takes the light tint of the same blue. */
+.sideTitle :global(.accent) {
+    color: var(--color-accent-soft);
 }

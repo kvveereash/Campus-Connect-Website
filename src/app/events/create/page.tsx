@@ -73,16 +73,16 @@ export default function CreateEventPage() {
             <div className={styles.pageWrapper}>
                 <Link href="/events" className={styles.backBtn}>
                     <ArrowLeft size={16} className={styles.backArrow} />
-                    Back to Events
+                    Back to events
                 </Link>
                 <div className={styles.accessDenied}>
                     <LockIcon size={40} strokeWidth={1.5} className={styles.accessDeniedIcon} aria-hidden="true" />
-                    <h2 className={styles.accessDeniedTitle}>Club Admin Required</h2>
+                    <h2 className={styles.accessDeniedTitle}>Only club admins can host events</h2>
                     <p className={styles.accessDeniedText}>
                         Events must be hosted by an official club. Create or join a club first to start hosting events.
                     </p>
                     <Link href="/clubs" className={styles.accessDeniedBtn}>
-                        Browse Clubs
+                        Browse clubs
                         <ArrowRight size={16} />
                     </Link>
                 </div>
@@ -104,14 +104,14 @@ export default function CreateEventPage() {
 
             const result = await createEvent(submissionData);
             if (result.success) {
-                toast.success('Event created successfully!');
+                toast.success('Submitted. It goes live once an admin approves it.');
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 router.push('/events');
             } else {
-                toast.error(result.error || 'Failed to create event');
+                toast.error(result.error || 'Could not create the event. Check the form and try again.');
             }
         } catch {
-            toast.error('An unexpected error occurred');
+            toast.error('Could not reach the server. Try again in a moment.');
         } finally {
             setIsLoading(false);
         }
@@ -126,7 +126,7 @@ export default function CreateEventPage() {
             <div className={entrance.slideIn}>
                 <Link href="/events" className={styles.backBtn}>
                     <ArrowLeft size={16} className={styles.backArrow} />
-                    Back to Events
+                    Back to events
                 </Link>
             </div>
 
@@ -139,11 +139,11 @@ export default function CreateEventPage() {
                     <div className={styles.sideContent}>
                         
                         <h2 className={styles.sideTitle}>
-                            Create an <span className={styles.sideHighlight}>Unforgettable</span> Event
+                            Put it <em className="accent">on the board.</em>
                         </h2>
                         <p className={styles.sideDesc}>
-                            From hackathons to cultural fests — bring your vision to life
-                            and reach students across campuses.
+                            Hackathons, workshops, fests: once an admin approves it, students
+                            across every college can find it and register.
                         </p>
                     </div>
 
@@ -152,34 +152,29 @@ export default function CreateEventPage() {
                             <span className={styles.featureIcon}>
                                 <Megaphone size={16} />
                             </span>
-                            Reach thousands of students
+                            Seen by students across colleges
                         </li>
                         <li className={`${styles.featureItem} ${entrance.slideIn}`} style={after(0.4)}>
                             <span className={styles.featureIcon}>
                                 <Users size={16} />
                             </span>
-                            Manage registrations easily
+                            Registrations and payments handled
                         </li>
                         <li className={`${styles.featureItem} ${entrance.slideIn}`} style={after(0.5)}>
                             <span className={styles.featureIcon}>
                                 <Calendar size={16} />
                             </span>
-                            Auto-sync with campus calendar
+                            QR tickets and check-in at the door
                         </li>
                     </ul>
 
-                    <div className={styles.dotsGrid}>
-                        {Array.from({ length: 15 }).map((_, i) => (
-                            <div key={i} className={styles.dot} />
-                        ))}
-                    </div>
                 </div>
 
                 {/* Right: Form */}
                 <div className={`${styles.formPanel} ${entrance.rise}`} style={after(0.2)}>
                     <div className={styles.formHeader}>
-                        <h1 className={styles.formTitle}>Host an Event</h1>
-                        <p className={styles.formSubtitle}>Fill in the details to publish your event</p>
+                        <h1 className={styles.formTitle}>Host an event</h1>
+                        <p className={styles.formSubtitle}>Fill in the details. An admin checks it before it goes live.</p>
 
                         {/* Hosting Club Badge */}
                         {adminClubs.length > 0 && (
@@ -193,11 +188,11 @@ export default function CreateEventPage() {
                     <form onSubmit={handleSubmit} className={styles.form}>
                         {/* Event Banner */}
                         <div className={styles.formGroup}>
-                            <label className={styles.label}>Event Banner</label>
+                            <label className={styles.label}>Event banner</label>
                             <ImageUpload
                                 value={isDefaultImage ? '' : formData.thumbnail}
                                 onChange={handleImageChange}
-                                label="Upload Event Banner"
+                                label=""
                             />
                         </div>
 
@@ -205,7 +200,7 @@ export default function CreateEventPage() {
                         {adminClubs.length > 1 && (
                             <div className={styles.formGroup}>
                                 <label className={styles.label} htmlFor="clubId">
-                                    Hosting Club <span className={styles.required}>*</span>
+                                    Hosting club <span className={styles.required}>*</span>
                                 </label>
                                 <select
                                     id="clubId"
@@ -227,7 +222,7 @@ export default function CreateEventPage() {
                         {/* Event Title */}
                         <div className={styles.formGroup}>
                             <label className={styles.label} htmlFor="title">
-                                Event Title <span className={styles.required}>*</span>
+                                Event title <span className={styles.required}>*</span>
                             </label>
                             <input
                                 type="text"
@@ -267,7 +262,7 @@ export default function CreateEventPage() {
                         <div className={styles.formRow}>
                             <div className={styles.formGroup}>
                                 <label className={styles.label} htmlFor="date">
-                                    Date & Time <span className={styles.required}>*</span>
+                                    Date and time <span className={styles.required}>*</span>
                                 </label>
                                 <input
                                     type="datetime-local"
@@ -300,7 +295,7 @@ export default function CreateEventPage() {
                         {/* Fee */}
                         <div className={styles.formGroup}>
                             <label className={styles.label} htmlFor="price">
-                                Registration Fee (₹)
+                                Registration fee (₹)
                             </label>
                             <input
                                 type="number"
@@ -345,11 +340,11 @@ export default function CreateEventPage() {
                             disabled={isLoading}
                         >
                             {isLoading ? (
-                                'Creating Event...'
+                                'Submitting'
                             ) : (
                                 <>
                                     <Sparkles size={18} />
-                                    Publish Event
+                                    Submit for approval
                                     <ArrowRight size={18} className={styles.submitIcon} />
                                 </>
                             )}
