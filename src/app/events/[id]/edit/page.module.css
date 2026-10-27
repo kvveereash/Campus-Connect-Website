@@ -22,7 +22,6 @@
     padding: 2.5rem;
     border-radius: 0px;
     border: 1px solid var(--border-color);
-    backdrop-filter: var(--glass-blur);
     box-shadow: none;
 }
 
