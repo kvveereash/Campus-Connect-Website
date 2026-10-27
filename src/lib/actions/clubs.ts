@@ -92,8 +92,11 @@ export const createClubAction = createProtectedAction(clubSchema, async (data, s
 
 export const joinClubAction = createProtectedAction(joinClubSchema, async ({ clubId }, session) => {
     // Pending, rejected and deleted clubs could be joined by id.
-    const club = await prisma.club.findFirst({ where: { id: clubId, verified: true, deletedAt: null }, select: { id: true } });
+    const club = await prisma.club.findFirst({ where: { id: clubId, verified: true, deletedAt: null }, select: { id: true, recruiting: true } });
     if (!club) throw new NotFoundError('Club not found');
+    // While a club is recruiting, the way in is its application: joining
+    // directly would skip the questions, and let a declined applicant in.
+    if (club.recruiting) throw new ConflictError('This club is taking applications right now. Apply from the club page.');
 
     const existingMember = await prisma.clubMember.findUnique({
         where: {
@@ -315,6 +318,7 @@ async function _getClubsUncached(filters?: { search?: string; category?: string 
             category: true,
             logo: true,
             collegeId: true,
+            recruiting: true,
             createdAt: true,
             updatedAt: true,
             college: {

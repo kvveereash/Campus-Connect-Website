@@ -1,0 +1,441 @@
+/* ============================================================
+   CLUB RECRUITMENT
+   The apply form inside the club page's Recruiting band, and the
+   admins' panel: questions, open / close, and the applications.
+   Ruled lists and pill buttons, as on the rest of the club page.
+   ============================================================ */
+
+/* ---------- shared controls ---------- */
+.primary,
+.secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--duration-micro) var(--ease-glide),
+                border-color var(--duration-micro) var(--ease-glide),
+                color var(--duration-micro) var(--ease-glide);
+}
+
+.primary {
+    border: 1px solid var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-paper);
+}
+
+.primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+.secondary {
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--color-obsidian);
+}
+
+.secondary:hover:not(:disabled) {
+    border-color: var(--color-obsidian);
+}
+
+.primary:focus-visible,
+.secondary:focus-visible,
+.textButton:focus-visible,
+.remove:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.primary:disabled,
+.secondary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.textButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 0;
+    border: 0;
+    background: none;
+    font-size: 14px;
+    color: var(--color-accent);
+    cursor: pointer;
+}
+
+.textButton:hover {
+    color: var(--color-accent-hover);
+}
+
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.label {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+.counter {
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+.input,
+.textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-input);
+    background: var(--color-paper);
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-obsidian);
+    transition: border-color var(--duration-micro) var(--ease-glide);
+}
+
+.textarea {
+    min-height: 112px;
+    resize: vertical;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+    color: var(--color-pewter);
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+    border-color: var(--color-accent);
+    outline: 2px solid var(--color-accent-soft);
+    outline-offset: 0;
+}
+
+/* ---------- apply (inside the band) ---------- */
+.questions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.question {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-inkstone);
+}
+
+.number {
+    padding-top: 3px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+.applyRow {
+    margin-top: 22px;
+}
+
+.form {
+    display: grid;
+    gap: 20px;
+}
+
+.formField {
+    display: grid;
+    gap: 8px;
+}
+
+.formQuestion {
+    font-size: 16px;
+    line-height: 1.45;
+    color: var(--color-obsidian);
+}
+
+.hint {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-felt);
+}
+
+/* ---------- admin: settings ---------- */
+.panel {
+    display: grid;
+    gap: 22px;
+}
+
+.state {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: var(--color-inkstone);
+}
+
+.stateDot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    /* A small square, the shape category marks use; no token is this small. */
+    border-radius: 2px;
+    background: var(--color-ash);
+}
+
+.stateOpen .stateDot {
+    background: var(--color-success);
+}
+
+.settingsList {
+    display: grid;
+    gap: 16px;
+}
+
+.settingRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 8px;
+}
+
+.settingField {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-felt);
+    cursor: pointer;
+}
+
+.remove:hover {
+    border-color: var(--color-obsidian);
+    color: var(--color-obsidian);
+}
+
+/* ---------- admin: applications ---------- */
+.listHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 40px 0 16px;
+    scroll-margin-top: 96px;
+}
+
+.listTitle {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--color-obsidian);
+}
+
+.listCount {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+.applications {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.application {
+    display: grid;
+    gap: 16px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.applicant {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: var(--radius-pill);
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-size: 13px;
+}
+
+.who {
+    min-width: 0;
+    flex: 1;
+}
+
+.name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-obsidian);
+    overflow-wrap: anywhere;
+}
+
+.name:hover {
+    color: var(--color-accent);
+}
+
+.sub {
+    margin-top: 2px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+.status {
+    flex: none;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-strong);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+.statusAccepted {
+    border-color: var(--color-success);
+    color: var(--color-success);
+}
+
+.answers {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding-left: 46px;
+}
+
+.answerQuestion {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-felt);
+}
+
+.answerText {
+    margin: 4px 0 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-inkstone);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.decide {
+    padding-left: 46px;
+}
+
+/* Empty state: the dashed box on the dot grid. */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 48px 24px;
+    border-radius: 20px;
+    border: 1px dashed var(--border-strong);
+    background-color: var(--color-paper);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.emptyTitle {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.25rem, 2.6vw, 1.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--color-obsidian);
+}
+
+.emptyText {
+    max-width: 42ch;
+    margin: 0 0 6px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-felt);
+}
+
+@media (max-width: 620px) {
+    .answers,
+    .decide {
+        padding-left: 0;
+    }
+
+    .buttons > .primary,
+    .buttons > .secondary {
+        flex: 1 1 auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .primary,
+    .secondary,
+    .input,
+    .textarea {
+        transition: none;
+    }
+}
+
+/* Touch: the small text buttons get a 44px target without growing. */
+@media (pointer: coarse) {
+    .textButton {
+        min-height: 44px;
+    }
+}

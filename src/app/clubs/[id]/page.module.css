@@ -128,6 +128,191 @@
     border-bottom: 1px solid var(--border-hairline);
 }
 
+/* Pushed to the far end of the row, away from Join. */
+.report {
+    display: inline-flex;
+    align-self: center;
+    margin-left: auto;
+}
+
+/* ---------- recruiting band ----------
+   A sheet on the board, split like the masthead: what is happening
+   on the left, the questions and what you can do on the right. The
+   highlighter goes on "Recruiting", the one thing to notice here. */
+.recruit {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: clamp(24px, 4vw, 56px);
+    margin-top: clamp(28px, 4vw, 40px);
+    padding: clamp(24px, 4vw, 40px);
+    border-radius: 24px;
+    border: 1px solid var(--border-hairline);
+    background: var(--color-paper);
+}
+
+.recruitTag {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 12px;
+    border-radius: var(--radius-pill);
+    background: var(--color-marker);
+    color: var(--color-obsidian);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+}
+
+.recruitTagClosed {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--color-felt);
+}
+
+.recruitTitle {
+    margin: 18px 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    color: var(--color-obsidian);
+    text-wrap: balance;
+}
+
+.recruitText {
+    margin-top: 14px;
+    max-width: 40ch;
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-felt);
+}
+
+.recruitBody {
+    min-width: 0;
+}
+
+.recruitAction {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    margin-top: 22px;
+}
+
+.recruitButton {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+    color: var(--color-paper);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color var(--duration-micro) var(--ease-glide);
+}
+
+.recruitButton:hover {
+    background: var(--color-accent-hover);
+}
+
+.recruitButton:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.recruitMeta {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+.recruitNote {
+    margin-top: 16px;
+    font-size: 15px;
+    line-height: 1.58;
+    color: var(--color-inkstone);
+}
+
+.recruitStatus .recruitNote {
+    margin-top: 14px;
+}
+
+.recruitChip {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-obsidian);
+    color: var(--color-obsidian);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+}
+
+.recruitChipAccepted {
+    border-color: var(--color-success);
+    color: var(--color-success);
+}
+
+.recruitChipDeclined {
+    border-color: var(--border-strong);
+    color: var(--color-felt);
+}
+
+.recruitSent {
+    margin-top: 18px;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.recruitSent summary {
+    padding: 14px 0 4px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    color: var(--color-felt);
+    cursor: pointer;
+}
+
+.recruitSent summary:hover {
+    color: var(--color-obsidian);
+}
+
+.recruitSent dl {
+    display: grid;
+    gap: 14px;
+    margin: 12px 0 0;
+}
+
+.recruitSent dt {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-felt);
+}
+
+.recruitSent dd {
+    margin: 4px 0 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-inkstone);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* The admins' Recruitment section is linked to from the band and from
+   notifications; clear the fixed header when it is jumped to. */
+.anchor {
+    scroll-margin-top: 96px;
+}
+
 /* ---------- body ---------- */
 .body {
     display: grid;
@@ -334,7 +519,8 @@
 
 @media (max-width: 900px) {
     .masthead,
-    .body {
+    .body,
+    .recruit {
         grid-template-columns: minmax(0, 1fr);
     }
 
@@ -365,7 +551,8 @@
 @media (prefers-reduced-motion: reduce) {
     .back,
     .event,
-    .mark img {
+    .mark img,
+    .recruitButton {
         transition: none;
     }
 

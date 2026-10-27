@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -9,8 +10,16 @@ import { getClubDetails, getClubPosts } from '@/lib/actions';
 import ClubAdminControls from '@/components/clubs/ClubAdminControls';
 import JoinClubButton from '@/components/JoinClubButton';
 import ClubFeed from '@/components/clubs/ClubFeed';
+import RecruitmentApply from '@/components/clubs/RecruitmentApply';
+import RecruitmentQuestions from '@/components/clubs/RecruitmentQuestions';
+import RecruitmentSettings from '@/components/clubs/RecruitmentSettings';
+import ApplicationList from '@/components/clubs/ApplicationList';
+import ReportButton from '@/components/ReportButton';
 import { formatIST } from '@/lib/format';
 import { shareMetadata } from '@/lib/site';
+import { authHref } from '@/lib/utils';
+import { getClubRecruitment } from '@/lib/recruitment';
+import { getApplications, getMyApplication } from '@/lib/actions/recruitment';
 
 const MEMBERS_SHOWN = 12;
 
@@ -30,12 +39,18 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 
 export default async function ClubDetailsPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
-    // Three independent reads, made together: one after another they were
-    // three round trips to a database on another continent.
-    const [club, session, posts] = await Promise.all([
+    // Independent reads, made together: one after another they were a round
+    // trip each to a database on another continent. The two recruitment
+    // actions check the viewer themselves (a signed-out visitor costs no
+    // query, a non-admin gets no applications), which is cheaper than a
+    // second round trip once isAdmin is known.
+    const [club, session, posts, recruitment, mine, submitted] = await Promise.all([
         getClubDetails(params.id),
         getSession(),
         getClubPosts(params.id),
+        getClubRecruitment(params.id),
+        getMyApplication(params.id),
+        getApplications(params.id),
     ]);
 
     if (!club) {
@@ -56,6 +71,102 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
         session?.userId && club.members.some((m) => m.user.id === session.userId)
     );
 
+    const myApplication = !isAdmin && mine.success ? mine.data : null;
+    const applications = isAdmin && submitted.success ? submitted.data : [];
+    const waiting = applications.filter((a) => a.status === 'PENDING').length;
+    // After applications close, a student still waiting on an answer keeps
+    // seeing where they stand; a decided one no longer needs the band.
+    const showRecruiting = recruitment.recruiting || myApplication?.status === 'PENDING';
+    const dayMonth = (iso: string) => formatIST(iso, { day: 'numeric', month: 'long' });
+
+    // What the Recruiting band offers depends on who is looking.
+    let recruitAction: ReactNode = null;
+    if (myApplication) {
+        const decidedOn = dayMonth(myApplication.decidedAt ?? myApplication.createdAt);
+        recruitAction = (
+            <div className={styles.recruitStatus}>
+                <span
+                    className={`${styles.recruitChip} ${
+                        myApplication.status === 'ACCEPTED'
+                            ? styles.recruitChipAccepted
+                            : myApplication.status === 'DECLINED'
+                              ? styles.recruitChipDeclined
+                              : ''
+                    }`}
+                >
+                    {myApplication.status === 'PENDING'
+                        ? 'Application sent'
+                        : myApplication.status === 'ACCEPTED'
+                          ? 'Accepted'
+                          : 'Declined'}
+                </span>
+                <p className={styles.recruitNote}>
+                    {myApplication.status === 'PENDING'
+                        ? `Sent ${dayMonth(myApplication.createdAt)}. The club’s admins will reply in your notifications.`
+                        : myApplication.status === 'ACCEPTED'
+                          ? `Accepted ${decidedOn}. You are a member of ${club.name}.`
+                          : `The club’s admins declined this application on ${decidedOn}. You can still follow its events and posts here.`}
+                </p>
+                {myApplication.answers.length > 0 && (
+                    <details className={styles.recruitSent}>
+                        <summary>What you sent</summary>
+                        <dl>
+                            {myApplication.answers.map((item, i) => (
+                                <div key={i}>
+                                    <dt>{item.question}</dt>
+                                    <dd>{item.answer}</dd>
+                                </div>
+                            ))}
+                        </dl>
+                    </details>
+                )}
+            </div>
+        );
+    } else if (isAdmin) {
+        recruitAction = (
+            <>
+                <RecruitmentQuestions questions={recruitment.questions} />
+                <div className={styles.recruitAction}>
+                    <a href="#applications" className={styles.recruitButton}>
+                        Review applications
+                    </a>
+                    <span className={styles.recruitMeta}>{waiting} waiting</span>
+                </div>
+            </>
+        );
+    } else if (isMember) {
+        recruitAction = (
+            <>
+                <RecruitmentQuestions questions={recruitment.questions} />
+                <p className={styles.recruitNote}>
+                    You are already a member. Send this page to someone who should apply.
+                </p>
+            </>
+        );
+    } else if (!session?.userId) {
+        recruitAction = (
+            <>
+                <RecruitmentQuestions questions={recruitment.questions} />
+                <div className={styles.recruitAction}>
+                    <Link href={authHref(`/clubs/${club.id}`)} className={styles.recruitButton}>
+                        Sign in to apply
+                    </Link>
+                    <span className={styles.recruitMeta}>You come straight back here</span>
+                </div>
+            </>
+        );
+    } else if (!club.verified) {
+        recruitAction = (
+            <>
+                <RecruitmentQuestions questions={recruitment.questions} />
+                <p className={styles.recruitNote}>Students can apply once the club is approved.</p>
+            </>
+        );
+    } else {
+        recruitAction = (
+            <RecruitmentApply clubId={club.id} clubName={club.name} questions={recruitment.questions} />
+        );
+    }
 
     /* Every club used to render the same stock banner photograph and, when it
        had no logo, one of six stock images picked by character code — so two
@@ -118,8 +229,11 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                 </div>
             </header>
 
+            {/* Per-viewer actions on the club as a whole sit in this row. */}
             <div className={styles.controls}>
-                {session?.userId && (
+                {/* While a club is recruiting the way in is the application:
+                    a Join button beside it would skip the club's questions. */}
+                {session?.userId && (isMember || !recruitment.recruiting) && (
                     <JoinClubButton
                         clubId={club.id}
                         clubName={club.name}
@@ -128,7 +242,47 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                     />
                 )}
                 {isAdmin && <ClubAdminControls clubId={club.id} />}
+                {!isAdmin && club.verified && (
+                    <span className={styles.report}>
+                        <ReportButton targetType="CLUB" targetId={club.id} label="Report this club" />
+                    </span>
+                )}
             </div>
+
+            {showRecruiting && (
+                <section className={styles.recruit} aria-labelledby="recruit-title">
+                    <div>
+                        <span
+                            className={`${styles.recruitTag} ${
+                                recruitment.recruiting ? '' : styles.recruitTagClosed
+                            }`}
+                        >
+                            {recruitment.recruiting ? 'Recruiting' : 'Applications closed'}
+                        </span>
+                        <h2 id="recruit-title" className={styles.recruitTitle}>
+                            {myApplication ? (
+                                <>
+                                    Your <em className="accent">application</em>
+                                </>
+                            ) : (
+                                <>
+                                    Applications are <em className="accent">open</em>
+                                </>
+                            )}
+                        </h2>
+                        {!myApplication && (
+                            <p className={styles.recruitText}>
+                                {recruitment.questions.length === 1
+                                    ? 'Answer one question.'
+                                    : `Answer ${recruitment.questions.length} short questions.`}{' '}
+                                The club’s admins read each application and reply in your
+                                notifications.
+                            </p>
+                        )}
+                    </div>
+                    <div className={styles.recruitBody}>{recruitAction}</div>
+                </section>
+            )}
 
             <div className={styles.body}>
                 <div>
@@ -136,6 +290,25 @@ export default async function ClubDetailsPage(props: { params: Promise<{ id: str
                         <p className={styles.sectionLabel}>About</p>
                         <p className={styles.description}>{club.description}</p>
                     </section>
+
+                    {isAdmin && (
+                        <section className={`${styles.section} ${styles.anchor}`} id="recruitment">
+                            <p className={styles.sectionLabel}>Recruitment</p>
+                            {/* Keyed on the saved questions, so after a save the
+                                fields show what was stored, cleaned. */}
+                            <RecruitmentSettings
+                                key={recruitment.questions.join('\n')}
+                                clubId={club.id}
+                                recruiting={recruitment.recruiting}
+                                questions={recruitment.questions}
+                            />
+                            <ApplicationList
+                                clubId={club.id}
+                                recruiting={recruitment.recruiting}
+                                applications={applications}
+                            />
+                        </section>
+                    )}
 
                     <section className={styles.section}>
                         <p className={styles.sectionLabel}>Events</p>

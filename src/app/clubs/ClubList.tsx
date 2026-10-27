@@ -17,6 +17,7 @@ interface Club {
     category: string;
     logo: string | null;
     collegeId: string;
+    recruiting?: boolean;
     createdAt: string;
     updatedAt: string;
     college: { id: string; name: string };
@@ -201,6 +202,12 @@ function ClubItem({ club, joined }: { club: Club; joined: boolean }) {
             </p>
 
             {joined && <span className={styles.joined}>Joined</span>}
+            {club.recruiting && (
+                <span className={styles.recruiting}>
+                    <span className={styles.recruitingMark} aria-hidden="true" />
+                    Recruiting
+                </span>
+            )}
         </Link>
     );
 }
