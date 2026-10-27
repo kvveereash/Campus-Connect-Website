@@ -1,0 +1,332 @@
+/* ============================================================
+   FEST CREATE AND EDIT
+   Split like the club recruiting band: what this is and what
+   happens next on the left, the form on a paper sheet on the
+   right. On a phone they stack, intro first.
+   ============================================================ */
+
+.page {
+    max-width: 1078px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) 0 clamp(72px, 10vw, 152px);
+}
+
+.back {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    transition:
+        color var(--duration-base) var(--ease-glide),
+        gap var(--duration-base) var(--ease-glide);
+}
+
+.back:hover {
+    color: var(--color-obsidian);
+    gap: 14px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: clamp(28px, 5vw, 64px);
+    align-items: start;
+    margin-top: clamp(24px, 4vw, 40px);
+}
+
+/* ---------- intro ---------- */
+.intro {
+    position: sticky;
+    top: 96px;
+}
+
+.title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-obsidian);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+}
+
+.lede {
+    margin: 18px 0 0;
+    max-width: 42ch;
+    font-size: 16px;
+    line-height: 1.58;
+    color: var(--color-felt);
+}
+
+.steps {
+    display: grid;
+    gap: 0;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--border-hairline);
+}
+
+.steps li {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-hairline);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-inkstone);
+}
+
+.stepNum {
+    padding-top: 2px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+.primaryLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 24px;
+    padding: 0 20px;
+    border: 1px solid var(--color-obsidian);
+    border-radius: var(--radius-pill);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-obsidian);
+    transition:
+        background-color var(--duration-micro) var(--ease-glide),
+        color var(--duration-micro) var(--ease-glide);
+}
+
+.primaryLink:hover {
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+}
+
+.primaryLink:focus-visible,
+.back:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+/* ---------- status (edit) ---------- */
+.status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-bottom: 18px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.statusLive,
+.statusPending {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 26px;
+    padding: 0 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-strong);
+    color: var(--color-obsidian);
+}
+
+.statusLive::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-success);
+}
+
+.statusPending {
+    border-style: dashed;
+    color: var(--color-felt);
+}
+
+.statusDates {
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- form sheet ---------- */
+.sheet {
+    min-width: 0;
+    padding: clamp(20px, 4vw, 36px);
+    border: 1px solid var(--border-hairline);
+    border-radius: 24px;
+    background: var(--color-paper);
+}
+
+/* ---------- timetable (edit) ---------- */
+.timetable {
+    margin-top: clamp(48px, 7vw, 80px);
+    padding-top: clamp(32px, 5vw, 48px);
+    border-top: 1px solid var(--border-hairline);
+}
+
+.sectionTitle {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: var(--color-obsidian);
+}
+
+.sectionNote {
+    margin: 12px 0 24px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-felt);
+}
+
+/* ---------- remove (edit) ---------- */
+.remove {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px 24px;
+    margin-top: clamp(40px, 6vw, 64px);
+    padding: 20px 24px;
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-card);
+}
+
+.removeTitle {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-obsidian);
+}
+
+.removeText {
+    grid-column: 1;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-felt);
+}
+
+.removeButton {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    min-height: 40px;
+    padding: 0 18px;
+    border: 1px solid var(--color-danger);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-danger);
+    cursor: pointer;
+    transition:
+        background-color var(--duration-micro) var(--ease-glide),
+        color var(--duration-micro) var(--ease-glide);
+}
+
+.removeButton:hover:not(:disabled) {
+    background: var(--color-danger);
+    color: var(--color-paper);
+}
+
+.removeButton:focus-visible {
+    outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}
+
+.removeButton:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+/* ---------- not allowed (create) ---------- */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: clamp(40px, 7vw, 64px) 24px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 20px;
+    background-color: var(--color-paper);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.emptyTitle {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.375rem;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--color-obsidian);
+}
+
+.emptyText {
+    margin: 0 0 6px;
+    max-width: 40ch;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-felt);
+}
+
+.emptyLink {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .intro {
+        position: static;
+    }
+}
+
+@media (max-width: 560px) {
+    .remove {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .removeButton {
+        grid-column: 1;
+        grid-row: auto;
+        justify-self: start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .back,
+    .primaryLink,
+    .removeButton {
+        transition: none;
+    }
+
+    .back:hover {
+        gap: 9px;
+    }
+}

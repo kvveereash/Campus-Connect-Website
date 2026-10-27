@@ -12,11 +12,17 @@ import { isOk } from '@/lib/api-response';
 import type { z } from 'zod';
 import { createProtectedAction } from '@/lib/protected-action';
 import { eventSchema, updateEventSchema, joinEventSchema } from '@/lib/schemas';
+import { normaliseSource } from '@/lib/analytics';
 import { createNotification } from '@/lib/notification-helper';
 import { audit } from '@/lib/audit';
 import { checkAndAwardBadges } from '@/lib/badges';
 import { eventLimiter } from '@/lib/rate-limit';
 import { fillFromWaitlist, lockEvent, notifyPromoted, seatsTaken, waitlistPosition } from '@/lib/waitlist';
+import { AuthorizationError } from '@/lib/errors';
+import { canAttachEventToFest } from '@/app/fests/access';
+import { FESTS_TAG, festTag } from '@/app/fests/rules';
+
+const FEST_REFUSAL = 'You can only add events to a fest you run, at the same college.';
 
 export type EventWithRelations = PrismaEvent & {
     hostCollege: {
@@ -71,6 +77,10 @@ export const createEventAction = createProtectedAction(eventSchema, async (data,
         throw new Error('Host college could not be determined.');
     }
 
+    if (data.festId && !(await canAttachEventToFest(data.festId, session.userId, session.user.role, collegeId))) {
+        throw new AuthorizationError(FEST_REFUSAL);
+    }
+
     const event = await prisma.event.create({
         data: {
             title: data.title,
@@ -84,7 +94,8 @@ export const createEventAction = createProtectedAction(eventSchema, async (data,
             thumbnail: data.thumbnail || '/event-placeholder.png',
             hostCollege: { connect: { id: collegeId } },
             creator: { connect: { id: session.userId } },
-            club: data.clubId ? { connect: { id: data.clubId } } : undefined
+            club: data.clubId ? { connect: { id: data.clubId } } : undefined,
+            fest: data.festId ? { connect: { id: data.festId } } : undefined,
         }
     });
 
@@ -95,6 +106,10 @@ export const createEventAction = createProtectedAction(eventSchema, async (data,
     updateTag(CACHE_TAGS.EVENTS);
     // The club page lists its events from its own cache entry.
     if (data.clubId) updateTag(`club-${data.clubId}`);
+    if (data.festId) {
+        updateTag(FESTS_TAG);
+        updateTag(festTag(data.festId));
+    }
 
     return { event };
 }, {
@@ -102,7 +117,7 @@ export const createEventAction = createProtectedAction(eventSchema, async (data,
     audit: { action: 'CREATE', entityType: 'Event', getEntityId: () => 'new' },
 });
 
-export const joinEventAction = createProtectedAction(joinEventSchema, async ({ eventId }, session) => {
+export const joinEventAction = createProtectedAction(joinEventSchema, async ({ eventId, source }, session) => {
     const userId = session.userId;
 
     // Only live, approved, upcoming events take registrations. Without this,
@@ -130,7 +145,8 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
                 userId,
                 eventId,
                 status: full ? 'WAITLISTED' : event.price > 0 ? 'PENDING_PAYMENT' : 'COMPLETED',
-                amountPaid: 0
+                amountPaid: 0,
+                source: source ? normaliseSource(source) : null,
             }
         });
         if (full) return { registration: reg, waitlistPosition: await waitlistPosition(tx, eventId, reg.createdAt) };
@@ -267,6 +283,15 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
     // not a content change an admin needs to see again.
     if (data.capacity !== undefined) updateData.capacity = data.capacity;
 
+    // Also after the approval check: joining a fest is not a content change.
+    const festChanged = data.festId !== undefined && data.festId !== event.festId;
+    if (festChanged) {
+        if (data.festId && !(await canAttachEventToFest(data.festId, session.userId, session.user.role, event.hostCollegeId))) {
+            throw new AuthorizationError(FEST_REFUSAL);
+        }
+        updateData.fest = data.festId ? { connect: { id: data.festId } } : { disconnect: true };
+    }
+
     // More seats (or none as the limit) fill from the waitlist straight away.
     const { updatedEvent, promoted } = await prisma.$transaction(async (tx) => {
         await lockEvent(tx, id);
@@ -281,6 +306,12 @@ export const updateEventAction = createProtectedAction(updateEventSchema, async 
     updateTag(`event-${id}`);
     updateTag(CACHE_TAGS.EVENTS);
     if (event.clubId) updateTag(`club-${event.clubId}`);
+    if (festChanged) {
+        updateTag(FESTS_TAG);
+        for (const f of [event.festId, data.festId]) if (f) updateTag(festTag(f));
+    } else if (event.festId) {
+        updateTag(festTag(event.festId));
+    }
     return { event: updatedEvent };
 }, {
     audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.id },
@@ -301,6 +332,7 @@ export async function createEvent(data: {
     thumbnail: string;
     price?: number;
     capacity?: number | null;
+    festId?: string | null;
     creatorId?: string;
     clubId?: string;
 }) {
@@ -317,11 +349,11 @@ export async function createEvent(data: {
 }
 
 /** @deprecated Use joinEventAction directly */
-export async function joinEvent(userId: string, eventId: string) {
+export async function joinEvent(userId: string, eventId: string, source?: string | null) {
     const session = await getSession();
     if (!session || session.userId !== userId) return { success: false, error: 'Unauthorized' };
 
-    const result = await joinEventAction({ eventId });
+    const result = await joinEventAction({ eventId, source: source ?? undefined });
     if (!isOk(result)) return { success: false, error: result.error || 'Unknown error' };
     return {
         success: true,
@@ -475,6 +507,9 @@ async function _getEventByIdUncached(id: string) {
             capacity: true,
             registrationCount: true,
             thumbnail: true,
+            festId: true,
+            // Only an approved fest is linked: a pending one is a 404 to visitors.
+            fest: { select: { id: true, name: true, verified: true } },
             verified: true,
             deletedAt: true,
             creatorId: true,

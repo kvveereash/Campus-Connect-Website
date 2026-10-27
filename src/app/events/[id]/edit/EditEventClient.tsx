@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import styles from './page.module.css';
 import { EventDetail } from '@/lib/actions/events';
 import { updateEvent } from '@/lib/actions/events';
+import FestPicker from '@/components/fests/FestPicker';
 
 // The same categories the create form offers. This list had drifted (Fest,
 // Seminar, Tech Talk), so editing an event could not keep its own category.
@@ -34,6 +35,7 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
         thumbnail: event.thumbnail || '',
         capacity: event.capacity === null ? '' : String(event.capacity),
     });
+    const [festId, setFestId] = useState<string | null>(event.festId);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,6 +47,7 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
                 thumbnail: formData.thumbnail.trim() || undefined,
                 // More seats fill from the waitlist straight away (server side).
                 capacity: formData.capacity.trim() ? Number(formData.capacity) : null,
+                festId,
                 // Parsed as local time, which is what the input showed.
                 date: new Date(formData.date),
             });
@@ -152,6 +155,8 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
                         placeholder="No limit"
                     />
                 </div>
+
+                <FestPicker value={festId} onChange={setFestId} collegeId={event.hostCollege.id} />
 
                 <div className={styles.formGroup}>
                     <label className={styles.label} htmlFor="description">Description</label>

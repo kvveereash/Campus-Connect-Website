@@ -1,0 +1,269 @@
+/* The admin area is a dark shell (src/app/admin/layout.tsx), so this page
+   reads light-on-dark like the reports queue: paper for ink, on-dark
+   borders for hairlines. */
+
+.page {
+    max-width: 860px;
+}
+
+.header {
+    margin-bottom: 28px;
+}
+
+.title {
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-paper);
+}
+
+.lede {
+    margin: 0;
+    max-width: 60ch;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--color-pewter);
+}
+
+.error {
+    margin: 0;
+    color: var(--color-paper);
+}
+
+/* ---------- list ---------- */
+.list {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.item {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--border-on-dark);
+    border-radius: var(--radius-card);
+}
+
+.kicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    margin: 0 0 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-pewter);
+}
+
+.num {
+    font-variant-numeric: tabular-nums;
+}
+
+.name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.375rem;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--color-paper);
+    overflow-wrap: anywhere;
+}
+
+.tagline {
+    margin: 6px 0 0;
+    font-size: 0.9375rem;
+    color: var(--color-paper);
+}
+
+.description {
+    margin: 10px 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--color-pewter);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.owner {
+    margin: 10px 0 0;
+    font-size: 0.875rem;
+    color: var(--color-pewter);
+}
+
+/* ---------- reject reason ---------- */
+.reasonBox {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.reasonLabel {
+    font-size: 0.875rem;
+    color: var(--color-paper);
+}
+
+.reason {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-on-dark);
+    border-radius: var(--radius-input);
+    background: transparent;
+    font: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--color-paper);
+    resize: vertical;
+}
+
+.reason::placeholder {
+    color: var(--color-pewter);
+}
+
+.reason:focus-visible {
+    outline: 2px solid var(--color-paper);
+    outline-offset: 1px;
+}
+
+/* ---------- footer ---------- */
+.footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.open {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.875rem;
+    color: var(--color-paper);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--border-on-dark);
+}
+
+.open:hover {
+    text-decoration-color: currentColor;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.secondary,
+.approve,
+.reject {
+    min-height: 38px;
+    padding: 0 16px;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition:
+        background-color var(--duration-micro) var(--ease-glide),
+        border-color var(--duration-micro) var(--ease-glide);
+}
+
+.secondary {
+    color: var(--color-paper);
+    background: transparent;
+    border: 1px solid var(--border-on-dark);
+}
+
+.secondary:hover:not(:disabled) {
+    border-color: var(--color-paper);
+}
+
+.approve {
+    color: var(--color-paper);
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent);
+}
+
+.approve:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+.reject {
+    color: var(--color-paper);
+    background: var(--color-danger);
+    border: 1px solid var(--color-danger);
+}
+
+.reject:hover:not(:disabled) {
+    /* One-off: a darker step of --color-danger for hover, as on the reports queue. */
+    background: #b42318;
+    border-color: #b42318;
+}
+
+.secondary:focus-visible,
+.approve:focus-visible,
+.reject:focus-visible,
+.open:focus-visible {
+    outline: 2px solid var(--color-paper);
+    outline-offset: 2px;
+}
+
+.secondary:disabled,
+.approve:disabled,
+.reject:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+/* ---------- empty ---------- */
+.empty {
+    padding: clamp(48px, 8vw, 88px) 24px;
+    text-align: center;
+    border: 1px dashed var(--border-on-dark);
+    border-radius: var(--radius-card);
+    /* The dot grid, inverted: --dot-grid is ink dots, invisible on this dark shell. */
+    background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1.2px);
+    background-size: var(--dot-grid-size);
+}
+
+.emptyTitle {
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--color-paper);
+}
+
+.emptyText {
+    margin: 0 0 18px;
+    font-size: 0.9375rem;
+    color: var(--color-pewter);
+}
+
+.emptyLink {
+    font-size: 0.875rem;
+    color: var(--color-paper);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .secondary,
+    .approve,
+    .reject {
+        transition: none;
+    }
+}

@@ -1,5 +1,6 @@
 'use client';
 
+import FestPicker from '@/components/fests/FestPicker';
 import { useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -53,6 +54,7 @@ export default function CreateEventPage() {
         // Seats, as typed; empty means no limit.
         capacity: '',
     });
+    const [festId, setFestId] = useState<string | null>(null);
 
     // The club picker defaults to your first club. Derived on each render, so
     // it is right as soon as your clubs load, without an effect copying it in.
@@ -103,6 +105,7 @@ export default function CreateEventPage() {
                 clubId,
                 price: Number(formData.price) || 0,
                 capacity: formData.capacity.trim() ? Number(formData.capacity) : null,
+                festId,
             };
 
             const result = await createEvent(submissionData);
@@ -336,6 +339,9 @@ export default function CreateEventPage() {
                                 Leave empty for no limit. Once it fills up, new sign-ups join a waitlist and move up when someone cancels.
                             </span>
                         </div>
+
+                        {/* Fest: shows only for people who run one */}
+                        <FestPicker value={festId} onChange={setFestId} collegeId={formData.hostCollegeId || undefined} />
 
                         <div className={styles.divider} />
 

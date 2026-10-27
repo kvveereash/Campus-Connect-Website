@@ -83,6 +83,8 @@ export const eventSchema = z.object({
         .max(100000, "That is more seats than any venue has")
         .nullable()
         .optional(),
+    // The fest this event belongs to; null takes it out of one.
+    festId: z.string().max(64).nullable().optional(),
     hostCollegeId: z.string().max(50).optional(),
     clubId: z.string().max(50).optional(),
     maxAttendees: z.number().int().positive().max(100000).optional(),
@@ -107,7 +109,9 @@ export const updateEventSchema = z.object({
 });
 
 export const joinEventSchema = z.object({
-    eventId: z.string().min(1).max(50)
+    eventId: z.string().min(1).max(50),
+    // Where the person found the event (?ref= or the referrer); normalised on the server.
+    source: z.string().max(32).optional(),
 });
 
 // --- Clubs ---

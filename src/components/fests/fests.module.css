@@ -1,0 +1,136 @@
+/* ============================================================
+   FEST PICKER AND FEST LINK
+   Small pieces that live inside other pages (the event form, the
+   event page), so they bring their own quiet styling rather than
+   leaning on the host page's classes.
+   ============================================================ */
+
+/* ---------- picker ---------- */
+.picker {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.pickerLabel {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-inkstone);
+}
+
+.pickerSelect {
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-input);
+    background: var(--color-paper);
+    font: inherit;
+    font-size: 16px;
+    color: var(--color-obsidian);
+    cursor: pointer;
+    transition: border-color var(--duration-micro) var(--ease-glide);
+}
+
+.pickerSelect:hover {
+    border-color: var(--color-felt);
+}
+
+.pickerSelect:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+    border-color: var(--color-accent);
+}
+
+.pickerHint {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-felt);
+}
+
+.pickerLink {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* ---------- link on the event page ---------- */
+.link {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 6px 14px;
+    padding: 14px 18px;
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    color: var(--color-obsidian);
+    text-decoration: none;
+    transition: border-color var(--duration-base) var(--ease-glide);
+}
+
+.link:hover {
+    border-color: var(--border-strong);
+}
+
+.link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.linkKicker {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+}
+
+.linkName {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+}
+
+.linkCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-accent);
+    white-space: nowrap;
+}
+
+.linkArrow {
+    transition: transform var(--duration-base) var(--ease-glide);
+}
+
+.link:hover .linkArrow {
+    transform: translateX(3px);
+}
+
+@media (max-width: 520px) {
+    .link {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pickerSelect,
+    .link,
+    .linkArrow {
+        transition: none;
+    }
+
+    .link:hover .linkArrow {
+        transform: none;
+    }
+}

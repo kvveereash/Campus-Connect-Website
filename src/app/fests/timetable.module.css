@@ -1,0 +1,292 @@
+/* ============================================================
+   FEST TIMETABLE
+   A printed programme pinned to the board: one paper sheet per
+   day, its heading held under the navbar while you scroll that
+   day, and each event a ruled row of time, title, category mark
+   and price. The category square is the --press-* ink, as on the
+   events board, always beside its name.
+   ============================================================ */
+
+.timetable {
+    display: grid;
+    gap: clamp(20px, 3vw, 28px);
+}
+
+/* ---------- day chips ---------- */
+.dayNav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dayChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border-hairline);
+    background: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
+    transition: border-color var(--duration-micro) var(--ease-glide);
+}
+
+.dayChip:hover {
+    border-color: var(--border-strong);
+}
+
+.dayChip:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.dayChipCount {
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- one day ---------- */
+.day {
+    border: 1px solid var(--border-hairline);
+    border-radius: 20px;
+    background: var(--color-paper);
+    /* Clears the fixed navbar when a day chip jumps here. */
+    scroll-margin-top: 80px;
+}
+
+.dayHead {
+    position: sticky;
+    top: 64px;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 14px;
+    padding: 18px clamp(16px, 3vw, 24px) 14px;
+    border-bottom: 1px solid var(--border-hairline);
+    border-radius: 20px 20px 0 0;
+    background: var(--color-paper);
+}
+
+.dayLabel {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+}
+
+.dayTitle {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--color-obsidian);
+}
+
+.dayCount {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- rows ---------- */
+.slots {
+    margin: 0;
+    padding: 0 clamp(16px, 3vw, 24px);
+    list-style: none;
+}
+
+.slots li + li .slot {
+    border-top: 1px solid var(--border-hairline);
+}
+
+.slot {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 6px 20px;
+    padding: 16px 0;
+    color: var(--color-obsidian);
+    text-decoration: none;
+    transition: padding-left var(--duration-base) var(--ease-glide);
+}
+
+.slot:hover {
+    padding-left: 10px;
+}
+
+.slot:hover .title {
+    text-decoration: underline;
+    text-decoration-color: var(--cat);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
+.slot:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
+.time {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--color-inkstone);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.main {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.title {
+    font-size: clamp(1rem, 1.6vw, 1.0625rem);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+}
+
+.venue {
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--color-felt);
+    overflow-wrap: anywhere;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+}
+
+.cat,
+.price,
+.pending {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.cat {
+    gap: 7px;
+    background: var(--color-canvas);
+    color: var(--color-inkstone);
+}
+
+.cat i {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--cat);
+}
+
+.price {
+    background: var(--color-obsidian);
+    color: var(--color-paper);
+    font-variant-numeric: tabular-nums;
+}
+
+.free {
+    background: color-mix(in srgb, var(--color-success) 12%, transparent);
+    /* One-off: --color-success darkened so "Free" holds 4.5:1 on its tint. */
+    color: color-mix(in srgb, var(--color-success) 70%, black);
+}
+
+.pending {
+    border: 1px dashed var(--border-strong);
+    color: var(--color-felt);
+}
+
+/* Started or over: still listed, so the programme reads whole, but quiet. */
+.slotPast .time,
+.slotPast .title,
+.slotPast .venue {
+    color: var(--color-ash);
+}
+
+/* ---------- empty ---------- */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: clamp(40px, 7vw, 64px) 24px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 20px;
+    background-color: var(--color-paper);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.emptyTitle {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.375rem;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--color-obsidian);
+}
+
+.emptyText {
+    margin: 0 0 6px;
+    max-width: 46ch;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-felt);
+}
+
+@media (max-width: 640px) {
+    .slot {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .tags {
+        justify-content: flex-start;
+    }
+
+    .dayCount {
+        margin-left: 0;
+        flex-basis: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slot,
+    .dayChip {
+        transition: none;
+    }
+
+    .slot:hover {
+        padding-left: 0;
+    }
+}

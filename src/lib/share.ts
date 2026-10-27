@@ -73,7 +73,7 @@ export const getCollegeShare = (id: string) =>
 
 /** Every public detail page, for the sitemap. */
 export async function getSitemapEntries() {
-    const [events, clubs, colleges] = await Promise.all([
+    const [events, clubs, colleges, fests] = await Promise.all([
         prisma.event.findMany({
             where: live,
             select: { id: true, date: true, verifiedAt: true },
@@ -86,6 +86,11 @@ export async function getSitemapEntries() {
             take: 5000,
         }),
         prisma.college.findMany({ select: { id: true, updatedAt: true }, take: 5000 }),
+        prisma.fest.findMany({
+            where: { verified: true, deletedAt: null },
+            select: { id: true, updatedAt: true, endDate: true },
+            take: 2000,
+        }),
     ]);
-    return { events, clubs, colleges };
+    return { events, clubs, colleges, fests };
 }

@@ -1,0 +1,350 @@
+/* ============================================================
+   FESTS BOARD
+   Fests are bigger than events, so they get cards rather than
+   rows: a cover (or the fest's initial on ink), its dates in mono,
+   the name set tight. Happening now leads and carries the page's
+   one highlighter; recently ended fests sit last and recede.
+   ============================================================ */
+
+.page {
+    max-width: 1078px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 56px) 0 clamp(72px, 10vw, 152px);
+}
+
+/* ---------- masthead ---------- */
+.masthead {
+    padding-bottom: clamp(28px, 4vw, 44px);
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.kicker {
+    margin: 0 0 18px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+}
+
+.title {
+    margin: 0;
+    max-width: 14ch;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+    color: var(--color-obsidian);
+    text-wrap: balance;
+}
+
+.strap {
+    margin: 18px 0 0;
+    max-width: 54ch;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--color-felt);
+    text-wrap: pretty;
+}
+
+.startLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 4px;
+    transition:
+        gap var(--duration-base) var(--ease-glide),
+        text-decoration-color var(--duration-micro) var(--ease-glide);
+}
+
+.startLink:hover {
+    gap: 12px;
+    text-decoration-color: currentColor;
+}
+
+.startLink:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+/* ---------- sections ---------- */
+.section {
+    margin-top: clamp(36px, 5vw, 56px);
+}
+
+.sectionHead {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.sectionTitle {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-inkstone);
+}
+
+.marker {
+    padding: 2px 6px;
+    background: var(--color-marker);
+    color: var(--color-obsidian);
+}
+
+.sectionCount {
+    padding: 1px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    border: 1px solid var(--border-hairline);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* ---------- card ---------- */
+.card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    color: var(--color-obsidian);
+    text-decoration: none;
+    transition:
+        transform var(--duration-base) var(--ease-glide),
+        border-color var(--duration-base) var(--ease-glide),
+        box-shadow var(--duration-base) var(--ease-glide);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-soft);
+}
+
+.card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+.cover {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--color-obsidian);
+}
+
+.coverImage {
+    object-fit: cover;
+}
+
+/* No cover: the initial on ink, over the dot grid inverted for a dark ground. */
+.coverStub {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1.2px);
+    background-size: var(--dot-grid-size);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 4rem;
+    letter-spacing: -0.04em;
+    color: var(--color-paper);
+}
+
+.liveTag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-obsidian);
+}
+
+.liveTag::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-success);
+}
+
+.cardBody {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 18px 16px;
+}
+
+.cardDates {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-felt);
+    font-variant-numeric: tabular-nums;
+}
+
+.cardTitle {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.375rem, 2.4vw, 1.625rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    overflow-wrap: anywhere;
+}
+
+.cardTagline {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--color-inkstone);
+}
+
+.cardMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-felt);
+}
+
+.rule {
+    color: var(--color-ash);
+}
+
+.cardCount {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: auto 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-hairline);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-inkstone);
+    font-variant-numeric: tabular-nums;
+}
+
+.cardArrow {
+    transition: transform var(--duration-base) var(--ease-glide);
+}
+
+.card:hover .cardArrow {
+    transform: translateX(3px);
+}
+
+/* Ended fests stay findable, but quieter than what is still to come. */
+.ended .card {
+    background: transparent;
+}
+
+.ended .cover {
+    opacity: 0.72;
+}
+
+.ended .cardTitle,
+.ended .cardTagline {
+    color: var(--color-felt);
+}
+
+/* ---------- empty ---------- */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: clamp(32px, 5vw, 48px);
+    padding: clamp(48px, 8vw, 80px) 24px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 20px;
+    background-color: var(--color-paper);
+    background-image: var(--dot-grid);
+    background-size: var(--dot-grid-size);
+    text-align: center;
+}
+
+.emptyTitle {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.375rem;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--color-obsidian);
+}
+
+.emptyText {
+    margin: 0 0 6px;
+    max-width: 44ch;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--color-felt);
+}
+
+.emptyLink {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .cardArrow,
+    .startLink {
+        transition: none;
+    }
+
+    .card:hover {
+        transform: none;
+    }
+
+    .card:hover .cardArrow {
+        transform: none;
+    }
+
+    .startLink:hover {
+        gap: 8px;
+    }
+}
