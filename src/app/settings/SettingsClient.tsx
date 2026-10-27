@@ -7,6 +7,9 @@ import { changePassword, deleteAccount } from '@/lib/actions/account';
 import { sendVerificationEmail } from '@/lib/actions/email-verification';
 import { isDemoEmail } from '@/lib/demo-account';
 import PushToggle from '@/components/PushToggle';
+import DigestToggle from '@/components/settings/DigestToggle';
+import LanguagePicker from '@/components/LanguagePicker';
+import { useT } from '@/lib/i18n';
 import styles from './page.module.css';
 
 /**
@@ -29,6 +32,7 @@ export default function SettingsClient({
     verified: boolean;
 }) {
     const [pending, startTransition] = useTransition();
+    const t = useT();
 
     const [current, setCurrent] = useState('');
     const [next, setNext] = useState('');
@@ -75,47 +79,44 @@ export default function SettingsClient({
 
     return (
         <div className={styles.page}>
-            <p className={styles.label}>Account</p>
-            <h1 className={styles.title}>Settings.</h1>
+            <p className={styles.label}>{t('settings.eyebrow')}</p>
+            <h1 className={styles.title}>{t('settings.title')}</h1>
 
             <section className={styles.section}>
-                <p className={styles.sectionLabel}>Signed in as</p>
+                <p className={styles.sectionLabel}>{t('settings.signedInAs')}</p>
                 <p className={styles.value}>{email}</p>
 
                 {/* Unverified is a state worth surfacing rather than
                     enforcing: password resets go to this address, so an
                     unreachable one only matters on the day you need it. */}
                 {verified ? (
-                    <p className={styles.note}>Confirmed.</p>
+                    <p className={styles.note}>{t('settings.confirmed')}</p>
                 ) : (
                     <>
-                        <p className={styles.note}>
-                            Not confirmed yet. Nothing is blocked by that — but a password reset
-                            goes to this address, so it is worth knowing it works.
-                        </p>
+                        <p className={styles.note}>{t('settings.unconfirmed')}</p>
                         <button
                             type="button"
                             className="btn btn-outline"
                             onClick={resend}
                             disabled={pending}
                         >
-                            {pending ? 'Sending' : 'Send a confirmation link'}
+                            {pending ? t('settings.sending') : t('settings.sendLink')}
                         </button>
                     </>
                 )}
 
                 <p className={styles.note} style={{ marginTop: 20 }}>
-                    Your name, college and everything else on your profile is edited from{' '}
-                    <Link href="/profile">your profile</Link>.
+                    {t('settings.profileNoteBefore')}
+                    <Link href="/profile">{t('settings.profileLink')}</Link>.
                 </p>
             </section>
 
             <section className={styles.section}>
-                <p className={styles.sectionLabel}>Change password</p>
+                <p className={styles.sectionLabel}>{t('settings.changePassword')}</p>
                 <form onSubmit={submitPassword} className={styles.form}>
                     <div className={styles.field}>
                         <label className={styles.fieldLabel} htmlFor="current">
-                            Current password
+                            {t('settings.currentPassword')}
                         </label>
                         <input
                             id="current"
@@ -130,7 +131,7 @@ export default function SettingsClient({
 
                     <div className={styles.field}>
                         <label className={styles.fieldLabel} htmlFor="next">
-                            New password
+                            {t('settings.newPassword')}
                         </label>
                         <input
                             id="next"
@@ -142,7 +143,7 @@ export default function SettingsClient({
                             className={styles.input}
                             required
                         />
-                        <p className={styles.hint}>At least 8 characters.</p>
+                        <p className={styles.hint}>{t('settings.atLeast8')}</p>
                     </div>
 
                     <button
@@ -150,7 +151,7 @@ export default function SettingsClient({
                         className="btn btn-primary"
                         disabled={pending || !current || !next}
                     >
-                        {pending ? 'Saving' : 'Change password'}
+                        {pending ? t('settings.saving') : t('settings.changePassword')}
                     </button>
                 </form>
             </section>
@@ -160,18 +161,26 @@ export default function SettingsClient({
             {!isDemoEmail(email) && (
                 <PushToggle
                     className={styles.section}
-                    heading={<p className={styles.sectionLabel}>Notifications</p>}
+                    heading={<p className={styles.sectionLabel}>{t('settings.notifications')}</p>}
                 />
             )}
 
+            {!isDemoEmail(email) && (
+                <DigestToggle
+                    className={styles.section}
+                    heading={<p className={styles.sectionLabel}>{t('settings.mondayEmail')}</p>}
+                />
+            )}
+
+            <section className={styles.section}>
+                <p className={styles.sectionLabel}>{t('settings.language')}</p>
+                <p className={styles.note}>{t('settings.languageNote')}</p>
+                <LanguagePicker />
+            </section>
+
             <section className={`${styles.section} ${styles.danger}`}>
-                <p className={styles.sectionLabel}>Delete account</p>
-                <p className={styles.note}>
-                    Your profile is removed and your name comes off everything you posted. Places
-                    you took at paid events stay on record, because they are part of a payment —
-                    that is the one thing deletion cannot take back. It cannot be undone, and the
-                    email address becomes free to sign up with again.
-                </p>
+                <p className={styles.sectionLabel}>{t('settings.deleteAccount')}</p>
+                <p className={styles.note}>{t('settings.deleteNote')}</p>
 
                 {!armed ? (
                     <button
@@ -179,13 +188,13 @@ export default function SettingsClient({
                         className="btn btn-outline"
                         onClick={() => setArmed(true)}
                     >
-                        Delete my account
+                        {t('settings.deleteMine')}
                     </button>
                 ) : (
                     <form onSubmit={submitDelete} className={styles.form}>
                         <div className={styles.field}>
                             <label className={styles.fieldLabel} htmlFor="confirm">
-                                Type your password to confirm
+                                {t('settings.typePassword')}
                             </label>
                             <input
                                 id="confirm"
@@ -203,7 +212,7 @@ export default function SettingsClient({
                                 className="btn btn-danger"
                                 disabled={pending || !confirmPassword}
                             >
-                                {pending ? 'Deleting' : 'Delete permanently'}
+                                {pending ? t('settings.deleting') : t('settings.deleteForever')}
                             </button>
                             <button
                                 type="button"
@@ -214,7 +223,7 @@ export default function SettingsClient({
                                 }}
                                 disabled={pending}
                             >
-                                Keep my account
+                                {t('settings.keepAccount')}
                             </button>
                         </div>
                     </form>

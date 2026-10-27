@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { T } from '@/lib/i18n';
+import type { MessageKey } from '@/lib/i18n/messages';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
@@ -14,7 +16,7 @@ import mine from './page.module.css';
 
 export const metadata: Metadata = {
     title: 'My events',
-    description: 'Events you are registered for, payments to finish, and where you have been.',
+    description: 'Events you are registered for, roles you are volunteering in, payments to finish, and where you have been.',
 };
 
 /*
@@ -28,7 +30,7 @@ export default async function MyEventsPage() {
     if (!session?.userId) redirect('/login?redirect=%2Fmy-events');
 
     const userId = session.userId as string;
-    const [registrations, saved, organising] = await Promise.all([
+    const [registrations, saved, organising, volunteering] = await Promise.all([
         prisma.eventRegistration.findMany({
             where: {
                 userId,
@@ -63,6 +65,13 @@ export default async function MyEventsPage() {
             take: 20,
             select: { id: true, title: true, date: true, registrationCount: true, capacity: true },
         }),
+        // Volunteer roles you hold at events still to come.
+        prisma.volunteerSignup.findMany({
+            where: { userId, role: { event: { deletedAt: null, date: { gte: new Date() } } } },
+            orderBy: { role: { event: { date: 'asc' } } },
+            take: 20,
+            select: { id: true, role: { select: { name: true, event: { select: { id: true, title: true, date: true } } } } },
+        }),
     ]);
 
     const now = new Date();
@@ -81,15 +90,17 @@ export default async function MyEventsPage() {
     const feedUrl = feedToken ? `${process.env.NEXT_PUBLIC_APP_URL || SITE_URL}/api/calendar/${feedToken}.ics` : null;
     const webcalUrl = feedUrl?.replace(/^https?:/, 'webcal:');
 
-    const section = (label: string, rows: typeof registrations, note?: string) =>
+    const section = (label: MessageKey, rows: typeof registrations, note?: MessageKey) =>
         rows.length > 0 && (
             <section>
                 <div className={styles.groupHead}>
-                    <h2>{label}</h2>
+                    <h2>
+                        <T k={label} />
+                    </h2>
                     <span className={styles.groupCount}>{rows.length}</span>
                 </div>
                 {rows.map((r) => (
-                    <EventRow key={r.id} event={r.event satisfies RowEvent} note={note} />
+                    <EventRow key={r.id} event={r.event satisfies RowEvent} note={note && <T k={note} />} />
                 ))}
             </section>
         );
@@ -100,15 +111,24 @@ export default async function MyEventsPage() {
         <div className={styles.screen} style={{ ['--rail-h' as string]: '0px' }}>
             <div className={styles.inner}>
                 <header className={styles.masthead}>
-                    <p className="mono-label">My events</p>
+                    <p className="mono-label">
+                        <T k="mine.eyebrow" />
+                    </p>
                     <div className={styles.mastheadRow}>
                         <h1 className={styles.wordmark}>
-                            Where you&rsquo;re <em className="accent">going</em>
+                            <T k="mine.titleBefore" />
+                            <em className="accent">
+                                <T k="mine.titleAccent" />
+                            </em>
                         </h1>
-                        {going.length > 0 && <span className={styles.count}>{going.length} coming up</span>}
+                        {going.length > 0 && (
+                            <span className={styles.count}>
+                                <T k="mine.comingUpCount" vars={{ n: going.length }} />
+                            </span>
+                        )}
                     </div>
                     <p className={styles.strap}>
-                        Open an event for your ticket, its QR code and a calendar reminder.
+                        <T k="mine.strap" />
                     </p>
                 </header>
 
@@ -117,7 +137,9 @@ export default async function MyEventsPage() {
                     {organising.length > 0 && (
                         <section>
                             <div className={styles.groupHead}>
-                                <h2>Organising</h2>
+                                <h2>
+                                    <T k="mine.organising" />
+                                </h2>
                                 <span className={styles.groupCount}>{organising.length}</span>
                             </div>
                             <ul className={mine.certificates}>
@@ -127,11 +149,41 @@ export default async function MyEventsPage() {
                                             <strong>{e.title}</strong>
                                             <small>
                                                 {formatIST(e.date, { weekday: 'short', day: 'numeric', month: 'short' })} ·{' '}
-                                                {e.capacity ? `${e.registrationCount} of ${e.capacity} going` : `${e.registrationCount} going`}
+                                                {e.capacity ? (
+                                                    <T k="mine.goingOf" vars={{ n: e.registrationCount, cap: e.capacity }} />
+                                                ) : (
+                                                    <T k="mine.goingCount" vars={{ n: e.registrationCount }} />
+                                                )}
                                             </small>
                                         </span>
                                         <Link href={`/events/${e.id}/attendees`} className="btn btn-outline">
-                                            Attendees
+                                            <T k="event.attendees" />
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+                    {volunteering.length > 0 && (
+                        <section>
+                            <div className={styles.groupHead}>
+                                <h2>
+                                    <T k="mine.volunteering" />
+                                </h2>
+                                <span className={styles.groupCount}>{volunteering.length}</span>
+                            </div>
+                            <ul className={mine.certificates}>
+                                {volunteering.map(({ id, role }) => (
+                                    <li key={id} className={mine.certificate}>
+                                        <span>
+                                            <strong>{role.event.title}</strong>
+                                            <small>
+                                                <T k="mine.asRole" vars={{ role: role.name }} /> ·{' '}
+                                                {formatIST(role.event.date, { weekday: 'short', day: 'numeric', month: 'short' })}
+                                            </small>
+                                        </span>
+                                        <Link href={`/events/${role.event.id}`} className="btn btn-outline">
+                                            <T k="mine.openEvent" />
                                         </Link>
                                     </li>
                                 ))}
@@ -140,42 +192,54 @@ export default async function MyEventsPage() {
                     )}
                     {registrations.length === 0 && saved.length === 0 ? (
                         <div className={styles.empty}>
-                            <p className={styles.emptyTitle}>Nothing yet</p>
-                            <p>Events you register for show up here, with your ticket.</p>
+                            <p className={styles.emptyTitle}>
+                                <T k="mine.nothingYet" />
+                            </p>
+                            <p>
+                                <T k="mine.nothingYetBody" />
+                            </p>
                             <Link href="/events" className="btn btn-primary">
-                                Browse events
+                                <T k="notif.browse" />
                             </Link>
                         </div>
                     ) : (
                         <>
-                            {section('Finish paying', toPay, 'Payment pending')}
-                            {section('Coming up', going)}
-                            {section('Waitlist', waitlisted, 'On the waitlist')}
+                            {section('mine.finishPaying', toPay, 'mine.paymentPending')}
+                            {section('mine.comingUp', going)}
+                            {section('mine.waitlist', waitlisted, 'register.waitlisted')}
                             {saved.length > 0 && (
                                 <section>
                                     <div className={styles.groupHead}>
-                                        <h2>Saved</h2>
+                                        <h2>
+                                            <T k="mine.saved" />
+                                        </h2>
                                         <span className={styles.groupCount}>{saved.length}</span>
                                     </div>
                                     {saved.map((s) => (
-                                        <EventRow key={s.id} event={s.event} note="Saved" />
+                                        <EventRow key={s.id} event={s.event} note={<T k="interest.saved" />} />
                                     ))}
                                 </section>
                             )}
                             {upcoming.length === 0 && (
                                 <div className={styles.empty}>
-                                    <p className={styles.emptyTitle}>Nothing coming up</p>
-                                    <p>Your next event will show up here once you register.</p>
+                                    <p className={styles.emptyTitle}>
+                                        <T k="mine.nothingComing" />
+                                    </p>
+                                    <p>
+                                        <T k="mine.nothingComingBody" />
+                                    </p>
                                     <Link href="/events" className="btn btn-primary">
-                                        Browse events
+                                        <T k="notif.browse" />
                                     </Link>
                                 </div>
                             )}
-                            {section('Been to', past)}
+                            {section('mine.beenTo', past)}
                             {certificates.length > 0 && (
                                 <section>
                                     <div className={styles.groupHead}>
-                                        <h2>Certificates</h2>
+                                        <h2>
+                                            <T k="mine.certificates" />
+                                        </h2>
                                         <span className={styles.groupCount}>{certificates.length}</span>
                                     </div>
                                     <ul className={mine.certificates}>
@@ -188,7 +252,7 @@ export default async function MyEventsPage() {
                                                     </small>
                                                 </span>
                                                 <a href={`/events/${r.event.id}/certificate`} className="btn btn-outline">
-                                                    Download
+                                                    <T k="mine.download" />
                                                 </a>
                                             </li>
                                         ))}
@@ -200,10 +264,11 @@ export default async function MyEventsPage() {
 
                     {feedUrl && webcalUrl && (
                         <section className={mine.feed} aria-labelledby="calendar-feed">
-                            <h2 id="calendar-feed">Your events in your calendar</h2>
+                            <h2 id="calendar-feed">
+                                <T k="mine.feedTitle" />
+                            </h2>
                             <p>
-                                Subscribe once and every event you register for appears in Google Calendar, Apple Calendar or
-                                Outlook, and stays up to date. The link is private to you.
+                                <T k="mine.feedBody" />
                             </p>
                             <div className={mine.feedActions}>
                                 <a
@@ -212,10 +277,10 @@ export default async function MyEventsPage() {
                                     rel="noopener noreferrer"
                                     className="btn btn-primary"
                                 >
-                                    Add to Google Calendar
+                                    <T k="mine.addGoogle" />
                                 </a>
                                 <a href={webcalUrl} className="btn btn-outline">
-                                    Apple or Outlook
+                                    <T k="mine.appleOutlook" />
                                 </a>
                                 <CopyLink value={feedUrl} className={mine.copy} />
                             </div>

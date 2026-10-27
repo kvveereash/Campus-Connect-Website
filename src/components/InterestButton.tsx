@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+import { useT } from '@/lib/i18n';
 import { isInterested, toggleInterest } from '@/lib/actions/interest';
 import { authHref } from '@/lib/utils';
 import styles from './ShareButton.module.css';
@@ -16,6 +17,7 @@ import styles from './ShareButton.module.css';
  */
 export default function InterestButton({ eventId }: { eventId: string }) {
     const { user, isLoading } = useAuth();
+    const t = useT();
     const router = useRouter();
     const [saved, setSaved] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -45,7 +47,7 @@ export default function InterestButton({ eventId }: { eventId: string }) {
             setSaved((s) => !s);
             toast.error(result.error);
         } else if (result.interested) {
-            toast.success('Saved. It is on your home page, with a reminder the day before.');
+            toast.success(t('interest.savedToast'));
         }
         setBusy(false);
     };
@@ -59,7 +61,7 @@ export default function InterestButton({ eventId }: { eventId: string }) {
             disabled={busy}
         >
             {saved ? <BookmarkCheck size={16} aria-hidden="true" /> : <Bookmark size={16} aria-hidden="true" />}
-            {saved ? 'Saved' : 'Interested'}
+            {saved ? t('interest.saved') : t('interest.interested')}
         </button>
     );
 }

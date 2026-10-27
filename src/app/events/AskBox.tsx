@@ -3,6 +3,7 @@
 import { useId, useRef, useState, useTransition } from 'react';
 import { MessageSquareText } from 'lucide-react';
 import type { AskFilters } from '@/lib/actions/ask';
+import { useLocale, useT } from '@/lib/i18n';
 import styles from './AskBox.module.css';
 
 /**
@@ -12,6 +13,8 @@ import styles from './AskBox.module.css';
  */
 export default function AskBox({ onApply, onClear }: { onApply: (filters: AskFilters) => void; onClear: () => void }) {
     const ids = useId();
+    const t = useT();
+    const locale = useLocale();
     const inputRef = useRef<HTMLInputElement>(null);
     const [open, setOpen] = useState(false);
     const [question, setQuestion] = useState('');
@@ -27,7 +30,7 @@ export default function AskBox({ onApply, onClear }: { onApply: (filters: AskFil
             try {
                 // Loaded on first use: most visitors never ask, and the board should not carry it.
                 const { askEvents } = await import('@/lib/actions/ask');
-                const result = await askEvents(question);
+                const result = await askEvents(question, locale);
                 if (result.success) {
                     onApply(result.data);
                     setSummary(result.data.summary);
@@ -35,7 +38,7 @@ export default function AskBox({ onApply, onClear }: { onApply: (filters: AskFil
                     setError(result.error);
                 }
             } catch {
-                setError('The question did not go through. Try again in a moment, or use the filters.');
+                setError(t('ask.failed'));
             }
         });
     };
@@ -59,7 +62,7 @@ export default function AskBox({ onApply, onClear }: { onApply: (filters: AskFil
                 }}
             >
                 <MessageSquareText size={14} aria-hidden="true" />
-                Or ask in plain words
+                {t('ask.toggle')}
             </button>
         );
     }
@@ -69,18 +72,18 @@ export default function AskBox({ onApply, onClear }: { onApply: (filters: AskFil
             <form className={styles.form} onSubmit={submit}>
                 <input
                     ref={inputRef}
-                    aria-label="Ask in plain words"
+                    aria-label={t('ask.label')}
                     className={styles.input}
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
-                    placeholder="Free coding events in Pune this week"
+                    placeholder={t('ask.placeholder')}
                     maxLength={200}
                     autoComplete="off"
                     enterKeyHint="go"
                     aria-describedby={`${ids}-status`}
                 />
                 <button type="submit" className={styles.ask} disabled={pending || !question.trim()}>
-                    {pending ? 'Reading' : 'Ask'}
+                    {pending ? t('ask.reading') : t('ask.submit')}
                 </button>
             </form>
             <div id={`${ids}-status`} className={styles.status} aria-live="polite">
@@ -90,11 +93,11 @@ export default function AskBox({ onApply, onClear }: { onApply: (filters: AskFil
                     <p className={styles.summary}>
                         {summary}
                         <button type="button" className={styles.clear} onClick={clear}>
-                            Clear
+                            {t('ask.clear')}
                         </button>
                     </p>
                 ) : (
-                    <p className={styles.hint}>Name a kind of event, a city or a time. Claude picks the filters.</p>
+                    <p className={styles.hint}>{t('ask.hint')}</p>
                 )}
             </div>
         </div>

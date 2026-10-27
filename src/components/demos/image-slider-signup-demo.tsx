@@ -11,6 +11,7 @@ import styles from "@/app/login/auth.module.css";
 import AuthAside, { type AsideBubble } from "@/components/auth/AuthAside";
 import TryDemo from "@/components/TryDemo";
 import GoogleButton from "@/components/auth/GoogleButton";
+import { useT } from "@/lib/i18n";
 
 /* The forty group chats, or eight of them. */
 const GROUP_CHATS: AsideBubble[] = [
@@ -33,6 +34,7 @@ const readReturnTo = () => new URLSearchParams(window.location.search).get("redi
 export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolean }) {
   const returnTo = useSyncExternalStore(noSubscribe, readReturnTo, () => null);
   const [state, formAction, isPending] = useActionState(signup, null);
+  const t = useT();
 
   useEffect(() => {
     if (state?.success) {
@@ -57,18 +59,17 @@ export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolea
   return (
     <div className={styles.screen}>
       <AuthAside
-        line={<>Campus life is spread across <em>forty group chats.</em></>}
-        note="One feed instead"
+        line={<>{t('auth.signupLineBefore')}<em>{t('auth.signupLineAccent')}</em></>}
+        note={t('auth.signupNote')}
         bubbles={GROUP_CHATS}
       />
 
       <main className={styles.panel}>
         <div className={styles.form}>
-          <p className={styles.label}>Create account</p>
-          <h1 className={styles.title}>Start here.</h1>
+          <p className={styles.label}>{t('auth.createAccount')}</p>
+          <h1 className={styles.title}>{t('auth.startHere')}</h1>
           <p className={styles.subtitle}>
-            Takes a minute. You can browse everything without one, but joining a
-            club or registering for an event needs a name attached.
+            {t('auth.signupBody')}
           </p>
 
           {googleEnabled && <GoogleButton returnTo={returnTo} />}
@@ -77,7 +78,7 @@ export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolea
             <div className={styles.fields}>
               <div className={styles.field}>
                 <label className={styles.fieldLabel} htmlFor="name">
-                  Full name
+                  {t('auth.fullName')}
                 </label>
                 <input
                   id="name"
@@ -91,7 +92,7 @@ export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolea
 
               <div className={styles.field}>
                 <label className={styles.fieldLabel} htmlFor="email">
-                  Email
+                  {t('auth.email')}
                 </label>
                 <input
                   id="email"
@@ -106,11 +107,11 @@ export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolea
               <div className={styles.field}>
                 <div className={styles.fieldHead}>
                   <label className={styles.fieldLabel} htmlFor="password">
-                    Password
+                    {t('auth.password')}
                   </label>
                   {/* The server enforces this; saying so up front beats
                       failing the form after they have typed it. */}
-                  <span className={styles.quietLink}>8 characters min</span>
+                  <span className={styles.quietLink}>{t('auth.min8')}</span>
                 </div>
                 <input
                   id="password"
@@ -128,14 +129,14 @@ export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolea
               {isPending && (
                 <Loader2 size={15} className={styles.spin} aria-hidden="true" />
               )}
-              {isPending ? "Creating account" : "Create account"}
+              {isPending ? t('auth.creatingAccount') : t('auth.createAccount')}
             </button>
           </form>
 
           <TryDemo />
 
           <p className={styles.foot}>
-            Already have an account? <Link href={authHref(returnTo)}>Sign in</Link>
+            {t('auth.haveAccount')} <Link href={authHref(returnTo)}>{t('auth.signIn')}</Link>
           </p>
         </div>
       </main>

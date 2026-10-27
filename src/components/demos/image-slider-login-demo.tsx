@@ -12,6 +12,8 @@ import styles from "@/app/login/auth.module.css";
 import AuthAside, { type AsideBubble } from '@/components/auth/AuthAside';
 import TryDemo from '@/components/TryDemo';
 import GoogleButton from '@/components/auth/GoogleButton';
+import { useT } from '@/lib/i18n';
+import type { MessageKey } from '@/lib/i18n/messages';
 
 /* What lands on the board in a week, all of it in one place. */
 const CAMPUS_ACTIVITY: AsideBubble[] = [
@@ -26,22 +28,23 @@ const CAMPUS_ACTIVITY: AsideBubble[] = [
 ];
 
 /* Set by /api/auth/google/callback; each says what happened and what to do. */
-const GOOGLE_PROBLEMS: Record<string, string> = {
-  off: 'Google sign-in is not set up on this site yet. Use your email and password.',
-  busy: 'Google sign-in was tried a lot from this network in the last hour. Try again later, or use your email.',
-  expired: 'That Google sign-in expired. Try again.',
-  cancelled: 'Google sign-in was cancelled. Try again, or use your email.',
-  unverified: 'Google did not confirm that email address. Confirm it with Google, or sign in with your email.',
-  demo: 'The shared demo account cannot be opened with Google. Use Try the demo instead.',
-  deleted: 'The account linked to that Google account was deleted. Sign up again with your email.',
-  locked: 'That account is locked for now. Try again later, or reset your password.',
-  'other-google': 'That email is already linked to a different Google account. Use that one, or your password.',
+const GOOGLE_PROBLEMS: Record<string, MessageKey> = {
+  off: 'auth.google.off',
+  busy: 'auth.google.busy',
+  expired: 'auth.google.expired',
+  cancelled: 'auth.google.cancelled',
+  unverified: 'auth.google.unverified',
+  demo: 'auth.google.demo',
+  deleted: 'auth.google.deleted',
+  locked: 'auth.google.locked',
+  'other-google': 'auth.google.other',
 };
-const GOOGLE_FAILED = 'Google sign-in did not work this time. Try again, or use your email.';
+const GOOGLE_FAILED: MessageKey = 'auth.google.failed';
 
 export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean }) {
   const searchParams = useSearchParams();
   const [state, formAction, isPending] = useActionState(login, null);
+  const t = useT();
 
   /* Set by the middleware when a session cookie was present but no longer
      validates. Being asked to sign in again mid-session is confusing enough
@@ -89,21 +92,21 @@ export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean
           campus, and a slideshow is a strange thing to ask someone to watch
           while they type a password. */}
       <AuthAside
-        line={<>Everything happening, <em>in one place.</em></>}
-        note="Events · Clubs · Colleges"
+        line={<>{t('auth.loginLineBefore')}<em>{t('auth.loginLineAccent')}</em></>}
+        note={t('auth.loginNote')}
         bubbles={CAMPUS_ACTIVITY}
       />
 
       <main className={styles.panel}>
         <div className={styles.form}>
-          <p className={styles.label}>{expired ? 'Session ended' : 'Sign in'}</p>
+          <p className={styles.label}>{expired ? t('auth.sessionEnded') : t('auth.signIn')}</p>
           <h1 className={styles.title}>
-            {expired ? 'That took a while.' : 'Welcome back.'}
+            {expired ? t('auth.tookAWhile') : t('auth.welcomeBack')}
           </h1>
           <p className={styles.subtitle}>
             {expired
-              ? 'Your session expired, so we need your password again. Nothing was lost — you will land back where you were.'
-              : 'Your events, your clubs and everything you have registered for.'}
+              ? t('auth.expiredBody')
+              : t('auth.loginBody')}
           </p>
 
           {googleEnabled && <GoogleButton returnTo={returnTo} />}
@@ -112,7 +115,7 @@ export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean
             <div className={styles.fields}>
               <div className={styles.field}>
                 <label className={styles.fieldLabel} htmlFor="email">
-                  Email
+                  {t('auth.email')}
                 </label>
                 <input
                   id="email"
@@ -127,10 +130,10 @@ export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean
               <div className={styles.field}>
                 <div className={styles.fieldHead}>
                   <label className={styles.fieldLabel} htmlFor="password">
-                    Password
+                    {t('auth.password')}
                   </label>
                   <Link href="/forgot-password" className={styles.quietLink}>
-                    Forgot?
+                    {t('auth.forgot')}
                   </Link>
                 </div>
                 <input
@@ -148,21 +151,21 @@ export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean
               {isPending && (
                 <Loader2 size={15} className={styles.spin} aria-hidden="true" />
               )}
-              {isPending ? "Signing in" : "Sign in"}
+              {isPending ? t('auth.signingIn') : t('auth.signIn')}
             </button>
           </form>
 
           {googleProblem && (
             <p className={styles.subtitle} role="alert">
               {/* hasOwn, so ?google=constructor cannot pull a function off the prototype. */}
-              {Object.hasOwn(GOOGLE_PROBLEMS, googleProblem) ? GOOGLE_PROBLEMS[googleProblem] : GOOGLE_FAILED}
+              {t(Object.hasOwn(GOOGLE_PROBLEMS, googleProblem) ? GOOGLE_PROBLEMS[googleProblem] : GOOGLE_FAILED)}
             </p>
           )}
           {demoProblem && (
             <p className={styles.subtitle} role="alert">
               {demoProblem === 'busy'
-                ? 'The demo was opened a lot from this network in the last hour. Try again later, or sign up.'
-                : 'The demo did not open this time. Try again in a moment.'}
+                ? t('auth.demoBusy')
+                : t('auth.demoFailed')}
             </p>
           )}
           <TryDemo />
@@ -170,7 +173,7 @@ export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean
           <p className={styles.foot}>
             {/* The return address goes along, so making an account on the
                 way still ends on the page that asked for one. */}
-            No account yet? <Link href={authHref(returnTo, "/signup")}>Create one</Link>
+            {t('auth.noAccount')} <Link href={authHref(returnTo, "/signup")}>{t('auth.createOne')}</Link>
           </p>
         </div>
       </main>

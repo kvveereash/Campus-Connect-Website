@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import styles from './Navbar.module.css';
 import { useCommand } from '@/context/CommandContext';
 import { useAuth } from '@/context/AuthContext';
+import { useT } from '@/lib/i18n';
 
 /**
  * The places people actually go. Each carries its category square, the same
@@ -19,22 +20,24 @@ import { useAuth } from '@/context/AuthContext';
  * was "Buzz", a name that did not say what was behind it.
  */
 const PRIMARY = [
-    { href: '/events', label: 'Events', mark: 'var(--press-technology)' },
-    { href: '/clubs', label: 'Clubs', mark: 'var(--press-sports)' },
-    { href: '/team-finder', label: 'Team finder', mark: 'var(--press-hackathon)' },
-    { href: '/buzz', label: 'Club posts', mark: 'var(--press-cultural)' },
+    { href: '/events', label: 'nav.events', mark: 'var(--press-technology)' },
+    { href: '/clubs', label: 'nav.clubs', mark: 'var(--press-sports)' },
+    { href: '/team-finder', label: 'nav.teamFinder', mark: 'var(--press-hackathon)' },
+    { href: '/buzz', label: 'nav.clubPosts', mark: 'var(--press-cultural)' },
 ] as const;
 
 const EXPLORE = [
-    { href: '/colleges', label: 'Colleges' },
-    { href: '/leaderboards', label: 'Leaderboard' },
-    { href: '/map', label: 'Venues' },
+    { href: '/fests', label: 'nav.fests' },
+    { href: '/colleges', label: 'nav.colleges' },
+    { href: '/leaderboards', label: 'nav.leaderboard' },
+    { href: '/map', label: 'nav.venues' },
 ] as const;
 
 export default function Navbar() {
     const pathname = usePathname();
     const { setIsOpen } = useCommand();
     const { user } = useAuth();
+    const t = useT();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
@@ -64,7 +67,7 @@ export default function Navbar() {
     return (
         <nav className={`${styles.navbar} ${scrolled ? styles.navbarScrolled : ''}`} aria-label="Main">
             <div className={`container ${styles.navContainer}`}>
-                <Link href="/" className={styles.logo} aria-label="Campus Connect, home">
+                <Link href="/" className={styles.logo} aria-label={t('nav.home')}>
                     <span className={styles.logoMark} aria-hidden="true">
                         <svg viewBox="0 0 24 24" width="16" height="16">
                             <circle cx="6" cy="7" r="3" fill="currentColor" />
@@ -84,7 +87,7 @@ export default function Navbar() {
                             aria-current={isActive(item.href) ? 'page' : undefined}
                         >
                             <span className={styles.navMark} style={{ background: item.mark }} aria-hidden="true" />
-                            {item.label}
+                            {t(item.label)}
                         </Link>
                     ))}
                     <ExploreDropdown />
@@ -95,10 +98,10 @@ export default function Navbar() {
                         type="button"
                         onClick={() => setIsOpen(true)}
                         className={styles.searchButton}
-                        aria-label="Search events, clubs and people"
+                        aria-label={t('nav.searchLabel')}
                     >
                         <Search size={16} aria-hidden="true" />
-                        <span className={styles.searchText}>Search</span>
+                        <span className={styles.searchText}>{t('nav.search')}</span>
                         <kbd className={styles.kbd}>⌘K</kbd>
                     </button>
                     <NotificationBell />
@@ -108,7 +111,7 @@ export default function Navbar() {
                         type="button"
                         className={styles.mobileToggle}
                         onClick={() => setIsMobileMenuOpen((o) => !o)}
-                        aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                        aria-label={isMobileMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
                         aria-expanded={isMobileMenuOpen}
                         aria-controls="mobile-menu"
                     >
@@ -125,22 +128,22 @@ export default function Navbar() {
                 {user && (
                     <Link href="/my-events" className={styles.mobileMenuLink}>
                         <CalendarCheck size={16} aria-hidden="true" />
-                        My events
+                        {t('nav.myEvents')}
                     </Link>
                 )}
                 {PRIMARY.map((item) => (
                     <Link key={item.href} href={item.href} className={styles.mobileMenuLink}>
                         <span className={styles.navMark} style={{ background: item.mark }} aria-hidden="true" />
-                        {item.label}
+                        {t(item.label)}
                     </Link>
                 ))}
 
                 <div className={styles.exploreSection}>
-                    <p className={styles.exploreTitle}>Explore</p>
+                    <p className={styles.exploreTitle}>{t('nav.explore')}</p>
                     <div className={styles.exploreLinks}>
                         {EXPLORE.map((item) => (
                             <Link key={item.href} href={item.href} className={styles.mobileMenuLink}>
-                                {item.label}
+                                {t(item.label)}
                             </Link>
                         ))}
                     </div>

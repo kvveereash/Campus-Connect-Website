@@ -17,6 +17,9 @@ import PaymentReturn from '@/components/PaymentReturn';
 import EventTicket from '@/components/EventTicket';
 import ShareButton from '@/components/ShareButton';
 import ReportButton from '@/components/ReportButton';
+import ViewBeacon from '@/components/analytics/ViewBeacon';
+import VolunteerRoles from '@/components/volunteers/VolunteerRoles';
+import FestLink from '@/components/fests/FestLink';
 import InterestButton from '@/components/InterestButton';
 import WhenTag from '@/components/WhenTag';
 import GoingNearYou from '@/components/GoingNearYou';
@@ -26,6 +29,7 @@ import styles from './page.module.css';
 import Reveal from '@/components/Reveal';
 import { formatIST } from '@/lib/format';
 import { eventPhoto } from '@/lib/college-images';
+import { useT } from '@/lib/i18n';
 
 const noSubscribe = () => () => {};
 
@@ -33,6 +37,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
     const photo = eventPhoto(event);
     const router = useRouter();
     const { user } = useAuth();
+    const t = useT();
     const [armed, setArmed] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
@@ -44,7 +49,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
     const isPast = when < new Date();
     const host = event.club ?? event.hostCollege;
     const hostHref = event.club ? `/clubs/${event.club.id}` : `/colleges/${event.hostCollege.id}`;
-    const priceText = event.price === 0 ? 'Free' : `₹${event.price.toLocaleString('en-IN')}`;
+    const priceText = event.price === 0 ? t('board.free') : `₹${event.price.toLocaleString('en-IN')}`;
     // Seats left, when the organiser set a limit. registrationCount is the
     // seats in use (free sign-ups and paid places), kept in step by the server.
     const seatsLeft = event.capacity === null ? null : Math.max(0, event.capacity - event.registrationCount);
@@ -122,6 +127,8 @@ export default function EventDetails({ event }: { event: EventDetail }) {
 
     return (
         <div className={styles.page}>
+            {/* Counts the view (once a day per browser) and remembers where it came from. */}
+            <ViewBeacon eventId={event.id} />
             {/* useSearchParams opts a page out of static rendering unless it
                 sits behind a Suspense boundary — the production build fails
                 otherwise, as it did on /login earlier in this project. */}
@@ -143,7 +150,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                         onClick={goToRegister}
                         tabIndex={actionsBelow ? 0 : -1}
                     >
-                        {full ? 'Join waitlist' : 'Register'}
+                        {full ? t('event.joinWaitlist') : t('event.register')}
                     </button>
                 </div>,
                 barRoot,
@@ -151,7 +158,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
 
             <Link href="/events" className={styles.back}>
                 <ArrowLeft size={13} aria-hidden="true" />
-                All events
+                {t('event.allEvents')}
             </Link>
 
             <header className={styles.masthead}>
@@ -160,21 +167,23 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                     <span className={styles.eyebrowRule}>/</span>
                     <span>{priceText}</span>
                     <span className={styles.eyebrowRule}>/</span>
-                    <span>{isPast ? 'Past' : 'Upcoming'}</span>
+                    <span>{isPast ? t('event.past') : t('event.upcoming')}</span>
                     <WhenTag date={event.date} className={styles.whenTag} />
                     {/* Only the creator ever sees an unverified event. */}
-                    {!event.verified && <span className={styles.pending}>Awaiting approval</span>}
+                    {!event.verified && <span className={styles.pending}>{t('event.awaitingApproval')}</span>}
                 </div>
 
                 <h1 className={styles.title}>{event.title}</h1>
 
                 <p className={styles.host}>
-                    Hosted by{' '}
+                    {t('event.hostedBy')}{' '}
                     <Link href={hostHref} className={styles.hostLink}>
                         {host?.name ?? 'Campus Connect'}
                     </Link>
                 </p>
             </header>
+
+            {event.fest?.verified && <FestLink fest={event.fest} />}
 
             {photo && (
                 <div className={styles.hero}>
@@ -191,14 +200,14 @@ export default function EventDetails({ event }: { event: EventDetail }) {
             <Reveal>
             <div className={styles.body}>
                 <div>
-                    <p className={styles.sectionLabel}>About</p>
+                    <p className={styles.sectionLabel}>{t('event.about')}</p>
                     <p className={styles.prose}>{event.description}</p>
                 </div>
 
                 <aside>
                     <dl className={styles.facts}>
                         <div className={styles.fact}>
-                            <dt className={styles.factKey}>When</dt>
+                            <dt className={styles.factKey}>{t('event.when')}</dt>
                             <dd className={styles.factValue}>
                                 {formatIST(when, {
                                     weekday: 'long',
@@ -219,10 +228,10 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            Google Calendar
+                                            {t('event.googleCalendar')}
                                         </a>
                                         <a href={`/events/${event.id}/calendar.ics`} download>
-                                            Apple, Outlook (.ics)
+                                            {t('event.icsCalendar')}
                                         </a>
                                     </span>
                                 )}
@@ -230,7 +239,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                         </div>
 
                         <div className={styles.fact}>
-                            <dt className={styles.factKey}>Where</dt>
+                            <dt className={styles.factKey}>{t('event.where')}</dt>
                             <dd className={styles.factValue}>
                                 {event.venue}
                                 <small>{event.hostCollege.name}</small>
@@ -238,12 +247,12 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                         </div>
 
                         <div className={styles.fact}>
-                            <dt className={styles.factKey}>Entry</dt>
+                            <dt className={styles.factKey}>{t('event.entry')}</dt>
                             <dd className={styles.factValue}>
-                                {event.price === 0 ? 'Free to attend' : `₹${event.price.toLocaleString('en-IN')}`}
+                                {event.price === 0 ? t('event.freeToAttend') : `₹${event.price.toLocaleString('en-IN')}`}
                                 {seatsLeft !== null && !isPast && (
                                     <small data-full={full || undefined} className={styles.seats}>
-                                        {full ? 'Full · waitlist open' : `${seatsLeft} of ${event.capacity} places left`}
+                                        {full ? t('event.full') : t('event.placesLeft', { left: seatsLeft, cap: event.capacity ?? 0 })}
                                     </small>
                                 )}
                             </dd>
@@ -255,9 +264,9 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                                 unapproved events; say so instead of offering a
                                 button that can only fail. */}
                             {isPast ? (
-                                <button className="btn btn-outline" disabled>Registration closed</button>
+                                <button className="btn btn-outline" disabled>{t('event.registrationClosed')}</button>
                             ) : !event.verified ? (
-                                <button className="btn btn-outline" disabled>Awaiting approval</button>
+                                <button className="btn btn-outline" disabled>{t('event.awaitingApproval')}</button>
                             ) : (
                                 <RegisterButton eventId={event.id} price={event.price || 0} full={full} />
                             )}
@@ -282,13 +291,13 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                                     href={`/events/${event.id}/attendees`}
                                     className={styles.ownerLink}
                                 >
-                                    Attendees
+                                    {t('event.attendees')}
                                 </Link>
                                 <Link
                                     href={`/events/${event.id}/edit`}
                                     className={styles.ownerLink}
                                 >
-                                    Edit
+                                    {t('event.edit')}
                                 </Link>
                                 {armed ? (
                                     <>
@@ -298,7 +307,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                                             disabled={deleting}
                                             className={`${styles.ownerBtn} ${styles.ownerBtnArmed}`}
                                         >
-                                            {deleting ? 'Deleting' : 'Confirm delete'}
+                                            {deleting ? t('event.deleting') : t('event.confirmDelete')}
                                         </button>
                                         <button
                                             type="button"
@@ -306,7 +315,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                                             disabled={deleting}
                                             className={styles.ownerBtn}
                                         >
-                                            Keep
+                                            {t('event.keep')}
                                         </button>
                                     </>
                                 ) : (
@@ -315,7 +324,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                                         onClick={() => setArmed(true)}
                                         className={styles.ownerBtn}
                                     >
-                                        Delete
+                                        {t('event.delete')}
                                     </button>
                                 )}
                             </div>
@@ -324,7 +333,7 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                         {/* Last in the column and quiet: nobody reports their own event. */}
                         {!isOwner && event.verified && (
                             <div className={styles.report}>
-                                <ReportButton targetType="EVENT" targetId={event.id} label="Report this event" />
+                                <ReportButton targetType="EVENT" targetId={event.id} label={t('event.report')} />
                             </div>
                         )}
                     </dl>
@@ -339,6 +348,9 @@ export default function EventDetails({ event }: { event: EventDetail }) {
                     <TeamFinder eventId={event.id} />
                 </TeamProvider>
             </section>
+
+            {/* Draws its own rule, and nothing at all when the event needs no volunteers. */}
+            <VolunteerRoles eventId={event.id} isPast={isPast} />
 
             {/* The component decides what to show: the ratings once the event
                 has happened, and a line saying when they open before that. */}

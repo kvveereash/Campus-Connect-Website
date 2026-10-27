@@ -11,6 +11,7 @@ import Image from 'next/image';
 import styles from './Notifications.module.css';
 import { formatIST } from '@/lib/format';
 import PushToggle from '@/components/PushToggle';
+import { useT } from '@/lib/i18n';
 
 type Notification = {
     id: string;
@@ -27,6 +28,7 @@ type Notification = {
 
 export function NotificationBell() {
     const { user } = useAuth();
+    const t = useT();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -126,7 +128,7 @@ export function NotificationBell() {
                 type="button"
                 className={styles.bellButton}
                 onClick={() => setIsOpen(!isOpen)}
-                aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+                aria-label={unreadCount > 0 ? t('notif.labelUnread', { n: unreadCount }) : t('notif.label')}
                 aria-expanded={isOpen}
             >
                 <Bell size={20} aria-hidden="true" />
@@ -139,28 +141,28 @@ export function NotificationBell() {
                 <div className={styles.dropdown}>
                     <div className={styles.header}>
                         <h3>
-                            Notifications
-                            {unreadCount > 0 && <span className={styles.count}>{unreadCount} new</span>}
+                            {t('notif.label')}
+                            {unreadCount > 0 && <span className={styles.count}>{t('notif.new', { n: unreadCount })}</span>}
                         </h3>
                         {unreadCount > 0 && (
                             <button
                                 className={styles.markAllBtn}
                                 onClick={handleMarkAllRead}
                             >
-                                Mark all read
+                                {t('notif.markAll')}
                             </button>
                         )}
                     </div>
 
                     <div className={styles.scrollArea}>
                         {loading ? (
-                            <div className={styles.loading}>Loading notifications</div>
+                            <div className={styles.loading}>{t('notif.loading')}</div>
                         ) : notifications.length === 0 ? (
                             <div className={styles.empty}>
-                                <strong>Nothing new yet.</strong>
-                                <span>Sign-ups for your events, replies and reminders land here.</span>
+                                <strong>{t('notif.emptyTitle')}</strong>
+                                <span>{t('notif.emptyBody')}</span>
                                 <Link href="/events" onClick={() => setIsOpen(false)}>
-                                    Browse events
+                                    {t('notif.browse')}
                                 </Link>
                             </div>
                         ) : (

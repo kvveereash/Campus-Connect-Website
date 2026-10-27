@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { isDemoEmail } from '@/lib/demo-account';
+import { useT } from '@/lib/i18n';
 import styles from './DemoBanner.module.css';
 
 /**
@@ -11,19 +12,20 @@ import styles from './DemoBanner.module.css';
  */
 export default function DemoBanner() {
     const { user } = useAuth();
+    const t = useT();
     if (!isDemoEmail(user?.email)) return null;
 
     return (
         <aside className={styles.banner} aria-label="Demo account">
             <p className={styles.text}>
                 <span className={styles.dot} aria-hidden="true" />
-                <strong>You are in the demo account.</strong> Click around freely; it resets every night.
+                <strong>{t('demo.title')}</strong> {t('demo.body')}
             </p>
             <nav className={styles.links}>
-                <Link href="/profile">Your ticket and event</Link>
-                <Link href="/messages">Messages</Link>
+                <Link href="/profile">{t('demo.ticket')}</Link>
+                <Link href="/messages">{t('demo.messages')}</Link>
                 <Link href="/signup" className={styles.cta}>
-                    Sign up for real
+                    {t('demo.signUp')}
                 </Link>
             </nav>
         </aside>

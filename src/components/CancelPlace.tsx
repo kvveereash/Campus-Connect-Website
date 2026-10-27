@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { cancelRegistrationAction } from '@/lib/actions/events';
 import { isOk } from '@/lib/api-response';
+import { useT } from '@/lib/i18n';
 import styles from './CancelPlace.module.css';
 
 /**
@@ -16,6 +17,7 @@ import styles from './CancelPlace.module.css';
 export default function CancelPlace({ eventId, waitlisted }: { eventId: string; waitlisted: boolean }) {
     const router = useRouter();
     const { refreshUser } = useAuth();
+    const t = useT();
     const [armed, setArmed] = useState(false);
     const [busy, setBusy] = useState(false);
 
@@ -24,14 +26,14 @@ export default function CancelPlace({ eventId, waitlisted }: { eventId: string; 
         try {
             const result = await cancelRegistrationAction({ eventId });
             if (isOk(result)) {
-                toast.success(waitlisted ? 'You left the waitlist.' : 'Your place is cancelled. Thanks for freeing it up.');
+                toast.success(waitlisted ? t('cancel.leftToast') : t('cancel.cancelledToast'));
                 await refreshUser();
                 router.refresh();
                 return;
             }
-            toast.error(result.error || 'Could not cancel. Try again in a moment.');
+            toast.error(result.error || t('cancel.failed'));
         } catch {
-            toast.error('Could not cancel. Try again in a moment.');
+            toast.error(t('cancel.failed'));
         } finally {
             setBusy(false);
             setArmed(false);
@@ -41,20 +43,20 @@ export default function CancelPlace({ eventId, waitlisted }: { eventId: string; 
     if (!armed) {
         return (
             <button type="button" className={styles.quiet} onClick={() => setArmed(true)}>
-                {waitlisted ? 'Leave the waitlist' : 'Cancel my place'}
+                {waitlisted ? t('cancel.leaveWaitlist') : t('cancel.cancelPlace')}
             </button>
         );
     }
 
     return (
         <div className={styles.confirm} role="group" aria-label="Confirm cancelling">
-            <p>{waitlisted ? 'Leave the waitlist?' : 'Give up your place? Someone on the waitlist may get it.'}</p>
+            <p>{waitlisted ? t('cancel.confirmLeave') : t('cancel.confirmCancel')}</p>
             <div className={styles.buttons}>
                 <button type="button" className={styles.danger} onClick={cancel} disabled={busy}>
-                    {busy ? 'Cancelling' : waitlisted ? 'Yes, leave' : 'Yes, cancel'}
+                    {busy ? t('cancel.cancelling') : waitlisted ? t('cancel.yesLeave') : t('cancel.yesCancel')}
                 </button>
                 <button type="button" className={styles.quiet} onClick={() => setArmed(false)} disabled={busy}>
-                    Keep it
+                    {t('cancel.keep')}
                 </button>
             </div>
         </div>

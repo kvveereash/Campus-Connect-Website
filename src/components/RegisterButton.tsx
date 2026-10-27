@@ -8,6 +8,8 @@ import { createEventPaymentSession } from '@/lib/actions/payments';
 import { verifyPaymentStatus } from '@/lib/actions/verify-payment';
 import { toast } from 'sonner';
 import { authHref } from '@/lib/utils';
+import { useT } from '@/lib/i18n';
+import { registrationSource } from '@/components/analytics/ViewBeacon';
 import entrance from './entrance.module.css';
 
 // Stripe charges in INR (lib/stripe.ts), and every listing shows rupees.
@@ -17,6 +19,7 @@ const rupees = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 export default function RegisterButton({ eventId, price = 0, full = false }: { eventId: string, price?: number, full?: boolean }) {
     const { user, registerForEvent, isLoading } = useAuth();
     const router = useRouter();
+    const t = useT();
     const [status, setStatus] = useState<'idle' | 'registering' | 'payment_pending' | 'processing_payment' | 'success'>('idle');
     const [isOpen, setIsOpen] = useState(false);
     const [registrationId, setRegistrationId] = useState<string | null>(null);
@@ -59,7 +62,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
         if (!user) return;
 
         try {
-            const result = await joinEvent(user.id, eventId);
+            const result = await joinEvent(user.id, eventId, registrationSource(eventId));
 
             if (result.success) {
                 // The last seat went while they were deciding: they are in line.
@@ -68,7 +71,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                     setIsOpen(false);
                     setStatus('idle');
                     toast.success(
-                        `You are number ${result.waitlistPosition ?? 1} on the waitlist. We will tell you if a place opens up.`,
+                        t('register.waitlistToast', { n: result.waitlistPosition ?? 1 }),
                     );
                     router.refresh();
                     return;
@@ -158,7 +161,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
     if (isRegistered) {
         return (
             <button className="btn btn-outline" disabled style={{ background: 'var(--color-accent-soft)', color: 'var(--color-accent)', opacity: 1, borderColor: 'transparent' }}>
-                Registered
+                {t('register.registered')}
             </button>
         );
     }
@@ -166,7 +169,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
     if (isWaitlisted) {
         return (
             <button className="btn btn-outline" disabled style={{ opacity: 1 }}>
-                On the waitlist
+                {t('register.waitlisted')}
             </button>
         );
     }
@@ -198,14 +201,14 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                     onClick={resumePayment}
                     disabled={status === 'processing_payment'}
                 >
-                    {status === 'processing_payment' ? 'Please wait…' : `Pay ${rupees(price)}`}
+                    {status === 'processing_payment' ? t('register.wait') : t('register.pay', { price: rupees(price) })}
                 </button>
                 <button
                     className="btn btn-outline"
                     onClick={handleVerifyPayment}
                     disabled={status === 'processing_payment'}
                 >
-                    I have paid
+                    {t('register.havePaid')}
                 </button>
             </div>
         );
@@ -217,7 +220,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                 className="btn btn-primary"
                 onClick={handleOpenModal}
             >
-                {full ? 'Join the waitlist' : price > 0 ? `Pay ${rupees(price)} & Register` : 'Register (Free)'}
+                {full ? t('register.joinWaitlist') : price > 0 ? t('register.payAndRegister', { price: rupees(price) }) : t('register.free')}
             </button>
 
             {isOpen && (
@@ -271,31 +274,31 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                                 >
                                     
                                 </div>
-                                <h3 style={{ marginBottom: '0.5rem' }}>You&rsquo;re in.</h3>
+                                <h3 style={{ marginBottom: '0.5rem' }}>{t('register.youreIn')}</h3>
                                 {/* Was "Check your email": no email is sent
                                     until a mail provider is configured. */}
                                 <p style={{ color: 'var(--text-secondary)' }}>
-                                    Your ticket is on this page, with a QR code to show at the entrance.
+                                    {t('register.ticketHere')}
                                 </p>
                                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.25rem' }}>
                                     <button type="button" className="btn btn-primary" onClick={showTicket}>
-                                        Show my ticket
+                                        {t('register.showTicket')}
                                     </button>
                                     <a className="btn btn-outline" href={`/events/${eventId}/calendar.ics`} download>
-                                        Add to calendar
+                                        {t('register.addToCalendar')}
                                     </a>
                                 </div>
                             </div>
                         ) : status === 'payment_pending' || status === 'processing_payment' ? (
                             <div style={{ textAlign: 'center' }}>
-                                <h2 style={{ marginBottom: '1rem' }}>Secure Checkout</h2>
+                                <h2 style={{ marginBottom: '1rem' }}>{t('register.checkout')}</h2>
                                 <div style={{ background: 'var(--surface-color)', padding: '1.5rem', borderRadius: '0.75rem', marginBottom: '1.5rem' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                        <span>Registration Fee</span>
+                                        <span>{t('register.fee')}</span>
                                         <span style={{ fontWeight: 700 }}>{rupees(price)}</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem' }}>
-                                        <span style={{ fontWeight: 700 }}>Total</span>
+                                        <span style={{ fontWeight: 700 }}>{t('register.total')}</span>
                                         <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>{rupees(price)}</span>
                                     </div>
                                 </div>
@@ -305,23 +308,23 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                                     disabled={status === 'processing_payment'}
                                     style={{ width: '100%' }}
                                 >
-                                    {status === 'processing_payment' ? 'Redirecting to Stripe...' : 'Pay with Stripe'}
+                                    {status === 'processing_payment' ? t('register.redirecting') : t('register.payStripe')}
                                 </button>
                             </div>
                         ) : (
                             <form onSubmit={handleConfirmRegistration}>
                                 <h2 style={{ marginBottom: full ? '0.5rem' : '1.5rem', fontSize: '1.5rem' }}>
-                                    {full ? 'Join the waitlist' : 'Confirm Registration'}
+                                    {full ? t('register.joinWaitlist') : t('register.confirm')}
                                 </h2>
                                 {full && (
                                     <p style={{ marginBottom: '1.5rem', color: 'var(--color-felt)' }}>
-                                        Every seat is taken. Join the line and we will tell you as soon as one opens up.
+                                        {t('register.fullNote')}
                                     </p>
                                 )}
 
                                 <div style={{ marginBottom: '1rem' }}>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
-                                        Full Name
+                                        {t('register.fullName')}
                                     </label>
                                     <input
                                         type="text"
@@ -340,7 +343,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
 
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
-                                        Email Address
+                                        {t('register.email')}
                                     </label>
                                     <input
                                         type="email"
@@ -364,7 +367,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                                         onClick={() => setIsOpen(false)}
                                         disabled={status === 'registering'}
                                     >
-                                        Cancel
+                                        {t('register.cancel')}
                                     </button>
                                     <button
                                         type="submit"
@@ -374,7 +377,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                                     >
                                         {status === 'registering' ? (
                                             <span className={entrance.spin}>↻</span>
-                                        ) : full ? 'Join the waitlist' : price > 0 ? 'Proceed to Payment' : 'Confirm Free Registration'}
+                                        ) : full ? t('register.joinWaitlist') : price > 0 ? t('register.proceedToPay') : t('register.confirmFree')}
                                     </button>
                                 </div>
                             </form>

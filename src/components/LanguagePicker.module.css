@@ -1,0 +1,33 @@
+.picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: inherit;
+}
+
+/* The icon says it; the word is for screen readers. */
+.label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.select {
+    appearance: none;
+    padding: 4px 10px;
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: border-color var(--duration-micro) var(--ease-glide);
+}
+
+.select:hover,
+.select:focus-visible {
+    border-color: var(--border-strong);
+}

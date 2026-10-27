@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useT } from '@/lib/i18n';
 import styles from './Navbar.module.css';
 
 export default function UserNav() {
     const { user, isLoading } = useAuth();
+    const t = useT();
 
     // Same footprint as the signed-out pair, so the bar does not jump when
     // the session resolves.
@@ -19,9 +21,9 @@ export default function UserNav() {
                 {/* Where your registrations and tickets are. On phones it is
                     at the top of the menu instead, to keep the bar short. */}
                 <Link href="/my-events" className={`${styles.loginBtn} ${styles.myEvents}`}>
-                    My events
+                    {t('nav.myEvents')}
                 </Link>
-                <Link href="/profile" className={styles.avatar} aria-label={`Your profile, ${user.name}`}>
+                <Link href="/profile" className={styles.avatar} aria-label={t('user.profile', { name: user.name })}>
                     {user.avatar ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={user.avatar} alt="" />
@@ -36,10 +38,10 @@ export default function UserNav() {
     return (
         <div className={styles.authPair}>
             <Link href="/login" className={styles.loginBtn}>
-                Log in
+                {t('user.logIn')}
             </Link>
             <Link href="/signup" className={styles.joinBtn}>
-                Join free
+                {t('footer.join')}
             </Link>
         </div>
     );

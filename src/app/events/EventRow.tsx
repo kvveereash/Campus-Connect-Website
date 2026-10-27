@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { T } from '@/lib/i18n';
 import Link from 'next/link';
 import { eventPhoto } from '@/lib/college-images';
 import WhenTag from '@/components/WhenTag';
@@ -51,7 +52,7 @@ function initialsOf(title: string) {
  * `note` adds a tag after the price, for a status the board itself never
  * shows ("Payment pending" on My events).
  */
-export default function EventRow({ event, note }: { event: RowEvent; note?: string }) {
+export default function EventRow({ event, note }: { event: RowEvent; note?: React.ReactNode }) {
     const ink = inkFor(event.category);
     const photo = eventPhoto(event);
     const { month, day, weekday } = dateParts(event.date);
@@ -82,7 +83,7 @@ export default function EventRow({ event, note }: { event: RowEvent; note?: stri
                         {event.category}
                     </span>
                     <span className={`${styles.price} ${event.price > 0 ? '' : styles.priceFree}`}>
-                        {event.price > 0 ? `₹${event.price.toLocaleString('en-IN')}` : 'Free'}
+                        {event.price > 0 ? `₹${event.price.toLocaleString('en-IN')}` : <T k="board.free" />}
                     </span>
                     <WhenTag date={event.date} className={styles.whenTag} />
                     {note && <span className={styles.note}>{note}</span>}
