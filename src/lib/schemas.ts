@@ -76,6 +76,13 @@ export const eventSchema = z.object({
         .nonnegative("Price cannot be negative")
         .max(100000, "Price seems too high")
         .default(0),
+    // Seats; null or missing means no limit.
+    capacity: z.number()
+        .int("Seats must be a whole number")
+        .min(1, "At least 1 seat, or leave it empty for no limit")
+        .max(100000, "That is more seats than any venue has")
+        .nullable()
+        .optional(),
     hostCollegeId: z.string().max(50).optional(),
     clubId: z.string().max(50).optional(),
     maxAttendees: z.number().int().positive().max(100000).optional(),

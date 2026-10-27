@@ -1,0 +1,61 @@
+.quiet {
+    padding: 8px 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-felt);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--border-strong);
+    cursor: pointer;
+}
+
+.quiet:hover {
+    color: var(--color-obsidian);
+}
+
+.confirm {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-hairline);
+    background: var(--color-canvas);
+}
+
+.confirm p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--color-inkstone);
+}
+
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Destroys something, so it does not look like the button that saves. */
+.danger {
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-danger);
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-danger);
+    cursor: pointer;
+}
+
+.danger:hover:not(:disabled) {
+    background: var(--color-danger);
+    color: var(--color-paper);
+}
+
+.danger:disabled {
+    opacity: 0.5;
+    cursor: default;
+}

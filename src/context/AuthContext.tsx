@@ -10,7 +10,7 @@ interface AuthContextType {
     user: User | null;
     login: (userData: User) => void;
     logout: () => void;
-    registerForEvent: (eventId: string) => void;
+    registerForEvent: (eventId: string, status?: EventRegistration['status']) => void;
     toggleFollow: (collegeId: string) => void;
     toggleFollowUser: (userId: string) => void;
     updateProfile: (updates: Partial<User> & { customCollegeName?: string }) => Promise<boolean>;
@@ -134,12 +134,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
+        // Before the session ends (removing needs it): this browser stops
+        // getting the signed-out account's notifications. Best effort only;
+        // signing out must never fail because of push.
+        try {
+            const registration = await navigator.serviceWorker?.getRegistration();
+            const subscription = await registration?.pushManager.getSubscription();
+            if (subscription) {
+                const { removePushSubscription } = await import('@/lib/actions/push');
+                await removePushSubscription(subscription.endpoint).catch(() => {});
+                await subscription.unsubscribe();
+            }
+        } catch {
+            // No service worker or push support: nothing to clean up.
+        }
         const { logout } = await import('@/lib/actions');
         await logout();
         setUser(null);
     };
 
-    const registerForEvent = async (eventId: string, status: 'PENDING_PAYMENT' | 'COMPLETED' | 'PAID' = 'COMPLETED') => {
+    const registerForEvent = async (eventId: string, status: EventRegistration['status'] = 'COMPLETED') => {
         if (!user) return;
         const currentRegistrations = user.registrations || [];
         if (!currentRegistrations.find(r => r.eventId === eventId)) {

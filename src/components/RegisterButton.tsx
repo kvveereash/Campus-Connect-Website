@@ -13,7 +13,8 @@ import entrance from './entrance.module.css';
 // Stripe charges in INR (lib/stripe.ts), and every listing shows rupees.
 const rupees = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 
-export default function RegisterButton({ eventId, price = 0 }: { eventId: string, price?: number }) {
+/** `full`: every seat is taken, so registering joins the waitlist instead. */
+export default function RegisterButton({ eventId, price = 0, full = false }: { eventId: string, price?: number, full?: boolean }) {
     const { user, registerForEvent, isLoading } = useAuth();
     const router = useRouter();
     const [status, setStatus] = useState<'idle' | 'registering' | 'payment_pending' | 'processing_payment' | 'success'>('idle');
@@ -24,6 +25,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
     const registration = user?.registrations?.find(r => r.eventId === eventId);
     const isRegistered = registration && (registration.status === 'PAID' || registration.status === 'COMPLETED');
     const isPendingPayment = registration && registration.status === 'PENDING_PAYMENT';
+    const isWaitlisted = registration?.status === 'WAITLISTED';
 
     const handleOpenModal = () => {
         if (isLoading) return; // Do nothing if still checking session
@@ -60,6 +62,18 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
             const result = await joinEvent(user.id, eventId);
 
             if (result.success) {
+                // The last seat went while they were deciding: they are in line.
+                if (result.waitlisted) {
+                    registerForEvent(eventId, 'WAITLISTED');
+                    setIsOpen(false);
+                    setStatus('idle');
+                    toast.success(
+                        `You are number ${result.waitlistPosition ?? 1} on the waitlist. We will tell you if a place opens up.`,
+                    );
+                    router.refresh();
+                    return;
+                }
+
                 // If paid event, we need to go to payment step
                 if (price > 0 && result.registrationId) {
                     setRegistrationId(result.registrationId);
@@ -139,10 +153,20 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
         }
     };
 
+    // A tint of the accent, not --color-mint: that old alias now points at a
+    // text grey, which made this a solid grey slab.
     if (isRegistered) {
         return (
-            <button className="btn btn-outline" disabled style={{ background: 'var(--color-mint)', color: 'var(--color-forest)', opacity: 1, border: 'none' }}>
+            <button className="btn btn-outline" disabled style={{ background: 'var(--color-accent-soft)', color: 'var(--color-accent)', opacity: 1, borderColor: 'transparent' }}>
                 Registered
+            </button>
+        );
+    }
+
+    if (isWaitlisted) {
+        return (
+            <button className="btn btn-outline" disabled style={{ opacity: 1 }}>
+                On the waitlist
             </button>
         );
     }
@@ -193,7 +217,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                 className="btn btn-primary"
                 onClick={handleOpenModal}
             >
-                {price > 0 ? `Pay ${rupees(price)} & Register` : 'Register (Free)'}
+                {full ? 'Join the waitlist' : price > 0 ? `Pay ${rupees(price)} & Register` : 'Register (Free)'}
             </button>
 
             {isOpen && (
@@ -286,7 +310,14 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                             </div>
                         ) : (
                             <form onSubmit={handleConfirmRegistration}>
-                                <h2 style={{ marginBottom: '1.5rem', fontSize: '1.5rem' }}>Confirm Registration</h2>
+                                <h2 style={{ marginBottom: full ? '0.5rem' : '1.5rem', fontSize: '1.5rem' }}>
+                                    {full ? 'Join the waitlist' : 'Confirm Registration'}
+                                </h2>
+                                {full && (
+                                    <p style={{ marginBottom: '1.5rem', color: 'var(--color-felt)' }}>
+                                        Every seat is taken. Join the line and we will tell you as soon as one opens up.
+                                    </p>
+                                )}
 
                                 <div style={{ marginBottom: '1rem' }}>
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
@@ -343,7 +374,7 @@ export default function RegisterButton({ eventId, price = 0 }: { eventId: string
                                     >
                                         {status === 'registering' ? (
                                             <span className={entrance.spin}>↻</span>
-                                        ) : price > 0 ? 'Proceed to Payment' : 'Confirm Free Registration'}
+                                        ) : full ? 'Join the waitlist' : price > 0 ? 'Proceed to Payment' : 'Confirm Free Registration'}
                                     </button>
                                 </div>
                             </form>

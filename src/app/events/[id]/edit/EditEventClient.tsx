@@ -32,6 +32,7 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
         venue: event.venue,
         category: event.category,
         thumbnail: event.thumbnail || '',
+        capacity: event.capacity === null ? '' : String(event.capacity),
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -42,6 +43,8 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
             const result = await updateEvent(event.id, {
                 ...formData,
                 thumbnail: formData.thumbnail.trim() || undefined,
+                // More seats fill from the waitlist straight away (server side).
+                capacity: formData.capacity.trim() ? Number(formData.capacity) : null,
                 // Parsed as local time, which is what the input showed.
                 date: new Date(formData.date),
             });
@@ -131,6 +134,22 @@ export default function EditEventClient({ event }: { event: EventDetail }) {
                         className={styles.input}
                         value={formData.venue}
                         onChange={handleChange}
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="capacity">Seats</label>
+                    <input
+                        type="number"
+                        id="capacity"
+                        name="capacity"
+                        min="1"
+                        step="1"
+                        inputMode="numeric"
+                        className={styles.input}
+                        value={formData.capacity}
+                        onChange={handleChange}
+                        placeholder="No limit"
                     />
                 </div>
 
