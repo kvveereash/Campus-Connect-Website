@@ -304,7 +304,7 @@ export default function Landing({ events, stats, categories, clubs, marquee, col
                                                 <b>{d.day}</b>
                                                 {d.month}
                                             </span>
-                                            <span className={styles.railIndex}>{String(i + 1).padStart(2, '0')}</span>
+                                            <span className={styles.railIndex} aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                                         </span>
                                         <span className={styles.railBody}>
                                             <span className={styles.ticketCat}>

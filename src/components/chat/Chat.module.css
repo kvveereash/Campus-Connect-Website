@@ -1497,3 +1497,14 @@
         animation: none;
     }
 }
+
+/* Touch screens: chips, filters and tabs are 44px tall, the size a thumb
+   can hit without aiming. Some sit in rows that scroll sideways, which
+   would clip an invisible tap area, so they really grow. */
+@media (pointer: coarse) {
+    .filter,
+    .newGroupBtn,
+    .searchBox {
+        height: 44px;
+    }
+}

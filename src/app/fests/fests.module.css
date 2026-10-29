@@ -348,3 +348,19 @@
         gap: 8px;
     }
 }
+
+/* Touch screens: an invisible box around these small links takes the tap,
+   so they are 44px targets without looking any bigger. */
+@media (pointer: coarse) {
+    .startLink,
+    .emptyLink {
+        position: relative;
+    }
+
+    .startLink::after,
+    .emptyLink::after {
+        content: '';
+        position: absolute;
+        inset: min(0px, calc(50% - 22px)) -6px;
+    }
+}

@@ -88,3 +88,11 @@
     text-underline-offset: 4px;
     cursor: pointer;
 }
+
+/* Touch screens: the copy button is 44px tall, the size a thumb can
+   hit without aiming. */
+@media (pointer: coarse) {
+    .copy {
+        min-height: 44px;
+    }
+}

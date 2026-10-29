@@ -328,7 +328,6 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    overflow: hidden;
     background: var(--color-marker);
     color: var(--color-obsidian);
     font-family: var(--font-display);
@@ -341,6 +340,9 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    /* The photo is rounded itself rather than clipped by the link, so the
+       link's touch area (below) can reach past the circle. */
+    border-radius: inherit;
 }
 
 /* ── Mobile ── */
@@ -480,5 +482,21 @@
         content: '';
         position: absolute;
         inset: -7px;
+    }
+
+    /* The 36px search, profile and menu buttons take a 44px tap; with 8px
+       between them the areas meet without overlapping. */
+    .searchButton,
+    .avatar,
+    .mobileToggle {
+        position: relative;
+    }
+
+    .searchButton::after,
+    .avatar::after,
+    .mobileToggle::after {
+        content: '';
+        position: absolute;
+        inset: min(0px, calc(50% - 22px));
     }
 }

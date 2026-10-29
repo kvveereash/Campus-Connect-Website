@@ -326,18 +326,20 @@ a.metaItem:hover {
     .stats {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
         width: 100%;
     }
 
     .stat {
         min-width: 0;
-        padding: 12px 10px;
+        padding: 12px 8px;
     }
 
-    /* Three to a row on a phone: tighter tracking so "Going to" fits. */
+    /* Three to a row on a phone: tighter tracking so "Going to" fits at
+       the site's 12px floor. */
     .stat dt {
         gap: 5px;
-        font-size: 11px;
+        font-size: 12px;
         letter-spacing: 0.01em;
         white-space: nowrap;
     }
@@ -363,5 +365,14 @@ a.metaItem:hover {
 
     .button {
         transition: none;
+    }
+}
+
+/* Touch screens: the hero's pill buttons and the college link are 44px
+   tall, the size a thumb can hit without aiming. */
+@media (pointer: coarse) {
+    .button,
+    a.metaItem {
+        height: 44px;
     }
 }

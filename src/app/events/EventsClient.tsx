@@ -317,7 +317,7 @@ function EventsBoard({ initialEvents, canAsk = false, searchParams }: EventsClie
                                 onClick={() => setParam('view', '')}
                             >
                                 <List size={15} aria-hidden="true" />
-                                {t('board.list')}
+                                <span className={styles.viewLabel}>{t('board.list')}</span>
                             </button>
                             <button
                                 type="button"
@@ -326,7 +326,7 @@ function EventsBoard({ initialEvents, canAsk = false, searchParams }: EventsClie
                                 onClick={() => setParam('view', 'calendar')}
                             >
                                 <CalendarDays size={15} aria-hidden="true" />
-                                {t('board.calendar')}
+                                <span className={styles.viewLabel}>{t('board.calendar')}</span>
                             </button>
                         </div>
                     </div>

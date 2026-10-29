@@ -258,6 +258,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Share something with the club"
+                            aria-label="New post"
                             className={styles.postInput}
                             rows={3}
                             disabled={isPending}
@@ -328,6 +329,7 @@ export default function ClubFeed({ clubId, initialPosts, isMember, currentUserId
                                         <textarea
                                             value={editContent}
                                             onChange={(e) => setEditContent(e.target.value)}
+                                            aria-label="Edit post"
                                             className={styles.postInput}
                                             style={{ minHeight: '100px', marginBottom: '1rem' }}
                                         />

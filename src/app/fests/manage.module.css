@@ -330,3 +330,17 @@
         gap: 9px;
     }
 }
+
+/* Touch screens: an invisible box around the back link takes the tap,
+   so they are 44px targets without looking any bigger. */
+@media (pointer: coarse) {
+    .back {
+        position: relative;
+    }
+
+    .back::after {
+        content: '';
+        position: absolute;
+        inset: -13px -8px;
+    }
+}

@@ -198,3 +198,13 @@
         transition: none;
     }
 }
+
+/* Touch screens: these pill buttons are 44px tall, the size a thumb can
+   hit without aiming. */
+@media (pointer: coarse) {
+    .relatedLink {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+    }
+}

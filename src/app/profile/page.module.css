@@ -707,3 +707,11 @@
         transform: none;
     }
 }
+
+/* Touch screens: the section links are 44px tall, the size a thumb can hit
+   without aiming. */
+@media (pointer: coarse) {
+    .headLink {
+        height: 44px;
+    }
+}

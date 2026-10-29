@@ -697,3 +697,39 @@
     margin-left: auto;
     padding-left: 12px;
 }
+
+/* Phones: the When row scrolls sideways, which used to leave the switch
+   half off the screen. It is pinned to the right edge instead, as two
+   icon buttons; the words stay for screen readers. */
+@media (max-width: 720px) {
+    .viewSwitch {
+        position: sticky;
+        right: 0;
+        padding-left: 16px;
+        background: linear-gradient(to right, transparent, var(--color-canvas) 14px);
+    }
+
+    .viewSwitch .chip {
+        width: 44px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .viewLabel {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+/* Touch screens: chips, filters and tabs are 44px tall, the size a thumb
+   can hit without aiming. Some sit in rows that scroll sideways, which
+   would clip an invisible tap area, so they really grow. */
+@media (pointer: coarse) {
+    .chip {
+        height: 44px;
+    }
+}

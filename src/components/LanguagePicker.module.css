@@ -31,3 +31,11 @@
 .select:focus-visible {
     border-color: var(--border-strong);
 }
+
+/* Touch screens: the language menu is 44px tall, the size a thumb can
+   hit without aiming. */
+@media (pointer: coarse) {
+    .select {
+        min-height: 44px;
+    }
+}

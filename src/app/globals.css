@@ -52,7 +52,7 @@
   --color-accent-soft: #e6e8ff;
   --color-marker: #ffe45c;     /* highlighter: one phrase per page */
   --color-success: #12a150;
-  --color-danger: #d92d20;
+  --color-danger: #c4281c;     /* 5.2:1 on canvas; #d92d20 was 4.4, under the floor for small text */
 
   --color-lilac: #c9b8ff;
   --gradient-iridescent:

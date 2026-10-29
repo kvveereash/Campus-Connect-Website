@@ -115,9 +115,9 @@
     font-weight: 600;
     font-size: 1.5rem;
     letter-spacing: -0.03em;
-    /* --color-ash on white measures 2.8:1, under the 3:1 floor even for
-       large text. Pewter clears it at 3.9 and still recedes. */
-    color: var(--color-pewter);
+    /* Ash (4.9:1) clears the 3:1 floor for large text and still recedes;
+       pewter, used here before, measures 2.7:1. */
+    color: var(--color-ash);
     font-variant-numeric: tabular-nums;
     display: block;
     margin-bottom: 12px;

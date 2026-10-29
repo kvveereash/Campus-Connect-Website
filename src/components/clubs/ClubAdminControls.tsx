@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { deleteClub } from '@/lib/actions';
 import { toast } from 'sonner';
+import styles from './ClubAdminControls.module.css';
 
 interface ClubAdminControlsProps {
     clubId: string;
@@ -12,49 +13,53 @@ interface ClubAdminControlsProps {
 export default function ClubAdminControls({ clubId }: ClubAdminControlsProps) {
     const router = useRouter();
     const [isDeleting, setIsDeleting] = useState(false);
+    // Deleting asks twice, in place, like Leave club: the first press turns
+    // the button into "Press again to delete" for three seconds.
+    // window.confirm() used to ask, which reads as a browser error.
+    const [armed, setArmed] = useState(false);
+    useEffect(() => {
+        if (!armed) return;
+        const id = setTimeout(() => setArmed(false), 3000);
+        return () => clearTimeout(id);
+    }, [armed]);
 
     const handleDelete = async () => {
-        if (!confirm('Are you sure you want to delete this club? This action cannot be undone and will remove all members and associated data.')) {
+        if (!armed) {
+            setArmed(true);
             return;
         }
-
+        setArmed(false);
         setIsDeleting(true);
         try {
             const result = await deleteClub(clubId);
             if (result.success) {
-                toast.success('Club deleted successfully');
+                toast.success('Club deleted.');
                 router.push('/clubs');
             } else {
-                toast.error(result.error || 'Failed to delete club');
+                toast.error(result.error || 'Could not delete the club. Try again in a moment.');
                 setIsDeleting(false);
             }
         } catch {
-            toast.error('An unexpected error occurred');
+            toast.error('Could not reach the server. Try again in a moment.');
             setIsDeleting(false);
         }
     };
 
     return (
-        <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Admin Controls</h3>
+        <div className={styles.controls}>
+            <p className={styles.label}>Admin controls</p>
             <button
+                type="button"
+                className={`btn btn-danger ${styles.delete}`}
+                data-armed={armed}
                 onClick={handleDelete}
+                onBlur={() => setArmed(false)}
                 disabled={isDeleting}
-                style={{
-                    backgroundColor: '#ef4444', // Red-500
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: isDeleting ? 'not-allowed' : 'pointer',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    opacity: isDeleting ? 0.7 : 1,
-                    transition: 'background-color 0.2s'
-                }}
+                aria-busy={isDeleting}
             >
-                {isDeleting ? 'Deleting...' : 'Delete Club'}
+                {isDeleting ? 'Deleting' : armed ? 'Press again to delete' : 'Delete club'}
             </button>
+            <p className={styles.note}>Removes the club, its members and its posts. This cannot be undone.</p>
         </div>
     );
 }

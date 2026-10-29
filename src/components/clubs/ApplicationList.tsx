@@ -23,7 +23,7 @@ export default function ApplicationList({ clubId, recruiting, applications }: Ap
     return (
         <>
             <div className={styles.listHead} id="applications">
-                <h3 className={styles.listTitle}>Applications</h3>
+                <h2 className={styles.listTitle}>Applications</h2>
                 {applications.length > 0 && (
                     <span className={styles.listCount}>
                         {waiting} waiting · {applications.length} in all
@@ -142,7 +142,7 @@ function EmptyApplications({ clubId, recruiting }: { clubId: string; recruiting:
 
     return (
         <div className={styles.empty}>
-            <h4 className={styles.emptyTitle}>No applications yet</h4>
+            <h3 className={styles.emptyTitle}>No applications yet</h3>
             <p className={styles.emptyText}>
                 {recruiting
                     ? 'When a student applies, their answers appear here, newest first.'
