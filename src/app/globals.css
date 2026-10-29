@@ -414,13 +414,43 @@ html :focus:not(:focus-visible) {
   transform: translateY(-1px);
 }
 
+/* Press: a small squeeze while held, so a tap feels taken before anything
+   else on the page has had time to change. */
 .btn:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.97);
 }
 
 .btn:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+/* Busy: set aria-busy while the button waits on the server. A ring turns in
+   front of the label, and the button stays nearly full strength so it reads
+   as working rather than switched off. */
+.btn[aria-busy='true'] {
+  cursor: progress;
+}
+
+.btn[aria-busy='true']:disabled {
+  opacity: 0.8;
+}
+
+.btn[aria-busy='true']::before {
+  content: '';
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: btn-spin 0.8s linear infinite;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .btn-primary {
@@ -462,8 +492,14 @@ html :focus:not(:focus-visible) {
     transition: none;
   }
 
-  .btn:hover:not(:disabled) {
+  .btn:hover:not(:disabled),
+  .btn:active:not(:disabled) {
     transform: none;
+  }
+
+  /* The label already says what is happening ("Joining"). */
+  .btn[aria-busy='true']::before {
+    animation: none;
   }
 }
 

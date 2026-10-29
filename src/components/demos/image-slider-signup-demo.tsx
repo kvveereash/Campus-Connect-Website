@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useActionState, useEffect, useSyncExternalStore } from "react";
+import { useActionState, useEffect, useRef, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { signup } from "@/lib/actions/auth";
@@ -12,6 +12,7 @@ import AuthAside, { type AsideBubble } from "@/components/auth/AuthAside";
 import TryDemo from "@/components/TryDemo";
 import GoogleButton from "@/components/auth/GoogleButton";
 import { useT } from "@/lib/i18n";
+import { deny } from "@/components/auth/deny";
 
 /* The forty group chats, or eight of them. */
 const GROUP_CHATS: AsideBubble[] = [
@@ -35,6 +36,7 @@ export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolea
   const returnTo = useSyncExternalStore(noSubscribe, readReturnTo, () => null);
   const [state, formAction, isPending] = useActionState(signup, null);
   const t = useT();
+  const submitRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (state?.success) {
@@ -53,6 +55,7 @@ export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolea
       window.location.assign(welcome);
     } else if (state?.error) {
       toast.error(state.error);
+      deny(submitRef.current);
     }
   }, [returnTo, state]);
 
@@ -125,7 +128,7 @@ export function ImageSliderSignupDemo({ googleEnabled }: { googleEnabled: boolea
               </div>
             </div>
 
-            <button type="submit" className={styles.submit} disabled={isPending}>
+            <button ref={submitRef} type="submit" className={styles.submit} disabled={isPending} aria-busy={isPending}>
               {isPending && (
                 <Loader2 size={15} className={styles.spin} aria-hidden="true" />
               )}

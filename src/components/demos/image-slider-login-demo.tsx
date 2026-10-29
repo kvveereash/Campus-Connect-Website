@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
@@ -13,6 +13,7 @@ import AuthAside, { type AsideBubble } from '@/components/auth/AuthAside';
 import TryDemo from '@/components/TryDemo';
 import GoogleButton from '@/components/auth/GoogleButton';
 import { useT } from '@/lib/i18n';
+import { deny } from '@/components/auth/deny';
 import type { MessageKey } from '@/lib/i18n/messages';
 
 /* What lands on the board in a week, all of it in one place. */
@@ -45,6 +46,7 @@ export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean
   const searchParams = useSearchParams();
   const [state, formAction, isPending] = useActionState(login, null);
   const t = useT();
+  const submitRef = useRef<HTMLButtonElement>(null);
 
   /* Set by the middleware when a session cookie was present but no longer
      validates. Being asked to sign in again mid-session is confusing enough
@@ -82,6 +84,7 @@ export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean
       window.location.assign(destination);
     } else if (state?.error) {
       toast.error(state.error);
+      deny(submitRef.current);
     }
   }, [returnTo, state]);
 
@@ -147,7 +150,7 @@ export function ImageSliderLoginDemo({ googleEnabled }: { googleEnabled: boolean
               </div>
             </div>
 
-            <button type="submit" className={styles.submit} disabled={isPending}>
+            <button ref={submitRef} type="submit" className={styles.submit} disabled={isPending} aria-busy={isPending}>
               {isPending && (
                 <Loader2 size={15} className={styles.spin} aria-hidden="true" />
               )}

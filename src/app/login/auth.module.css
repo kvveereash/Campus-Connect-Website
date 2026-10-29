@@ -349,6 +349,11 @@
     transform: translateY(-1px);
 }
 
+/* Press: the same squeeze as every .btn. */
+.submit:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
 .submit:disabled {
     opacity: 0.55;
     cursor: default;
@@ -442,6 +447,11 @@
     .submit,
     .input {
         transition: none;
+    }
+
+    .submit:hover:not(:disabled),
+    .submit:active:not(:disabled) {
+        transform: none;
     }
 }
 

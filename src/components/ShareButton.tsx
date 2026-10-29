@@ -1,7 +1,7 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
-import { Link2, Share2 } from 'lucide-react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { Check, Link2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SITE_URL } from '@/lib/site';
 import { withRef } from '@/components/analytics/sources';
@@ -21,6 +21,14 @@ const canNativeShare = () => typeof navigator.share === 'function';
 export default function ShareButton({ title, text, path }: { title: string; text: string; path: string }) {
     // false during server render and hydration; the real answer after.
     const native = useSyncExternalStore(noSubscribe, canNativeShare, () => false);
+    // "Copied" shows in the button itself for two seconds, where the eye
+    // already is, instead of in a toast across the screen.
+    const [copied, setCopied] = useState(false);
+    useEffect(() => {
+        if (!copied) return;
+        const id = setTimeout(() => setCopied(false), 2000);
+        return () => clearTimeout(id);
+    }, [copied]);
     const url = () => new URL(withRef(path, 'share'), window.location.origin).toString();
 
     const share = async () => {
@@ -34,7 +42,7 @@ export default function ShareButton({ title, text, path }: { title: string; text
     const copy = async () => {
         try {
             await navigator.clipboard.writeText(url());
-            toast.success('Link copied');
+            setCopied(true);
         } catch {
             toast.error('Could not copy the link. Copy it from the address bar instead.');
         }
@@ -61,9 +69,16 @@ export default function ShareButton({ title, text, path }: { title: string; text
                 WhatsApp
             </a>
             <button type="button" className={`btn btn-outline ${styles.button}`} onClick={copy}>
-                <Link2 size={16} aria-hidden="true" />
-                Copy link
+                {copied ? (
+                    <Check size={16} className={styles.pop} aria-hidden="true" />
+                ) : (
+                    <Link2 size={16} aria-hidden="true" />
+                )}
+                {copied ? 'Copied' : 'Copy link'}
             </button>
+            <span className={styles.srOnly} aria-live="polite">
+                {copied ? 'Link copied' : ''}
+            </span>
         </div>
     );
 }

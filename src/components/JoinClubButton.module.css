@@ -13,10 +13,18 @@
     font-family: var(--font-sans);
     font-size: 14px;
     font-weight: 600;
+    gap: 8px;
     transition:
         background-color var(--duration-micro) var(--ease-glide),
         border-color var(--duration-micro) var(--ease-glide),
-        color var(--duration-micro) var(--ease-glide);
+        color var(--duration-micro) var(--ease-glide),
+        transform var(--duration-micro) var(--ease-glide);
+}
+
+/* Press: the same squeeze as every .btn. */
+.joinButton:active:not(:disabled),
+.leaveButton:active:not(:disabled) {
+    transform: scale(0.97);
 }
 
 .joinButton {
@@ -43,10 +51,60 @@
     color: var(--color-danger);
 }
 
+/* Asking "Press again to leave": filled, so the second press is a choice. */
+.leaveButton[data-armed='true'] {
+    border-color: var(--color-danger);
+    background: var(--color-danger);
+    color: var(--color-paper);
+}
+
 .joinButton:disabled,
 .leaveButton:disabled {
     opacity: 0.6;
     cursor: default;
+}
+
+/* Busy: a ring turns in front of "Joining" / "Leaving", as on .btn in
+   globals.css (these pills are not .btn). */
+.joinButton[aria-busy='true'],
+.leaveButton[aria-busy='true'] {
+    opacity: 0.85;
+    cursor: progress;
+}
+
+.joinButton[aria-busy='true']::before,
+.leaveButton[aria-busy='true']::before {
+    content: '';
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .joinButton,
+    .leaveButton {
+        transition: none;
+    }
+
+    .joinButton:active:not(:disabled),
+    .leaveButton:active:not(:disabled) {
+        transform: none;
+    }
+
+    .joinButton[aria-busy='true']::before,
+    .leaveButton[aria-busy='true']::before {
+        animation: none;
+    }
 }
 
 .adminBadge {

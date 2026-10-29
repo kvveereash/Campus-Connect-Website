@@ -155,7 +155,8 @@ export const en = {
     'cancel.failed': 'Could not cancel. Try again in a moment.',
     'interest.saved': 'Saved',
     'interest.interested': 'Interested',
-    'interest.savedToast': 'Saved. It is on your home page, with a reminder the day before.',
+    'interest.savedToast': 'Saved. It is in My events, with a reminder the day before.',
+    'interest.failed': 'Could not save it. Try again in a moment.',
 
     'register.havePaid': 'I have paid',
 
@@ -437,7 +438,8 @@ export const hi: Messages = {
     'cancel.failed': 'रद्द नहीं हो सका। थोड़ी देर में फिर कोशिश करें।',
     'interest.saved': 'सहेजा गया',
     'interest.interested': 'दिलचस्पी है',
-    'interest.savedToast': 'सहेज लिया। यह आपके होम पेज पर है, एक दिन पहले याद दिलाने के साथ।',
+    'interest.savedToast': 'सहेज लिया। यह मेरे इवेंट में है, एक दिन पहले याद दिलाने के साथ।',
+    'interest.failed': 'सहेजा नहीं जा सका। थोड़ी देर में फिर कोशिश करें।',
 
     'register.havePaid': 'मैंने भुगतान कर दिया है',
 
@@ -716,7 +718,8 @@ export const ta: Messages = {
     'cancel.failed': 'ரத்து செய்ய முடியவில்லை. சிறிது நேரத்தில் மீண்டும் முயலுங்கள்.',
     'interest.saved': 'சேமிக்கப்பட்டது',
     'interest.interested': 'ஆர்வம் உள்ளது',
-    'interest.savedToast': 'சேமிக்கப்பட்டது. இது உங்கள் முகப்புப் பக்கத்தில் உள்ளது, முந்தைய நாள் நினைவூட்டலுடன்.',
+    'interest.savedToast': 'சேமிக்கப்பட்டது. இது என் நிகழ்வுகளில் உள்ளது, முந்தைய நாள் நினைவூட்டலுடன்.',
+    'interest.failed': 'சேமிக்க முடியவில்லை. சிறிது நேரத்தில் மீண்டும் முயலவும்.',
 
     'register.havePaid': 'நான் பணம் செலுத்திவிட்டேன்',
 

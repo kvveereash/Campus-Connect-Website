@@ -200,6 +200,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                     className="btn btn-primary"
                     onClick={resumePayment}
                     disabled={status === 'processing_payment'}
+                    aria-busy={status === 'processing_payment'}
                 >
                     {status === 'processing_payment' ? t('register.wait') : t('register.pay', { price: rupees(price) })}
                 </button>
@@ -306,6 +307,7 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                                     className="btn btn-primary"
                                     onClick={handleStripeCheckout}
                                     disabled={status === 'processing_payment'}
+                                    aria-busy={status === 'processing_payment'}
                                     style={{ width: '100%' }}
                                 >
                                     {status === 'processing_payment' ? t('register.redirecting') : t('register.payStripe')}
@@ -373,11 +375,10 @@ export default function RegisterButton({ eventId, price = 0, full = false }: { e
                                         type="submit"
                                         className="btn btn-primary"
                                         disabled={status === 'registering'}
+                                        aria-busy={status === 'registering'}
                                         style={{ minWidth: '100px' }}
                                     >
-                                        {status === 'registering' ? (
-                                            <span className={entrance.spin}>↻</span>
-                                        ) : full ? t('register.joinWaitlist') : price > 0 ? t('register.proceedToPay') : t('register.confirmFree')}
+                                        {status === 'registering' ? t('register.wait') : full ? t('register.joinWaitlist') : price > 0 ? t('register.proceedToPay') : t('register.confirmFree')}
                                     </button>
                                 </div>
                             </form>

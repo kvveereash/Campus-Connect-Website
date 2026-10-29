@@ -49,12 +49,6 @@
     animation-timing-function: var(--ease-glide);
 }
 
-/* A busy glyph inside a button. */
-.spin {
-    display: inline-block;
-    animation: spin 1s linear infinite;
-}
-
 @keyframes rise {
     from {
         opacity: 0;
@@ -82,18 +76,11 @@
     }
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .rise,
     .slideIn,
     .pop,
-    .fade,
-    .spin {
+    .fade {
         animation: none;
     }
 }
