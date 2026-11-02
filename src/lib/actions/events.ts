@@ -136,9 +136,12 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
 
     if (existingRegistration) throw new Error('Already registered');
 
-    const { registration, waitlistPosition: position } = await prisma.$transaction(async (tx) => {
+    const { registration, waitlistPosition: position, promoted } = await prisma.$transaction(async (tx) => {
         // Locked first, so the seat count below can't change before we take one.
         await lockEvent(tx, eventId);
+        // Seats whose unpaid hold has run out go to the people already in
+        // line before anyone new: a newcomer must not jump the waitlist.
+        const promoted = await fillFromWaitlist(tx, event);
         const full = event.capacity !== null && (await seatsTaken(tx, eventId)) >= event.capacity;
 
         const reg = await tx.eventRegistration.create({
@@ -150,7 +153,7 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
                 source: source ? normaliseSource(source) : null,
             }
         });
-        if (full) return { registration: reg, waitlistPosition: await waitlistPosition(tx, eventId, reg.createdAt) };
+        if (full) return { registration: reg, waitlistPosition: await waitlistPosition(tx, eventId, reg.createdAt), promoted };
 
         // A paid event counts the place, and awards badges, once it is paid
         // (settlePaidCheckout). Counting at join let anyone collect badges
@@ -162,8 +165,9 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
             });
         }
 
-        return { registration: reg, waitlistPosition: null };
+        return { registration: reg, waitlistPosition: null, promoted };
     });
+    await notifyPromoted(event, promoted);
 
     if (position !== null) {
         revalidatePath(`/events/${eventId}`);

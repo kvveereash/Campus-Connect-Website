@@ -69,7 +69,8 @@ export async function settlePaidCheckout(session: Stripe.Checkout.Session): Prom
               if (registration.status === 'CANCELLED') return refund('gone');
 
               // PENDING, PENDING_PAYMENT or WAITLISTED: a seat if there is one.
-              if (event.capacity !== null && (await seatsTaken(tx, found.eventId)) >= event.capacity) {
+              // Other people's places and holds; this place's own hold is the seat it is paying for.
+              if (event.capacity !== null && (await seatsTaken(tx, found.eventId, { except: registrationId })) >= event.capacity) {
                   // Back in line by when they signed up, not at the end.
                   if (registration.status !== 'WAITLISTED') {
                       await tx.eventRegistration.update({ where: { id: registrationId }, data: { status: 'WAITLISTED' } });

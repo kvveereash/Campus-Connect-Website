@@ -21,9 +21,32 @@ export async function lockEvent(tx: Tx, eventId: string) {
     await tx.$queryRaw`SELECT "id" FROM "Event" WHERE "id" = ${eventId} FOR UPDATE`;
 }
 
-/** Seats in use: free sign-ups and paid places. Unpaid ones hold no seat. */
-export function seatsTaken(tx: Tx, eventId: string) {
-    return tx.eventRegistration.count({ where: { eventId, status: { in: ['PAID', 'COMPLETED'] } } });
+/*
+ * How long an unpaid place on a paid event keeps its seat: from when it was
+ * made, moved up from the waitlist, or sent to checkout (each of which
+ * updates the row). Without a hold, every waitlist move-up saw the same seat
+ * still free and moved up one more person, and a newcomer could take the
+ * seat from someone just told it was theirs. After the hold the seat is
+ * free again, and the next sign-up moves the waitlist up into it first.
+ */
+export const UNPAID_HOLD_MS = 12 * 60 * 60 * 1000;
+
+/**
+ * Seats in use: free sign-ups, paid places, and unpaid places still within
+ * their hold. `except` leaves one place out, for asking "is there a seat
+ * for this person" about someone who already holds one.
+ */
+export function seatsTaken(tx: Tx, eventId: string, { except, now = new Date() }: { except?: string; now?: Date } = {}) {
+    return tx.eventRegistration.count({
+        where: {
+            eventId,
+            ...(except ? { id: { not: except } } : {}),
+            OR: [
+                { status: { in: ['PAID', 'COMPLETED'] } },
+                { status: 'PENDING_PAYMENT', updatedAt: { gt: new Date(now.getTime() - UNPAID_HOLD_MS) } },
+            ],
+        },
+    });
 }
 
 /** Where someone stands in line, counting from 1. */
@@ -36,7 +59,7 @@ export type Promoted = { userId: string; mustPay: boolean };
 /**
  * Moves people off the waitlist into free seats, oldest first. Call inside a
  * transaction that has locked the event. A paid event's promoted people get
- * a place to pay for (it becomes a seat once paid); a free event's are in.
+ * a place to pay for, held for them (UNPAID_HOLD_MS); a free event's are in.
  */
 export async function fillFromWaitlist(tx: Tx, event: { id: string; capacity: number | null; price: number }): Promise<Promoted[]> {
     const free = event.capacity === null ? Number.POSITIVE_INFINITY : event.capacity - (await seatsTaken(tx, event.id));

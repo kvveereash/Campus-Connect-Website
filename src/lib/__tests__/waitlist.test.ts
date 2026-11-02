@@ -7,7 +7,7 @@ jest.mock('@/lib/db', () => ({ __esModule: true, default: { notification: { crea
 jest.mock('@/lib/notification-helper', () => ({ createNotification: (...a: unknown[]) => mockNotify(...a) }));
 
 import type { Prisma } from '@prisma/client';
-import { fillFromWaitlist, notifyPromoted } from '../waitlist';
+import { fillFromWaitlist, notifyPromoted, seatsTaken, UNPAID_HOLD_MS } from '../waitlist';
 
 function fakeTx(taken: number, waiting: { id: string; userId: string }[]) {
     const tx = {
@@ -65,6 +65,36 @@ describe('fillFromWaitlist', () => {
         const tx = fakeTx(50, LINE);
         const promoted = await fillFromWaitlist(tx, { id: 'ev', capacity: null, price: 0 });
         expect(promoted.map((p) => p.userId)).toEqual(['u1', 'u2', 'u3']);
+    });
+});
+
+describe('seatsTaken', () => {
+    const NOW = new Date('2026-11-02T10:00:00Z');
+
+    it('counts free and paid places, and unpaid ones only within their hold', async () => {
+        const tx = fakeTx(0, []);
+        await seatsTaken(tx, 'ev', { now: NOW });
+        expect(tx.eventRegistration.count).toHaveBeenCalledWith({
+            where: {
+                eventId: 'ev',
+                OR: [
+                    { status: { in: ['PAID', 'COMPLETED'] } },
+                    { status: 'PENDING_PAYMENT', updatedAt: { gt: new Date(NOW.getTime() - UNPAID_HOLD_MS) } },
+                ],
+            },
+        });
+    });
+
+    it('can leave out the place asking, so its own hold is not held against it', async () => {
+        const tx = fakeTx(0, []);
+        await seatsTaken(tx, 'ev', { except: 'r9', now: NOW });
+        expect(tx.eventRegistration.count).toHaveBeenCalledWith({ where: expect.objectContaining({ id: { not: 'r9' } }) });
+    });
+
+    it('moves up nobody more while someone already moved up still holds the last seat', async () => {
+        // 9 paid + 1 promoted and unpaid, within its hold: counted as 10.
+        const tx = fakeTx(10, LINE);
+        expect(await fillFromWaitlist(tx, { id: 'ev', capacity: 10, price: 250 })).toEqual([]);
     });
 });
 

@@ -77,7 +77,8 @@ export const createEventPaymentSessionAction = createProtectedAction(createPayme
     if (capacity !== null) {
         const full = await prisma.$transaction(async (tx) => {
             await lockEvent(tx, registration.eventId);
-            if ((await seatsTaken(tx, registration.eventId)) < capacity) return false;
+            // Their own place (and its hold) is not counted against them.
+            if ((await seatsTaken(tx, registration.eventId, { except: registration.id })) < capacity) return false;
             await tx.eventRegistration.update({ where: { id: registration.id }, data: { status: 'WAITLISTED' } });
             return true;
         });
