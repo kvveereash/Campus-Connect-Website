@@ -111,6 +111,12 @@ describe('who gets the digest', () => {
         expect(select.password).toBeUndefined();
     });
 
+    it('takes the longest-waiting first, so a short run does not email the same people every week', async () => {
+        await runDigestBatch(NOW);
+        const { orderBy } = mockFindUsers.mock.calls[0][0];
+        expect(orderBy).toEqual([{ digestSentAt: { sort: 'asc', nulls: 'first' } }, { id: 'asc' }]);
+    });
+
     it('drops the demo account even if the query let it through, before claiming', async () => {
         mockFindUsers.mockResolvedValue([userRow('demo', 'Demo@CampusConnect.app'), userRow('u1')]);
         mockClaim.mockResolvedValue([{ id: 'u1' }]);

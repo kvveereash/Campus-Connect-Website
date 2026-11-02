@@ -267,7 +267,10 @@ export async function runDigestBatch(now = new Date()): Promise<DigestRunResult>
             NOT: { email: { equals: DEMO_EMAIL, mode: 'insensitive' } },
             OR: [{ digestSentAt: null }, { digestSentAt: { lt: cutoff } }],
         },
-        orderBy: { id: 'asc' },
+        /* Longest-waiting first: never sent, then the oldest send. A Monday
+           run only gets through a few batches, so ordering by id alone gave
+           the same first people the email every week and the rest none. */
+        orderBy: [{ digestSentAt: { sort: 'asc', nulls: 'first' } }, { id: 'asc' }],
         take: DIGEST_BATCH_SIZE,
         select: {
             id: true,
