@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
-import { markRegistrationPaid } from '@/lib/payments';
+import { settlePaidCheckout } from '@/lib/payments';
 
 /**
  * Verify payment status with Stripe and update registration
@@ -49,15 +49,18 @@ export const verifyPaymentStatusAction = createProtectedAction(z.object({ regist
         throw new Error('Could not verify payment');
     }
 
-    if (stripeSession.payment_status === 'paid') {
-        // Same conditional PENDING -> PAID transition the webhook uses.
-        await markRegistrationPaid(
-            registration.id,
-            stripeSession.id,
-            (stripeSession.amount_total || 0) / 100
-        );
+    if (stripeSession.metadata?.registrationId !== registration.id) {
+        throw new Error('Could not verify payment');
+    }
 
+    if (stripeSession.payment_status === 'paid') {
+        // The same step the webhook takes: a place, or a refund if there is
+        // no place to give.
+        const settled = await settlePaidCheckout(stripeSession);
         revalidatePath(`/events`);
+        if (settled === 'refunded') {
+            throw new Error('This payment could not become a place, so it has been refunded. Your notifications say why.');
+        }
 
         return {
             message: 'Payment verified!',

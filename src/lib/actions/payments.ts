@@ -1,12 +1,13 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { createCheckoutSession, isStripeConfigured } from '@/lib/stripe';
+import { CHECKOUT_MINUTES, closeCheckout, createCheckoutSession, isStripeConfigured } from '@/lib/stripe';
 import { createProtectedAction } from '@/lib/protected-action';
 import { z } from 'zod';
 import { isOk } from '@/lib/api-response';
 import { AuthorizationError } from '@/lib/errors';
 import { withIdempotency } from '@/lib/idempotency';
+import { lockEvent, seatsTaken } from '@/lib/waitlist';
 
 type PaymentSessionResult =
     | { success: true; checkoutUrl: string; sessionId: string }
@@ -67,15 +68,22 @@ export const createEventPaymentSessionAction = createProtectedAction(createPayme
     }
 
     // An unpaid place holds no seat, so the event may have filled up since
-    // they signed up. Then they go to the back of the line instead of paying
-    // for a seat that isn't there.
+    // they signed up. Then they wait in line (by when they signed up) instead
+    // of paying for a seat that isn't there. Counted under the event lock, like
+    // every other change to seats. The payment itself is checked again when
+    // it arrives (settlePaidCheckout), which is what really keeps the event
+    // from being overbooked.
     const { capacity } = registration.event;
     if (capacity !== null) {
-        const taken = await prisma.eventRegistration.count({
-            where: { eventId: registration.eventId, status: { in: ['PAID', 'COMPLETED'] } },
+        const full = await prisma.$transaction(async (tx) => {
+            await lockEvent(tx, registration.eventId);
+            if ((await seatsTaken(tx, registration.eventId)) < capacity) return false;
+            await tx.eventRegistration.update({ where: { id: registration.id }, data: { status: 'WAITLISTED' } });
+            return true;
         });
-        if (taken >= capacity) {
-            await prisma.eventRegistration.update({ where: { id: registration.id }, data: { status: 'WAITLISTED', createdAt: new Date() } });
+        if (full) {
+            // An earlier checkout for this place must not stay payable.
+            if (registration.paymentId) await closeCheckout(registration.paymentId).catch(() => 'gone');
             throw new Error('The last place went while you were deciding. You are on the waitlist and will hear if one opens up.');
         }
     }
@@ -116,7 +124,9 @@ export const createEventPaymentSessionAction = createProtectedAction(createPayme
                 sessionId: checkoutSession.id
             };
         },
-        3600 // Cache for 1 hour
+        // Shorter than the checkout's own life, so a repeat click never gets
+        // back a link that has expired.
+        (CHECKOUT_MINUTES - 6) * 60
     );
 }, {
     // Audit log? Maybe.

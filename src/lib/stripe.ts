@@ -39,6 +39,9 @@ export function isStripeConfigured(): boolean {
     return !!stripe;
 }
 
+/** How long a checkout link can be paid. */
+export const CHECKOUT_MINUTES = 31;
+
 /**
  * Create a Stripe Checkout Session for event registration
  */
@@ -81,6 +84,11 @@ export async function createCheckoutSession({
             },
         ],
         mode: 'payment',
+        // An unpaid place holds no seat, so a checkout left open for the
+        // default 24 hours could be paid long after the seats have gone.
+        // 30 minutes is the shortest Stripe allows; a minute over for clock
+        // drift.
+        expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_MINUTES * 60,
         customer_email: userEmail,
         success_url: successUrl,
         cancel_url: cancelUrl,
@@ -119,4 +127,40 @@ export function verifyWebhookSignature(
 export async function getCheckoutSession(sessionId: string) {
     if (!stripe) return null;
     return stripe.checkout.sessions.retrieve(sessionId);
+}
+
+/**
+ * Closes a checkout so it can no longer be paid. Says how it ended:
+ * 'closed' (it was open, now it isn't), 'paid' (too late: the payer
+ * finished), or 'gone' (already expired, or never existed here).
+ */
+export async function closeCheckout(sessionId: string): Promise<'closed' | 'paid' | 'gone'> {
+    if (!stripe) return 'gone';
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.status === 'complete') return 'paid';
+    if (session.status !== 'open') return 'gone';
+    try {
+        await stripe.checkout.sessions.expire(sessionId);
+        return 'closed';
+    } catch (error) {
+        // It finished between the two calls.
+        const again = await stripe.checkout.sessions.retrieve(sessionId);
+        if (again.status === 'complete') return 'paid';
+        throw error;
+    }
+}
+
+/**
+ * Refunds a checkout's payment in full. The idempotency key makes a retried
+ * webhook refund once; after Stripe forgets the key (24 hours), a second
+ * attempt fails as already refunded, which is the outcome wanted.
+ */
+export async function refundCheckoutPayment(paymentIntentId: string, sessionId: string) {
+    if (!stripe) throw new Error('Stripe is not configured');
+    try {
+        await stripe.refunds.create({ payment_intent: paymentIntentId }, { idempotencyKey: `refund:${sessionId}` });
+    } catch (error) {
+        if ((error as { code?: string }).code === 'charge_already_refunded') return;
+        throw error;
+    }
 }

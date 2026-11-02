@@ -18,6 +18,7 @@ import { audit } from '@/lib/audit';
 import { checkAndAwardBadges } from '@/lib/badges';
 import { eventLimiter } from '@/lib/rate-limit';
 import { fillFromWaitlist, lockEvent, notifyPromoted, seatsTaken, waitlistPosition } from '@/lib/waitlist';
+import { closeCheckout } from '@/lib/stripe';
 import { AuthorizationError } from '@/lib/errors';
 import { canAttachEventToFest } from '@/app/fests/access';
 import { FESTS_TAG, festTag } from '@/app/fests/rules';
@@ -152,7 +153,7 @@ export const joinEventAction = createProtectedAction(joinEventSchema, async ({ e
         if (full) return { registration: reg, waitlistPosition: await waitlistPosition(tx, eventId, reg.createdAt) };
 
         // A paid event counts the place, and awards badges, once it is paid
-        // (markRegistrationPaid). Counting at join let anyone collect badges
+        // (settlePaidCheckout). Counting at join let anyone collect badges
         // and inflate attendance by joining paid events and never paying.
         if (event.price <= 0) {
             await tx.event.update({
@@ -206,6 +207,7 @@ export const cancelRegistrationAction = createProtectedAction(joinEventSchema, a
         select: {
             id: true,
             status: true,
+            paymentId: true,
             event: { select: { id: true, title: true, date: true, price: true, capacity: true, creatorId: true, clubId: true } },
         },
     });
@@ -215,6 +217,21 @@ export const cancelRegistrationAction = createProtectedAction(joinEventSchema, a
     }
     if (registration.event.date < new Date()) throw new Error('This event has already happened');
     const { event } = registration;
+
+    // An unpaid place may have a checkout still open. Close it first, so it
+    // can't be paid once the place is gone; if it was paid just now, the
+    // place is being confirmed and is the organiser's to cancel.
+    if (registration.paymentId && registration.status !== 'COMPLETED') {
+        let checkout: Awaited<ReturnType<typeof closeCheckout>>;
+        try {
+            checkout = await closeCheckout(registration.paymentId);
+        } catch {
+            throw new Error('Could not check your payment just now. Try again in a minute.');
+        }
+        if (checkout === 'paid') {
+            throw new Error('Your payment has gone through, so your place is being confirmed. To cancel a paid place, message the organiser.');
+        }
+    }
 
     const promoted = await prisma.$transaction(async (tx) => {
         await lockEvent(tx, eventId);

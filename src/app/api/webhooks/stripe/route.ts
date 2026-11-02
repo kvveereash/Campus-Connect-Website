@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/lib/stripe';
-import { markRegistrationPaid } from '@/lib/payments';
+import { settlePaidCheckout } from '@/lib/payments';
 import Stripe from 'stripe';
 
 /**
@@ -62,17 +62,11 @@ export async function POST(request: NextRequest) {
                     break;
                 }
 
-                // Throws on a database error, which falls through to the 500
-                // below so that Stripe retries the event.
-                const { updated } = await markRegistrationPaid(
-                    registrationId,
-                    session.id,
-                    (session.amount_total || 0) / 100 // Convert paise to rupees
-                );
-
-                console.log(updated
-                    ? `✅ Payment completed for registration ${registrationId}`
-                    : `Registration ${registrationId} was not awaiting payment; nothing to update`);
+                // Becomes a place, or is refunded when there is no place to
+                // give. Throws on a database or Stripe error, which falls
+                // through to the 500 below so that Stripe retries the event.
+                const settled = await settlePaidCheckout(session);
+                console.log(`Checkout ${session.id} for registration ${registrationId}: ${settled}`);
                 break;
             }
 
