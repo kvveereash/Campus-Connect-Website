@@ -11,7 +11,8 @@
 
 
 [functions]
-  included_files = ["node_modules/.prisma/**", "node_modules/@prisma/client/**", "prisma/**"]
+  # public/fonts: the share cards read Geist Serif from disk (src/lib/share-card.tsx).
+  included_files = ["node_modules/.prisma/**", "node_modules/@prisma/client/**", "prisma/**", "public/fonts/**"]
   node_bundler = "esbuild"
 
 [[plugins]]

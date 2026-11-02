@@ -77,8 +77,9 @@ function titleSize(title: string, hero: boolean) {
 
 /* The display face, Geist Serif, is not on Google Fonts: it ships with the
    site as TrueType (Satori cannot read the woff2 the pages use). Read from
-   disk where public/ ships with the server; on Netlify it is on the CDN.
-   Loaded once per server instance. */
+   disk (netlify.toml bundles public/fonts with the function), else from the
+   site's CDN. Kept once loaded; a failed load is not kept, so the next card
+   tries again rather than every card going without it. */
 let geistSerif: Promise<ArrayBuffer | null> | null = null;
 function displayFont(): Promise<ArrayBuffer | null> {
     geistSerif ??= (async () => {
@@ -93,14 +94,18 @@ function displayFont(): Promise<ArrayBuffer | null> {
                 return null;
             }
         }
-    })();
+    })().then((font) => {
+        if (!font) geistSerif = null;
+        return font;
+    });
     return geistSerif;
 }
 
 /* The other fonts come from Google Fonts' CSS API, asked only for the
-   characters this card uses, so each is a few kilobytes. With no user agent that API answers
-   with TrueType, which Satori can read (it cannot read woff2). A failure only
-   loses that face: the card falls back to the bundled sans. */
+   characters this card uses, so each is a few kilobytes. With no user agent
+   that API answers with TrueType, which Satori can read (it cannot read
+   woff2). A failure only loses that face: the card falls back to the
+   bundled sans. */
 async function googleFont(family: string, text: string): Promise<ArrayBuffer | null> {
     if (!text.trim()) return null;
     try {

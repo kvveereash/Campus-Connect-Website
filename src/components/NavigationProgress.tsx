@@ -47,8 +47,13 @@ export default function NavigationProgress() {
         const onClick = (event: MouseEvent) => {
             // Capture phase: Next's <Link> prevents the default later, in React's own handler.
             if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-            const link = (event.target as Element | null)?.closest?.('a');
-            if (!link || !link.href || link.hasAttribute('download')) return;
+            // The nearest control, not just the nearest link: a button inside a
+            // link (Share on an event card) acts and stays on the page, and
+            // used to leave the bar crawling for ten seconds.
+            const control = (event.target as Element | null)?.closest?.('a, button, [role="button"], input, select, textarea, label');
+            if (!(control instanceof HTMLAnchorElement)) return;
+            const link = control;
+            if (!link.href || link.hasAttribute('download')) return;
             if (link.target && link.target !== '_self') return;
             const url = new URL(link.href, window.location.href);
             if (url.origin !== window.location.origin || url.pathname === window.location.pathname) return;
