@@ -426,6 +426,16 @@ html :focus:not(:focus-visible) {
   cursor: default;
 }
 
+/* Read out by screen readers, not shown. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Busy: set aria-busy while the button waits on the server. A ring turns in
    front of the label, and the button stays nearly full strength so it reads
    as working rather than switched off. */

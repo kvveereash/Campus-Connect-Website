@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { joinClub, leaveClub } from '@/lib/actions/clubs';
 import { useAuth } from '@/context/AuthContext';
+import { usePressAgain } from './usePressAgain';
 import styles from './JoinClubButton.module.css';
 
 interface JoinClubButtonProps {
@@ -20,12 +21,7 @@ export default function JoinClubButton({ clubId, clubName, isMember, isAdmin, on
     // Leaving asks twice, in place: the first press turns the button into
     // "Press again to leave" for three seconds. window.confirm() used to ask,
     // which reads as a browser error rather than a question from the page.
-    const [armed, setArmed] = useState(false);
-    useEffect(() => {
-        if (!armed) return;
-        const id = setTimeout(() => setArmed(false), 3000);
-        return () => clearTimeout(id);
-    }, [armed]);
+    const { armed, confirm, disarm } = usePressAgain();
 
     const handleJoin = () => {
         startTransition(async () => {
@@ -41,11 +37,7 @@ export default function JoinClubButton({ clubId, clubName, isMember, isAdmin, on
     };
 
     const handleLeave = () => {
-        if (!armed) {
-            setArmed(true);
-            return;
-        }
-        setArmed(false);
+        if (!confirm()) return;
 
         startTransition(async () => {
             const result = await leaveClub(clubId);
@@ -69,17 +61,23 @@ export default function JoinClubButton({ clubId, clubName, isMember, isAdmin, on
 
     if (isMember) {
         return (
-            <button
-                type="button"
-                onClick={handleLeave}
-                onBlur={() => setArmed(false)}
-                className={styles.leaveButton}
-                data-armed={armed}
-                disabled={isPending}
-                aria-busy={isPending}
-            >
-                {isPending ? 'Leaving' : armed ? 'Press again to leave' : 'Leave club'}
-            </button>
+            <>
+                <button
+                    type="button"
+                    onClick={handleLeave}
+                    onBlur={disarm}
+                    className={styles.leaveButton}
+                    data-armed={armed}
+                    disabled={isPending}
+                    aria-busy={isPending}
+                >
+                    {isPending ? 'Leaving' : armed ? 'Press again to leave' : 'Leave club'}
+                </button>
+                {/* A focused button's new label is often not read out. */}
+                <span className="sr-only" aria-live="polite">
+                    {armed ? 'Press again to leave the club.' : ''}
+                </span>
+            </>
         );
     }
 
