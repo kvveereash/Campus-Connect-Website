@@ -66,12 +66,13 @@ export async function POST(request: Request) {
                 })),
             });
             sent += due.length;
-            // The same words the bell shows; sendPush never throws.
-            await sendPush(due.map((r) => r.userId), { title: 'Campus Connect', body: `Campus Connect ${message}`, url: link });
-
-            // Email is best effort and only once Resend is configured; the in-app
-            // reminder above is the one that always lands.
-            await Promise.allSettled(
+            // Push and email go side by side, so a slow push service cannot
+            // hold up the emails. The same words the bell shows; sendPush
+            // never throws. Email is best effort and only once Resend is
+            // configured; the in-app reminder above is the one that always
+            // lands.
+            const push = sendPush(due.map((r) => r.userId), { title: 'Campus Connect', body: `Campus Connect ${message}`, url: link });
+            const emails = Promise.allSettled(
                 due.map((r) =>
                     sendEmail({
                         to: r.user.email,
@@ -81,6 +82,7 @@ export async function POST(request: Request) {
                     }),
                 ),
             );
+            await Promise.all([push, emails]);
         }
 
         // People who saved it ("Interested") but did not register: an in-app

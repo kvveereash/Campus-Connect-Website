@@ -22,7 +22,7 @@ jest.mock('@/lib/rate-limit', () => ({
     getRateLimitIdentifier: jest.fn(async () => 'test'),
 }));
 
-import { pushEnabled, sendPush } from '../push';
+import { isPushServiceEndpoint, pushEnabled, sendPush } from '../push';
 import { savePushSubscription, removePushSubscription } from '../actions/push';
 import { DEMO_EMAIL } from '../demo-account';
 
@@ -31,8 +31,8 @@ const KEYS = ['NEXT_PUBLIC_VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJEC
 const MESSAGE = { title: 'Campus Connect', body: 'Asha replied to your post.', url: '/buzz/p1' };
 
 const SUBS = [
-    { endpoint: 'https://push.example/a', p256dh: 'pa', auth: 'aa' },
-    { endpoint: 'https://push.example/b', p256dh: 'pb', auth: 'ab' },
+    { endpoint: 'https://fcm.googleapis.com/fcm/send/a', p256dh: 'pa', auth: 'aa' },
+    { endpoint: 'https://updates.push.services.mozilla.com/wpush/v2/b', p256dh: 'pb', auth: 'ab' },
 ];
 
 function setKeys() {
@@ -78,7 +78,7 @@ describe('sendPush', () => {
         });
         expect(mockSend).toHaveBeenCalledTimes(2);
         const [subscription, payload, options] = mockSend.mock.calls[0];
-        expect(subscription).toEqual({ endpoint: 'https://push.example/a', keys: { p256dh: 'pa', auth: 'aa' } });
+        expect(subscription).toEqual({ endpoint: 'https://fcm.googleapis.com/fcm/send/a', keys: { p256dh: 'pa', auth: 'aa' } });
         expect(JSON.parse(payload)).toEqual(MESSAGE);
         expect(options).toEqual(expect.objectContaining({ TTL: 86400, urgency: 'normal' }));
         expect(mockDb.pushSubscription.deleteMany).not.toHaveBeenCalled();
@@ -97,7 +97,7 @@ describe('sendPush', () => {
         await sendPush(['u1'], MESSAGE);
 
         expect(mockDb.pushSubscription.deleteMany).toHaveBeenCalledWith({
-            where: { endpoint: { in: ['https://push.example/a'] } },
+            where: { endpoint: { in: ['https://fcm.googleapis.com/fcm/send/a'] } },
         });
     });
 
@@ -110,6 +110,41 @@ describe('sendPush', () => {
         mockDb.pushSubscription.findMany.mockRejectedValue(new Error('connection lost'));
         await expect(sendPush(['u1'], MESSAGE)).resolves.toBeUndefined();
     });
+
+    it('gives every send a timeout, so a push service that never answers cannot stall a run', async () => {
+        await sendPush(['u1'], MESSAGE);
+        expect(mockSend.mock.calls[0][2]).toEqual(expect.objectContaining({ timeout: expect.any(Number) }));
+    });
+
+    it('never sends to an address that is not a browser push service, and removes it', async () => {
+        const planted = { endpoint: 'https://attacker.example/hang', p256dh: 'px', auth: 'ax' };
+        mockDb.pushSubscription.findMany.mockResolvedValue([planted, SUBS[0]]);
+
+        await sendPush(['u1'], MESSAGE);
+
+        expect(mockSend).toHaveBeenCalledTimes(1);
+        expect(mockSend.mock.calls[0][0].endpoint).toBe(SUBS[0].endpoint);
+        expect(mockDb.pushSubscription.deleteMany).toHaveBeenCalledWith({ where: { endpoint: { in: [planted.endpoint] } } });
+    });
+});
+
+describe('isPushServiceEndpoint', () => {
+    it.each([
+        'https://fcm.googleapis.com/fcm/send/abc',
+        'https://updates.push.services.mozilla.com/wpush/v2/abc',
+        'https://web.push.apple.com/abc',
+        'https://wns2-par02p.notify.windows.com/w/?token=abc',
+    ])('accepts %s', (url) => expect(isPushServiceEndpoint(url)).toBe(true));
+
+    it.each([
+        'https://attacker.example/x',
+        'https://fcm.googleapis.com.attacker.example/x',
+        'https://evilpush.apple.com.example/x',
+        'http://fcm.googleapis.com/fcm/send/abc',
+        'https://fcm.googleapis.com:8443/fcm/send/abc',
+        'https://127.0.0.1/x',
+        'not a url',
+    ])('refuses %s', (url) => expect(isPushServiceEndpoint(url)).toBe(false));
 });
 
 describe('push subscription actions', () => {

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import prisma from '@/lib/db';
 import { createProtectedAction } from '@/lib/protected-action';
 import { pushSubscribeLimiter } from '@/lib/rate-limit';
+import { isPushServiceEndpoint } from '@/lib/push';
 
 /*
  * Turning push notifications on and off for this browser
@@ -16,7 +17,7 @@ const endpointSchema = z
     .string()
     .max(1000, 'That push address is too long')
     .url('That push address is not valid')
-    .refine((url) => url.startsWith('https://'), 'That push address is not valid');
+    .refine(isPushServiceEndpoint, 'That push address is not from a browser push service');
 
 const subscriptionSchema = z.object({
     endpoint: endpointSchema,

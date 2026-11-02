@@ -9,7 +9,9 @@ export async function createNotification(
     actorId: string,
     type: Prisma.NotificationCreateInput['type'],
     message: string,
-    link: string
+    link: string,
+    /** false when the caller sends one push to many people itself (queuePush takes a list). */
+    { push = true }: { push?: boolean } = {}
 ) {
     try {
         // 1. Create in DB
@@ -37,11 +39,13 @@ export async function createNotification(
 
         // 3. Push to their devices, for when the site is closed. Queued, not
         // awaited: the caller should not wait on, or fail for, a push service.
-        queuePush([recipientId], {
-            title: 'Campus Connect',
-            body: `${notification.actor?.name || 'Campus Connect'} ${message}`,
-            url: link,
-        });
+        if (push) {
+            queuePush([recipientId], {
+                title: 'Campus Connect',
+                body: `${notification.actor?.name || 'Campus Connect'} ${message}`,
+                url: link,
+            });
+        }
 
         return { success: true, notification };
 

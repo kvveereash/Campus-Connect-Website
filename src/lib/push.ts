@@ -27,6 +27,30 @@ export interface PushMessage {
 // and the in-app list still has it.
 const TTL_SECONDS = 24 * 60 * 60;
 const CONCURRENCY = 10;
+// A push service answers in well under a second; one that never answers
+// must not hold up a whole run of reminders.
+const SEND_TIMEOUT_MS = 10_000;
+
+/* The browsers' push services. A subscription's endpoint is a URL the
+   browser hands us, but the server POSTs to it, so an address anywhere else
+   would let a student point our server at a host of their choosing (one
+   that never answers stalls the reminder run). */
+const PUSH_HOSTS = [
+    'fcm.googleapis.com', // Chrome, Edge on Android, Samsung Internet, Opera, Brave
+    'android.googleapis.com', // older Chrome
+    'updates.push.services.mozilla.com', // Firefox
+];
+const PUSH_HOST_SUFFIXES = ['.push.apple.com', '.notify.windows.com']; // Safari; Edge on Windows
+
+export function isPushServiceEndpoint(endpoint: string): boolean {
+    try {
+        const url = new URL(endpoint);
+        if (url.protocol !== 'https:' || url.port !== '') return false;
+        return PUSH_HOSTS.includes(url.hostname) || PUSH_HOST_SUFFIXES.some((suffix) => url.hostname.endsWith(suffix));
+    } catch {
+        return false;
+    }
+}
 // The push services cap the encrypted payload at about 4KB.
 const MAX_BODY = 400;
 
@@ -66,16 +90,23 @@ export async function sendPush(userIds: string[], message: PushMessage): Promise
     if (!pushEnabled() || userIds.length === 0) return;
 
     try {
-        const subscriptions = await prisma.pushSubscription.findMany({
+        const saved = await prisma.pushSubscription.findMany({
             where: { userId: { in: [...new Set(userIds)] } },
             select: { endpoint: true, p256dh: true, auth: true },
         });
+        // Saved before addresses were checked: never sent to, and removed.
+        const foreign = saved.filter((s) => !isPushServiceEndpoint(s.endpoint)).map((s) => s.endpoint);
+        if (foreign.length > 0) {
+            await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: foreign } } });
+        }
+        const subscriptions = saved.filter((s) => isPushServiceEndpoint(s.endpoint));
         if (subscriptions.length === 0) return;
 
         const payload = payloadOf(message);
         const options: webpush.RequestOptions = {
             TTL: TTL_SECONDS,
             urgency: 'normal',
+            timeout: SEND_TIMEOUT_MS,
             // Passed per request rather than through setVapidDetails, so no
             // module-level state outlives a change to the environment.
             vapidDetails: {
