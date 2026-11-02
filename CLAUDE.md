@@ -30,8 +30,10 @@ unless it is a one-off with a comment saying why.
   thing per page). Text greys: `--color-inkstone`, `--color-felt`,
   `--color-ash`. Category marks are the `--press-*` colours, always shown
   as a small square next to the category name, never colour alone.
-- **Type**: `--font-display` (Bricolage Grotesque) for headings, set tight
-  (negative letter-spacing, line-height about 1). `--font-accent`
+- **Type**: `--font-display` (Geist Serif, Triangle cut, one weight) for
+  headings, set tight (negative letter-spacing, line-height about 1); its
+  file is in `src/app/fonts` under the OFL, with a TrueType copy in
+  `public/fonts` for the share cards. `--font-accent`
   (Instrument Serif italic) for the one spoken phrase in a heading, via
   the global `.accent` class or an `<em>` styled the same way: one per
   heading, never a whole line. `--font-mono` (Geist Mono) for labels,

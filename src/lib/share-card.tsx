@@ -75,8 +75,30 @@ function titleSize(title: string, hero: boolean) {
     return 52;
 }
 
-/* Fonts come from Google Fonts' CSS API, asked only for the characters this
-   card uses, so each is a few kilobytes. With no user agent that API answers
+/* The display face, Geist Serif, is not on Google Fonts: it ships with the
+   site as TrueType (Satori cannot read the woff2 the pages use). Read from
+   disk where public/ ships with the server; on Netlify it is on the CDN.
+   Loaded once per server instance. */
+let geistSerif: Promise<ArrayBuffer | null> | null = null;
+function displayFont(): Promise<ArrayBuffer | null> {
+    geistSerif ??= (async () => {
+        try {
+            const buf = await readFile(path.join(process.cwd(), 'public', 'fonts', 'GeistSerif-Triangle.ttf'));
+            return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+        } catch {
+            try {
+                const res = await fetch(new URL('/fonts/GeistSerif-Triangle.ttf', SITE_URL), { signal: AbortSignal.timeout(4000) });
+                return res.ok ? await res.arrayBuffer() : null;
+            } catch {
+                return null;
+            }
+        }
+    })();
+    return geistSerif;
+}
+
+/* The other fonts come from Google Fonts' CSS API, asked only for the
+   characters this card uses, so each is a few kilobytes. With no user agent that API answers
    with TrueType, which Satori can read (it cannot read woff2). A failure only
    loses that face: the card falls back to the bundled sans. */
 async function googleFont(family: string, text: string): Promise<ArrayBuffer | null> {
@@ -162,18 +184,18 @@ export async function renderShareCard(props: ShareCardProps) {
     const lead = props.lead ?? '';
     const accent = props.accent ? clip(props.accent, 40) : '';
 
-    const display = `Campus Connect C${title}${initial}${hero ? lead : ''}`;
-    const [displayFont, serifFont, monoFont, leadFont, photo] = await Promise.all([
-        googleFont('Bricolage+Grotesque:wght@700', display),
+    const [display, serifFont, monoFont, photo] = await Promise.all([
+        displayFont(),
         googleFont('Instrument+Serif:ital@1', accent),
         googleFont('Geist+Mono:wght@500', `${kicker}${meta.join('')}${props.chip ?? ''} ·`),
-        hero ? Promise.resolve(null) : googleFont('Bricolage+Grotesque:wght@500', lead),
         loadPhoto(props.photo),
     ]);
 
+    // Geist Serif has one weight; it answers for the 700 titles and the 500
+    // lead line alike, as it does on the site.
     const fonts = [
-        displayFont && { name: 'Display', data: displayFont, weight: 700 as const, style: 'normal' as const },
-        leadFont && { name: 'Display', data: leadFont, weight: 500 as const, style: 'normal' as const },
+        display && { name: 'Display', data: display, weight: 700 as const, style: 'normal' as const },
+        display && { name: 'Display', data: display, weight: 500 as const, style: 'normal' as const },
         serifFont && { name: 'Serif', data: serifFont, weight: 400 as const, style: 'italic' as const },
         monoFont && { name: 'Mono', data: monoFont, weight: 500 as const, style: 'normal' as const },
     ].filter((f): f is NonNullable<typeof f> => !!f);

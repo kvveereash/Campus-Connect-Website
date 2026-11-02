@@ -95,7 +95,7 @@
      glyphs the latin faces lack, for readers using the interface in Hindi or Tamil. */
   --font-indic: var(--font-noto-devanagari), var(--font-noto-tamil);
   --font-sans: var(--font-inter), var(--font-indic), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-bricolage), var(--font-inter), var(--font-indic), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist-serif), var(--font-indic), ui-serif, Georgia, serif;
   --font-mono: var(--font-geist-mono), var(--font-indic), ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-serif: var(--font-display);
   --font-accent: var(--font-instrument-serif), ui-serif, Georgia, serif;
@@ -175,8 +175,9 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  /* The display face is set at 600 and tracked in. Bricolage carries its
-     personality in the shapes, so it can be bold without shouting. */
+  /* Geist Serif has one weight, declared for 400-900 in fonts.ts, so the
+     600 here keeps its real letters; the voice is in the triangles and the
+     tight tracking, not in weight. */
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.05;
