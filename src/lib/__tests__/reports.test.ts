@@ -61,6 +61,23 @@ beforeEach(() => {
 });
 
 describe('reportContent', () => {
+    // No earlier, closed report by this person unless a test says so.
+    beforeEach(() => mockDb.report.updateMany.mockResolvedValue({ count: 0 }));
+
+    it('opens a closed report again when the same person reports it again', async () => {
+        asUser('me');
+        mockDb.post.findUnique.mockResolvedValue({ content: 'hello', authorId: 'other', clubId: 'c1' });
+        mockDb.report.updateMany.mockResolvedValue({ count: 1 });
+
+        const result = await reportContent({ targetType: 'POST', targetId: 'p1', reason: 'HARASSMENT', details: 'still going' });
+
+        expect(result.success).toBe(true);
+        const [args] = mockDb.report.updateMany.mock.calls[0];
+        expect(args.where).toEqual({ reporterId: 'me', targetType: 'POST', targetId: 'p1', status: { not: 'OPEN' } });
+        expect(args.data).toMatchObject({ status: 'OPEN', reason: 'HARASSMENT', details: 'still going', resolvedAt: null, resolvedById: null });
+        expect(mockDb.report.upsert).not.toHaveBeenCalled();
+    });
+
     it('refuses a report on your own post', async () => {
         asUser('me');
         mockDb.post.findUnique.mockResolvedValue({ content: 'hello', authorId: 'me', clubId: 'c1' });

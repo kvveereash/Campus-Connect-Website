@@ -130,10 +130,33 @@ export const reportContent = createProtectedAction(
 
         const details = data.details ? cleanUserText(data.details).slice(0, REPORT_DETAILS_MAX) : '';
 
-        /* One report per person per thing (a unique index). A second report
-           changes nothing, so mashing the button cannot inflate the count or
-           rewrite what was first said, and the reporter is thanked either way:
-           telling them "already reported" adds nothing they can act on. */
+        /* Reporting again after an admin closed this person's report on it
+           (the harassment went on after a dismissal): it opens again, with
+           what they say now, at the top of the queue. Without this it stayed
+           closed, and only people who had never reported it could raise it. */
+        const reopened = await prisma.report.updateMany({
+            where: {
+                reporterId: session.userId,
+                targetType: data.targetType,
+                targetId: data.targetId,
+                status: { not: 'OPEN' },
+            },
+            data: {
+                status: 'OPEN',
+                reason: data.reason,
+                details: details || null,
+                createdAt: new Date(),
+                resolvedAt: null,
+                resolvedById: null,
+            },
+        });
+        if (reopened.count > 0) return { reported: true as const };
+
+        /* One open report per person per thing (a unique index). A second
+           report while it is open changes nothing, so mashing the button
+           cannot inflate the count or rewrite what was first said, and the
+           reporter is thanked either way: telling them "already reported"
+           adds nothing they can act on. */
         await prisma.report.upsert({
             where: {
                 reporterId_targetType_targetId: {
