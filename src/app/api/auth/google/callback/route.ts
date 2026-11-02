@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
         });
 
         // Checked again: the cookie came back from the browser.
-        const target = safeRedirectPath(flow.returnTo || null, origin, '/home');
+        const target = safeRedirectPath(flow.returnTo || null, origin, '/');
         if (decision.outcome === 'created') {
             // A new student has no college yet; the welcome step asks, then continues to the target.
             return go(`/welcome?redirect=${encodeURIComponent(target)}`);

@@ -12,6 +12,7 @@ const mockFindUnique = jest.fn();
 const mockFindFirst = jest.fn();
 const mockUpdate = jest.fn();
 const mockCreate = jest.fn();
+const mockDeletePush = jest.fn();
 jest.mock('@/lib/db', () => ({
     __esModule: true,
     default: {
@@ -21,6 +22,8 @@ jest.mock('@/lib/db', () => ({
             update: (...a: unknown[]) => mockUpdate(...a),
             create: (...a: unknown[]) => mockCreate(...a),
         },
+        pushSubscription: { deleteMany: (...a: unknown[]) => mockDeletePush(...a) },
+        $transaction: (ops: Promise<unknown>[]) => Promise.all(ops),
     },
 }));
 
@@ -186,9 +189,9 @@ describe('resolveGoogleAccount', () => {
         expect(mockCreate).not.toHaveBeenCalled();
     });
 
-    it('links an email account, case-insensitively, and marks the address confirmed', async () => {
+    it('links a never-confirmed email account, case-insensitively, and takes it from whoever signed up', async () => {
         mockFindFirst.mockResolvedValue(row());
-        mockUpdate.mockResolvedValue(row({ googleId: 'google-123', emailVerified: NOW }));
+        mockUpdate.mockResolvedValue(row({ googleId: 'google-123', emailVerified: NOW, password: '$2b$12$unusable' }));
         const decision = await resolveGoogleAccount(profile(), NOW);
         expect(decision.outcome).toBe('linked');
         expect(mockFindFirst).toHaveBeenCalledWith(
@@ -196,9 +199,16 @@ describe('resolveGoogleAccount', () => {
                 where: { email: { equals: 'asha@example.com', mode: 'insensitive' }, deletedAt: null },
             }),
         );
+        // Someone could have signed up with this address and a password of
+        // their own; Google proves the inbox is this person's, so that
+        // password (and its sessions) stops working.
         expect(mockUpdate).toHaveBeenCalledWith(
-            expect.objectContaining({ where: { id: 'user-1' }, data: { googleId: 'google-123', emailVerified: NOW } }),
+            expect.objectContaining({
+                where: { id: 'user-1' },
+                data: { googleId: 'google-123', emailVerified: NOW, password: '$2b$12$unusable' },
+            }),
         );
+        expect(mockDeletePush).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     });
 
     it('keeps the original confirmation date when linking an already confirmed address', async () => {
@@ -207,6 +217,8 @@ describe('resolveGoogleAccount', () => {
         mockUpdate.mockResolvedValue(row({ googleId: 'google-123', emailVerified: confirmed }));
         await resolveGoogleAccount(profile(), NOW);
         expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ data: { googleId: 'google-123' } }));
+        // A confirmed account keeps its password and its phones.
+        expect(mockDeletePush).not.toHaveBeenCalled();
     });
 
     it('creates an account with no usable password, the Google id and a confirmed address', async () => {

@@ -283,11 +283,34 @@ export async function resolveGoogleAccount(
         // Already tied to a different Google account: swapping it silently would let whoever now holds this address take over.
         if (byEmail.googleId && byEmail.googleId !== profile.sub) return { outcome: 'refused', reason: 'other-google' };
         if (locked(byEmail)) return { outcome: 'refused', reason: 'locked' };
-        const linked = await prisma.user.update({
-            where: { id: byEmail.id },
-            data: { googleId: profile.sub, ...(byEmail.emailVerified ? {} : { emailVerified: now }) },
-            select: accountSelect,
-        });
+        if (byEmail.emailVerified) {
+            const linked = await prisma.user.update({
+                where: { id: byEmail.id },
+                data: { googleId: profile.sub },
+                select: accountSelect,
+            });
+            return { outcome: 'linked', user: pick(linked) };
+        }
+        /* Never confirmed: whoever signed up may not hold this inbox, and
+           signing in does not need a confirmed address. Google has just
+           shown this person does hold it, so the account becomes theirs
+           alone: the password chosen at sign-up is replaced with one nobody
+           knows (which also ends every session made with it, see
+           passwordVersion), and phones that subscribed under it stop
+           getting this account's notifications. The owner can set a new
+           password through "Forgot password". */
+        const [linked] = await prisma.$transaction([
+            prisma.user.update({
+                where: { id: byEmail.id },
+                data: {
+                    googleId: profile.sub,
+                    emailVerified: now,
+                    password: await bcrypt.hash(randomBytes(32).toString('base64url'), 12),
+                },
+                select: accountSelect,
+            }),
+            prisma.pushSubscription.deleteMany({ where: { userId: byEmail.id } }),
+        ]);
         return { outcome: 'linked', user: pick(linked) };
     }
 
