@@ -20,6 +20,10 @@
 # production
 /build
 
+# Switzer: fetched from Fontshare at build time (scripts/fetch-fonts.mjs);
+# its licence does not allow publishing the files in a public repository.
+/src/app/fonts/switzer/
+
 # misc
 .DS_Store
 *.pem

@@ -94,7 +94,7 @@
   /* Noto after each latin face: it only supplies the Devanagari and Tamil
      glyphs the latin faces lack, for readers using the interface in Hindi or Tamil. */
   --font-indic: var(--font-noto-devanagari), var(--font-noto-tamil);
-  --font-sans: var(--font-inter), var(--font-indic), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-switzer), var(--font-indic), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-geist-serif), var(--font-indic), ui-serif, Georgia, serif;
   --font-mono: var(--font-geist-mono), var(--font-indic), ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-serif: var(--font-display);

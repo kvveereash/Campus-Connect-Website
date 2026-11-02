@@ -15,7 +15,7 @@ export function ToastProvider() {
                     borderRadius: '999px',
                     border: '1.5px solid var(--color-forest, #0F1F1C)',
                     boxShadow: '4px 4px 0 var(--color-forest, #0F1F1C)',
-                    fontFamily: 'var(--font-sans, Inter, sans-serif)',
+                    fontFamily: 'var(--font-sans, sans-serif)',
                     fontSize: '0.95rem',
                     padding: '0.75rem 1.5rem',
                 },

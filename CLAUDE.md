@@ -37,8 +37,12 @@ unless it is a one-off with a comment saying why.
   (Instrument Serif italic) for the one spoken phrase in a heading, via
   the global `.accent` class or an `<em>` styled the same way: one per
   heading, never a whole line. `--font-mono` (Geist Mono) for labels,
-  dates and counts, uppercase with a little tracking. Body is Inter.
-  Numbers that change use `font-variant-numeric: tabular-nums`.
+  dates and counts, uppercase with a little tracking. Body is Switzer
+  (variable, 100-900); its licence forbids publishing the file, so
+  `scripts/fetch-fonts.mjs` downloads it from Fontshare before every build
+  into the git-ignored `src/app/fonts/switzer`. Never commit it. Switzer has
+  no tabular figures: numbers that change go in Geist Mono, or use
+  `font-variant-numeric: tabular-nums` on a face that has them.
 - **Shape**: `--radius-card` (16px) for cards, 20–24px for large sheets,
   `--radius-pill` for chips and buttons. Hairline borders
   (`--border-hairline`) rather than shadows; `--shadow-soft` /
