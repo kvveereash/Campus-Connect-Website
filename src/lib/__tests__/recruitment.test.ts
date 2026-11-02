@@ -17,6 +17,7 @@ const mockDb = {
         findMany: jest.fn(),
         create: jest.fn(),
         updateMany: jest.fn(),
+        deleteMany: jest.fn(),
     },
     $transaction: jest.fn((fn: (tx: unknown) => unknown): unknown => fn(mockDb)),
 };
@@ -96,10 +97,29 @@ describe('opening and closing applications', () => {
         const result = await openRecruitment('c1', ['<b>Why</b> join?', '   ']);
         expect(result.success).toBe(true);
         expect(mockDb.club.updateMany).toHaveBeenCalledWith({
-            where: { id: 'c1', deletedAt: null },
+            where: { id: 'c1', deletedAt: null, recruiting: false },
             data: { recruiting: true, recruitQuestions: ['Why join?'] },
         });
         expect(mockUpdateTag).toHaveBeenCalledWith('club-c1');
+    });
+
+    it("starts a new round on reopening: last round's decisions are cleared, waiting ones kept", async () => {
+        asClubRole('ADMIN');
+        mockDb.club.updateMany.mockResolvedValue({ count: 1 });
+        await openRecruitment('c1', ['Why join?']);
+        expect(mockDb.clubApplication.deleteMany).toHaveBeenCalledWith({ where: { clubId: 'c1', status: { not: 'PENDING' } } });
+    });
+
+    it('keeps decisions when the questions are saved while already open', async () => {
+        asClubRole('ADMIN');
+        // Not reopened (already open), then the plain save.
+        mockDb.club.updateMany.mockResolvedValueOnce({ count: 0 }).mockResolvedValueOnce({ count: 1 });
+        expect((await openRecruitment('c1', ['Why join?'])).success).toBe(true);
+        expect(mockDb.clubApplication.deleteMany).not.toHaveBeenCalled();
+        expect(mockDb.club.updateMany).toHaveBeenLastCalledWith({
+            where: { id: 'c1', deletedAt: null },
+            data: { recruiting: true, recruitQuestions: ['Why join?'] },
+        });
     });
 
     it('lets a club admin close', async () => {

@@ -139,11 +139,16 @@ export const leaveClubAction = createProtectedAction(leaveClubSchema, async ({ c
         throw new AuthorizationError('Admins cannot leave. Delete the club or transfer ownership.');
     }
 
-    await prisma.clubMember.delete({
-        where: {
-            userId_clubId: { userId: session.userId, clubId }
-        }
-    });
+    // Their old application goes too: it would say "Accepted, you are a
+    // member" and stop them applying if they want back in later.
+    await prisma.$transaction([
+        prisma.clubMember.delete({
+            where: {
+                userId_clubId: { userId: session.userId, clubId }
+            }
+        }),
+        prisma.clubApplication.deleteMany({ where: { clubId, userId: session.userId } }),
+    ]);
 
     revalidatePath(`/clubs/${clubId}`);
     updateTag(`club-${clubId}`);

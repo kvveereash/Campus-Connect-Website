@@ -109,9 +109,24 @@ const openRecruitmentAction = createProtectedAction(
         const cleaned = questions.map(cleanUserText).filter(Boolean);
         if (cleaned.length === 0) throw new ValidationError('Add at least one question.');
 
-        const updated = await prisma.club.updateMany({
-            where: { id: clubId, deletedAt: null },
-            data: { recruiting: true, recruitQuestions: cleaned },
+        const updated = await prisma.$transaction(async (tx) => {
+            // Only reopening starts a new round; saving questions while
+            // already open does not.
+            const reopened = await tx.club.updateMany({
+                where: { id: clubId, deletedAt: null, recruiting: false },
+                data: { recruiting: true, recruitQuestions: cleaned },
+            });
+            if (reopened.count > 0) {
+                // A new round: last round's decisions are cleared, so someone
+                // declined then (or who has since left) can apply again.
+                // Applications still waiting for a decision stay.
+                await tx.clubApplication.deleteMany({ where: { clubId, status: { not: 'PENDING' } } });
+                return reopened;
+            }
+            return tx.club.updateMany({
+                where: { id: clubId, deletedAt: null },
+                data: { recruiting: true, recruitQuestions: cleaned },
+            });
         });
         if (updated.count === 0) throw new NotFoundError('Club');
 
