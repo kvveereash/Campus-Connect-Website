@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useT } from '@/lib/i18n';
-import { isInterested, toggleInterest } from '@/lib/actions/interest';
+import { isInterested, setInterest } from '@/lib/actions/interest';
 import { authHref } from '@/lib/utils';
 import styles from './ShareButton.module.css';
 
@@ -23,13 +23,16 @@ export default function InterestButton({ eventId }: { eventId: string }) {
     const [busy, setBusy] = useState(false);
     // Only a tap pops the tick: a saved state found on load just shows.
     const [tapped, setTapped] = useState(false);
+    // A tap is newer than the saved state asked for on load; that answer,
+    // arriving after it, must not overwrite it.
+    const tappedRef = useRef(false);
     const signedIn = Boolean(user);
 
     useEffect(() => {
         if (!signedIn) return;
         let live = true;
         isInterested(eventId)
-            .then((s) => live && setSaved(s))
+            .then((s) => live && !tappedRef.current && setSaved(s))
             .catch(() => {});
         return () => {
             live = false;
@@ -44,19 +47,23 @@ export default function InterestButton({ eventId }: { eventId: string }) {
             router.push(authHref(window.location.pathname));
             return;
         }
+        // What the student sees is what they mean to change, so that is what
+        // is sent, even if the saved state has not loaded yet.
+        const want = !saved;
         setBusy(true);
         setTapped(true);
-        setSaved((s) => !s); // shown straight away; put back if the server says no
+        tappedRef.current = true;
+        setSaved(want); // shown straight away; put back if the server says no
         try {
-            const result = await toggleInterest(eventId);
+            const result = await setInterest(eventId, want);
             if (result.error) {
-                setSaved((s) => !s);
+                setSaved(!want);
                 toast.error(result.error);
             } else if (result.interested) {
                 toast.success(t('interest.savedToast'));
             }
         } catch {
-            setSaved((s) => !s);
+            setSaved(!want);
             toast.error(t('interest.failed'));
         } finally {
             setBusy(false);

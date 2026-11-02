@@ -8,6 +8,7 @@ const mockCheckRateLimit = jest.fn();
 const mockDb = {
     user: { findFirst: jest.fn(), update: jest.fn() },
     passwordResetToken: { updateMany: jest.fn(), create: jest.fn(), findUnique: jest.fn() },
+    pushSubscription: { deleteMany: jest.fn() },
     $transaction: jest.fn((fn: (tx: unknown) => unknown): unknown => fn(mockDb)),
 };
 
@@ -85,6 +86,15 @@ describe('resetPassword', () => {
         expect(mockDb.user.update).toHaveBeenCalledWith(
             expect.objectContaining({ where: { id: 'u1' } })
         );
+    });
+
+    it('stops notifications on every device, as it ends every session', async () => {
+        mockDb.passwordResetToken.updateMany.mockResolvedValue({ count: 1 });
+        mockDb.passwordResetToken.findUnique.mockResolvedValue({ userId: 'u1' });
+
+        await resetPassword('raw-token', 'a-long-enough-password');
+
+        expect(mockDb.pushSubscription.deleteMany).toHaveBeenCalledWith({ where: { userId: 'u1' } });
     });
 
     it('does not change the password when the token was already claimed', async () => {

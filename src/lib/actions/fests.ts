@@ -120,7 +120,9 @@ function readFields(input: FestInput, isNew: boolean) {
 /**
  * The fest pages and board are unstable_cache reads tagged FESTS_TAG and
  * fest-<id>; revalidatePath alone would not reach them (see the note above
- * createEventAction in events.ts).
+ * createEventAction in events.ts). Event pages show "Part of <fest>" from
+ * their own cache entries, so an approval, a rename or a fest going back to
+ * the queue refreshes those too.
  */
 function refreshFest(festId: string) {
     revalidatePath('/fests');
@@ -129,6 +131,7 @@ function refreshFest(festId: string) {
     revalidatePath('/admin/fests');
     updateTag(FESTS_TAG);
     updateTag(festTag(festId));
+    updateTag(CACHE_TAGS.EVENTS);
 }
 
 async function managedFest(festId: string, session: { userId: string; user: { role: string } }) {
@@ -243,8 +246,6 @@ async function retireFest(festId: string) {
         prisma.fest.update({ where: { id: festId }, data: { deletedAt: new Date() }, select: { id: true } }),
     ]);
     refreshFest(festId);
-    // Event pages show "Part of …" from their own cache entries.
-    updateTag(CACHE_TAGS.EVENTS);
 }
 
 const deleteFestAction = createProtectedAction(

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { changePassword, deleteAccount } from '@/lib/actions/account';
 import { sendVerificationEmail } from '@/lib/actions/email-verification';
 import { isDemoEmail } from '@/lib/demo-account';
-import PushToggle from '@/components/PushToggle';
+import PushToggle, { forgetPushOwner } from '@/components/PushToggle';
 import DigestToggle from '@/components/settings/DigestToggle';
 import LanguagePicker from '@/components/LanguagePicker';
 import { useT } from '@/lib/i18n';
@@ -53,6 +53,7 @@ export default function SettingsClient({
         startTransition(async () => {
             const result = await changePassword(current, next);
             if (result.success) {
+                forgetPushOwner();
                 toast.success(result.message ?? 'Password changed');
                 setCurrent('');
                 setNext('');

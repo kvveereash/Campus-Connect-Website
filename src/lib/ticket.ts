@@ -34,21 +34,24 @@ export const ticketsEnabled = () => ticketKey() !== null;
    off as a ticket (or the other way round). */
 type Purpose = 'ticket' | 'certificate' | 'calendar' | 'digest';
 
-function signature(purpose: Purpose, id: string, key: Buffer) {
-    return createHmac('sha256', key).update(`${purpose}:${id}`).digest('base64url').slice(0, 22);
+/* `bound` ties a token to something that can change (a password's
+   fingerprint), so changing it voids the token without storing anything. */
+function signature(purpose: Purpose, id: string, key: Buffer, bound = '') {
+    const message = bound ? `${purpose}:${id}:${bound}` : `${purpose}:${id}`;
+    return createHmac('sha256', key).update(message).digest('base64url').slice(0, 22);
 }
 
-function sign(purpose: Purpose, id: string) {
+function sign(purpose: Purpose, id: string, bound?: string) {
     const key = ticketKey();
-    return key ? `${id}.${signature(purpose, id, key)}` : null;
+    return key ? `${id}.${signature(purpose, id, key, bound)}` : null;
 }
 
-function read(purpose: Purpose, token: string | undefined | null): string | null {
+function read(purpose: Purpose, token: string | undefined | null, bound?: string): string | null {
     const key = ticketKey();
     if (!key || !token || token.length > 120) return null;
     const [id, sig] = token.split('.');
     if (!id || !sig) return null;
-    const expected = Buffer.from(signature(purpose, id, key));
+    const expected = Buffer.from(signature(purpose, id, key, bound));
     const given = Buffer.from(sig);
     return expected.length === given.length && timingSafeEqual(expected, given) ? id : null;
 }
@@ -62,9 +65,17 @@ export const readTicketToken = (token: string | undefined | null) => read('ticke
 export const certificateToken = (registrationId: string) => sign('certificate', registrationId);
 export const readCertificateToken = (token: string | undefined | null) => read('certificate', token);
 
-/** A person's private calendar feed address. Anyone holding it sees their events, nothing else. */
-export const calendarFeedToken = (userId: string) => sign('calendar', userId);
-export const readCalendarFeedToken = (token: string | undefined | null) => read('calendar', token);
+/**
+ * A person's private calendar feed address. Anyone holding it sees their
+ * events, nothing else. Bound to their password's fingerprint (see
+ * passwordVersion in auth.ts): a feed address pasted somewhere it should not
+ * have been is taken back by changing the password, like every session.
+ */
+export const calendarFeedToken = (userId: string, passwordVersion: string) => sign('calendar', userId, passwordVersion);
+/** The account a feed address names, unchecked: checking it needs that account's password fingerprint. */
+export const calendarFeedOwner = (token: string) => token.split('.')[0] || null;
+export const readCalendarFeedToken = (token: string | undefined | null, passwordVersion: string) =>
+    read('calendar', token, passwordVersion);
 
 // The one-click unsubscribe link in the weekly digest email.
 export const digestUnsubscribeToken = (userId: string) => sign('digest', userId);

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { verifyResetToken, resetPassword } from '@/lib/actions/password-reset';
 import AuthShell, { AuthMessage } from '@/components/auth/AuthShell';
+import { forgetPushOwner } from '@/components/PushToggle';
 import styles from '@/app/login/auth.module.css';
 
 export default function ResetPasswordPage() {
@@ -52,6 +53,7 @@ export default function ResetPasswordPage() {
         try {
             const result = await resetPassword(token, password);
             if (result.success) {
+                forgetPushOwner();
                 setMessage({ type: 'success', text: 'Password changed. Taking you to sign in…' });
                 setTimeout(() => router.push('/login'), 2000);
             } else {

@@ -1,6 +1,7 @@
 import prisma from '@/lib/db';
+import { passwordVersion } from '@/lib/auth';
 import { icsCalendar } from '@/lib/calendar';
-import { GOING, readCalendarFeedToken } from '@/lib/ticket';
+import { calendarFeedOwner, GOING, readCalendarFeedToken } from '@/lib/ticket';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -9,18 +10,25 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * on. Calendar apps subscribe once and re-read it every few hours, so new
  * registrations appear on their own. The address is the only key (calendar
  * apps cannot send a session cookie), so it is signed and shows nothing but
- * that person's events.
+ * that person's events. Changing the password changes the address and ends
+ * the old one.
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ token: string }> }) {
     const { token } = await params;
-    const userId = readCalendarFeedToken(token.replace(/\.ics$/, ''));
-    if (!userId) return new Response('This calendar link is not valid.', { status: 404 });
+    const raw = token.replace(/\.ics$/, '');
+    const ownerId = calendarFeedOwner(raw);
+    const owner = ownerId
+        ? await prisma.user.findFirst({ where: { id: ownerId, deletedAt: null }, select: { id: true, password: true } })
+        : null;
+    const userId = owner && readCalendarFeedToken(raw, passwordVersion(owner.password));
+    if (!userId) {
+        return new Response('This calendar link is no longer valid. Copy the current one from My events.', { status: 404 });
+    }
 
     const registrations = await prisma.eventRegistration.findMany({
         where: {
             userId,
             status: { in: [...GOING] },
-            user: { deletedAt: null },
             event: { deletedAt: null, date: { gte: new Date(Date.now() - 30 * DAY_MS) } },
         },
         orderBy: { event: { date: 'asc' } },

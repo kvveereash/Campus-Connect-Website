@@ -22,13 +22,15 @@ export default function ShareButton({ title, text, path }: { title: string; text
     // false during server render and hydration; the real answer after.
     const native = useSyncExternalStore(noSubscribe, canNativeShare, () => false);
     // "Copied" shows in the button itself for two seconds, where the eye
-    // already is, instead of in a toast across the screen.
-    const [copied, setCopied] = useState(false);
+    // already is, instead of in a toast across the screen. A time rather than
+    // a flag, so copying again restarts the two seconds and the tick.
+    const [copiedAt, setCopiedAt] = useState(0);
+    const copied = copiedAt > 0;
     useEffect(() => {
-        if (!copied) return;
-        const id = setTimeout(() => setCopied(false), 2000);
+        if (!copiedAt) return;
+        const id = setTimeout(() => setCopiedAt(0), 2000);
         return () => clearTimeout(id);
-    }, [copied]);
+    }, [copiedAt]);
     const url = () => new URL(withRef(path, 'share'), window.location.origin).toString();
 
     const share = async () => {
@@ -42,7 +44,7 @@ export default function ShareButton({ title, text, path }: { title: string; text
     const copy = async () => {
         try {
             await navigator.clipboard.writeText(url());
-            setCopied(true);
+            setCopiedAt(Date.now());
         } catch {
             toast.error('Could not copy the link. Copy it from the address bar instead.');
         }
@@ -70,7 +72,7 @@ export default function ShareButton({ title, text, path }: { title: string; text
             </a>
             <button type="button" className={`btn btn-outline ${styles.button}`} onClick={copy}>
                 {copied ? (
-                    <Check size={16} className={styles.pop} aria-hidden="true" />
+                    <Check key={copiedAt} size={16} className={styles.pop} aria-hidden="true" />
                 ) : (
                     <Link2 size={16} aria-hidden="true" />
                 )}

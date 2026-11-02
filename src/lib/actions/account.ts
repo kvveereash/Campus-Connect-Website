@@ -56,10 +56,13 @@ export async function changePassword(
     }
 
     const newHash = await bcrypt.hash(newPassword, 12);
-    await prisma.user.update({
-        where: { id: user.id },
-        data: { password: newHash },
-    });
+    // Every device's notifications go too: a device someone else was signed
+    // in on kept getting them after its session ended. This browser signs
+    // back up on its own (forgetPushOwner in PushToggle).
+    await prisma.$transaction([
+        prisma.user.update({ where: { id: user.id }, data: { password: newHash } }),
+        prisma.pushSubscription.deleteMany({ where: { userId: user.id } }),
+    ]);
 
     // Every other device's session carried the old password's fingerprint and
     // is now refused by getSession; give this device a fresh one.
@@ -74,7 +77,7 @@ export async function changePassword(
 
     return {
         success: true,
-        message: 'Password changed. You have been signed out on every other device.',
+        message: 'Password changed. You have been signed out on every other device, and your calendar link in My events is new.',
     };
 }
 

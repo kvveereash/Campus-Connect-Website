@@ -4,8 +4,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { createProtectedAction } from '@/lib/protected-action';
-import { createNotification } from '@/lib/notification-helper';
-import { queuePush } from '@/lib/push';
+import { createNotification, notifyMany } from '@/lib/notification-helper';
 import { cleanUserText } from '@/lib/sanitize';
 import { announceLimiter } from '@/lib/rate-limit';
 import { canManageEvent, GOING } from '@/lib/ticket';
@@ -39,31 +38,18 @@ export const announceToAttendeesAction = createProtectedAction(
         const text = cleanUserText(message);
         if (text.length < 3) throw new Error('Write a little more so people know what changed');
 
-        const [people, author] = await Promise.all([
-            prisma.eventRegistration.findMany({
-                where: { eventId, status: { in: [...GOING, 'WAITLISTED'] }, userId: { not: session.userId } },
-                select: { userId: true },
-            }),
-            prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } }),
-        ]);
-        const update = `posted an update for ${event.title}: ${text}`;
-        const link = `/events/${eventId}`;
-
-        // In batches, so a big event doesn't open hundreds of connections at once.
-        for (let i = 0; i < people.length; i += 25) {
-            await Promise.all(
-                people.slice(i, i + 25).map((p) =>
-                    createNotification(p.userId, session.userId, 'EVENT_UPDATE', update, link, { push: false }),
-                ),
-            );
-        }
-        // One push for everyone: one look-up of their devices, not one each.
-        queuePush(people.map((p) => p.userId), {
-            title: 'Campus Connect',
-            body: `${author?.name || 'Campus Connect'} ${update}`,
-            url: link,
+        const people = await prisma.eventRegistration.findMany({
+            where: { eventId, status: { in: [...GOING, 'WAITLISTED'] }, userId: { not: session.userId } },
+            select: { userId: true },
         });
-        return { sent: people.length };
+        const sent = await notifyMany(
+            people.map((p) => p.userId),
+            session.userId,
+            'EVENT_UPDATE',
+            `posted an update for ${event.title}: ${text}`,
+            `/events/${eventId}`,
+        );
+        return { sent };
     },
     { rateLimiter: announceLimiter, audit: { action: 'UPDATE', entityType: 'Event', getEntityId: (d) => d.eventId } },
 );

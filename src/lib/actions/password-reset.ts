@@ -165,6 +165,8 @@ export async function resetPassword(token: string, newPassword: string) {
                 where: { id: resetToken.userId },
                 data: { password: hashedPassword, lockedUntil: null }
             });
+            // Notifications stop on every device, as sessions do.
+            await tx.pushSubscription.deleteMany({ where: { userId: resetToken.userId } });
             return true;
         });
 

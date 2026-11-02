@@ -42,3 +42,20 @@ export async function broadcast(channel: string, event: string, data: unknown): 
         console.error(`[Pusher] ${event} on ${channel} failed:`, error);
     }
 }
+
+// Pusher takes at most ten events in one batch request.
+const BATCH = 10;
+
+/**
+ * Many realtime events at once (an organiser's update to everyone going):
+ * ten to a request, the requests side by side. Best effort, like broadcast.
+ */
+export async function broadcastMany(events: { channel: string; name: string; data: unknown }[]): Promise<void> {
+    if (!isPusherConfigured() || events.length === 0) return;
+    const pusher = getPusherServer();
+    const batches: (typeof events)[] = [];
+    for (let i = 0; i < events.length; i += BATCH) batches.push(events.slice(i, i + BATCH));
+    const results = await Promise.allSettled(batches.map((batch) => pusher.triggerBatch(batch)));
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    if (failed > 0) console.error(`[Pusher] ${failed} of ${batches.length} batches failed`);
+}

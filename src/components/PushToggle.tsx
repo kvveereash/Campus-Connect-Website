@@ -61,6 +61,16 @@ function writeOwner(userId: string | null) {
     }
 }
 
+/**
+ * A password change or reset removes every device on the server. Forgetting
+ * which account this browser was saved for makes the next check (now, or on
+ * the next page with a toggle) save it again, so this device keeps getting them.
+ */
+export function forgetPushOwner() {
+    writeOwner(null);
+    announce();
+}
+
 async function currentSubscription(): Promise<PushSubscription | null> {
     const registration = await navigator.serviceWorker.getRegistration();
     return registration ? registration.pushManager.getSubscription() : null;

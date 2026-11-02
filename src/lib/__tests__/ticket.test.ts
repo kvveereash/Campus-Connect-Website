@@ -12,7 +12,16 @@ jest.mock('@/lib/db', () => ({
     },
 }));
 
-import { canManageEvent, checkInUrl, readTicketToken, ticketToken, ticketsEnabled } from '../ticket';
+import {
+    calendarFeedOwner,
+    calendarFeedToken,
+    canManageEvent,
+    checkInUrl,
+    readCalendarFeedToken,
+    readTicketToken,
+    ticketToken,
+    ticketsEnabled,
+} from '../ticket';
 
 describe('ticket tokens', () => {
     beforeAll(() => {
@@ -119,5 +128,27 @@ describe('canManageEvent', () => {
     it('turns away visitors and events with no club to ask about', async () => {
         await expect(canManageEvent(event, null)).resolves.toBe(false);
         await expect(canManageEvent({ creatorId: 'creator', clubId: null }, { userId: 'someone' })).resolves.toBe(false);
+    });
+});
+
+describe('calendar feed tokens', () => {
+    beforeAll(() => {
+        process.env.TICKET_SECRET = 'test-ticket-secret-at-least-32-characters';
+    });
+
+    it('reads back the person it was made for, while their password is unchanged', () => {
+        const token = calendarFeedToken('cmuser1', 'pv-before') ?? '';
+        expect(calendarFeedOwner(token)).toBe('cmuser1');
+        expect(readCalendarFeedToken(token, 'pv-before')).toBe('cmuser1');
+    });
+
+    it('stops working once the password changes, so a shared link can be taken back', () => {
+        const token = calendarFeedToken('cmuser1', 'pv-before');
+        expect(readCalendarFeedToken(token, 'pv-after')).toBeNull();
+    });
+
+    it('is never accepted as a ticket, or a ticket as a feed', () => {
+        expect(readTicketToken(calendarFeedToken('cmuser1', 'pv'))).toBeNull();
+        expect(readCalendarFeedToken(ticketToken('cmuser1'), 'pv')).toBeNull();
     });
 });

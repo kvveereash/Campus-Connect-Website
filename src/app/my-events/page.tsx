@@ -86,7 +86,8 @@ export default async function MyEventsPage() {
     // Attending, not registering, earns a certificate.
     const certificates = registrations.filter((r) => r.checkedInAt).reverse();
 
-    const feedToken = calendarFeedToken(userId);
+    // getSession has already checked this fingerprint against the password.
+    const feedToken = typeof session.pv === 'string' ? calendarFeedToken(userId, session.pv) : null;
     const feedUrl = feedToken ? `${process.env.NEXT_PUBLIC_APP_URL || SITE_URL}/api/calendar/${feedToken}.ics` : null;
     const webcalUrl = feedUrl?.replace(/^https?:/, 'webcal:');
 

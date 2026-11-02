@@ -212,7 +212,7 @@ export const cancelRegistrationAction = createProtectedAction(joinEventSchema, a
             id: true,
             status: true,
             paymentId: true,
-            event: { select: { id: true, title: true, date: true, price: true, capacity: true, creatorId: true, clubId: true } },
+            event: { select: { id: true, title: true, date: true, creatorId: true, clubId: true } },
         },
     });
     if (!registration) throw new Error('You are not registered for this event');
@@ -239,11 +239,24 @@ export const cancelRegistrationAction = createProtectedAction(joinEventSchema, a
 
     const promoted = await prisma.$transaction(async (tx) => {
         await lockEvent(tx, eventId);
-        await tx.eventRegistration.delete({ where: { id: registration.id } });
-        if (registration.status === 'COMPLETED') {
-            await tx.event.update({ where: { id: eventId }, data: { registrationCount: { decrement: 1 } } });
-            return fillFromWaitlist(tx, event);
+        // Read again under the lock: the place may have moved since the read
+        // above (off the waitlist when someone else cancelled, or paid), and
+        // deleting it as what it was left the count and the line wrong.
+        const now = await tx.eventRegistration.findUnique({
+            where: { id: registration.id },
+            select: { status: true, event: { select: { capacity: true, price: true } } },
+        });
+        if (!now) throw new Error('You are not registered for this event');
+        if (now.status === 'PAID') {
+            throw new Error('Your payment has gone through, so your place is being confirmed. To cancel a paid place, message the organiser.');
         }
+        await tx.eventRegistration.delete({ where: { id: registration.id } });
+        if (now.status === 'COMPLETED') {
+            await tx.event.update({ where: { id: eventId }, data: { registrationCount: { decrement: 1 } } });
+            return fillFromWaitlist(tx, { id: eventId, ...now.event });
+        }
+        // An unpaid place within its hold was a seat too.
+        if (now.status === 'PENDING_PAYMENT') return fillFromWaitlist(tx, { id: eventId, ...now.event });
         return [];
     });
     await notifyPromoted(event, promoted);
