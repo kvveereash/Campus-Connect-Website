@@ -23,7 +23,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             userId: session.userId,
             status: { in: [...GOING] },
             checkedInAt: { not: null },
-            event: { deletedAt: null },
+            event: { deletedAt: null, verified: true, date: { lte: new Date() } },
         },
         select: {
             id: true,
@@ -46,7 +46,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         },
     });
     if (!registration?.checkedInAt) {
-        return new NextResponse('A certificate is ready once the organiser has checked you in at the event.', { status: 404 });
+        return new NextResponse('A certificate is ready once the event has taken place and the organiser has checked you in.', { status: 404 });
     }
 
     const token = certificateToken(registration.id);

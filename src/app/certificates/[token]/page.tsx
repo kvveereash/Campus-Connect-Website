@@ -21,7 +21,7 @@ export default async function CertificateCheckPage({ params }: { params: Promise
     const [registration, volunteered] = registrationId
         ? await Promise.all([
               prisma.eventRegistration.findFirst({
-                  where: { id: registrationId, status: { in: [...GOING] }, checkedInAt: { not: null }, event: { deletedAt: null } },
+                  where: { id: registrationId, status: { in: [...GOING] }, checkedInAt: { not: null }, event: { deletedAt: null, verified: true, date: { lte: new Date() } } },
                   select: {
                       id: true,
                       checkedInAt: true,

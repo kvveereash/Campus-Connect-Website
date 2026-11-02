@@ -144,6 +144,11 @@ export const updateVolunteerRoleAction = createProtectedAction(
     async (input, session) => {
         const role = await managedRole(input.roleId, session);
         const roleName = input.name === undefined ? undefined : cleanName(input.name);
+        // The name is printed on volunteers' certificates; once the event has
+        // started it is a record of what they did, not a setting.
+        if (roleName !== undefined && roleName !== role.name && role.event.date <= new Date()) {
+            throw new ValidationError('The event has started, so its role names are fixed: they appear on volunteers’ certificates.');
+        }
         if (roleName && roleName.toLowerCase() !== role.name.toLowerCase()) {
             const sameName = await prisma.volunteerRole.findFirst({
                 where: { eventId: role.event.id, id: { not: role.id }, name: { equals: roleName, mode: 'insensitive' } },
